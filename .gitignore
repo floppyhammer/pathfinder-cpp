@@ -1,32 +1,18 @@
-# Prerequisites
-*.d
+# Build results
+bin/
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+# Jetbrains IDEs
+.idea/
 
-# Precompiled Headers
-*.gch
-*.pch
+# CLion outputs
+cmake-build-debug
+cmake-build-release
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
+# NDK outputs
+ndk/obj
 
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
+# Android demo
+demo/android/app/src/main/cpp/demo/
+demo/android/app/src/main/cpp/lib/
+demo/android/app/src/main/cpp/src/
+demo/android/app/src/main/cpp/thrid_party/
