@@ -13,21 +13,19 @@ App::App(int window_width,
          std::vector<char> &font_input,
          const std::string &p_svg_input) {
     // Set logger level.
-    Pathfinder::Logger::set_level(Pathfinder::Logger::Level::VERBOSE);
-
-    svg_input = p_svg_input;
+    Pathfinder::Logger::set_level(Pathfinder::Logger::Level::WARN);
 
     // Set up a canvas.
     canvas = std::make_shared<Pathfinder::Canvas>(window_width,
                                                   window_height,
                                                   reinterpret_cast<std::vector<unsigned char> &>(area_lut_input));
-    canvas->load_svg(svg_input);
+    canvas->load_svg(p_svg_input);
 
     // Set up a text label.
     label = std::make_shared<Pathfinder::Label>(window_width,
                                                 window_height,
                                                 reinterpret_cast<std::vector<unsigned char> &>(area_lut_input));
-    label->set_rect_size(window_width, window_width);
+    label->set_rect_size((float) window_width, (float) window_width);
     label->set_style(64, Pathfinder::ColorU::white(), 0, Pathfinder::ColorU::red());
     label->set_font(std::make_shared<Pathfinder::Font>(font_input));
 
@@ -70,30 +68,22 @@ void App::loop() {
     }
     // ----------------------------------------
 
-    // Clear canvas and add shapes.
-//    canvas->clear();
-//    canvas->load_svg(svg_input);
-
-    // Clear screen.
-    screen_viewport->clear();
-
     // Build and draw canvas.
     canvas->update();
     canvas->draw();
 
-    // Draw to screen using the texture rect.
-    screen_viewport->use();
+    // Build and draw label.
+    label->draw();
 
+    // Set render target to screen. Clear screen.
+    screen_viewport->use();
+    screen_viewport->clear();
+
+    // Draw canvas to screen.
     texture_rect->set_texture(canvas->get_dest_texture());
     texture_rect->draw();
 
-    // Build and draw label.
-    label->draw();
-    screen_viewport->use();
+    // Draw label to screen.
     texture_rect->set_texture(label->canvas->get_dest_texture());
     texture_rect->draw();
-}
-
-void App::cleanup() {
-
 }

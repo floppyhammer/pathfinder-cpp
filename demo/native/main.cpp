@@ -50,8 +50,6 @@ int main() {
         window.swap_buffers_and_poll_events();
     }
 
-    app.cleanup();
-
     return 0;
 }
 

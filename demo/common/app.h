@@ -21,15 +21,12 @@ public:
         const std::string &p_svg_input);
 
     void loop();
-    void cleanup();
 
 private:
     std::shared_ptr<Pathfinder::Canvas> canvas;
     std::shared_ptr<Pathfinder::Label> label;
     std::shared_ptr<Pathfinder::TextureRect> texture_rect;
     std::shared_ptr<Pathfinder::Viewport> screen_viewport;
-
-    std::string svg_input;
 
     std::chrono::time_point<std::chrono::steady_clock> start_time;
     std::chrono::time_point<std::chrono::steady_clock> last_time;
