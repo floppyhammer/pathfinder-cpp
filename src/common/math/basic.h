@@ -44,7 +44,7 @@ namespace Pathfinder {
         return a + (b - a) * t;
     }
 
-    inline int alignup_i32(int a, int b) {
+    inline int alignup_i32(int32_t a, int32_t b) {
         return (a + b - 1) / b;
     }
 }

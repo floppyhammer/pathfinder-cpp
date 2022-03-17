@@ -5,6 +5,7 @@
 #include "renderer.h"
 
 #include <umHalf.h>
+#include <array>
 
 namespace Pathfinder {
     // 1.0 / sqrt(2 * pi)
@@ -101,9 +102,8 @@ namespace Pathfinder {
 
     void upload_metadata(const std::shared_ptr<Texture>& metadata_texture,
                          const std::vector<TextureMetadataEntry> &metadata) {
-        auto padded_texel_size = alignup_i32(
-                (int) metadata.size(),
-                TEXTURE_METADATA_ENTRIES_PER_ROW) * TEXTURE_METADATA_TEXTURE_WIDTH * 4;
+        auto padded_texel_size = alignup_i32((int32_t) metadata.size(), TEXTURE_METADATA_ENTRIES_PER_ROW)
+                * TEXTURE_METADATA_TEXTURE_WIDTH * 4;
 
         std::vector<half> texels;
         texels.reserve(padded_texel_size);
@@ -115,7 +115,7 @@ namespace Pathfinder {
                                                        entry.blend_mode,
                                                        entry.color_0_combine_mode);
 
-            std::vector<half> slice = {
+            std::array<half, 40> slice = {
                     // 0
                     entry.color_0_transform.m11(),
                     entry.color_0_transform.m21(),
