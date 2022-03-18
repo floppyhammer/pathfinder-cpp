@@ -7,8 +7,6 @@
 #include "../../common/timestamp.h"
 #include "../../common/global_macros.h"
 
-#include <omp.h>
-
 #undef min
 #undef max
 
@@ -58,67 +56,73 @@ namespace Pathfinder {
     }
 
     void SceneBuilderD3D9::build() {
-        // No need to rebuild the scene.
-        //if (!scene->is_dirty)
-        //    return;
+        // No need to rebuild the scene if it hasn't changed.
+        // Comment this to do benchmark more precisely.
+//        if (!scene->is_dirty)
+//            return;
 
         Timestamp timestamp;
 
         // Build paint data.
         metadata = scene->palette.build_paint_info();
 
-        timestamp.record("build_paint_info");
+        timestamp.record("Build paint info");
 
         // Most important step. Build paths (i.e. shapes). Draw paths -> built draw paths.
         auto built_paths = build_paths_on_cpu();
 
-        timestamp.record("build_paths_on_cpu");
+        timestamp.record("Build paths on CPU");
 
         finish_building(built_paths);
 
-        timestamp.record("finish_building");
-
-        // Mark the scene as clean (so we don't need to rebuild it the next frame).
-        scene->is_dirty = false;
-
+        timestamp.record("Build tile batches");
         timestamp.print();
+
+        // Mark the scene as clean, so we don't need to rebuild it the next frame.
+        scene->is_dirty = false;
     }
 
     void SceneBuilderD3D9::finish_building(const std::vector<BuiltDrawPath> &built_paths) {
+        // We can already start drawing fills asynchronously at this stage.
+
         build_tile_batches(built_paths);
     }
 
     std::vector<BuiltDrawPath> SceneBuilderD3D9::build_paths_on_cpu() {
         // Reset builder.
-        // ------------------------------
-        // Clear pending fills.
-        pending_fills.clear();
+        {
+            // Clear pending fills.
+            pending_fills.clear();
 
-        // Clear next alpha tile indices.
-        for (auto& next_alpha_tile_index : next_alpha_tile_indices)
-            next_alpha_tile_index = 0;
-        // ------------------------------
+            // Reset next alpha tile indices.
+            std::fill(next_alpha_tile_indices, next_alpha_tile_indices + ALPHA_TILE_LEVEL_COUNT, 0);
+        }
 
+        // Number of draw paths.
         auto draw_paths_count = scene->draw_paths.size();
 
+        // Allocate space for built draw paths.
         std::vector<BuiltDrawPath> built_paths(draw_paths_count);
 
+        // Set up an OpenMP lock.
         omp_lock_t write_lock;
         omp_init_lock(&write_lock);
 
-        // This should run in parallel when possible.
+        // This loop should run in parallel whenever possible.
 #if (PATHFINDER_OPENMP_THREADS > 1)
 #pragma omp parallel for num_threads(PATHFINDER_OPENMP_THREADS)
 #endif
         for (int path_index = 0; path_index < draw_paths_count; path_index++) {
-            auto& draw_path = scene->draw_paths[path_index];
+            // Retrieve a draw path.
+            auto &draw_path = scene->draw_paths[path_index];
 
-            // Skip invisible draw paths.
+            // Skip if it's invisible (transparent or out of scope).
             if (!scene->get_paint(draw_path.paint).is_opaque()
                 || !draw_path.bounds.intersects(scene->view_box)) {
                 continue;
             }
 
+            // Build the draw path.
             built_paths[path_index] = build_draw_path_on_cpu(path_index, write_lock);
         }
 
@@ -128,10 +132,10 @@ namespace Pathfinder {
     }
 
     BuiltDrawPath SceneBuilderD3D9::build_draw_path_on_cpu(uint32_t path_id, omp_lock_t &write_lock) {
-        // Get draw path (thin wrapper of outline). This is just a normal shape.
-        auto &path_object = scene->draw_paths[path_id];
+        // Get the draw path (a thin wrapper over outline). A draw path amounts to a shape.
+        const auto &path_object = scene->draw_paths[path_id];
 
-        // Create a tiler for the path.
+        // Create a tiler for the draw path.
         Tiler tiler(*this, path_id, path_object, path_object.fill_rule, scene->view_box);
 
         // Core step.
@@ -144,7 +148,7 @@ namespace Pathfinder {
         send_fills(tiler.object_builder.fills);
         omp_unset_lock(&write_lock);
 
-        return { tiler.object_builder.built_path, path_object.blend_mode, path_object.fill_rule, true };
+        return {tiler.object_builder.built_path, path_object.blend_mode, path_object.fill_rule, true};
     }
 
     void SceneBuilderD3D9::build_tile_batches(const std::vector<BuiltDrawPath> &built_paths) {
@@ -187,8 +191,7 @@ namespace Pathfinder {
         }
     }
 
-    void SceneBuilderD3D9::send_fills(std::vector<Fill> &fill_batch) {
-        // Extend.
+    void SceneBuilderD3D9::send_fills(const std::vector<Fill> &fill_batch) {
         pending_fills.insert(pending_fills.end(),
                              fill_batch.begin(),
                              fill_batch.end());

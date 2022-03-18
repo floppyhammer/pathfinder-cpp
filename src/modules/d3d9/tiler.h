@@ -47,14 +47,18 @@ namespace Pathfinder {
 
     /// One tiler for one outline (shape).
     struct Tiler {
-        SceneBuilderD3D9& scene_builder;
-        ObjectBuilder object_builder;
-        Shape shape;
-
+    public:
         Tiler(SceneBuilderD3D9 &p_scene_builder, uint32_t path_id, const Shape &p_shape,
               FillRule fill_rule, const Rect<float> &view_box);
 
+        ObjectBuilder object_builder;
+
+        /// Generate fills and tiles.
         void generate_tiles();
+
+    private:
+        SceneBuilderD3D9& scene_builder;
+        Shape shape;
 
         /// Process all paths of the attached shape.
         void generate_fills();

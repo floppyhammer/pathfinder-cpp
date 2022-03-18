@@ -7,15 +7,14 @@ precision highp float;
 precision highp sampler2D;
 #endif
 
-out vec4 FragColor;
+out vec4 oFragColor;
 
-in vec4 vertexColor;
 in vec2 vUV;
 in vec3 vColor;
 
 uniform sampler2D uTexture;
 
 void main() {
-    FragColor = texture(uTexture, vUV);
+    oFragColor = texture(uTexture, vUV);
 }
 )"

@@ -21,7 +21,7 @@ namespace Pathfinder {
     // 65536
     const size_t MAX_FILLS_PER_BATCH = 0x10000;
 
-    /// It might be not worth it to cache z buffer textures as they're generally small.
+    /// It might not be worth it to cache z buffer textures as they're generally small.
     std::shared_ptr<Texture> upload_z_buffer(const DenseTileMap<uint32_t> &z_buffer_map) {
         auto z_buffer_texture = std::make_shared<Texture>(
                 z_buffer_map.rect.width(),
@@ -99,27 +99,30 @@ namespace Pathfinder {
     }
 
     void RendererD3D9::draw(const SceneBuilderD3D9 &scene_builder) {
-        // Upload fills to buffer.
-        upload_fills(scene_builder.pending_fills);
+        // TODO: We should do this before the builder finishes building.
+        {
+            // Upload fills to buffer.
+            upload_fills(scene_builder.pending_fills);
 
-        // Can run as long as pending fills are ready.
-        draw_fills(scene_builder.pending_fills.size());
+            // We can do fill drawing as soon as the fill vertex buffer is ready.
+            draw_fills(scene_builder.pending_fills.size());
+        }
 
-        // Tiles need to be drawn after fills and when tile_batches are ready.
+        // Tiles need to be drawn after fill drawing and after tile batches are prepared.
         upload_and_draw_tiles(scene_builder.tile_batches, scene_builder.metadata);
     }
 
     void RendererD3D9::upload_fills(const std::vector<Fill> &fills) const {
-        DeviceGl::bind_vertex_buffer(fill_vao, fill_vbo);
-        DeviceGl::upload_to_vertex_buffer(sizeof(Fill) * fills.size(),
+        DeviceGl::upload_to_vertex_buffer(fill_vbo,
+                                          sizeof(Fill) * fills.size(),
                                           (void *) fills.data());
 
         DeviceGl::check_error("RendererD3D9::upload_fills");
     }
 
     void RendererD3D9::upload_tiles(const std::vector<TileObjectPrimitive> &tiles) const {
-        DeviceGl::bind_vertex_buffer(tile_vao, tile_vbo);
-        DeviceGl::upload_to_vertex_buffer(sizeof(TileObjectPrimitive) * tiles.size(),
+        DeviceGl::upload_to_vertex_buffer(tile_vbo,
+                                          sizeof(TileObjectPrimitive) * tiles.size(),
                                           (void *) tiles.data());
 
         DeviceGl::check_error("RendererD3D9::upload_tiles");

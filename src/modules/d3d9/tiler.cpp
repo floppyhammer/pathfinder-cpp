@@ -259,17 +259,20 @@ namespace Pathfinder {
             auto cubic = p_segment.to_cubic();
             process_segment(cubic, p_scene_builder, p_object_builder);
 
-            // Remember to return to avoid running code for cubic segments.
+            // Remember to return to avoid running code below.
             return;
         }
 
-        // If the segment is a line or a cubic curve that's flat enough, go to next step.
+        // If the segment is a line or a cubic curve that is flat enough, go to next step.
         if (p_segment.is_line() || (p_segment.is_cubic() && p_segment.is_flat(FLATTENING_TOLERANCE))) {
+            // (Next step) Process the segment as a line segment.
             process_line_segment(p_segment.baseline, p_scene_builder, p_object_builder);
 
+            // Remember to return to avoid running code below.
             return;
         }
 
+        // If the segment is a cubic curve.
         Segment prev, next;
         p_segment.split(0.5f, prev, next);
 
@@ -283,35 +286,31 @@ namespace Pathfinder {
         // The intersection rect of the path bounds and the view box.
         auto bounds = p_shape.bounds.intersection(view_box);
 
+        // Create an object builder.
         object_builder = ObjectBuilder(path_id, bounds, shape.paint, view_box, fill_rule);
     }
 
     void Tiler::generate_tiles() {
-        Timestamp timestamp;
-        timestamp.set_enabled(false);
-
         // Core step. Fills are used for tile masking.
         generate_fills();
 
-        timestamp.record("generate_fills");
-
         // Prepare winding data for tiles. Winding data for fills are obtained in generate_fills().
         prepare_tiles();
-
-        timestamp.record("prepare_tiles");
-        timestamp.print();
     }
 
     void Tiler::generate_fills() {
-        // Traverse paths.
+        // Traverse paths in the shape.
         for (const auto &path: shape.paths) {
             auto segments_iter = SegmentsIter(path.points, path.flags, path.closed);
 
             // Traverse curve/line segments.
             while (!segments_iter.is_at_end()) {
                 auto segment = segments_iter.get_next(true);
+
+                // Break for invalid segment.
                 if (segment.kind == SegmentKind::None)
                     break;
+
                 process_segment(segment, scene_builder, object_builder);
             }
         }

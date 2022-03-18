@@ -14,7 +14,7 @@
 #include <vector>
 
 namespace Pathfinder {
-    /// Renderer runs in a different thread than that of the builder.
+    /// Renderer should run in a different thread than that of the builder.
     class RendererD3D9 : public Renderer {
     public:
         /// Fills to draw.
