@@ -108,29 +108,28 @@ namespace Pathfinder {
     void process_line_segment(LineSegmentF p_line_segment,
                               SceneBuilderD3D9 &p_scene_builder,
                               ObjectBuilder &p_object_builder) {
-        // Clip the line segment if it falls outside the viewport.
-        // --------------------------------------------
-        // Viewport box.
-        const auto view_box = p_scene_builder.scene->view_box;
+        // Clip the line segment if it intersects the view box bounds.
+        {
+            // Clip by the view box.
+            auto clip_box = p_scene_builder.scene->view_box;
 
-        // Clip box by the viewport. Clipping doesn't happen to the top bound as the ray goes from that direction.
-        const auto clip_box = Rect<float>(Vec2<float>(view_box.min_x(), -std::numeric_limits<float>::infinity()),
-                                          view_box.lower_right());
+            // Clipping doesn't happen to the top bound as the ray goes from that direction.
+            clip_box.top = -std::numeric_limits<float>::infinity();
 
-        // Clip the line segment.
-        const auto inside_view = clip_line_segment_to_rect(p_line_segment, clip_box);
+            // Clip the line segment.
+            const bool inside_view = clip_line_segment_to_rect(p_line_segment, clip_box);
 
-        // If the line segment falls outside the view box, no need to process it.
-        if (!inside_view)
-            return;
-        // --------------------------------------------
+            // If the line segment falls outside the clip box, no need to process it.
+            if (!inside_view)
+                return;
+        }
 
         // Tile size.
         const auto tile_size = Vec2<float>(TILE_WIDTH, TILE_HEIGHT);
 
         F32x4 tile_line_segment = p_line_segment.value * F32x4::splat(1.0f / TILE_WIDTH);
 
-        // Tile the line segment, get the tile coords (index) of the from and to points (usually in the same tile).
+        // Tile the line segment, get the tile coords (index) of the FROM and TO points.
         const auto from_tile_coords = tile_line_segment.xy().floor();
         const auto to_tile_coords = tile_line_segment.zw().floor();
 
@@ -140,7 +139,7 @@ namespace Pathfinder {
         // Step is the direction to advance the tile.
         const auto step = Vec2<int>(vector.x < 0 ? -1 : 1, vector.y < 0 ? -1 : 1);
 
-        // Real coordinates of the first tile crossing.
+        // Real coordinates of the top left of the first tile crossing.
         // Compute `first_tile_crossing = (from_tile_coords + vec2i(vector.x >= 0 ? 1 : 0, vector.y >= 0 ? 1 : 0)) * tile_size`.
         const auto first_tile_crossing = (from_tile_coords.to_float()
                                           + Vec2<float>(vector.x >= 0 ? 1 : 0, vector.y >= 0 ? 1 : 0)) * tile_size;
@@ -211,6 +210,7 @@ namespace Pathfinder {
             p_object_builder.add_fill(p_scene_builder, clipped_line_segment, tile_coords);
 
             // Add extra fills if necessary.
+            // This happens when the segment crosses boundaries vertically, in which we need two quad fills to describe it.
             if (step.y < 0 && next_step_direction == StepDirection::Y) {
                 // Leave the current tile through its top boundary.
                 const auto auxiliary_segment = LineSegmentF(clipped_line_segment.to(),
@@ -223,7 +223,7 @@ namespace Pathfinder {
                 p_object_builder.add_fill(p_scene_builder, auxiliary_segment, tile_coords);
             }
 
-            // Core step. Adjust backdrop (i.e. winding) if necessary.
+            // Adjust backdrop (i.e. winding) if necessary.
             if (step.x < 0 && last_step_direction == StepDirection::X) {
                 // Enter a new tile through its right boundary.
                 p_object_builder.adjust_alpha_tile_backdrop(tile_coords, 1);
@@ -317,6 +317,7 @@ namespace Pathfinder {
     }
 
     void Tiler::prepare_tiles() {
+        // Prepared previously by generate_fills().
         auto &backdrops = object_builder.built_path.data.backdrops;
         auto &tiles = object_builder.built_path.data.tiles;
 

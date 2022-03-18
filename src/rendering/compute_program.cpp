@@ -45,10 +45,6 @@ namespace Pathfinder {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding_point, buffer_id);
     }
 
-    void ComputeProgram::unbind_general_buffer(unsigned int binding_point) {
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding_point, 0);
-    }
-
     void ComputeProgram::bind_image(unsigned int binding_point, unsigned int texture_id, int access_mode, int format) const {
         glBindImageTexture(binding_point, texture_id, 0, GL_FALSE, 0, access_mode, format);
     }
@@ -63,7 +59,7 @@ namespace Pathfinder {
         // Max local (in one shader) work group sizes x:1536 y:1024 z:64.
         glDispatchCompute(group_size_x, group_size_y, group_size_z);
 
-        // This is to use timestamps more precisely.
+        // In order to use timestamps more precisely.
 #ifdef PATHFINDER_DEBUG
         glFinish();
 #endif

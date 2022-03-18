@@ -22,9 +22,6 @@ namespace Pathfinder {
         /// Bind a general buffer to a binding point.
         void bind_general_buffer(unsigned int binding_point, uint64_t buffer_id);
 
-        /// Unbind general buffer.
-        void unbind_general_buffer(unsigned int binding_point);
-
         void bind_image(unsigned int binding_point, unsigned int texture_id, int access_mode, int format) const;
 
         /// Launch computing.

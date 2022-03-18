@@ -13,7 +13,7 @@ namespace Pathfinder {
 
     /// A vector of this will be sent to the fill program.
     struct Fill {
-        LineSegmentU16 line_segment; // 8 bytes
+        LineSegmentU16 line_segment;
 
         /// Index of the alpha tile that this fill belongs to.
         uint32_t link;
