@@ -5,7 +5,6 @@
 #ifndef PATHFINDER_IMAGE_H
 #define PATHFINDER_IMAGE_H
 
-#include "device.h"
 #include "device_gl.h"
 #include "../common/math/rect.h"
 #include "../common/global_macros.h"

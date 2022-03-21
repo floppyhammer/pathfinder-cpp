@@ -5,7 +5,6 @@
 #ifndef PATHFINDER_DEVICE_GL_H
 #define PATHFINDER_DEVICE_GL_H
 
-#include "device.h"
 #include "../common/math/basic.h"
 #include "../common/global_macros.h"
 #include "../common/logger.h"
@@ -13,13 +12,33 @@
 #include <vector>
 
 namespace Pathfinder {
-// glVertexAttribDivisor() won't work in PowerVR.
-#if defined(PATHFINDER_INTEGRATE_IN_VT2D) && defined(_WIN32)
-#define glVertexAttribDivisor glVertexBindingDivisor
-#endif
-
     // (For general buffer) Everything above 16 MB is allocated exactly.
     const uint64_t MAX_BUFFER_SIZE_CLASS = 16 * 1024 * 1024;
+
+    /// Format in GPU memory.
+    enum class TextureFormat {
+        RGBA = GL_RGBA,
+        RGBA8 = GL_RGBA8,
+        RGBA16F = GL_RGBA16F,
+    };
+
+    /// Format in CPU memory.
+    enum class PixelDataFormat {
+        RED = GL_RED,
+        RGBA = GL_RGBA,
+    };
+
+    enum class ShaderKind {
+        Vertex,
+        Fragment,
+        Compute,
+    };
+
+    enum class DeviceType {
+        GL3, // Or ES 3.0
+        GL4, // Or ES 3.1
+        Metal,
+    };
 
     enum class DataType {
         // Integers.

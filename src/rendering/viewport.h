@@ -5,7 +5,6 @@
 #ifndef PATHFINDER_VIEWPORT_H
 #define PATHFINDER_VIEWPORT_H
 
-#include "device.h"
 #include "texture.h"
 #include "../common/color.h"
 
