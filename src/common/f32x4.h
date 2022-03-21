@@ -1,5 +1,5 @@
 //
-// Created by chy on 8/3/2021.
+// Created by floppyhammer on 8/3/2021.
 //
 
 #ifndef PATHFINDER_F32X4_H

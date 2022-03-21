@@ -1,5 +1,5 @@
 //
-// Created by chy on 8/3/2021.
+// Created by floppyhammer on 8/3/2021.
 //
 
 #ifndef PATHFINDER_GLOBAL_MACROS_H
@@ -12,13 +12,10 @@
 //#define PATHFINDER_DEBUG
 
 // This is optional for the native demo, as we can access shader files directly.
-#define PATHFINDER_SHIP_SHADERS
+//#define PATHFINDER_SHIP_SHADERS
 
 // Enable building scene in parallel.
 #define PATHFINDER_OPENMP_THREADS 4
-
-// Enable this when integrated in VT2D.
-//#define PATHFINDER_INTEGRATE_IN_VT2D
 
 #define PATHFINDER_SHADER_DIR "../src/shaders/"
 #define PATHFINDER_RES_DIR "../res/"
@@ -41,11 +38,12 @@
 #endif
 #endif
 
-// Disable SIMD for x86 build.
+// Disable SIMD for x86 build as it doesn't work.
 #ifdef PATHFINDER_64BIT
 #define PATHFINDER_SIMD_ENABLED
 #endif
 
+// OpenGL headers.
 #ifdef __ANDROID__
 #ifdef PATHFINDER_USE_D3D11
 #include <GLES3/gl31.h>
@@ -53,14 +51,8 @@
 #include <GLES3/gl3.h>
 #endif
 #else
-#ifdef PATHFINDER_INTEGRATE_IN_VT2D
-#include "vtglcommon.hpp"
-#else
-
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
-#endif
 #endif
 
 #endif //PATHFINDER_GLOBAL_MACROS_H

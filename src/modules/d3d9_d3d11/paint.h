@@ -1,5 +1,5 @@
 //
-// Created by chy on 9/27/2021.
+// Created by floppyhammer on 9/27/2021.
 //
 
 #ifndef PATHFINDER_PAINT_H

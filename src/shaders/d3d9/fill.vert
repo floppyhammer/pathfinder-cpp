@@ -16,21 +16,23 @@ uniform vec2 uTileSize; // (16, 16), fixed size.
 
 layout(location=0) in uvec2 aTessCoord; // Vertex coordinates in a quad, fixed.
 layout(location=1) in uvec4 aLineSegment; // Line segment from the built batch.
-layout(location=2) in uint aTileIndex; // Tile index.
+layout(location=2) in uint aTileIndex; // Alpha tile index.
 
 out vec2 vFrom;
 out vec2 vTo;
 
-/// Tile index -> tile coordinates -> world coordinates.
+/// Tile index -> index coordinates -> pixel coordinates.
 vec2 computeTileOffset(uint tileIndex, float stencilTextureWidth, vec2 tileSize) {
     // Tiles count per row in the mask texture.
     uint tilesPerRow = uint(stencilTextureWidth / tileSize.x);
 
-    // Tile coordinates.
+    // Tile index coordinates.
     uvec2 tileOffset = uvec2(tileIndex % tilesPerRow, tileIndex / tilesPerRow);
 
-    // vec2(1.0, 0.25) because of stroing data in RGBA channels?
-    return vec2(tileOffset) * tileSize * vec2(1.0, 0.25);
+    // Pixel coordinates of the tile's origin.
+    // We compress data into RGBA channels in the vertical direction.
+    // That's why we have vec2(1.0f, 0.25f) here.
+    return vec2(tileOffset) * tileSize * vec2(1.0f, 0.25f);
 }
 
 vec4 computeVertexPosition(uint tileIndex,
@@ -40,28 +42,33 @@ vec4 computeVertexPosition(uint tileIndex,
                            vec2 framebufferSize,
                            out vec2 outFrom,
                            out vec2 outTo) {
-    // World coordinates of the tile in the mask texture.
+    // Pixel coordinates of the tile's origin in the mask texture.
     vec2 tileOrigin = computeTileOffset(tileIndex, framebufferSize.x, tileSize);
 
     // Unpack the packed integer line segment to a unpacked float one by dividing it by 256.0.
+    // 256.0f is used to convert integers back to floats.
     vec4 lineSegment = vec4(packedLineSegment) / 256.0f;
+
+    // This is in the local coordinates of the tile.
     vec2 from = lineSegment.xy, to = lineSegment.zw;
 
-    // Local position to the tile.
+    // This is also in the local coordinates of the tile.
     vec2 position;
 
-    // Default quad -> bound rect of the line segment.
+    // CORE STEP
+    // Default square quad -> the fill quad encircled by the line segment, the bottom bound of the tile,
+    // and two vertical auxiliary segments.
     if (tessCoord.x == 0u)
-        position.x = floor(min(from.x, to.x));
+        position.x = floor(min(from.x, to.x)); // Left
     else
-        position.x = ceil(max(from.x, to.x));
+        position.x = ceil(max(from.x, to.x)); // Right
 
     if (tessCoord.y == 0u)
-        position.y = floor(min(from.y, to.y));
+        position.y = floor(min(from.y, to.y)); // Top
     else
-        position.y = tileSize.y; // Scanline from above.
+        position.y = tileSize.y; // Bottom, which is always the bottom bound of the tile.
 
-    // Compress the rows.
+    // Compress the fill quad in the vertical direction.
     position.y = floor(position.y * 0.25);
 
     // Since each fragment corresponds to 4 pixels on a scanline, the varying interpolation will
@@ -72,7 +79,7 @@ vec4 computeVertexPosition(uint tileIndex,
     outFrom = from + offset;
     outTo = to + offset;
 
-    // Global screen position -> normalized viewport position.
+    // Global pixel position -> normalized UV position.
     vec2 globalPosition = (tileOrigin + position) / framebufferSize * 2.0 - 1.0;
 
     return vec4(globalPosition, 0.0, 1.0);

@@ -40,7 +40,7 @@ out vec4 vFilterParams3;
 out vec4 vFilterParams4;
 out float vCtrl;
 
-/// Fetch data from texture.
+/// Fetch data from the metadata texture.
 vec4 fetchUnscaled(sampler2D srcTexture, vec2 scale, vec2 originCoord, int entry) {
     // Integer metadataEntryCoord needs to be scaled, because texture() only accepts float UV coordinates.
     return texture(srcTexture, (originCoord + vec2(0.5) + vec2(entry, 0)) * scale);
@@ -69,7 +69,8 @@ void computeTileVaryings(vec2 position, uint colorEntry, sampler2D textureMetada
     vec4 filterParams4   = fetchUnscaled(textureMetadata, metadataScale, metadataEntryCoord, 7);
     vec4 extra           = fetchUnscaled(textureMetadata, metadataScale, metadataEntryCoord, 8); // Blend and composite options.
 
-    // Set color texture coordinates. I don't understand.
+    // Set color texture coordinates.
+    // TODO(floppyhammer): I don't understand this step.
     outColorTexCoord0 = mat2(colorTexMatrix0) * position + colorTexOffsets.xy;
 
     // Set base color.

@@ -1,5 +1,5 @@
 //
-// Created by chy on 7/9/2021.
+// Created by floppyhammer on 7/9/2021.
 //
 
 #ifndef PATHFINDER_D3D9_ALPHA_TILE_ID_H

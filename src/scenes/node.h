@@ -1,5 +1,5 @@
 //
-// Created by chy on 6/2/2021.
+// Created by floppyhammer on 6/2/2021.
 //
 
 #ifndef PATHFINDER_NODE_H

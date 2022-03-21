@@ -1,5 +1,5 @@
 //
-// Created by chy on 7/6/2021.
+// Created by floppyhammer on 7/6/2021.
 //
 
 #ifndef PATHFINDER_STROKE_H

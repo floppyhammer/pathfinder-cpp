@@ -1,5 +1,5 @@
 //
-// Created by chy on 2021/11/15.
+// Created by floppyhammer on 2021/11/15.
 //
 
 #ifndef PATHFINDER_PATTERN_H

@@ -1,5 +1,5 @@
 //
-// Created by chy on 6/19/2021.
+// Created by floppyhammer on 6/19/2021.
 //
 
 #ifndef PATHFINDER_D3D9_RENDERER_H

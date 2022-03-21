@@ -1,5 +1,5 @@
 //
-// Created by chy on 8/26/2021.
+// Created by floppyhammer on 8/26/2021.
 //
 
 #ifndef PATHFINDER_DEVICE_GL_H

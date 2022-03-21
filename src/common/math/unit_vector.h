@@ -1,5 +1,5 @@
 //
-// Created by chy on 7/9/2021.
+// Created by floppyhammer on 7/9/2021.
 //
 
 #ifndef PATHFINDER_UNIT_VECTOR_H

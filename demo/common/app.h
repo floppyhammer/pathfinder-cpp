@@ -1,5 +1,5 @@
 //
-// Created by chy on 2/24/2022.
+// Created by floppyhammer on 2/24/2022.
 //
 
 #ifndef PATHFINDER_DEMO_APP_H

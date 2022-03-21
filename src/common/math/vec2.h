@@ -1,5 +1,5 @@
 //
-// Created by chy on 7/5/2021.
+// Created by floppyhammer on 7/5/2021.
 //
 
 #ifndef PATHFINDER_VEC2_H
