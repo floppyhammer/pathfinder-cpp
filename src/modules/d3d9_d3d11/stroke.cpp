@@ -48,6 +48,7 @@ namespace Pathfinder {
         std::reverse(segments.begin(), segments.end());
 
         for (int segment_index = 0; segment_index < segments.size(); segment_index++) {
+            // Reverse the segment.
             auto segment = segments[segment_index].reversed();
 
             // FIXME(pcwalton): We negate the radius here so that round end caps can be drawn clockwise.
@@ -59,7 +60,7 @@ namespace Pathfinder {
     }
 
     ShapeStrokeToFill::ShapeStrokeToFill(const Shape &p_input, StrokeStyle p_style)
-    : input(p_input), style(p_style) {}
+            : input(p_input), style(p_style) {}
 
     void ShapeStrokeToFill::offset() {
         // Resulting paths.
@@ -111,8 +112,8 @@ namespace Pathfinder {
     }
 
     void ShapeStrokeToFill::push_stroked_path(std::vector<Path> &new_contours,
-                                                 PathStrokeToFill stroker,
-                                                 bool closed) const {
+                                              PathStrokeToFill stroker,
+                                              bool closed) const {
         // Add join if necessary.
         if (closed && stroker.output.might_need_join(style.line_join)) {
             auto p1 = stroker.output.points[1];
@@ -361,14 +362,10 @@ namespace Pathfinder {
     }
 
     Segment Segment::reversed() const {
-        LineSegmentF new_ctrl;
-        if (is_quadratic()) {
-            new_ctrl = ctrl;
-        } else {
-            new_ctrl = ctrl.reversed();
-        }
+        // We only need to reverse the control points for cubic curves.
+        LineSegmentF new_ctrl = is_cubic() ? ctrl.reversed() : ctrl;
 
-        return { baseline.reversed(), new_ctrl, kind, flags };
+        return {baseline.reversed(), new_ctrl, kind, flags};
     }
 
     bool Segment::error_is_within_tolerance(const Segment &other, float distance) const {

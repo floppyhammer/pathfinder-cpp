@@ -25,6 +25,7 @@ in vec2 vTo;
 out vec4 oFragColor;
 
 /// Understanding this process is quite hard as we need to understand the areaLUT texture first.
+/// But I guess areaLUT is mostly used for anti-aliasing.
 vec4 computeCoverage(vec2 from, vec2 to, sampler2D areaLUT) {
     // Determine winding, and sort into a consistent order so we only need to find one root below.
     vec2 left = from.x < to.x ? from : to, right = from.x < to.x ? to : from;

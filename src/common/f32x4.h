@@ -7,6 +7,7 @@
 
 #include "math/vec2.h"
 #include "global_macros.h"
+#include "logger.h"
 
 #undef min
 #undef max
@@ -91,7 +92,15 @@ namespace Pathfinder {
         }
 
         inline F32x4 zwxy() const {
-            // FIXME: Causes crash for 32-bit build.
+            // Fix the memory alignment issue on 32-bit machines,
+            // which might be caused by using std::vector to hold Segments.
+            // Check if the memory address is 16-byte aligned.
+            if (((intptr_t)&v & 0xF) != 0) {
+                //Logger::error("__m128 memory is not 16-byte aligned!", "SIMD");
+                auto aligned = v;
+                return F32x4(_mm_shuffle_ps(aligned, aligned, 78));
+            }
+
             // 78 = _MM_SHUFFLE(1, 0, 3, 2)
             return F32x4(_mm_shuffle_ps(v, v, 78));
         }

@@ -11,37 +11,16 @@
 // Enable DEBUG mode, in which we will check for GL errors. Influencing performance.
 //#define PATHFINDER_DEBUG
 
-// This is optional for the native demo, as we can access shader files directly.
-//#define PATHFINDER_SHIP_SHADERS
-
 // Enable building scene in parallel.
 #define PATHFINDER_OPENMP_THREADS 4
 
+// Enable SIMD.
+#define PATHFINDER_SIMD_ENABLED
+
+// This is optional for the native demo, as we can access shader files directly.
+#define PATHFINDER_SHIP_SHADERS
 #define PATHFINDER_SHADER_DIR "../src/shaders/"
 #define PATHFINDER_RES_DIR "../res/"
-
-// Check bits for MSVC.
-#if _WIN32 || _WIN64
-#if _WIN64
-#define PATHFINDER_64BIT
-#else
-#define PATHFINDER_32BIT
-#endif
-#endif
-
-// Check bits for GCC.
-#if __GNUC__
-#if __x86_64__ || __ppc64__
-#define PATHFINDER_64BIT
-#else
-#define PATHFINDER_32BIT
-#endif
-#endif
-
-// Disable SIMD for x86 build as it doesn't work.
-#ifdef PATHFINDER_64BIT
-#define PATHFINDER_SIMD_ENABLED
-#endif
 
 // OpenGL headers.
 #ifdef __ANDROID__
