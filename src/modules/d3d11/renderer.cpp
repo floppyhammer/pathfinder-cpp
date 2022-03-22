@@ -495,8 +495,8 @@ namespace Pathfinder {
         bound_program->set_int("uTileCount", tile_count);
 
         // Bind storage buffers.
-        fill_program->bind_general_buffer(0, path_info_buffer_id);
-        fill_program->bind_general_buffer(1, tiles_d3d11_buffer_id);
+        bound_program->bind_general_buffer(0, path_info_buffer_id);
+        bound_program->bind_general_buffer(1, tiles_d3d11_buffer_id);
 
         bound_program->dispatch((tile_count + BOUND_WORKGROUP_SIZE - 1) / BOUND_WORKGROUP_SIZE);
 
@@ -527,12 +527,12 @@ namespace Pathfinder {
         bin_program->set_int("uMaxFillCount", allocated_fill_count);
 
         // Bind storage buffers.
-        fill_program->bind_general_buffer(0, microlines_storage.buffer_id);
-        fill_program->bind_general_buffer(1, propagate_metadata_buffer_ids.propagate_metadata);
-        fill_program->bind_general_buffer(2, z_buffer_id);
-        fill_program->bind_general_buffer(3, fill_vertex_buffer_id);
-        fill_program->bind_general_buffer(4, tiles_d3d11_buffer_id);
-        fill_program->bind_general_buffer(5, propagate_metadata_buffer_ids.backdrops);
+        bin_program->bind_general_buffer(0, microlines_storage.buffer_id);
+        bin_program->bind_general_buffer(1, propagate_metadata_buffer_ids.propagate_metadata);
+        bin_program->bind_general_buffer(2, z_buffer_id);
+        bin_program->bind_general_buffer(3, fill_vertex_buffer_id);
+        bin_program->bind_general_buffer(4, tiles_d3d11_buffer_id);
+        bin_program->bind_general_buffer(5, propagate_metadata_buffer_ids.backdrops);
 
         bin_program->dispatch((microlines_storage.count + 63) / 64);
 
