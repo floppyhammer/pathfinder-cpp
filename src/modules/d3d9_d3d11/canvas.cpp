@@ -445,7 +445,7 @@ namespace Pathfinder {
             }
 
 //            set_shadow_color(ColorU::green());
-//            set_shadow_blur(16);
+//            set_shadow_blur(8);
 
             // Set dash.
             set_line_dash_offset(nsvg_shape->strokeDashOffset);

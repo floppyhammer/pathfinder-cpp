@@ -146,7 +146,7 @@ namespace Pathfinder {
 
         void draw_tiles(uint64_t tiles_d3d11_buffer_id,
                         uint64_t first_tile_map_buffer_id,
-                        const RenderTarget &viewport,
+                        const RenderTarget &target_viewport,
                         const RenderTarget &color_texture);
 
         void upload_initial_backdrops(uint64_t backdrops_buffer_id,
@@ -170,7 +170,8 @@ namespace Pathfinder {
 
         Vec2<int> framebuffer_tile_size();
 
-        std::shared_ptr<Viewport> mask_viewport;
+        // Unlike D3D9, we only need a mask texture instead of a mask viewport.
+        std::shared_ptr<Texture> mask_texture;
 
         std::shared_ptr<ComputeProgram> bound_program;
         std::shared_ptr<ComputeProgram> dice_program;

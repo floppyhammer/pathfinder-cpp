@@ -5,6 +5,8 @@
 #ifndef PATHFINDER_BASIC_MATH_H
 #define PATHFINDER_BASIC_MATH_H
 
+#include <cstdint>
+
 namespace Pathfinder {
     const float PI = 3.141592653589f;
 

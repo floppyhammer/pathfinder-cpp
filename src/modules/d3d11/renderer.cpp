@@ -148,10 +148,10 @@ namespace Pathfinder {
         allocated_fill_count = INITIAL_ALLOCATED_FILL_COUNT;
 
         // Unlike D3D9, we use RGBA8 here instead of RGBA16F.
-        mask_viewport = std::make_shared<Viewport>(MASK_FRAMEBUFFER_WIDTH,
-                                                   MASK_FRAMEBUFFER_HEIGHT,
-                                                   TextureFormat::RGBA8,
-                                                   DataType::UNSIGNED_BYTE);
+        mask_texture = std::make_shared<Texture>(MASK_FRAMEBUFFER_WIDTH,
+                                                 MASK_FRAMEBUFFER_HEIGHT,
+                                                 TextureFormat::RGBA8,
+                                                 DataType::UNSIGNED_BYTE);
     }
 
     void RendererD3D11::draw(SceneBuilderD3D11 &scene_builder) {
@@ -197,31 +197,29 @@ namespace Pathfinder {
 
     void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
                                    uint64_t first_tile_map_buffer_id,
-                                   const RenderTarget &viewport,
+                                   const RenderTarget &target_viewport,
                                    const RenderTarget &color_texture) {
+        // The framebuffer mentioned here is different from the target viewport.
+        // This doesn't change as long as the destination texture's size doesn't change.
         auto framebuffer_tile_size0 = framebuffer_tile_size();
 
-        // Get the texture ID bound to the destination FBO.
-//        glBindFramebuffer(GL_FRAMEBUFFER, dest_fbo_id);
-//        int dest_texture_id = 0;
-//        glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER,
-//                                              GL_COLOR_ATTACHMENT0,
-//                                              GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME,
-//                                              &dest_texture_id);
-
-        Vec2<int> viewport_size0;
-        int dest_texture_id = 0;
-        // If no specific RenderTarget is given.
-        if (viewport.framebuffer_id == 0) {
-            viewport_size0 = viewport_size;
-            dest_texture_id = dest_viewport->get_texture_id();
+        // Decide render target.
+        Vec2<int> target_viewport_size;
+        int target_texture_id = 0;
+        int clear_op;
+        // If no specific RenderTarget is given, we render to the destination texture.
+        if (target_viewport.framebuffer_id == 0) {
+            target_viewport_size = viewport_size;
+            target_texture_id = dest_viewport->get_texture_id();
+            clear_op = LOAD_ACTION_LOAD;
         } else {
-            viewport_size0 = viewport.size;
-            glBindFramebuffer(GL_FRAMEBUFFER, viewport.framebuffer_id);
+            target_viewport_size = target_viewport.size;
+            glBindFramebuffer(GL_FRAMEBUFFER, target_viewport.framebuffer_id);
             glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER,
                                       GL_COLOR_ATTACHMENT0,
                                       GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME,
-                                      &dest_texture_id);
+                                      &target_texture_id);
+            clear_op = LOAD_ACTION_CLEAR;
         }
 
         tile_program->use();
@@ -230,15 +228,15 @@ namespace Pathfinder {
         tile_program->bind_texture(0, "uTextureMetadata", metadata_texture->get_texture_id());
         tile_program->bind_texture(1, "uZBuffer", 0);
         tile_program->bind_texture(2, "uColorTexture0", color_texture.texture_id);
-        tile_program->bind_texture(3, "uMaskTexture0", mask_viewport->get_texture_id());
+        tile_program->bind_texture(3, "uMaskTexture0", mask_texture->get_texture_id());
         tile_program->bind_texture(4, "uGammaLUT", 0);
 
         // Bind dest image.
-        tile_program->bind_image(0, dest_texture_id, GL_READ_WRITE, GL_RGBA8);
+        tile_program->bind_image(0, target_texture_id, GL_READ_WRITE, GL_RGBA8);
 
         // Set uniforms.
-        tile_program->set_int("uLoadAction", LOAD_ACTION_CLEAR);
-        tile_program->set_vec4("uClearColor", 0, 0, 0, 0);
+        tile_program->set_int("uLoadAction", clear_op); // If we should clear the dest texture.
+        tile_program->set_vec4("uClearColor", 0, 0, 0, 0); // Clear color for the above op.
         tile_program->set_vec2("uTileSize", TILE_WIDTH, TILE_HEIGHT);
         tile_program->set_vec2("uTextureMetadataSize",
                                TEXTURE_METADATA_TEXTURE_WIDTH,
@@ -249,8 +247,8 @@ namespace Pathfinder {
         } else {
             tile_program->set_vec2("uColorTextureSize0", 0, 0);
         }
-        tile_program->set_vec2("uMaskTextureSize0", mask_viewport->get_width(), mask_viewport->get_height());
-        tile_program->set_vec2("uFramebufferSize", viewport_size0.x, viewport_size0.y);
+        tile_program->set_vec2("uMaskTextureSize0", mask_texture->get_width(), mask_texture->get_height());
+        tile_program->set_vec2("uFramebufferSize", target_viewport_size.x, target_viewport_size.y);
         tile_program->set_vec2i("uFramebufferTileSize", framebuffer_tile_size0.x, framebuffer_tile_size0.y);
 
         tile_program->bind_general_buffer(0, tiles_d3d11_buffer_id);
@@ -633,7 +631,7 @@ namespace Pathfinder {
 
         // Bind dest image.
         // We need to use imageLoad if we do clip.
-        fill_program->bind_image(0, mask_viewport->get_texture_id(), GL_READ_WRITE, GL_RGBA8);
+        fill_program->bind_image(0, mask_texture->get_texture_id(), GL_READ_WRITE, GL_RGBA8);
 
         // Set uniforms.
         fill_program->set_vec2i("uAlphaTileRange",

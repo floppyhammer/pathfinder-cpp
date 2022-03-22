@@ -1,5 +1,5 @@
-//#version 430
-#version 310 es
+#version 430
+//#version 310 es
 
 precision highp float;
 
@@ -742,8 +742,8 @@ void main() {
             destColors[subY] = uClearColor;
         } else {
             // No simultaneous READ & WRITE for Image on GLES.
-            //ivec2 imageCoords = toImageCoords(firstFragCoord + ivec2(0, subY));
-            //destColors[subY] = imageLoad(uDestImage, imageCoords);
+            ivec2 imageCoords = toImageCoords(firstFragCoord + ivec2(0, subY));
+            destColors[subY] = imageLoad(uDestImage, imageCoords);
         }
     }
 
