@@ -1,8 +1,8 @@
 # Build results
-bin/
+bin
 
 # Jetbrains IDEs
-.idea/
+.idea
 
 # CLion outputs
 cmake-build-debug
@@ -11,8 +11,11 @@ cmake-build-release
 # NDK outputs
 ndk/obj
 
+# Generated shaders
+src/shaders/minified
+
 # Android demo
-demo/android/app/src/main/cpp/demo/
-demo/android/app/src/main/cpp/lib/
-demo/android/app/src/main/cpp/src/
-demo/android/app/src/main/cpp/thrid_party/
+demo/android/app/src/main/cpp/demo
+demo/android/app/src/main/cpp/lib
+demo/android/app/src/main/cpp/src
+demo/android/app/src/main/cpp/thrid_party
