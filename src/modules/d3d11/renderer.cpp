@@ -534,7 +534,7 @@ namespace Pathfinder {
         bin_program->bind_general_buffer(4, tiles_d3d11_buffer_id);
         bin_program->bind_general_buffer(5, propagate_metadata_buffer_ids.backdrops);
 
-        bin_program->dispatch((microlines_storage.count + 63) / 64);
+        bin_program->dispatch((microlines_storage.count + BIN_WORKGROUP_SIZE - 1) / BIN_WORKGROUP_SIZE);
 
         DeviceGl::read_general_buffer<uint32_t>(
                 z_buffer_id,
