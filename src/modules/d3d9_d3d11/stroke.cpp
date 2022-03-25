@@ -17,10 +17,11 @@ namespace Pathfinder {
 
     const float EPSILON = 0.001;
 
-    PathStrokeToFill::PathStrokeToFill(Path p_input, float p_radius, LineJoin p_join)
+    PathStrokeToFill::PathStrokeToFill(Path p_input, float p_radius, LineJoin p_join, float p_join_miter_limit)
             : input(std::move(p_input)),
               radius(p_radius),
-              join(p_join) {}
+              join(p_join),
+              join_miter_limit(p_join_miter_limit) {}
 
     void PathStrokeToFill::offset_forward() {
         auto segments_iter = SegmentsIter(input.points, input.flags, input.closed);
@@ -71,18 +72,20 @@ namespace Pathfinder {
             auto closed = path.closed;
 
             // Note that we need to pass radius instead of width.
-            auto stroker = PathStrokeToFill(path, style.line_width * 0.5f, style.line_join);
-
-            stroker.join_miter_limit = style.miter_limit;
+            auto stroker = PathStrokeToFill(path, style.line_width * 0.5f, style.line_join, style.miter_limit);
 
             // Scale the path up, forming an outer path.
             stroker.offset_forward();
 
-            // If closed (easy case), we can just use even-odd fill rule on the outer and inner paths to get the stroke fill.
+            // (Easy Case) If the path is closed, we can just use the even-odd fill rule
+            // on the outer and inner paths to get the enclosed stroke fill.
+            // (Complex Case) If the path is not closed, we need to merge the outer
+            // and inner paths into a single path.
+
             if (closed) {
                 push_stroked_path(new_paths, stroker, true);
-                stroker = PathStrokeToFill(path, style.line_width * 0.5f, style.line_join);
-            } else { // If not closed (hard case), we need to connect the outer and inner paths into a single path.
+                stroker = PathStrokeToFill(path, style.line_width * 0.5f, style.line_join, style.miter_limit);
+            } else { // Add a cap to the outer path.
                 add_cap(stroker.output);
             }
 
@@ -90,7 +93,7 @@ namespace Pathfinder {
             stroker.offset_backward();
 
             // If not closed, we need to connect the outer and inner paths.
-            if (!closed) {
+            if (!closed) { // Add a cap to the inner path.
                 add_cap(stroker.output);
             }
 
@@ -107,7 +110,7 @@ namespace Pathfinder {
         output.bounds = new_bounds;
     }
 
-    Shape ShapeStrokeToFill::into_outline() const {
+    Shape ShapeStrokeToFill::into_shape() const {
         return output;
     }
 

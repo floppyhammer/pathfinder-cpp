@@ -32,34 +32,39 @@ namespace Pathfinder {
 
     /// Path stroke to fill.
     struct PathStrokeToFill {
-        Path input;
-        Path output;
-        float radius;
-        LineJoin join;
-        float join_miter_limit = 10; // Only used when line join is miter.
-
-        PathStrokeToFill(Path p_input, float p_radius, LineJoin p_join);
+    public:
+        PathStrokeToFill(Path p_input, float p_radius, LineJoin p_join, float p_join_miter_limit);
 
         /// Scale the input path up, forming an outer path.
         void offset_forward();
 
         /// Scale the input path down, forming an inner path.
         void offset_backward();
+
+        Path input;
+        Path output;
+
+    private:
+        float radius;
+        LineJoin join;
+        float join_miter_limit = 10; // Only used when line join is miter.
     };
 
     /// Strokes a shape with a stroke style to produce a new shape.
     struct ShapeStrokeToFill {
-        const Shape &input;
-        Shape output{};
-        StrokeStyle style;
-
+    public:
         ShapeStrokeToFill(const Shape &p_input, StrokeStyle p_style);
 
         /// Performs the stroke operation.
         void offset();
 
-        /// Returns the resulting stroked outline. This should be called after `offset()`.
-        Shape into_outline() const;
+        /// Returns the stroked shape. This should be called after `offset()`.
+        Shape into_shape() const;
+
+    private:
+        const Shape &input;
+        Shape output{};
+        StrokeStyle style;
 
         void push_stroked_path(std::vector<Path> &new_contours, PathStrokeToFill stroker, bool closed) const;
 
