@@ -6,11 +6,11 @@
 #define PATHFINDER_LABEL_H
 
 #include "control.h"
-#include "../../modules/text/font.h"
-#include "../../modules/d3d9_d3d11/canvas.h"
-#include "../../modules/d3d9_d3d11/scene.h"
-#include "../../modules/d3d9/scene_builder.h"
-#include "../../modules/d3d9/renderer.h"
+#include "../font.h"
+#include "../../d3d9_d3d11/canvas.h"
+#include "../../d3d9_d3d11/scene.h"
+#include "../../d3d9/scene_builder.h"
+#include "../../d3d9/renderer.h"
 
 #include <cstdint>
 

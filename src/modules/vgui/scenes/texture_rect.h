@@ -6,9 +6,9 @@
 #define PATHFINDER_TEXTURE_RECT_H
 
 #include "control.h"
-#include "../../rendering/viewport.h"
-#include "../../rendering/texture.h"
-#include "../../rendering/raster_program.h"
+#include "../../../rendering/viewport.h"
+#include "../../../rendering/texture.h"
+#include "../../../rendering/raster_program.h"
 
 #include <memory>
 

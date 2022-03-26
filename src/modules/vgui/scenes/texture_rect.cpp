@@ -4,9 +4,9 @@
 
 #include "texture_rect.h"
 
-#include "../../common/math/basic.h"
-#include "../../common/math/mat4x4.h"
-#include "../../common/global_macros.h"
+#include "../../../common/math/basic.h"
+#include "../../../common/math/mat4x4.h"
+#include "../../../common/global_macros.h"
 
 namespace Pathfinder {
     TextureRect::TextureRect(float viewport_width, float viewport_height) {

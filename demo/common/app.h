@@ -6,9 +6,9 @@
 #define PATHFINDER_DEMO_APP_H
 
 #include "../../src/rendering/viewport.h"
-#include "../../src/scenes/gui/label.h"
-#include "../../src/scenes/gui/texture_rect.h"
 #include "../../src/modules/d3d9_d3d11/canvas.h"
+#include "../../src/modules/vgui/scenes/label.h"
+#include "../../src/modules/vgui/scenes/texture_rect.h"
 
 #include <chrono>
 

@@ -13,15 +13,14 @@ INCLUDE_PATH := $(LOCAL_PATH)/../../third_party
 # Source files.
 SRC_LIST := $(wildcard $(LOCAL_PATH)/../../src/common/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/common/math/*.cpp)
+SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/rendering/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/modules/d3d9/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/modules/d3d9/data/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/modules/d3d9_d3d11/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/modules/d3d9_d3d11/data/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/modules/d3d11/*.cpp)
-SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/modules/text/*.cpp)
-SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/rendering/*.cpp)
-SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/scenes/*.cpp)
-SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/scenes/gui/*.cpp)
+SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/modules/vgui/*.cpp)
+SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/modules/vgui/scenes/*.cpp)
 
 LOCAL_MODULE            := pathfinder_static
 LOCAL_MODULE_FILENAME   := libpathfinder # Prefix "lib" is needed.
