@@ -406,8 +406,6 @@ namespace Pathfinder {
             uint32_t batch_segment_count,
             PathSource path_source,
             Transform2 transform) {
-        Timestamp timestamp;
-
         // Allocate some general buffers.
         auto microlines_buffer_id = DeviceGl::allocate_general_buffer<MicrolineD3D11>(allocated_microline_count);
         auto dice_metadata_buffer_id = DeviceGl::allocate_general_buffer<DiceMetadataD3D11>(dice_metadata.size());

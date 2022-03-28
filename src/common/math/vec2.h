@@ -71,7 +71,7 @@ namespace Pathfinder {
             return x == 0 && y == 0;
         }
 
-        inline T area() {
+        inline T area() const {
             return x * y;
         }
 
