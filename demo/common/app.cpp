@@ -13,7 +13,7 @@ App::App(int window_width,
          std::vector<char> &font_input,
          const std::string &p_svg_input) {
     // Set logger level.
-    Pathfinder::Logger::set_level(Pathfinder::Logger::Level::WARN);
+    Pathfinder::Logger::set_level(Pathfinder::Logger::Level::DEBUG);
 
     // Set up a canvas.
     canvas = std::make_shared<Pathfinder::Canvas>(window_width,
