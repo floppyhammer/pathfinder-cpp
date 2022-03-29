@@ -343,19 +343,21 @@ namespace Pathfinder {
                 break;
         }
 
-        // Initialize tiles.
-        bound(tiles_d3d11_buffer_id,
-              batch.tile_count,
-              batch.prepare_info.tile_path_info);
-
-        // Upload backdrops data.
-        upload_initial_backdrops(propagate_metadata_buffer_ids.backdrops,
-                                 batch.prepare_info.backdrops);
-
-        // Bin segments. We might have to do this twice if our first
-        // attempt runs out of space in the fill buffer.
+        // Initialize tiles, bin segments. We might have to do this twice if our first
+        // attempt runs out of space in the fill buffer. If this is the case, we also
+        // need to re-initialize tiles and re-upload backdrops because they would have
+        // been modified during the first attempt.
         FillBufferInfoD3D11 fill_buffer_info{};
         for (int i = 0; i < 2; i++) {
+            // Initialize tiles.
+            bound(tiles_d3d11_buffer_id,
+                  batch.tile_count,
+                  batch.prepare_info.tile_path_info);
+
+            // Upload backdrops data.
+            upload_initial_backdrops(propagate_metadata_buffer_ids.backdrops,
+                                     batch.prepare_info.backdrops);
+
             fill_buffer_info = bin_segments(
                     microlines_storage,
                     propagate_metadata_buffer_ids,
