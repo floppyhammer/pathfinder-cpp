@@ -314,9 +314,6 @@ namespace Pathfinder {
     }
 
     void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
-        Timestamp timestamp;
-        timestamp.set_enabled(false);
-
         // Upload tiles to GPU or allocate them as appropriate.
         auto tiles_d3d11_buffer_id = DeviceGl::allocate_general_buffer<TileD3D11>(batch.tile_count);
 
@@ -331,35 +328,48 @@ namespace Pathfinder {
                 batch.prepare_info.propagate_metadata,
                 batch.prepare_info.backdrops);
 
-        // Dice (flatten) segments into micro-lines.
-        auto microlines_storage = dice_segments(
-                batch.prepare_info.dice_metadata,
-                batch.segment_count,
-                batch.path_source,
-                batch.prepare_info.transform);
+        // Dice (flatten) segments into micro-lines. We might have to do this twice if our
+        // first attempt runs out of space in the storage buffer.
+        MicrolinesBufferIDsD3D11 microlines_storage{};
+        for (int i = 0; i < 2; i++) {
+            microlines_storage = dice_segments(
+                    batch.prepare_info.dice_metadata,
+                    batch.segment_count,
+                    batch.path_source,
+                    batch.prepare_info.transform);
 
-        timestamp.record("dice_segments");
+            // If the microlines buffer has been allocated successfully.
+            if (microlines_storage.buffer_id != 0)
+                break;
+        }
 
         // Initialize tiles.
         bound(tiles_d3d11_buffer_id,
               batch.tile_count,
               batch.prepare_info.tile_path_info);
 
-        timestamp.record("bound");
-
+        // Upload backdrops data.
         upload_initial_backdrops(propagate_metadata_buffer_ids.backdrops,
                                  batch.prepare_info.backdrops);
 
-        auto fill_buffer_info = bin_segments(
-                microlines_storage,
-                propagate_metadata_buffer_ids,
-                tiles_d3d11_buffer_id,
-                z_buffer_id);
+        // Bin segments. We might have to do this twice if our first
+        // attempt runs out of space in the fill buffer.
+        FillBufferInfoD3D11 fill_buffer_info{};
+        for (int i = 0; i < 2; i++) {
+            fill_buffer_info = bin_segments(
+                    microlines_storage,
+                    propagate_metadata_buffer_ids,
+                    tiles_d3d11_buffer_id,
+                    z_buffer_id);
+
+            // If the fill buffer has been allocated successfully.
+            if (fill_buffer_info.fill_vertex_buffer_id != 0) {
+                break;
+            }
+        }
 
         // Free microlines storage as it's not needed anymore.
         DeviceGl::free_general_buffer(microlines_storage.buffer_id);
-
-        timestamp.record("bin_segments");
 
         auto alpha_tiles_buffer_id = allocate_alpha_tile_info(batch.tile_count);
 
@@ -373,8 +383,6 @@ namespace Pathfinder {
 
         DeviceGl::free_general_buffer(propagate_metadata_buffer_ids.backdrops);
 
-        timestamp.record("propagate_tiles");
-
         draw_fills(fill_buffer_info,
                    tiles_d3d11_buffer_id,
                    alpha_tiles_buffer_id,
@@ -383,13 +391,8 @@ namespace Pathfinder {
         DeviceGl::free_general_buffer(fill_buffer_info.fill_vertex_buffer_id);
         DeviceGl::free_general_buffer(alpha_tiles_buffer_id);
 
-        timestamp.record("draw_fills");
-
         // FIXME(pcwalton): This seems like the wrong place to do this...
         sort_tiles(tiles_d3d11_buffer_id, first_tile_map_buffer_id, z_buffer_id);
-
-        timestamp.record("sort_tiles");
-        timestamp.print();
 
         tile_batch_info.insert(tile_batch_info.begin() + batch.batch_id,
                                TileBatchInfoD3D11{
@@ -470,7 +473,11 @@ namespace Pathfinder {
         // Allocate more space if not allocated enough.
         if (microline_count > allocated_microline_count) {
             allocated_microline_count = upper_power_of_two(microline_count);
-            return MicrolinesBufferIDsD3D11{0, 0};
+
+            // We need a larger buffer, but we should free the old one first.
+            DeviceGl::free_general_buffer(microlines_buffer_id);
+
+            return {0, 0};
         }
 
         return {microlines_buffer_id, microline_count};
@@ -479,6 +486,7 @@ namespace Pathfinder {
     void RendererD3D11::bound(uint64_t tiles_d3d11_buffer_id,
                               uint32_t tile_count,
                               std::vector<TilePathInfoD3D11> &tile_path_info) {
+        // This is a staging buffer, which will be freed in the end of this function.
         auto path_info_buffer_id = DeviceGl::allocate_general_buffer<TilePathInfoD3D11>(tile_path_info.size());
 
         DeviceGl::upload_to_general_buffer<TilePathInfoD3D11>(path_info_buffer_id,
@@ -506,6 +514,7 @@ namespace Pathfinder {
             PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids,
             uint64_t tiles_d3d11_buffer_id,
             uint64_t z_buffer_id) {
+        // What will be the output of this function.
         auto fill_vertex_buffer_id = DeviceGl::allocate_general_buffer<Fill>(allocated_fill_count);
 
         // Upload fill indirect draw params to header of the Z-buffer.
@@ -540,9 +549,16 @@ namespace Pathfinder {
                 indirect_draw_params,
                 8);
 
+        // How many fills we need.
         auto needed_fill_count = indirect_draw_params[FILL_INDIRECT_DRAW_PARAMS_INSTANCE_COUNT_INDEX];
+
+        // If we didn't allocate enough space for the needed fills, we need to call this function again.
         if (needed_fill_count > allocated_fill_count) {
             allocated_fill_count = upper_power_of_two(needed_fill_count);
+
+            // We need a larger buffer, but we should free the old one first.
+            DeviceGl::free_general_buffer(fill_vertex_buffer_id);
+
             return {};
         }
 

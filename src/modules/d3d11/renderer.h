@@ -106,8 +106,7 @@ namespace Pathfinder {
          * @param tiles_d3d11_buffer_id
          * @param tile_count
          * @param tile_path_info
-         * @note COMPUTE READ path_info_buffer_id from tile_path_info
-         * @note COMPUTE WRITE tiles_d3d11_buffer_id
+         * @BufferWrite Tiles buffer
          */
         void bound(uint64_t tiles_d3d11_buffer_id,
                    uint32_t tile_count,
@@ -116,8 +115,8 @@ namespace Pathfinder {
         /**
          * Dice (flatten) segments into micro-lines. We might have to do this twice if our
          * first attempt runs out of space in the storage buffer.
-         * COMPUTE IN Other buffers
-         * COMPUTE OUT Fill vertex buffer
+         * @BufferRead Microlines buffer, propagate metadata buffers, tiles buffer, z buffer
+         * @BufferWrite Fill vertex buffer
          */
         FillBufferInfoD3D11 bin_segments(
                 MicrolinesBufferIDsD3D11 &microlines_storage,
