@@ -331,7 +331,7 @@ namespace Pathfinder {
         // Dice (flatten) segments into micro-lines. We might have to do this twice if our
         // first attempt runs out of space in the storage buffer.
         MicrolinesBufferIDsD3D11 microlines_storage{};
-        for (int i = 0; i < 2; i++) {
+        for (int _ = 0; _ < 2; _++) {
             microlines_storage = dice_segments(
                     batch.prepare_info.dice_metadata,
                     batch.segment_count,
@@ -342,13 +342,16 @@ namespace Pathfinder {
             if (microlines_storage.buffer_id != 0)
                 break;
         }
+        if (microlines_storage.buffer_id == 0) {
+            Logger::error("Ran out of space for microlines when dicing!", "D3D9");
+        }
 
         // Initialize tiles, bin segments. We might have to do this twice if our first
         // attempt runs out of space in the fill buffer. If this is the case, we also
         // need to re-initialize tiles and re-upload backdrops because they would have
         // been modified during the first attempt.
         FillBufferInfoD3D11 fill_buffer_info{};
-        for (int i = 0; i < 2; i++) {
+        for (int _ = 0; _ < 2; _++) {
             // Initialize tiles.
             bound(tiles_d3d11_buffer_id,
                   batch.tile_count,
@@ -369,9 +372,14 @@ namespace Pathfinder {
                 break;
             }
         }
+        if (fill_buffer_info.fill_vertex_buffer_id == 0) {
+            Logger::error("Ran out of space for fills when binning!", "D3D9");
+        }
 
         // Free microlines storage as it's not needed anymore.
         DeviceGl::free_general_buffer(microlines_storage.buffer_id);
+
+        // TODO(pcwalton): If we run out of space for alpha tile indices, propagate multiple times.
 
         auto alpha_tiles_buffer_id = allocate_alpha_tile_info(batch.tile_count);
 
@@ -396,6 +404,7 @@ namespace Pathfinder {
         // FIXME(pcwalton): This seems like the wrong place to do this...
         sort_tiles(tiles_d3d11_buffer_id, first_tile_map_buffer_id, z_buffer_id);
 
+        // Record tile batch info.
         tile_batch_info.insert(tile_batch_info.begin() + batch.batch_id,
                                TileBatchInfoD3D11{
                                        batch.tile_count,
