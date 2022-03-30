@@ -46,11 +46,11 @@ layout(std430, binding = 2) restrict readonly buffer bPoints {
     vec2 iPoints[];
 };
 
-layout(std430, binding = 3)restrict readonly buffer bInputIndices {
+layout(std430, binding = 3) restrict readonly buffer bInputIndices {
     uvec2 iInputIndices[];
 };
 
-layout(std430, binding = 4) restrict buffer bMicrolines {
+layout(std430, binding = 4) restrict writeonly buffer bMicrolines {
     // x: from (X, Y) whole pixels, packed signed 16-bit
     // y: to (X, Y) whole pixels, packed signed 16-bit
     // z: (from X, from Y, to X, to Y) fractional pixels, packed unsigned 8-bit (0.8 fixed point)

@@ -251,8 +251,8 @@ namespace Pathfinder {
         tile_program->set_vec2("uFramebufferSize", target_viewport_size.x, target_viewport_size.y);
         tile_program->set_vec2i("uFramebufferTileSize", framebuffer_tile_size0.x, framebuffer_tile_size0.y);
 
-        tile_program->bind_general_buffer(0, tiles_d3d11_buffer_id);
-        tile_program->bind_general_buffer(1, first_tile_map_buffer_id);
+        tile_program->bind_general_buffer(0, tiles_d3d11_buffer_id); // Read only
+        tile_program->bind_general_buffer(1, first_tile_map_buffer_id); // Read only
 
         tile_program->dispatch(framebuffer_tile_size0.x,
                                framebuffer_tile_size0.y);
@@ -458,11 +458,11 @@ namespace Pathfinder {
         dice_program->set_int("uMaxMicrolineCount", allocated_microline_count);
 
         // Bind storage buffers.
-        dice_program->bind_general_buffer(0, indirect_draw_params_buffer_id);
-        dice_program->bind_general_buffer(1, dice_metadata_buffer_id);
-        dice_program->bind_general_buffer(2, points_buffer_id);
-        dice_program->bind_general_buffer(3, point_indices_buffer_id);
-        dice_program->bind_general_buffer(4, microlines_buffer_id);
+        dice_program->bind_general_buffer(0, indirect_draw_params_buffer_id); // Read write
+        dice_program->bind_general_buffer(1, dice_metadata_buffer_id); // Read only
+        dice_program->bind_general_buffer(2, points_buffer_id); // Read only
+        dice_program->bind_general_buffer(3, point_indices_buffer_id); // Read only
+        dice_program->bind_general_buffer(4, microlines_buffer_id); // Write only
 
         dice_program->dispatch((batch_segment_count + DICE_WORKGROUP_SIZE - 1) / DICE_WORKGROUP_SIZE);
         // ----------------------------------------------------
@@ -512,8 +512,8 @@ namespace Pathfinder {
         bound_program->set_int("uTileCount", tile_count);
 
         // Bind storage buffers.
-        bound_program->bind_general_buffer(0, path_info_buffer_id);
-        bound_program->bind_general_buffer(1, tiles_d3d11_buffer_id);
+        bound_program->bind_general_buffer(0, path_info_buffer_id); // Read only
+        bound_program->bind_general_buffer(1, tiles_d3d11_buffer_id); // Write only
 
         bound_program->dispatch((tile_count + BOUND_WORKGROUP_SIZE - 1) / BOUND_WORKGROUP_SIZE);
 
@@ -545,12 +545,12 @@ namespace Pathfinder {
         bin_program->set_int("uMaxFillCount", allocated_fill_count);
 
         // Bind storage buffers.
-        bin_program->bind_general_buffer(0, microlines_storage.buffer_id);
-        bin_program->bind_general_buffer(1, propagate_metadata_buffer_ids.propagate_metadata);
-        bin_program->bind_general_buffer(2, z_buffer_id);
-        bin_program->bind_general_buffer(3, fill_vertex_buffer_id);
-        bin_program->bind_general_buffer(4, tiles_d3d11_buffer_id);
-        bin_program->bind_general_buffer(5, propagate_metadata_buffer_ids.backdrops);
+        bin_program->bind_general_buffer(0, microlines_storage.buffer_id); // Read only
+        bin_program->bind_general_buffer(1, propagate_metadata_buffer_ids.propagate_metadata); // Read only
+        bin_program->bind_general_buffer(2, z_buffer_id); // Read write
+        bin_program->bind_general_buffer(3, fill_vertex_buffer_id); // Write only
+        bin_program->bind_general_buffer(4, tiles_d3d11_buffer_id); // Read write
+        bin_program->bind_general_buffer(5, propagate_metadata_buffer_ids.backdrops); // Read write
 
         bin_program->dispatch((microlines_storage.count + BIN_WORKGROUP_SIZE - 1) / BIN_WORKGROUP_SIZE);
 
@@ -609,14 +609,14 @@ namespace Pathfinder {
         propagate_program->set_int("uFirstAlphaTileIndex", alpha_tile_count);
 
         // Bind buffers.
-        propagate_program->bind_general_buffer(0, propagate_metadata_buffer_ids.propagate_metadata);
-        propagate_program->bind_general_buffer(1, propagate_metadata_buffer_ids.propagate_metadata);
-        propagate_program->bind_general_buffer(2, propagate_metadata_buffer_ids.backdrops);
-        propagate_program->bind_general_buffer(3, tiles_d3d11_buffer_id);
-        propagate_program->bind_general_buffer(4, tiles_d3d11_buffer_id);
-        propagate_program->bind_general_buffer(5, z_buffer_id);
-        propagate_program->bind_general_buffer(6, first_tile_map_buffer_id);
-        propagate_program->bind_general_buffer(7, alpha_tiles_buffer_id);
+        propagate_program->bind_general_buffer(0, propagate_metadata_buffer_ids.propagate_metadata); // Read only
+        propagate_program->bind_general_buffer(1, 0); // Clip metadata, read only
+        propagate_program->bind_general_buffer(2, propagate_metadata_buffer_ids.backdrops); // Read only
+        propagate_program->bind_general_buffer(3, tiles_d3d11_buffer_id); // Read write
+        propagate_program->bind_general_buffer(4, 0); // Clip tiles, read write
+        propagate_program->bind_general_buffer(5, z_buffer_id); // Read write
+        propagate_program->bind_general_buffer(6, first_tile_map_buffer_id); // Read write
+        propagate_program->bind_general_buffer(7, alpha_tiles_buffer_id); // Write only
 
         propagate_program->dispatch((column_count + PROPAGATE_WORKGROUP_SIZE - 1) / PROPAGATE_WORKGROUP_SIZE);
 
@@ -664,9 +664,9 @@ namespace Pathfinder {
                                 alpha_tile_range.end);
 
         // Bind storage buffers.
-        fill_program->bind_general_buffer(0, fill_storage_info.fill_vertex_buffer_id);
-        fill_program->bind_general_buffer(1, tiles_d3d11_buffer_id);
-        fill_program->bind_general_buffer(2, alpha_tiles_buffer_id);
+        fill_program->bind_general_buffer(0, fill_storage_info.fill_vertex_buffer_id); // Read only
+        fill_program->bind_general_buffer(1, tiles_d3d11_buffer_id); // Read only
+        fill_program->bind_general_buffer(2, alpha_tiles_buffer_id); // Read only
 
         fill_program->dispatch(std::min(local_alpha_tile_count, (unsigned long long) 1 << 15),
                                ((local_alpha_tile_count + (1 << 15) - 1) >> 15));
@@ -683,9 +683,9 @@ namespace Pathfinder {
         sort_program->set_int("uTileCount", tile_count);
 
         // Bind buffers.
-        sort_program->bind_general_buffer(0, tiles_d3d11_buffer_id);
-        sort_program->bind_general_buffer(1, first_tile_map_buffer_id);
-        sort_program->bind_general_buffer(2, z_buffer_id);
+        sort_program->bind_general_buffer(0, tiles_d3d11_buffer_id); // Read write
+        sort_program->bind_general_buffer(1, first_tile_map_buffer_id); // Read write
+        sort_program->bind_general_buffer(2, z_buffer_id); // Read only
 
         sort_program->dispatch((tile_count + SORT_WORKGROUP_SIZE - 1) / SORT_WORKGROUP_SIZE);
     }

@@ -75,7 +75,7 @@ restrict layout(std430, binding = 6) buffer bFirstTileMap {
     int iFirstTileMap[];
 };
 
-restrict layout(std430, binding = 7) buffer bAlphaTiles {
+restrict writeonly layout(std430, binding = 7) buffer bAlphaTiles {
     // [0]: alpha tile index
     // [1]: clip tile index
     uint iAlphaTiles[];

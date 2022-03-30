@@ -29,7 +29,7 @@ restrict readonly layout(std430, binding = 0) buffer bFills {
 };
 
 // propagate_metadata_buffer
-restrict layout(std430, binding = 1) buffer bTiles {
+restrict readonly layout(std430, binding = 1) buffer bTiles {
     // [0]: path ID
     // [1]: next tile ID
     // [2]: first fill ID
