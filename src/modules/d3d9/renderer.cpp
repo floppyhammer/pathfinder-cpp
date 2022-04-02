@@ -281,7 +281,7 @@ namespace Pathfinder {
         attribute_descriptors.push_back({tile_vao,
                                          quad_vbo,
                                          2,
-                                         DataType::SHORT,
+                                         DataType::UNSIGNED_SHORT,
                                          0,
                                          0,
                                          VertexStep::PER_VERTEX});

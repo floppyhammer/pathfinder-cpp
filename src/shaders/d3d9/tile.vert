@@ -22,7 +22,7 @@ uniform vec2 uTextureMetadataSize; // (1280, 512)
 uniform sampler2D uZBuffer;
 uniform ivec2 uZBufferSize; // (120, 68)
 
-layout(location=0) in ivec2 aTileOffset; // Tile local coordinates
+layout(location=0) in uvec2 aTileOffset; // Tile local coordinates
 layout(location=1) in ivec2 aTileOrigin; // Tile index
 layout(location=2) in uvec4 aMaskTexCoord0;
 layout(location=3) in ivec2 aCtrlBackdrop;
