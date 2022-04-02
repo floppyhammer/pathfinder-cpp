@@ -14,11 +14,13 @@
 namespace Pathfinder {
     class Coordinator {
     public:
-        void init() {
-            // Create pointers to each manager.
-            entity_manager = std::make_unique<EntityManager>();
-            component_manager = std::make_unique<ComponentManager>();
-            system_manager = std::make_unique<SystemManager>();
+        static Coordinator &get_singleton() {
+            static Coordinator singleton;
+            return singleton;
+        }
+
+        Coordinator() {
+            init();
         }
 
         // Entity methods.
@@ -90,9 +92,16 @@ namespace Pathfinder {
         // --------------------------------------------
 
     private:
-        std::unique_ptr<EntityManager> entity_manager;
-        std::unique_ptr<ComponentManager> component_manager;
-        std::unique_ptr<SystemManager> system_manager;
+        std::shared_ptr<EntityManager> entity_manager;
+        std::shared_ptr<ComponentManager> component_manager;
+        std::shared_ptr<SystemManager> system_manager;
+
+        void init() {
+            // Create pointers to each manager.
+            entity_manager = std::make_shared<EntityManager>();
+            component_manager = std::make_shared<ComponentManager>();
+            system_manager = std::make_shared<SystemManager>();
+        }
     };
 }
 

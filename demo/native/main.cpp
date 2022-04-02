@@ -6,6 +6,11 @@
 #include "../../src/common/global_macros.h"
 #include "../common/app.h"
 
+#include "../../src/modules/vgui/ecs/coordinator.h"
+#include "../../src/modules/vgui/ecs/components/components.h"
+#include "../../src/modules/vgui/ecs/systems/physics_system.h"
+#include "../../src/modules/vgui/ecs/systems/render_system.h"
+
 #include <iostream>
 
 using namespace Pathfinder;
@@ -15,20 +20,21 @@ public:
     int width, height;
 
     Window(int p_width, int p_height);
+
     ~Window();
 
-    GLFWwindow* get_glfw_window();
+    GLFWwindow *get_glfw_window();
 
     void handle_inputs();
 
     void swap_buffers_and_poll_events();
 
 private:
-    GLFWwindow* glfw_window = nullptr;
+    GLFWwindow *glfw_window = nullptr;
 
-    GLFWwindow* init_glfw_window() const;
+    GLFWwindow *init_glfw_window() const;
 
-    static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+    static void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 };
 
 int main() {
@@ -41,9 +47,59 @@ int main() {
 
     App app(window.width, window.height, area_lut_input, font_input, svg_input);
 
+    // ECS test.
+    // ----------------------------------------------------------
+    auto coordinator = Coordinator::get_singleton();
+
+    coordinator.register_component<Gravity>();
+    coordinator.register_component<RigidBody>();
+    coordinator.register_component<Transform>();
+
+    auto physics_system = coordinator.register_system<PhysicsSystem>();
+    // Set signature for physics system.
+    {
+        Signature signature;
+        signature.set(coordinator.get_component_type<Gravity>());
+        signature.set(coordinator.get_component_type<RigidBody>());
+        signature.set(coordinator.get_component_type<Transform>());
+        coordinator.set_system_signature<PhysicsSystem>(signature);
+    }
+
+    auto render_system = coordinator.register_system<RenderSystem>();
+
+    // Allocate space for entities.
+    std::vector<Entity> entities(10);
+
+    // Create some entities.
+    for (auto &entity: entities) {
+        entity = coordinator.create_entity();
+
+        coordinator.add_component(
+                entity,
+                Gravity{Vec3<float>(0.0f, 0.0f, 0.0f)});
+
+        coordinator.add_component(
+                entity,
+                RigidBody{
+                        Vec3<float>(0.0f, 0.0f, 0.0f),
+                        Vec3<float>(0.0f, 0.0f, 0.0f),
+                });
+
+        coordinator.add_component(
+                entity,
+                Transform{
+                        Vec3<float>(0.0f, 0.0f, 0.0f),
+                        Quaternion{0.0f, 0.0f, 0.0f, 0.0f},
+                        Vec3<float>(0.0f, 0.0f, 0.0f),
+                });
+    }
+    // ----------------------------------------------------------
+
     // Rendering loop.
     while (!glfwWindowShouldClose(window.get_glfw_window())) {
         window.handle_inputs();
+
+        physics_system->update(0.001f);
 
         app.loop();
 
@@ -62,7 +118,7 @@ Window::~Window() {
     glfwTerminate();
 }
 
-GLFWwindow* Window::init_glfw_window() const {
+GLFWwindow *Window::init_glfw_window() const {
     // GLFW: initialize and configure.
     glfwInit();
 
@@ -80,7 +136,7 @@ GLFWwindow* Window::init_glfw_window() const {
 #endif
 
     // GLFW: window creation.
-    GLFWwindow* window = glfwCreateWindow(width, height, "Pathfinder Demo", nullptr, nullptr);
+    GLFWwindow *window = glfwCreateWindow(width, height, "Pathfinder Demo", nullptr, nullptr);
 
     if (window == nullptr) {
         Logger::error("Failed to create GLFW window!", "GLFW");
@@ -92,7 +148,7 @@ GLFWwindow* Window::init_glfw_window() const {
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // GLAD: load all OpenGL function pointers.
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
         Logger::error("Failed to initialize GLAD!", "GLAD");
         return nullptr;
     }
@@ -110,13 +166,13 @@ GLFWwindow* Window::init_glfw_window() const {
 }
 
 /// GLFW: whenever the window size changed (by OS or user) this callback function executes.
-void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+void Window::framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     // Make sure the viewport matches the new window dimensions; note that width and
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
 }
 
-GLFWwindow* Window::get_glfw_window() {
+GLFWwindow *Window::get_glfw_window() {
     return glfw_window;
 }
 

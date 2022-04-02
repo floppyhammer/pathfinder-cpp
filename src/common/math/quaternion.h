@@ -5,7 +5,7 @@
 #ifndef PATHFINDER_QUATERNION_H
 #define PATHFINDER_QUATERNION_H
 
-class Quaternion {
+struct Quaternion {
     // Rotation.
     float w = 0;
 

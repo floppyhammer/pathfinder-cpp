@@ -23,7 +23,7 @@ namespace Pathfinder {
         }
 
         Entity create_entity() {
-            assert(mLivingEntityCount < MAX_ENTITIES && "Too many entities in existence!");
+            assert(living_entity_count < MAX_ENTITIES && "Too many entities in existence!");
 
             // Take an ID from the front of the queue.
             Entity id = available_entities.front();

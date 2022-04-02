@@ -48,19 +48,19 @@ namespace Pathfinder {
         template<typename T>
         void add_component(Entity entity, T component) {
             // Add a component to the array for an entity
-            get_component_array<T>()->InsertData(entity, component);
+            get_component_array<T>()->insert_data(entity, component);
         }
 
         template<typename T>
         void remove_component(Entity entity) {
             // Remove a component from the array for an entity
-            get_component_array<T>()->RemoveData(entity);
+            get_component_array<T>()->remove_data(entity);
         }
 
         template<typename T>
         T &get_component(Entity entity) {
             // Get a reference to a component from the array for an entity
-            return get_component_array<T>()->GetData(entity);
+            return get_component_array<T>()->get_data(entity);
         }
 
         void entity_destroyed(Entity entity) {

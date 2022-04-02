@@ -5,8 +5,6 @@
 #ifndef PATHFINDER_COMPONENT_H
 #define PATHFINDER_COMPONENT_H
 
-#include "../../../common/math/vec3.h"
-#include "../../../common/math/quaternion.h"
 #include "entity.h"
 
 #include <bitset>
@@ -14,24 +12,14 @@
 #include <cassert>
 
 namespace Pathfinder {
-    // A simple type alias
+    // A simple type alias.
     using ComponentType = std::uint8_t;
 
-    // Used to define the size of arrays later on
+    // Used to define the size of arrays later on.
     const ComponentType MAX_COMPONENTS = 32;
 
-    // A simple type alias
+    // A simple type alias.
     using Signature = std::bitset<MAX_COMPONENTS>;
-
-    class Component {
-
-    };
-
-    struct Transform {
-        Vec3<float> position;
-        Quaternion rotation;
-        Vec3<float> scale;
-    };
 
     /// The virtual inheritance of IComponentArray is unfortunate but, as far as I can tell, unavoidable.
     /// As seen later, we'll have a list of every ComponentArray (one per component type), and we need to
