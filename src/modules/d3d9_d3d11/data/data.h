@@ -29,32 +29,33 @@ namespace Pathfinder {
     const int32_t TILE_CTRL_MASK_0_SHIFT = 0;
 
     struct PushSegmentFlags {
-    public:
         uint8_t value = 0x00;
 
         /// The bounds should be updated.
-        static const uint8_t UPDATE_BOUNDS = 0x01;
+        static const uint8_t UPDATE_BOUNDS;
+
         /// The "from" point of the segment.
-        static const uint8_t INCLUDE_FROM_POINT = 0x02;
+        static const uint8_t INCLUDE_FROM_POINT;
 
         PushSegmentFlags() = default;
+
         explicit PushSegmentFlags(uint8_t p_value) : value(p_value) {}
     };
 
     /// Flags that each point can have, indicating whether it's an on-curve or control point.
     struct PointFlags {
-    public:
         /// Default as on-curve point.
         uint8_t value = 0x00;
 
         /// This point is the first control point of a cubic Bézier curve or the only control point
         /// of a quadratic Bézier curve.
-        static const uint8_t CONTROL_POINT_0 = 0x01;
+        static const uint8_t CONTROL_POINT_0;
 
         /// This point is the second point of a cubic Bézier curve.
-        static const uint8_t CONTROL_POINT_1 = 0x02;
+        static const uint8_t CONTROL_POINT_1;
 
         PointFlags() = default;
+
         explicit PointFlags(uint8_t p_value) : value(p_value) {}
     };
 
@@ -110,7 +111,7 @@ namespace Pathfinder {
         CCW,
     };
 
-    enum ColorCombineMode {
+    enum class ColorCombineMode {
         None,
         SrcIn,
         DestIn,
@@ -137,15 +138,15 @@ namespace Pathfinder {
     };
 
     struct Range {
-    public:
+        /// The lower bound of the range (inclusive).
+        unsigned long long start = 0;
+
+        /// The upper bound of the range (exclusive).
+        unsigned long long end = 0;
+
         Range() = default;
 
         Range(unsigned long long p_start, unsigned long long p_end) : start(p_start), end(p_end) {};
-
-        /// The lower bound of the range (inclusive).
-        unsigned long long start = 0;
-        /// The upper bound of the range (exclusive).
-        unsigned long long end = 0;
     };
 }
 
