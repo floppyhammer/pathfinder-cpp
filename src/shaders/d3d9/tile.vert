@@ -27,7 +27,7 @@ layout(location=1) in ivec2 aTileOrigin; // Tile index
 layout(location=2) in uvec4 aMaskTexCoord0;
 layout(location=3) in ivec2 aCtrlBackdrop;
 layout(location=4) in int aPathIndex;
-layout(location=5) in uint aColor;
+layout(location=5) in uint aMetadataIndex;
 
 out vec3 vMaskTexCoord0;
 out vec2 vColorTexCoord0;
@@ -47,16 +47,16 @@ vec4 fetchUnscaled(sampler2D srcTexture, vec2 scale, vec2 originCoord, int entry
 }
 
 /// Fetch rendering info from the metadata texture.
-void computeTileVaryings(vec2 position, uint colorEntry, sampler2D textureMetadata,
+void computeTileVaryings(vec2 position, uint metadataIndex, sampler2D textureMetadata,
     vec2 textureMetadataSize, out vec2 outColorTexCoord0, out vec4 outBaseColor,
     out vec4 outFilterParams0, out vec4 outFilterParams1, out vec4 outFilterParams2,
     out vec4 outFilterParams3, out vec4 outFilterParams4, out int outCtrl) {
     // Prepare UV for the metadata texture. Metadata block size is (10, 1).
-    // colorEntry is the block index. Block map size is (128, 512).
+    // metadataIndex is the block index. Block map size is (128, 512).
     vec2 metadataScale = vec2(1.0) / textureMetadataSize;
 
     // Pixel coordinates.
-    vec2 metadataEntryCoord = vec2(colorEntry % 128u * 10u, colorEntry / 128u);
+    vec2 metadataEntryCoord = vec2(metadataIndex % 128u * 10u, metadataIndex / 128u);
 
     // Fetch data via texture().
     vec4 colorTexMatrix0 = fetchUnscaled(textureMetadata, metadataScale, metadataEntryCoord, 0);
@@ -130,7 +130,7 @@ void main() {
     int ctrl;
     computeTileVaryings(
         position,
-        aColor,
+        aMetadataIndex,
         uTextureMetadata,
         uTextureMetadataSize,
         vColorTexCoord0,

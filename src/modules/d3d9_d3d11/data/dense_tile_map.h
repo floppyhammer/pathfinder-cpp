@@ -36,7 +36,7 @@ namespace Pathfinder {
                     data[index].tile_y = y;
                     data[index].ctrl = p_ctrl_byte;
                     data[index].path_id = p_path_id;
-                    data[index].color = p_paint_id;
+                    data[index].metadata_id = p_paint_id;
                 }
             }
         }

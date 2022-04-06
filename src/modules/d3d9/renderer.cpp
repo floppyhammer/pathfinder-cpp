@@ -323,7 +323,7 @@ namespace Pathfinder {
                                          1,
                                          DataType::UNSIGNED_INT,
                                          stride,
-                                         offsetof(TileObjectPrimitive, color),
+                                         offsetof(TileObjectPrimitive, metadata_id),
                                          VertexStep::PER_INSTANCE});
 
         DeviceGl::bind_attributes(attribute_descriptors);

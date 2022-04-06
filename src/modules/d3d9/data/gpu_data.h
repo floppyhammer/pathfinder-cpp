@@ -27,7 +27,7 @@ namespace Pathfinder {
         uint8_t ctrl = 0;
         int8_t backdrop = 0;
         uint32_t path_id = 0;
-        uint32_t color = 0;
+        uint32_t metadata_id = 0;
 
         TileObjectPrimitive() = default;
 
@@ -37,10 +37,10 @@ namespace Pathfinder {
                             uint8_t p_ctrl,
                             int8_t p_backdrop,
                             uint32_t p_path_id,
-                            uint32_t p_color)
+                            uint32_t p_metadata_id)
                 : tile_x(p_tile_x), tile_y(p_tile_y),
                   alpha_tile_id(p_alpha_tile_id), ctrl(p_ctrl),
-                  backdrop(p_backdrop), path_id(p_path_id), color(p_color) {}
+                  backdrop(p_backdrop), path_id(p_path_id), metadata_id(p_metadata_id) {}
     };
 }
 
