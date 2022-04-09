@@ -4,8 +4,11 @@
 
 #include "viewport.h"
 
+#include <cassert>
+
 namespace Pathfinder {
     Viewport::Viewport(int p_width, int p_height) : width(p_width), height(p_height) {
+        // Do nothing.
     }
 
     Viewport::Viewport(int p_width, int p_height, TextureFormat p_format, DataType p_type)
@@ -66,14 +69,14 @@ namespace Pathfinder {
     }
 
     std::shared_ptr<Texture> Viewport::get_texture() {
+        assert(texture != nullptr && "Tried to get texture from screen viewport!");
         return texture;
     }
 
     unsigned int Viewport::get_texture_id() const {
-        if (texture) {
-            return texture->get_texture_id();
-        }
+        if (texture) return texture->get_texture_id();
 
+        assert("Tried to get texture id from screen viewport!");
         return 0;
     }
 }

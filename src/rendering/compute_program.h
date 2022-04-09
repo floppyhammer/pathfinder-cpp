@@ -6,7 +6,7 @@
 #define PATHFINDER_COMPUTE_PROGRAM_H
 
 #include "program.h"
-#include "../rendering/device_gl.h"
+#include "../rendering/device.h"
 #include "../common/global_macros.h"
 
 #ifdef PATHFINDER_USE_D3D11

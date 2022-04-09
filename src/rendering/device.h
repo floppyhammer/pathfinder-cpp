@@ -2,8 +2,8 @@
 // Created by floppyhammer on 8/26/2021.
 //
 
-#ifndef PATHFINDER_DEVICE_GL_H
-#define PATHFINDER_DEVICE_GL_H
+#ifndef PATHFINDER_DEVICE_H
+#define PATHFINDER_DEVICE_H
 
 #include "../common/math/basic.h"
 #include "../common/global_macros.h"
@@ -69,11 +69,11 @@ namespace Pathfinder {
     };
 
     struct FramebufferDescriptor {
-        uint32_t framebuffer_id;
-        int width;
-        int height;
-        GLenum blend_src;
-        GLenum blend_dst;
+        uint32_t framebuffer_id{};
+        int width{};
+        int height{};
+        GLenum blend_src{};
+        GLenum blend_dst{};
         bool clear = false;
 
         FramebufferDescriptor() = default;
@@ -90,11 +90,11 @@ namespace Pathfinder {
                                               clear(p_clear) {}
     };
 
-    class DeviceGl {
+    class Device {
     public:
-        DeviceGl() = default;
+        Device() = default;
 
-        ~DeviceGl() = default;
+        ~Device() = default;
 
         static void bind_framebuffer(const FramebufferDescriptor &descriptor) {
             glBindFramebuffer(GL_FRAMEBUFFER, descriptor.framebuffer_id);
@@ -184,7 +184,7 @@ namespace Pathfinder {
                 glBufferData(GL_SHADER_STORAGE_BUFFER, byte_size, nullptr, GL_DYNAMIC_DRAW);
                 glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // Unbind.
 
-                DeviceGl::check_error("allocate_general_buffer");
+                Device::check_error("allocate_general_buffer");
 
                 return buffer_id;
             }
@@ -199,7 +199,7 @@ namespace Pathfinder {
                 glBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, byte_size, data);
                 glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // Unbind.
 
-                DeviceGl::check_error("upload_to_general_buffer");
+                Device::check_error("upload_to_general_buffer");
             }
 
             /// Read data from general buffer.
@@ -224,7 +224,7 @@ namespace Pathfinder {
 
                 glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // Unbind.
 
-                DeviceGl::check_error("read_general_buffer");
+                Device::check_error("read_general_buffer");
             }
 
             /// Delete general buffer.
@@ -235,4 +235,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_DEVICE_GL_H
+#endif //PATHFINDER_DEVICE_H

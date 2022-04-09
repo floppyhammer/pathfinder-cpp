@@ -7,6 +7,7 @@
 #include "../common/global_macros.h"
 
 #define STB_IMAGE_IMPLEMENTATION
+
 #include <stb_image.h>
 
 #include <stdexcept>
@@ -30,11 +31,11 @@ namespace Pathfinder {
                             static_cast<GLenum>(type), p_data);
         }
 #else
-        // Allocate space and (optional) upload data.
-        glTexImage2D(GL_TEXTURE_2D, 0, static_cast<GLint>(format),
-                     width, height, 0,
-                     static_cast<GLint>(PixelDataFormat::RGBA),
-                     static_cast<GLenum>(type), p_data);
+            // Allocate space and (optional) upload data.
+            glTexImage2D(GL_TEXTURE_2D, 0, static_cast<GLint>(format),
+                         width, height, 0,
+                         static_cast<GLint>(PixelDataFormat::RGBA),
+                         static_cast<GLenum>(type), p_data);
 #endif
 
         // Set texture wrapping parameters.
@@ -48,12 +49,69 @@ namespace Pathfinder {
 
         glBindTexture(GL_TEXTURE_2D, 0);
 
-        DeviceGl::check_error("Texture::Texture()");
+        Device::check_error("Texture::Texture()");
     }
 
     Texture::~Texture() {
         glDeleteTextures(1, &texture_id);
-        DeviceGl::check_error("Texture::~Texture()");
+        Device::check_error("Texture::~Texture()");
+    }
+
+    std::shared_ptr<Texture> Texture::from_memory(const std::vector<unsigned char> &bytes,
+                                                  TextureFormat p_format,
+                                                  DataType p_type,
+                                                  bool flip_y) {
+        stbi_set_flip_vertically_on_load(flip_y);
+
+        int width, height, channels;
+        unsigned char *img_data = stbi_load_from_memory(bytes.data(),
+                                                        (int) (bytes.size() * sizeof(unsigned char)),
+                                                        &width,
+                                                        &height,
+                                                        &channels,
+                                                        0);
+
+        std::shared_ptr<Texture> texture;
+
+        // Generate a texture using the previously loaded image data.
+        if (img_data) {
+            texture = std::make_shared<Texture>(width, height, p_format, p_type, img_data);
+        } else {
+            Logger::error("Texture creation failed!", "Texture");
+            throw std::runtime_error(std::string("Failed to load image from memory！"));
+        }
+
+        stbi_image_free(img_data);
+
+        return texture;
+    }
+
+    std::shared_ptr<Texture> Texture::from_file(const char *file_path,
+                                                TextureFormat p_format,
+                                                DataType p_type,
+                                                bool flip_y) {
+        stbi_set_flip_vertically_on_load(flip_y);
+
+        int width, height, channels;
+        unsigned char *img_data = stbi_load(file_path,
+                                            &width,
+                                            &height,
+                                            &channels,
+                                            0);
+
+        std::shared_ptr<Texture> texture;
+
+        // Generate a texture using the previously loaded image data.
+        if (img_data) {
+            texture = std::make_shared<Texture>(width, height, p_format, p_type, img_data);
+        } else {
+            Logger::error("Texture creation failed!", "Texture");
+            throw std::runtime_error(std::string("Failed to load image from disk: ") + std::string(file_path));
+        }
+
+        stbi_image_free(img_data);
+
+        return texture;
     }
 
     unsigned int Texture::get_width() const {

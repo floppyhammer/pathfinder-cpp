@@ -64,7 +64,7 @@ namespace Pathfinder {
         glFinish();
 #endif
 
-        DeviceGl::check_error("ComputeProgram::dispatch");
+        Device::check_error("ComputeProgram::dispatch");
     }
 }
 

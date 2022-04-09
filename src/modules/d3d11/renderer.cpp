@@ -8,7 +8,7 @@
 #include "../d3d9_d3d11/data/data.h"
 #include "../d3d9/data/draw_tile_batch.h"
 #include "../../common/math/basic.h"
-#include "../../rendering/device_gl.h"
+#include "../../rendering/device.h"
 #include "../../common/logger.h"
 #include "../../common/timestamp.h"
 
@@ -42,10 +42,10 @@ namespace Pathfinder {
     }
 
     void TileBatchInfoD3D11::clean() {
-        DeviceGl::free_general_buffer(z_buffer_id);
-        DeviceGl::free_general_buffer(tiles_d3d11_buffer_id);
-        DeviceGl::free_general_buffer(propagate_metadata_buffer_id);
-        DeviceGl::free_general_buffer(first_tile_map_buffer_id);
+        Device::free_general_buffer(z_buffer_id);
+        Device::free_general_buffer(tiles_d3d11_buffer_id);
+        Device::free_general_buffer(propagate_metadata_buffer_id);
+        Device::free_general_buffer(first_tile_map_buffer_id);
         z_buffer_id = 0;
         tiles_d3d11_buffer_id = 0;
         propagate_metadata_buffer_id = 0;
@@ -58,30 +58,30 @@ namespace Pathfinder {
 
         // Reallocate if capacity is not enough.
         if (points_capacity < needed_points_capacity) {
-            DeviceGl::free_general_buffer(points_buffer);
+            Device::free_general_buffer(points_buffer);
 
-            points_buffer = DeviceGl::allocate_general_buffer<Vec2<float>>(needed_points_capacity);
+            points_buffer = Device::allocate_general_buffer<Vec2<float>>(needed_points_capacity);
 
             points_capacity = needed_points_capacity;
         }
 
         // Reallocate if capacity is not enough.
         if (point_indices_capacity < needed_point_indices_capacity) {
-            DeviceGl::free_general_buffer(point_indices_buffer);
+            Device::free_general_buffer(point_indices_buffer);
 
-            point_indices_buffer = DeviceGl::allocate_general_buffer<SegmentIndicesD3D11>(
+            point_indices_buffer = Device::allocate_general_buffer<SegmentIndicesD3D11>(
                     needed_point_indices_capacity);
 
             point_indices_capacity = needed_point_indices_capacity;
         }
 
-        DeviceGl::upload_to_general_buffer<Vec2<float>>(
+        Device::upload_to_general_buffer<Vec2<float>>(
                 points_buffer,
                 0,
                 segments.points.data(),
                 segments.points.size());
 
-        DeviceGl::upload_to_general_buffer<SegmentIndicesD3D11>(
+        Device::upload_to_general_buffer<SegmentIndicesD3D11>(
                 point_indices_buffer,
                 0,
                 segments.indices.data(),
@@ -91,8 +91,8 @@ namespace Pathfinder {
     }
 
     SceneBuffers::~SceneBuffers() {
-        DeviceGl::free_general_buffer(draw.points_buffer);
-        DeviceGl::free_general_buffer(draw.point_indices_buffer);
+        Device::free_general_buffer(draw.points_buffer);
+        Device::free_general_buffer(draw.point_indices_buffer);
     }
 
     void SceneBuffers::upload(SegmentsD3D11 &draw_segments, SegmentsD3D11 &clip_segments) {
@@ -101,7 +101,7 @@ namespace Pathfinder {
     }
 
     RendererD3D11::RendererD3D11(const Vec2<int> &p_viewport_size) : Renderer(p_viewport_size) {
-#ifdef PATHFINDER_SHIP_SHADERS
+#ifdef PATHFINDER_SHADERS_EMBEDDED
         const std::string dice_source =
 #include "../src/shaders/minified/minified_dice.comp"
         ;
@@ -268,20 +268,20 @@ namespace Pathfinder {
         // SSBOs to 8 (#373).
         // Add FILL_INDIRECT_DRAW_PARAMS_SIZE in case tile size is zero.
         auto size = tile_size().area() + FILL_INDIRECT_DRAW_PARAMS_SIZE;
-        auto buffer_id = DeviceGl::allocate_general_buffer<int32_t>(size);
+        auto buffer_id = Device::allocate_general_buffer<int32_t>(size);
 
         return buffer_id;
     }
 
     uint64_t RendererD3D11::allocate_first_tile_map() {
         auto size = tile_size().area();
-        auto buffer_id = DeviceGl::allocate_general_buffer<FirstTileD3D11>(size);
+        auto buffer_id = Device::allocate_general_buffer<FirstTileD3D11>(size);
 
         return buffer_id;
     }
 
     uint64_t RendererD3D11::allocate_alpha_tile_info(uint32_t index_count) {
-        auto buffer_id = DeviceGl::allocate_general_buffer<AlphaTileD3D11>(index_count);
+        auto buffer_id = Device::allocate_general_buffer<AlphaTileD3D11>(index_count);
 
         return buffer_id;
     }
@@ -289,16 +289,16 @@ namespace Pathfinder {
     PropagateMetadataBufferIDsD3D11 RendererD3D11::upload_propagate_metadata(
             std::vector<PropagateMetadataD3D11> &propagate_metadata,
             std::vector<BackdropInfoD3D11> &backdrops) {
-        auto propagate_metadata_storage_id = DeviceGl::allocate_general_buffer<PropagateMetadataD3D11>(
+        auto propagate_metadata_storage_id = Device::allocate_general_buffer<PropagateMetadataD3D11>(
                 propagate_metadata.size());
 
-        DeviceGl::upload_to_general_buffer<PropagateMetadataD3D11>(
+        Device::upload_to_general_buffer<PropagateMetadataD3D11>(
                 propagate_metadata_storage_id,
                 0,
                 propagate_metadata.data(),
                 propagate_metadata.size());
 
-        auto backdrops_storage_id = DeviceGl::allocate_general_buffer<BackdropInfoD3D11>(
+        auto backdrops_storage_id = Device::allocate_general_buffer<BackdropInfoD3D11>(
                 backdrops.size());
 
         return {propagate_metadata_storage_id, backdrops_storage_id};
@@ -306,7 +306,7 @@ namespace Pathfinder {
 
     void RendererD3D11::upload_initial_backdrops(uint64_t backdrops_buffer_id,
                                                  std::vector<BackdropInfoD3D11> &backdrops) {
-        DeviceGl::upload_to_general_buffer<BackdropInfoD3D11>(
+        Device::upload_to_general_buffer<BackdropInfoD3D11>(
                 backdrops_buffer_id,
                 0,
                 backdrops.data(),
@@ -315,7 +315,7 @@ namespace Pathfinder {
 
     void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
         // Upload tiles to GPU or allocate them as appropriate.
-        auto tiles_d3d11_buffer_id = DeviceGl::allocate_general_buffer<TileD3D11>(batch.tile_count);
+        auto tiles_d3d11_buffer_id = Device::allocate_general_buffer<TileD3D11>(batch.tile_count);
 
         // Allocate a Z-buffer.
         auto z_buffer_id = allocate_z_buffer();
@@ -377,7 +377,7 @@ namespace Pathfinder {
         }
 
         // Free microlines storage as it's not needed anymore.
-        DeviceGl::free_general_buffer(microlines_storage.buffer_id);
+        Device::free_general_buffer(microlines_storage.buffer_id);
 
         // TODO(pcwalton): If we run out of space for alpha tile indices, propagate multiple times.
 
@@ -391,15 +391,15 @@ namespace Pathfinder {
                 alpha_tiles_buffer_id,
                 propagate_metadata_buffer_ids);
 
-        DeviceGl::free_general_buffer(propagate_metadata_buffer_ids.backdrops);
+        Device::free_general_buffer(propagate_metadata_buffer_ids.backdrops);
 
         draw_fills(fill_buffer_info,
                    tiles_d3d11_buffer_id,
                    alpha_tiles_buffer_id,
                    propagate_tiles_info);
 
-        DeviceGl::free_general_buffer(fill_buffer_info.fill_vertex_buffer_id);
-        DeviceGl::free_general_buffer(alpha_tiles_buffer_id);
+        Device::free_general_buffer(fill_buffer_info.fill_vertex_buffer_id);
+        Device::free_general_buffer(alpha_tiles_buffer_id);
 
         // FIXME(pcwalton): This seems like the wrong place to do this...
         sort_tiles(tiles_d3d11_buffer_id, first_tile_map_buffer_id, z_buffer_id);
@@ -421,9 +421,9 @@ namespace Pathfinder {
             PathSource path_source,
             Transform2 transform) {
         // Allocate some general buffers.
-        auto microlines_buffer_id = DeviceGl::allocate_general_buffer<MicrolineD3D11>(allocated_microline_count);
-        auto dice_metadata_buffer_id = DeviceGl::allocate_general_buffer<DiceMetadataD3D11>(dice_metadata.size());
-        auto indirect_draw_params_buffer_id = DeviceGl::allocate_general_buffer<uint32_t>(8);
+        auto microlines_buffer_id = Device::allocate_general_buffer<MicrolineD3D11>(allocated_microline_count);
+        auto dice_metadata_buffer_id = Device::allocate_general_buffer<DiceMetadataD3D11>(dice_metadata.size());
+        auto indirect_draw_params_buffer_id = Device::allocate_general_buffer<uint32_t>(8);
 
         // Get scene source buffers.
         auto &scene_source_buffers = path_source == PathSource::Draw ? scene_buffers.draw : scene_buffers.clip;
@@ -433,14 +433,14 @@ namespace Pathfinder {
 
         // Upload dice indirect draw params, which are also used for output.
         uint32_t indirect_compute_params[8] = {0, 0, 0, 0, point_indices_count, 0, 0, 0};
-        DeviceGl::upload_to_general_buffer<uint32_t>(
+        Device::upload_to_general_buffer<uint32_t>(
                 indirect_draw_params_buffer_id,
                 0,
                 indirect_compute_params,
                 8);
 
         // Upload dice metadata.
-        DeviceGl::upload_to_general_buffer<DiceMetadataD3D11>(
+        Device::upload_to_general_buffer<DiceMetadataD3D11>(
                 dice_metadata_buffer_id,
                 0,
                 dice_metadata.data(),
@@ -468,15 +468,15 @@ namespace Pathfinder {
         // ----------------------------------------------------
 
         // Read indirect draw params back to CPU memory.
-        DeviceGl::read_general_buffer<uint32_t>(
+        Device::read_general_buffer<uint32_t>(
                 indirect_draw_params_buffer_id,
                 0,
                 indirect_compute_params,
                 8);
 
         // Free some general buffers which are no longer useful.
-        DeviceGl::free_general_buffer(dice_metadata_buffer_id);
-        DeviceGl::free_general_buffer(indirect_draw_params_buffer_id);
+        Device::free_general_buffer(dice_metadata_buffer_id);
+        Device::free_general_buffer(indirect_draw_params_buffer_id);
 
         // Fetch microline count from indirect draw params.
         auto microline_count = indirect_compute_params[BIN_INDIRECT_DRAW_PARAMS_MICROLINE_COUNT_INDEX];
@@ -486,7 +486,7 @@ namespace Pathfinder {
             allocated_microline_count = upper_power_of_two(microline_count);
 
             // We need a larger buffer, but we should free the old one first.
-            DeviceGl::free_general_buffer(microlines_buffer_id);
+            Device::free_general_buffer(microlines_buffer_id);
 
             return {0, 0};
         }
@@ -498,9 +498,9 @@ namespace Pathfinder {
                               uint32_t tile_count,
                               std::vector<TilePathInfoD3D11> &tile_path_info) {
         // This is a staging buffer, which will be freed in the end of this function.
-        auto path_info_buffer_id = DeviceGl::allocate_general_buffer<TilePathInfoD3D11>(tile_path_info.size());
+        auto path_info_buffer_id = Device::allocate_general_buffer<TilePathInfoD3D11>(tile_path_info.size());
 
-        DeviceGl::upload_to_general_buffer<TilePathInfoD3D11>(path_info_buffer_id,
+        Device::upload_to_general_buffer<TilePathInfoD3D11>(path_info_buffer_id,
                                                                0,
                                                                tile_path_info.data(),
                                                                tile_path_info.size());
@@ -517,7 +517,7 @@ namespace Pathfinder {
 
         bound_program->dispatch((tile_count + BOUND_WORKGROUP_SIZE - 1) / BOUND_WORKGROUP_SIZE);
 
-        DeviceGl::free_general_buffer(path_info_buffer_id);
+        Device::free_general_buffer(path_info_buffer_id);
     }
 
     FillBufferInfoD3D11 RendererD3D11::bin_segments(
@@ -526,14 +526,14 @@ namespace Pathfinder {
             uint64_t tiles_d3d11_buffer_id,
             uint64_t z_buffer_id) {
         // What will be the output of this function.
-        auto fill_vertex_buffer_id = DeviceGl::allocate_general_buffer<Fill>(allocated_fill_count);
+        auto fill_vertex_buffer_id = Device::allocate_general_buffer<Fill>(allocated_fill_count);
 
         // Upload fill indirect draw params to header of the Z-buffer.
         // This is in the Z-buffer, not its own buffer, to work around the 8 SSBO limitation on
         // some drivers (#373).
         uint32_t indirect_draw_params[8] = {6, 0, 0, 0, 0, microlines_storage.count, 0, 0};
 
-        DeviceGl::upload_to_general_buffer<uint32_t>(z_buffer_id,
+        Device::upload_to_general_buffer<uint32_t>(z_buffer_id,
                                                       0,
                                                       indirect_draw_params,
                                                       8);
@@ -554,7 +554,7 @@ namespace Pathfinder {
 
         bin_program->dispatch((microlines_storage.count + BIN_WORKGROUP_SIZE - 1) / BIN_WORKGROUP_SIZE);
 
-        DeviceGl::read_general_buffer<uint32_t>(
+        Device::read_general_buffer<uint32_t>(
                 z_buffer_id,
                 0,
                 indirect_draw_params,
@@ -568,7 +568,7 @@ namespace Pathfinder {
             allocated_fill_count = upper_power_of_two(needed_fill_count);
 
             // We need a larger buffer, but we should free the old one first.
-            DeviceGl::free_general_buffer(fill_vertex_buffer_id);
+            Device::free_general_buffer(fill_vertex_buffer_id);
 
             return {};
         }
@@ -587,7 +587,7 @@ namespace Pathfinder {
         auto z_buffer_size = tile_size();
         auto tile_area = z_buffer_size.area();
         auto z_buffer_data = std::vector<int32_t>(tile_area, 0);
-        DeviceGl::upload_to_general_buffer<int32_t>(
+        Device::upload_to_general_buffer<int32_t>(
                 z_buffer_id,
                 0,
                 z_buffer_data.data(),
@@ -595,7 +595,7 @@ namespace Pathfinder {
 
         // TODO(pcwalton): Initialize the first tiles buffer on GPU?
         auto first_tile_map = std::vector<FirstTileD3D11>(tile_area, FirstTileD3D11());
-        DeviceGl::upload_to_general_buffer<FirstTileD3D11>(
+        Device::upload_to_general_buffer<FirstTileD3D11>(
                 first_tile_map_buffer_id,
                 0,
                 first_tile_map.data(),
@@ -621,7 +621,7 @@ namespace Pathfinder {
         propagate_program->dispatch((column_count + PROPAGATE_WORKGROUP_SIZE - 1) / PROPAGATE_WORKGROUP_SIZE);
 
         uint32_t fill_indirect_draw_params[8];
-        DeviceGl::read_general_buffer<uint32_t>(
+        Device::read_general_buffer<uint32_t>(
                 z_buffer_id,
                 0,
                 fill_indirect_draw_params,

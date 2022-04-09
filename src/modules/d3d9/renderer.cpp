@@ -4,7 +4,7 @@
 
 #include "renderer.h"
 
-#include "../../rendering/device_gl.h"
+#include "../../rendering/device.h"
 #include "../../common/timestamp.h"
 #include "../../common/math/basic.h"
 #include "../../common/global_macros.h"
@@ -34,7 +34,7 @@ namespace Pathfinder {
     }
 
     RendererD3D9::RendererD3D9(const Vec2<int> &p_viewport_size) : Renderer(p_viewport_size) {
-#ifdef PATHFINDER_SHIP_SHADERS
+#ifdef PATHFINDER_SHADERS_EMBEDDED
         const std::string fill_vert_source =
 #include "../src/shaders/minified/minified_fill.vert"
 ;
@@ -83,7 +83,7 @@ namespace Pathfinder {
         glBindBuffer(GL_ARRAY_BUFFER, quad_vbo);
         glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(uint16_t), QUAD_VERTEX_POSITIONS, GL_STATIC_DRAW);
 
-        DeviceGl::check_error("PathfinderD3D9::RendererD3D9() > setup");
+        Device::check_error("PathfinderD3D9::RendererD3D9() > setup");
     }
 
     RendererD3D9::~RendererD3D9() {
@@ -95,7 +95,7 @@ namespace Pathfinder {
         glDeleteBuffers(1, &fill_vbo);
         glDeleteBuffers(1, &tile_vbo);
 
-        DeviceGl::check_error("RendererD3D9::~RendererD3D9() > gl delete");
+        Device::check_error("RendererD3D9::~RendererD3D9() > gl delete");
     }
 
     void RendererD3D9::draw(const SceneBuilderD3D9 &scene_builder) {
@@ -113,19 +113,19 @@ namespace Pathfinder {
     }
 
     void RendererD3D9::upload_fills(const std::vector<Fill> &fills) const {
-        DeviceGl::upload_to_vertex_buffer(fill_vbo,
+        Device::upload_to_vertex_buffer(fill_vbo,
                                           sizeof(Fill) * fills.size(),
                                           (void *) fills.data());
 
-        DeviceGl::check_error("RendererD3D9::upload_fills");
+        Device::check_error("RendererD3D9::upload_fills");
     }
 
     void RendererD3D9::upload_tiles(const std::vector<TileObjectPrimitive> &tiles) const {
-        DeviceGl::upload_to_vertex_buffer(tile_vbo,
+        Device::upload_to_vertex_buffer(tile_vbo,
                                           sizeof(TileObjectPrimitive) * tiles.size(),
                                           (void *) tiles.data());
 
-        DeviceGl::check_error("RendererD3D9::upload_tiles");
+        Device::check_error("RendererD3D9::upload_tiles");
     }
 
     void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatch> &tile_batches,
@@ -159,7 +159,7 @@ namespace Pathfinder {
                 true,
         };
 
-        DeviceGl::bind_framebuffer(descriptor);
+        Device::bind_framebuffer(descriptor);
 
         fill_program->use();
 
@@ -206,10 +206,10 @@ namespace Pathfinder {
                                          offsetof(Fill, link),
                                          VertexStep::PER_INSTANCE});
 
-        DeviceGl::bind_attributes(attribute_descriptors);
+        Device::bind_attributes(attribute_descriptors);
         // ---------------------------------------------
 
-        DeviceGl::draw(6, fills_count);
+        Device::draw(6, fills_count);
     }
 
     void RendererD3D9::draw_tiles(uint32_t tiles_count,
@@ -238,7 +238,7 @@ namespace Pathfinder {
             descriptor.clear = true;
         }
 
-        DeviceGl::bind_framebuffer(descriptor);
+        Device::bind_framebuffer(descriptor);
         // -----------------------------------------------
 
         // MVP.
@@ -326,9 +326,9 @@ namespace Pathfinder {
                                          offsetof(TileObjectPrimitive, metadata_id),
                                          VertexStep::PER_INSTANCE});
 
-        DeviceGl::bind_attributes(attribute_descriptors);
+        Device::bind_attributes(attribute_descriptors);
         // ---------------------------------------------
 
-        DeviceGl::draw(6, tiles_count);
+        Device::draw(6, tiles_count);
     }
 }

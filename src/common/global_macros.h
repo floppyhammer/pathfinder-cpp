@@ -6,7 +6,7 @@
 #define PATHFINDER_GLOBAL_MACROS_H
 
 // Choose between D3D9 and D3D11.
-#define PATHFINDER_USE_D3D11
+//#define PATHFINDER_USE_D3D11
 
 // Enable DEBUG mode, in which we will check for GL errors. Influencing performance.
 //#define PATHFINDER_DEBUG
@@ -18,7 +18,7 @@
 #define PATHFINDER_SIMD_ENABLED
 
 // This is optional for the native demo, as we can access shader files directly.
-#define PATHFINDER_SHIP_SHADERS
+#define PATHFINDER_SHADERS_EMBEDDED
 #define PATHFINDER_SHADER_DIR "../src/shaders/"
 #define PATHFINDER_RES_DIR "../res/"
 
