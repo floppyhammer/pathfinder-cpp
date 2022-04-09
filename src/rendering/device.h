@@ -96,22 +96,6 @@ namespace Pathfinder {
 
         ~Device() = default;
 
-        static void bind_framebuffer(const FramebufferDescriptor &descriptor) {
-            glBindFramebuffer(GL_FRAMEBUFFER, descriptor.framebuffer_id);
-
-            if (descriptor.clear) {
-                glClearColor(0, 0, 0, 0);
-                glClear(GL_COLOR_BUFFER_BIT);
-            }
-
-            glViewport(0, 0, descriptor.width, descriptor.height);
-
-            glEnable(GL_BLEND);
-            glBlendFunc(descriptor.blend_src, descriptor.blend_dst);
-
-            check_error("bind_framebuffer");
-        }
-
         static void upload_to_vertex_buffer(uint32_t vbo, size_t size, void *data) {
             // Bind the VAO first, then bind the VBO.
             glBindVertexArray(0);
@@ -140,41 +124,9 @@ namespace Pathfinder {
         }
 
         static void bind_attributes(std::vector<AttributeDescriptor> &attribute_descriptors) {
-            for (int i = 0; i < attribute_descriptors.size(); i++) {
-                auto &attrib = attribute_descriptors[i];
 
-                if (i == 0) {
-                    glBindVertexArray(attrib.vao);
-                    glBindBuffer(GL_ARRAY_BUFFER, attrib.vbo);
-                } else {
-                    // If target VBO changed.
-                    if (attrib.vbo != attribute_descriptors[i - 1].vbo) {
-                        glBindBuffer(GL_ARRAY_BUFFER, attrib.vbo);
-                    }
-                }
-
-                glVertexAttribIPointer(i,
-                                       attrib.size,
-                                       static_cast<GLenum>(attrib.type),
-                                       attrib.stride,
-                                       (void *) attrib.offset);
-
-                glEnableVertexAttribArray(i);
-
-                if (attrib.vertex_step == VertexStep::PER_VERTEX) {
-                    glVertexAttribDivisor(i, 0);
-                } else {
-                    glVertexAttribDivisor(i, 1);
-                }
-            }
 
             check_error("bind_attributes");
-        }
-
-        static void draw(uint32_t vertex_count, uint32_t instance_count) {
-            glDrawArraysInstanced(GL_TRIANGLES, 0, (GLsizei) vertex_count, (GLsizei) instance_count);
-
-            check_error("draw");
         }
 
         static void check_error(const char *flag);
@@ -199,7 +151,7 @@ namespace Pathfinder {
                 glBufferData(GL_SHADER_STORAGE_BUFFER, byte_size, nullptr, GL_DYNAMIC_DRAW);
                 glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // Unbind.
 
-                Device::check_error("allocate_general_buffer");
+                check_error("allocate_general_buffer");
 
                 return buffer_id;
             }

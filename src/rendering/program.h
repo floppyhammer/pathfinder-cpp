@@ -51,6 +51,10 @@ namespace Pathfinder {
         void set_mat4(const std::string &name, const Mat4x4<float> &mat) const;
         // ------------------------------------------------------------------------
 
+        inline unsigned int get_id() const {
+            return id;
+        };
+
     protected:
         /// Program ID.
         unsigned int id;

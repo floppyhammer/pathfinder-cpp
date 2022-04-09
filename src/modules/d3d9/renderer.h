@@ -10,6 +10,8 @@
 #include "../../rendering/viewport.h"
 #include "../../rendering/texture.h"
 #include "../d3d9_d3d11/renderer.h"
+#include "../../rendering/render_pipeline.h"
+#include "../../rendering/descriptor_set.h"
 
 #include <vector>
 
@@ -40,6 +42,9 @@ namespace Pathfinder {
         unsigned int fill_vbo{}, fill_vao{};
         unsigned int tile_vbo{}, tile_vao{};
 
+        std::shared_ptr<RenderPipeline> fill_pipeline, tile_pipeline;
+        std::shared_ptr<DescriptorSet> fill_descriptor_set, tile_descriptor_set;
+
         /// Uniform buffers.
         unsigned int tile_varying_sizes_ubo{}, tile_transform_ubo{};
 
@@ -62,6 +67,8 @@ namespace Pathfinder {
 
         /// Draw the mask texture. Use Renderer::buffered_fills.
         void draw_fills(uint32_t fills_count);
+
+        void set_up_pipelines();
     };
 }
 

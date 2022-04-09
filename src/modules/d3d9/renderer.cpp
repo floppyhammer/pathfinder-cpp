@@ -10,6 +10,7 @@
 #include "../../common/global_macros.h"
 #include "../../common/math/vec3.h"
 #include "../../common/math/mat4x4.h"
+#include "../../rendering/command_buffer.h"
 
 #include <array>
 
@@ -92,6 +93,117 @@ namespace Pathfinder {
         Device::check_error("PathfinderD3D9::RendererD3D9() > setup");
     }
 
+    void RendererD3D9::set_up_pipelines() {
+        // Fill pipeline.
+        {
+#ifdef PATHFINDER_SHADERS_EMBEDDED
+            const std::string fill_vert_source =
+#include "../src/shaders/minified/minified_fill.vert"
+            ;
+
+            const std::string fill_frag_source =
+#include "../src/shaders/minified/minified_fill.frag"
+            ;
+
+            fill_program = std::make_shared<RasterProgram>(fill_vert_source,
+                                                           fill_frag_source);
+#else
+            fill_program = std::make_shared<RasterProgram>(PATHFINDER_SHADER_DIR"d3d9/fill.vert",
+                                                       PATHFINDER_SHADER_DIR"d3d9/fill.frag");
+#endif
+            fill_pipeline = std::make_shared<RenderPipeline>();
+            fill_pipeline->program = fill_program;
+
+            fill_pipeline->blend_src = GL_ONE;
+            fill_pipeline->blend_dst = GL_ONE;
+
+            // Set vertex attributes.
+            {
+                std::vector<AttributeDescriptor> attribute_descriptors;
+                attribute_descriptors.reserve(3);
+
+                // Quad vertex.
+                attribute_descriptors.push_back({fill_vao,
+                                                 quad_vbo,
+                                                 2,
+                                                 DataType::UNSIGNED_SHORT,
+                                                 0,
+                                                 0,
+                                                 VertexStep::PER_VERTEX});
+
+                // Vertex stride for the second vertex buffer.
+                uint32_t stride = sizeof(Fill);
+
+                // LineSegmentU16.
+                attribute_descriptors.push_back({fill_vao,
+                                                 fill_vbo,
+                                                 4,
+                                                 DataType::UNSIGNED_SHORT,
+                                                 stride,
+                                                 0,
+                                                 VertexStep::PER_INSTANCE});
+                // Link.
+                attribute_descriptors.push_back({fill_vao,
+                                                 fill_vbo,
+                                                 1,
+                                                 DataType::UNSIGNED_INT,
+                                                 stride,
+                                                 offsetof(Fill, link),
+                                                 VertexStep::PER_INSTANCE});
+
+                fill_pipeline->attribute_descriptors = attribute_descriptors;
+            }
+
+            // Descriptor set.
+            {
+                fill_descriptor_set = std::make_shared<DescriptorSet>();
+
+
+                // Set uniforms.
+                fill_program->set_vec2("uFramebufferSize",
+                                       (float) mask_viewport->get_width(),
+                                       (float) mask_viewport->get_height());
+                fill_program->set_vec2("uTileSize", TILE_WIDTH, TILE_HEIGHT);
+
+                {
+                    Descriptor descriptor;
+                    descriptor.type = DescriptorType::UniformBuffer;
+                    descriptor.binding = 0;
+                    descriptor.binding_name = "uAreaLUT";
+                    descriptor.texture = area_lut_texture;
+
+                    fill_descriptor_set->add_descriptor(descriptor);
+                }
+
+                {
+                    Descriptor descriptor;
+                    descriptor.type = DescriptorType::Texture;
+                    descriptor.binding = 0;
+                    descriptor.binding_name = "uAreaLUT";
+                    descriptor.texture = area_lut_texture;
+
+                    fill_descriptor_set->add_descriptor(descriptor);
+                }
+
+                {
+                    Descriptor descriptor;
+                    descriptor.type = DescriptorType::Texture;
+                    descriptor.binding = 0;
+                    descriptor.binding_name = "uAreaLUT";
+                    descriptor.texture = area_lut_texture;
+
+                    fill_descriptor_set->add_descriptor(descriptor);
+                }
+
+            }
+        }
+
+        // Tile pipeline.
+        {
+
+        }
+    }
+
     RendererD3D9::~RendererD3D9() {
         // Clean up.
         glDeleteVertexArrays(1, &fill_vao);
@@ -155,17 +267,6 @@ namespace Pathfinder {
         // No fills to draw or no valid mask viewport.
         if (fills_count == 0 || mask_viewport == nullptr) return;
 
-        // Must clear the mask texture with transparent color, or the final result will show strange horizontal lines.
-        FramebufferDescriptor descriptor = {
-                mask_viewport->get_framebuffer_id(),
-                mask_viewport->get_width(),
-                mask_viewport->get_height(),
-                GL_ONE, // Blending is a must.
-                GL_ONE,
-                true,
-        };
-
-        Device::bind_framebuffer(descriptor);
 
         fill_program->use();
 
