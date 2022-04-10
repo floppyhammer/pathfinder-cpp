@@ -18,20 +18,32 @@ layout(local_size_x = 16, local_size_y = 4) in;
 #define TILE_FIELD_BACKDROP_ALPHA_TILE_ID   2
 #define TILE_FIELD_CONTROL                  3
 
-uniform int uLoadAction;
-uniform vec4 uClearColor;
-uniform vec2 uTileSize;
 uniform sampler2D uTextureMetadata;
-uniform vec2 uTextureMetadataSize;
 uniform sampler2D uZBuffer;
-uniform ivec2 uZBufferSize;
 uniform sampler2D uColorTexture0;
 uniform sampler2D uMaskTexture0;
 uniform sampler2D uGammaLUT;
-uniform vec2 uColorTextureSize0;
-uniform vec2 uMaskTextureSize0;
-uniform vec2 uFramebufferSize;
-uniform ivec2 uFramebufferTileSize;
+
+layout (std140) uniform bFixedUniform {
+    vec2 uMaskTextureSize0;
+    vec2 uTileSize;
+    vec2 uTextureMetadataSize;
+    vec2 pad0;
+};
+
+layout (std140) uniform bUniform0 {
+    vec4 uClearColor;
+    vec2 uColorTextureSize0;
+    vec2 uFramebufferSize;
+};
+
+layout (std140) uniform bUniform1 {
+    ivec2 uZBufferSize;
+    ivec2 uFramebufferTileSize;
+    int uLoadAction;
+    int pad1, pad2, pad3;
+};
+
 #ifdef GL_ES
 layout(rgba8) uniform writeonly image2D uDestImage;
 #else

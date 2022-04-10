@@ -86,16 +86,8 @@ namespace Pathfinder {
         glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(uint16_t), QUAD_VERTEX_POSITIONS, GL_STATIC_DRAW);
 
         // Create uniform buffers.
-        Device::create_uniform_buffer(fixed_sizes_ubo, 8 * sizeof(float));
         Device::create_uniform_buffer(tile_transform_ubo, 16 * sizeof(float));
         Device::create_uniform_buffer(tile_varying_sizes_ubo, 8 * sizeof(float));
-
-        // Upload data to the uniform buffer with fixed data.
-        std::array<float, 8> fixed_sizes_ubo_data = {MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT,
-                                                     TILE_WIDTH, TILE_HEIGHT,
-                                                     TEXTURE_METADATA_TEXTURE_WIDTH, TEXTURE_METADATA_TEXTURE_HEIGHT,
-                                                     0, 0};
-        Device::upload_to_uniform_buffer(fixed_sizes_ubo, 0, 8 * sizeof(float), fixed_sizes_ubo_data.data());
 
         Device::check_error("PathfinderD3D9::RendererD3D9() > setup");
     }
@@ -263,11 +255,10 @@ namespace Pathfinder {
         // Update uniform buffers.
         Device::upload_to_uniform_buffer(tile_transform_ubo, 0, 16 * sizeof(float), &mvp_mat);
 
-        std::array<float, 8> ubo_data = {(float) z_buffer_texture->get_width(), (float) z_buffer_texture->get_height(),
+        std::array<float, 6> ubo_data = {(float) z_buffer_texture->get_width(), (float) z_buffer_texture->get_height(),
                                          (float) color_texture.size.x, (float) color_texture.size.y,
-                                         (float) descriptor.width, (float) descriptor.height,
-                                         0, 0};
-        Device::upload_to_uniform_buffer(tile_varying_sizes_ubo, 0, 8 * sizeof(float), ubo_data.data());
+                                         (float) descriptor.width, (float) descriptor.height};
+        Device::upload_to_uniform_buffer(tile_varying_sizes_ubo, 0, 6 * sizeof(float), ubo_data.data());
 
         // Bind uniform buffers.
         tile_program->bind_uniform_buffer(0, "bTransform", tile_transform_ubo);

@@ -15,9 +15,11 @@ layout(local_size_x = 64) in;
 #define FILL_INDIRECT_DRAW_PARAMS_ALPHA_TILE_COUNT_INDEX    4
 #define FILL_INDIRECT_DRAW_PARAMS_SIZE                      8
 
-uniform ivec2 uFramebufferTileSize;
-uniform int uColumnCount;
-uniform int uFirstAlphaTileIndex;
+layout (std140) uniform bUniform {
+    ivec2 uFramebufferTileSize;
+    int uColumnCount;
+    int uFirstAlphaTileIndex;
+};
 
 restrict readonly layout(std430, binding = 0) buffer bDrawMetadata {
     // [0]: tile rect

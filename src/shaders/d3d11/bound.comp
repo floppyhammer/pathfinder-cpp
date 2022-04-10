@@ -12,8 +12,12 @@ precision highp float;
 
 layout(local_size_x = 64) in;
 
-uniform int uPathCount;
-uniform int uTileCount;
+layout (std140) uniform bUniform {
+    int uPathCount;
+    int uTileCount;
+    int pad0;
+    int pad1;
+};
 
 restrict readonly layout(std430, binding = 0) buffer bTilePathInfo {
     // x: tile upper left, 16-bit packed x/y

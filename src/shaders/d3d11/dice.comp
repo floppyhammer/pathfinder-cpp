@@ -19,11 +19,17 @@ precision highp float;
 
 layout(local_size_x = 64) in;
 
-uniform mat2 uTransform;
-uniform vec2 uTranslation;
-uniform int uPathCount;
-uniform int uLastBatchSegmentIndex;
-uniform int uMaxMicrolineCount;
+layout (std140) uniform bUniform0 {
+    mat2 uTransform;
+    vec2 uTranslation;
+};
+
+layout (std140) uniform bUniform1 {
+    int uPathCount;
+    int uLastBatchSegmentIndex;
+    int uMaxMicrolineCount;
+    int pad1;
+};
 
 layout(std430, binding = 0) restrict buffer bComputeIndirectParams {
     // [0]: number of x workgroups (actually not used)

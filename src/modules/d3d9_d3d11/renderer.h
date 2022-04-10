@@ -42,10 +42,14 @@ namespace Pathfinder {
     protected:
         Vec2<int> viewport_size;
 
-        /// Pre-defined texture used to draw the mask texture.
+        /// Pre-defined texture used to draw the mask texture. Shared by D3D9 and D3D10.
         std::shared_ptr<Texture> area_lut_texture;
 
+        /// Texture to store metadata. Shared by D3D9 and D3D10.
         std::shared_ptr<Texture> metadata_texture;
+
+        /// Uniform buffer containing some constants. Shared by D3D9 and D3D10.
+        unsigned int fixed_sizes_ubo{};
     };
 }
 

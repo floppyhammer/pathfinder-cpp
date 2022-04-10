@@ -12,6 +12,8 @@
 #include "../../common/logger.h"
 #include "../../common/timestamp.h"
 
+#include <array>
+
 #ifdef PATHFINDER_USE_D3D11
 
 namespace Pathfinder {
@@ -147,6 +149,17 @@ namespace Pathfinder {
         allocated_microline_count = INITIAL_ALLOCATED_MICROLINE_COUNT;
         allocated_fill_count = INITIAL_ALLOCATED_FILL_COUNT;
 
+        // Create uniform buffers.
+        Device::create_uniform_buffer(bin_ubo, 4 * sizeof(int32_t));
+        Device::create_uniform_buffer(bound_ubo, 4 * sizeof(int32_t));
+        Device::create_uniform_buffer(dice_ubo0, 10 * sizeof(float));
+        Device::create_uniform_buffer(dice_ubo1, 4 * sizeof(int32_t));
+        Device::create_uniform_buffer(fill_ubo, 4 * sizeof(int32_t));
+        Device::create_uniform_buffer(propagate_ubo, 4 * sizeof(int32_t));
+        Device::create_uniform_buffer(sort_ubo, 4 * sizeof(int32_t));
+        Device::create_uniform_buffer(tile_ubo0, 8 * sizeof(float));
+        Device::create_uniform_buffer(tile_ubo1, 8 * sizeof(float));
+
         // Unlike D3D9, we use RGBA8 here instead of RGBA16F.
         mask_texture = std::make_shared<Texture>(MASK_FRAMEBUFFER_WIDTH,
                                                  MASK_FRAMEBUFFER_HEIGHT,
@@ -234,22 +247,23 @@ namespace Pathfinder {
         // Bind dest image.
         tile_program->bind_image(0, target_texture_id, GL_READ_WRITE, GL_RGBA8);
 
-        // Set uniforms.
-        tile_program->set_int("uLoadAction", clear_op); // If we should clear the dest texture.
-        tile_program->set_vec4("uClearColor", 0, 0, 0, 0); // Clear color for the above op.
-        tile_program->set_vec2("uTileSize", TILE_WIDTH, TILE_HEIGHT);
-        tile_program->set_vec2("uTextureMetadataSize",
-                               TEXTURE_METADATA_TEXTURE_WIDTH,
-                               TEXTURE_METADATA_TEXTURE_HEIGHT);
-        tile_program->set_vec2i("uZBufferSize", 0, 0);
-        if (color_texture.texture_id != 0) {
-            tile_program->set_vec2("uColorTextureSize0", color_texture.size.x, color_texture.size.y);
-        } else {
-            tile_program->set_vec2("uColorTextureSize0", 0, 0);
+        // Update uniform buffers.
+        {
+            std::array<float, 8> ubo_data0 = {0, 0, 0, 0, // uClearColor
+                                              (float) color_texture.size.x, (float) color_texture.size.y, // uColorTextureSize0
+                                              (float) target_viewport_size.x, (float) target_viewport_size.y}; // uFramebufferSize
+            Device::upload_to_uniform_buffer(tile_ubo0, 0, 8 * sizeof(float), ubo_data0.data());
+
+            std::array<int32_t, 5> ubo_data1 = {0, 0, // uZBufferSize
+                                                framebuffer_tile_size0.x, framebuffer_tile_size0.y, // uFramebufferTileSize
+                                                clear_op}; // uLoadAction
+            Device::upload_to_uniform_buffer(tile_ubo1, 0, 5 * sizeof(int32_t), ubo_data1.data());
         }
-        tile_program->set_vec2("uMaskTextureSize0", mask_texture->get_width(), mask_texture->get_height());
-        tile_program->set_vec2("uFramebufferSize", target_viewport_size.x, target_viewport_size.y);
-        tile_program->set_vec2i("uFramebufferTileSize", framebuffer_tile_size0.x, framebuffer_tile_size0.y);
+
+        // Bind uniform buffers.
+        tile_program->bind_uniform_buffer(0, "bFixedUniform", fixed_sizes_ubo);
+        tile_program->bind_uniform_buffer(1, "bUniform0", tile_ubo0);
+        tile_program->bind_uniform_buffer(2, "bUniform1", tile_ubo1);
 
         tile_program->bind_general_buffer(0, tiles_d3d11_buffer_id); // Read only
         tile_program->bind_general_buffer(1, first_tile_map_buffer_id); // Read only
@@ -450,12 +464,23 @@ namespace Pathfinder {
         // ----------------------------------------------------
         dice_program->use();
 
-        // Set uniforms.
-        dice_program->set_mat2("uTransform", transform.matrix);
-        dice_program->set_vec2("uTranslation", transform.vector.x, transform.vector.y);
-        dice_program->set_int("uPathCount", dice_metadata.size());
-        dice_program->set_int("uLastBatchSegmentIndex", batch_segment_count);
-        dice_program->set_int("uMaxMicrolineCount", allocated_microline_count);
+        // Update uniform buffers.
+        {
+            // Note that a row of mat2 occupies 4 floats just like a mat4.
+            std::array<float, 10> ubo_data0 = {transform.matrix.v[0], transform.matrix.v[1], 0, 0,
+                                              transform.matrix.v[2], transform.matrix.v[3], 0, 0,
+                                              transform.vector.x, transform.vector.y};
+            Device::upload_to_uniform_buffer(dice_ubo0, 0, 10 * sizeof(float), ubo_data0.data());
+
+            std::array<int32_t, 3> ubo_data1 = {static_cast<int32_t>(dice_metadata.size()),
+                                                static_cast<int32_t>(batch_segment_count),
+                                                static_cast<int32_t>(allocated_microline_count)};
+            Device::upload_to_uniform_buffer(dice_ubo1, 0, 3 * sizeof(int32_t), ubo_data1.data());
+        }
+
+        // Bind uniform buffers.
+        dice_program->bind_uniform_buffer(0, "bUniform0", dice_ubo0);
+        dice_program->bind_uniform_buffer(1, "bUniform1", dice_ubo1);
 
         // Bind storage buffers.
         dice_program->bind_general_buffer(0, indirect_draw_params_buffer_id); // Read write
@@ -507,9 +532,13 @@ namespace Pathfinder {
 
         bound_program->use();
 
-        // Set uniforms.
-        bound_program->set_int("uPathCount", tile_path_info.size());
-        bound_program->set_int("uTileCount", tile_count);
+        // Update uniform buffers.
+        std::array<int32_t, 2> ubo_data = {static_cast<int32_t>(tile_path_info.size()),
+                                           static_cast<int32_t>(tile_count)};
+        Device::upload_to_uniform_buffer(bound_ubo, 0, 2 * sizeof(int32_t), ubo_data.data());
+
+        // Bind uniform buffers.
+        bound_program->bind_uniform_buffer(0, "bUniform", bound_ubo);
 
         // Bind storage buffers.
         bound_program->bind_general_buffer(0, path_info_buffer_id); // Read only
@@ -540,9 +569,12 @@ namespace Pathfinder {
 
         bin_program->use();
 
-        // Set uniforms.
-        bin_program->set_int("uMicrolineCount", microlines_storage.count);
-        bin_program->set_int("uMaxFillCount", allocated_fill_count);
+        // Update uniform buffers.
+        std::array<int32_t, 2> ubo_data = {(int32_t) microlines_storage.count, (int32_t) allocated_fill_count};
+        Device::upload_to_uniform_buffer(bin_ubo, 0, 2 * sizeof(int32_t), ubo_data.data());
+
+        // Bind uniform buffers.
+        bin_program->bind_uniform_buffer(0, "bUniform", bin_ubo);
 
         // Bind storage buffers.
         bin_program->bind_general_buffer(0, microlines_storage.buffer_id); // Read only
@@ -603,10 +635,16 @@ namespace Pathfinder {
 
         propagate_program->use();
 
+        // Update uniform buffers.
         auto framebuffer_tile_size0 = framebuffer_tile_size();
-        propagate_program->set_vec2i("uFramebufferTileSize", framebuffer_tile_size0.x, framebuffer_tile_size0.y);
-        propagate_program->set_int("uColumnCount", column_count);
-        propagate_program->set_int("uFirstAlphaTileIndex", alpha_tile_count);
+        std::array<int32_t , 4> ubo_data = {framebuffer_tile_size0.x,
+                                            framebuffer_tile_size0.y,
+                                            static_cast<int32_t>(column_count),
+                                            static_cast<int32_t>(alpha_tile_count)};
+        Device::upload_to_uniform_buffer(propagate_ubo, 0, 4 * sizeof(int32_t), ubo_data.data());
+
+        // Bind uniform buffers.
+        propagate_program->bind_uniform_buffer(0, "bUniform", propagate_ubo);
 
         // Bind buffers.
         propagate_program->bind_general_buffer(0, propagate_metadata_buffer_ids.propagate_metadata); // Read only
@@ -658,10 +696,14 @@ namespace Pathfinder {
         // We need to use imageLoad if we do clip.
         fill_program->bind_image(0, mask_texture->get_texture_id(), GL_READ_WRITE, GL_RGBA8);
 
-        // Set uniforms.
-        fill_program->set_vec2i("uAlphaTileRange",
-                                alpha_tile_range.start,
-                                alpha_tile_range.end);
+        // Update uniform buffers.
+        auto framebuffer_tile_size0 = framebuffer_tile_size();
+        std::array<int32_t , 2> ubo_data = {static_cast<int32_t>(alpha_tile_range.start),
+                                            static_cast<int32_t>(alpha_tile_range.end)};
+        Device::upload_to_uniform_buffer(fill_ubo, 0, 2 * sizeof(int32_t), ubo_data.data());
+
+        // Bind uniform buffers.
+        fill_program->bind_uniform_buffer(0, "bUniform", fill_ubo);
 
         // Bind storage buffers.
         fill_program->bind_general_buffer(0, fill_storage_info.fill_vertex_buffer_id); // Read only
@@ -679,8 +721,11 @@ namespace Pathfinder {
 
         sort_program->use();
 
-        // Set uniforms.
-        sort_program->set_int("uTileCount", tile_count);
+        // Update uniform buffers.
+        Device::upload_to_uniform_buffer(sort_ubo, 0, sizeof(int32_t), &tile_count);
+
+        // Bind uniform buffers.
+        fill_program->bind_uniform_buffer(0, "bUniform", sort_ubo);
 
         // Bind buffers.
         sort_program->bind_general_buffer(0, tiles_d3d11_buffer_id); // Read write

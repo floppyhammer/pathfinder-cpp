@@ -20,8 +20,13 @@ layout(rgba8) uniform writeonly image2D uDest;
 #else
 layout(rgba8) uniform image2D uDest;
 #endif
+
 uniform sampler2D uAreaLUT;
-uniform ivec2 uAlphaTileRange;
+
+layout (std140) uniform bUniform {
+    ivec2 uAlphaTileRange;
+    ivec2 pad;
+};
 
 // microlines_buffer
 restrict readonly layout(std430, binding = 0) buffer bFills {

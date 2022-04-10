@@ -41,7 +41,6 @@ namespace Pathfinder {
         unsigned int tile_vbo{}, tile_vao{};
 
         /// Uniform buffers.
-        unsigned int fixed_sizes_ubo{};
         unsigned int tile_varying_sizes_ubo{}, tile_transform_ubo{};
 
         std::shared_ptr<Viewport> mask_viewport;
