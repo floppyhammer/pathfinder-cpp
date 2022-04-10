@@ -5,7 +5,7 @@
 #include "descriptor_set.h"
 
 namespace Pathfinder {
-    void Pathfinder::DescriptorSet::add_descriptor(Pathfinder::Descriptor descriptor) {
-        descriptors.insert(std::make_pair(descriptor.binding, descriptor));
+    void Pathfinder::DescriptorSet::add_descriptor(const Pathfinder::Descriptor& descriptor) {
+        descriptors.insert(std::make_pair((uint32_t) descriptor.type + descriptor.binding, descriptor));
     }
 }

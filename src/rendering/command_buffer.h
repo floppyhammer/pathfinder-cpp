@@ -57,8 +57,8 @@ namespace Pathfinder {
                 RenderPipeline *pipeline;
             } bind_render_pipeline;
             struct {
-                uint32_t *buffer_count;
-                Buffer *buffers;
+                uint32_t buffer_count;
+                std::array<Buffer*, 10> buffers;
             } bind_vertex_buffers;
             struct {
                 uint32_t buffer_id;
@@ -71,7 +71,7 @@ namespace Pathfinder {
                 uint32_t instance_count;
             } draw_instanced;
             struct {
-                ComputeProgram *program;
+                //ComputeProgram *program;
             } bind_compute_pipeline;
             struct {
                 uint32_t group_size_x;
@@ -89,11 +89,9 @@ namespace Pathfinder {
                                ColorF clear_color);
 
         // Bind pipeline.
-        void bind_render_pipeline(std::shared_ptr<RenderPipeline> pipeline);
+        void bind_render_pipeline(const std::shared_ptr<RenderPipeline>& pipeline);
 
-        void bind_vertex_buffers();
-
-        void bind_index_buffer();
+        void bind_vertex_buffers(std::vector<std::shared_ptr<Buffer>> vertex_buffers);
 
         // Bind uniform buffers and samplers.
         void bind_descriptor_set(const std::shared_ptr<DescriptorSet>& descriptor_set);
@@ -118,7 +116,7 @@ namespace Pathfinder {
     private:
         std::queue<Command> commands;
 
-        std::shared_ptr<RenderPipeline> render_pipeline;
+        RenderPipeline *render_pipeline;
     };
 }
 

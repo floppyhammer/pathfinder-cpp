@@ -36,13 +36,13 @@ namespace Pathfinder {
 
         // Uniform buffer.
         {
-            Device::create_uniform_buffer(fixed_sizes_ubo, 8 * sizeof(float));
+            fixed_sizes_ub = Device::create_buffer(BufferType::Uniform, 8 * sizeof(float));
 
             // Upload data to the uniform buffer with fixed data.
             std::array<float, 6> fixed_sizes_ubo_data = {MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT,
                                                          TILE_WIDTH, TILE_HEIGHT,
                                                          TEXTURE_METADATA_TEXTURE_WIDTH, TEXTURE_METADATA_TEXTURE_HEIGHT};
-            Device::upload_to_uniform_buffer(fixed_sizes_ubo, 0, 6 * sizeof(float), fixed_sizes_ubo_data.data());
+            Device::upload_to_buffer(fixed_sizes_ub, 0, 6 * sizeof(float), fixed_sizes_ubo_data.data());
         }
     }
 

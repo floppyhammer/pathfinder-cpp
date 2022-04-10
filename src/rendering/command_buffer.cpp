@@ -6,45 +6,59 @@
 
 #include "device.h"
 
+#include <cassert>
+
 namespace Pathfinder {
     void CommandBuffer::begin_render_pass(uint32_t framebuffer_id,
                                           Vec2<uint32_t> extent,
                                           bool clear,
                                           ColorF clear_color) {
         Command cmd;
-        auto &args = cmd.args.begin_render_pass;
+        cmd.type = CommandType::BeginRenderPass;
 
+        auto &args = cmd.args.begin_render_pass;
         args.framebuffer_id = framebuffer_id;
         args.extent = extent;
         args.clear = clear;
         args.clear_color = clear_color;
+
+        commands.push(cmd);
     }
 
     void CommandBuffer::end_render_pass() {
 
     }
 
-    void CommandBuffer::bind_render_pipeline(std::shared_ptr<RenderPipeline> pipeline) {
+    void CommandBuffer::bind_render_pipeline(const std::shared_ptr<RenderPipeline>& pipeline) {
         Command cmd;
+        cmd.type = CommandType::BindRenderPipeline;
         auto &args = cmd.args.bind_render_pipeline;
-
         args.pipeline = pipeline.get();
+
+        commands.push(cmd);
     }
 
     void CommandBuffer::bind_compute_pipeline() {
 
     }
 
-    void CommandBuffer::bind_vertex_buffers() {
+    void CommandBuffer::bind_vertex_buffers(std::vector<std::shared_ptr<Buffer>> vertex_buffers) {
+        Command cmd;
+        cmd.type = CommandType::BindVertexBuffers;
+        auto &args = cmd.args.bind_vertex_buffers;
+        args.buffer_count = vertex_buffers.size();
 
-    }
+        assert(vertex_buffers.size() < 10 && "Maximum vertex buffer per pipeline is 10!");
+        for (int buffer_index = 0; buffer_index < vertex_buffers.size(); buffer_index++) {
+            args.buffers[buffer_index] = vertex_buffers[buffer_index].get();
+        }
 
-    void CommandBuffer::bind_index_buffer() {
-
+        commands.push(cmd);
     }
 
     void CommandBuffer::bind_descriptor_set(const std::shared_ptr<DescriptorSet>& descriptor_set) {
         Command cmd;
+        cmd.type = CommandType::BindDescriptorSet;
 
         auto &args = cmd.args.bind_descriptor_set;
         args.descriptor_set = descriptor_set.get();
@@ -53,7 +67,14 @@ namespace Pathfinder {
     }
 
     void CommandBuffer::draw_instanced(uint32_t vertex_count, uint32_t instance_count) {
+        Command cmd;
+        cmd.type = CommandType::DrawInstanced;
 
+        auto &args = cmd.args.draw_instanced;
+        args.vertex_count = vertex_count;
+        args.instance_count = instance_count;
+
+        commands.push(cmd);
     }
 
     void CommandBuffer::dispatch(uint32_t group_size_x = 1,
@@ -65,8 +86,9 @@ namespace Pathfinder {
         }
 
         Command cmd;
-        auto &args = cmd.args.dispatch;
+        cmd.type = CommandType::DrawInstanced;
 
+        auto &args = cmd.args.dispatch;
         args.group_size_x = group_size_x;
         args.group_size_y = group_size_y;
         args.group_size_z = group_size_z;
@@ -108,39 +130,55 @@ namespace Pathfinder {
                     glBlendFunc(args.pipeline->blend_src, args.pipeline->blend_dst);
 
                     args.pipeline->program->use();
+
+                    render_pipeline = args.pipeline;
                 }
                     break;
                 case CommandType::BindVertexBuffers: {
                     auto &args = cmd.args.bind_vertex_buffers;
 
-                    glBindVertexArray(args.buffers->args.vertex.vao);
+                    auto buffer_count = args.buffer_count;
+                    auto vertex_buffers = args.buffers;
+
+                    glBindVertexArray(render_pipeline->vao);
 
                     auto &attribute_descriptors = render_pipeline->attribute_descriptors;
 
-                    for (int i = 0; i < attribute_descriptors.size(); i++) {
-                        auto &attrib = attribute_descriptors[i];
+                    auto last_vbo = 0;
+                    for (int location = 0; location < attribute_descriptors.size(); location++) {
+                        auto &attrib = attribute_descriptors[location];
 
-                        if (i == 0) {
-                            glBindBuffer(GL_ARRAY_BUFFER, attrib.vbo);
+                        if (attrib.binding >= buffer_count) {
+                            assert("Vertex buffer binding exceeded buffer count!");
+                            return;
+                        }
+
+                        auto buffer = vertex_buffers[attrib.binding];
+                        auto vbo = buffer->args.vertex.vbo;
+
+                        if (location == 0) {
+                            glBindBuffer(GL_ARRAY_BUFFER, vbo);
                         } else {
                             // If target VBO changed.
-                            if (attrib.vbo != attribute_descriptors[i - 1].vbo) {
-                                glBindBuffer(GL_ARRAY_BUFFER, attrib.vbo);
+                            if (vbo != last_vbo) {
+                                glBindBuffer(GL_ARRAY_BUFFER, vbo);
                             }
                         }
 
-                        glVertexAttribIPointer(i,
+                        last_vbo = vbo;
+
+                        glVertexAttribIPointer(location,
                                                attrib.size,
                                                static_cast<GLenum>(attrib.type),
                                                attrib.stride,
                                                (void *) attrib.offset);
 
-                        glEnableVertexAttribArray(i);
+                        glEnableVertexAttribArray(location);
 
                         if (attrib.vertex_step == VertexStep::PER_VERTEX) {
-                            glVertexAttribDivisor(i, 0);
+                            glVertexAttribDivisor(location, 0);
                         } else {
-                            glVertexAttribDivisor(i, 1);
+                            glVertexAttribDivisor(location, 1);
                         }
                     }
                 }
@@ -149,14 +187,21 @@ namespace Pathfinder {
                     auto &args = cmd.args.bind_descriptor_set;
 
                     for (auto &pair: args.descriptor_set->descriptors) {
-                        auto binding_point = pair.first;
                         auto &descriptor = pair.second;
 
+                        // Note that pair.first is not the binding point.
+                        auto binding_point = descriptor.binding;
                         auto binding_name = descriptor.binding_name;
 
                         switch (descriptor.type) {
                             case DescriptorType::UniformBuffer: {
+                                auto buffer = descriptor.buffer.value();
 
+                                unsigned int ubo_index = glGetUniformBlockIndex(render_pipeline->program->get_id(), binding_name.c_str());
+                                glUniformBlockBinding(render_pipeline->program->get_id(), ubo_index, binding_point);
+                                glBindBufferBase(GL_UNIFORM_BUFFER, binding_point, buffer->args.uniform.ubo);
+
+                                Device::check_error("bind_uniform_buffer");
                             }
                                 break;
                             case DescriptorType::Texture: {

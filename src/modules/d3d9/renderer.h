@@ -27,7 +27,8 @@ namespace Pathfinder {
         std::vector<DrawTileBatch> pending_tile_batches;
 
         explicit RendererD3D9(const Vec2<int>& p_viewport_size);
-        ~RendererD3D9();
+
+        void set_up_pipelines();
 
         void draw(const SceneBuilderD3D9& scene_builder);
 
@@ -42,11 +43,13 @@ namespace Pathfinder {
         unsigned int fill_vbo{}, fill_vao{};
         unsigned int tile_vbo{}, tile_vao{};
 
+        std::shared_ptr<Buffer> quad_vertex_buffer, fill_vertex_buffer, tile_vertex_buffer;
+
         std::shared_ptr<RenderPipeline> fill_pipeline, tile_pipeline;
         std::shared_ptr<DescriptorSet> fill_descriptor_set, tile_descriptor_set;
 
         /// Uniform buffers.
-        unsigned int tile_varying_sizes_ubo{}, tile_transform_ubo{};
+        std::shared_ptr<Buffer> tile_varying_sizes_ub{}, tile_transform_ub{};
 
         std::shared_ptr<Viewport> mask_viewport;
 
@@ -54,10 +57,10 @@ namespace Pathfinder {
                                    const std::vector<TextureMetadataEntry>& metadata);
 
         /// Upload fills data to GPU.
-        void upload_fills(const std::vector<Fill>& fills) const;
+        void upload_fills(const std::vector<Fill>& fills);
 
         /// Upload tiles data to GPU.
-        void upload_tiles(const std::vector<TileObjectPrimitive> &tiles) const;
+        void upload_tiles(const std::vector<TileObjectPrimitive> &tiles);
 
         /// Draw tiles.
         void draw_tiles(uint32_t tile_count,
@@ -67,8 +70,6 @@ namespace Pathfinder {
 
         /// Draw the mask texture. Use Renderer::buffered_fills.
         void draw_fills(uint32_t fills_count);
-
-        void set_up_pipelines();
     };
 }
 

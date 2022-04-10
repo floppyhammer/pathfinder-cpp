@@ -49,7 +49,7 @@ namespace Pathfinder {
         std::shared_ptr<Texture> metadata_texture;
 
         /// Uniform buffer containing some constants. Shared by D3D9 and D3D10.
-        unsigned int fixed_sizes_ubo{};
+        std::shared_ptr<Buffer> fixed_sizes_ub{};
     };
 }
 

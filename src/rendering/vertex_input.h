@@ -5,6 +5,8 @@
 #ifndef PATHFINDER_VERTEX_INPUT_H
 #define PATHFINDER_VERTEX_INPUT_H
 
+#include "base.h"
+
 #include <cstdint>
 #include <array>
 
@@ -32,6 +34,20 @@ namespace Pathfinder {
         uint32_t attribute_description_count;
         VertexInputBindingDescription *binding_descriptions;
         VertexInputAttributeDescription *attribute_descriptions;
+    };
+
+    enum class VertexStep {
+        PER_VERTEX,
+        PER_INSTANCE,
+    };
+
+    struct AttributeDescriptor {
+        uint32_t binding;
+        uint8_t size; // Must be 1, 2, 3, 4.
+        DataType type;
+        uint32_t stride;
+        size_t offset;
+        VertexStep vertex_step;
     };
 }
 

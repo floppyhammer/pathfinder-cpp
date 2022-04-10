@@ -5,15 +5,18 @@
 #ifndef PATHFINDER_BUFFER_H
 #define PATHFINDER_BUFFER_H
 
+#include "../common/global_macros.h"
+
 #include <cstdint>
 
 namespace Pathfinder {
     enum class BufferType {
         Vertex,
+        Uniform,
         General,
     };
 
-    enum class BufferUsage {
+    enum class GeneralBufferUsage {
         Read,
         Write,
         ReadWrite,
@@ -21,16 +24,35 @@ namespace Pathfinder {
 
     class Buffer {
     public:
-        BufferType type;
-        BufferUsage usage;
+        ~Buffer() {
+            unsigned int buffer_id;
+            switch (type) {
+                case BufferType::Vertex: {
+                    buffer_id = args.vertex.vbo;
+                }
+                case BufferType::Uniform: {
+                    buffer_id = args.uniform.ubo;
+                } break;
+                    break;
+                case BufferType::General: {
+                    buffer_id = args.general.sbo;
+                }
+                    break;
+            }
 
-        size_t offset;
+            glDeleteBuffers(1, &buffer_id);
+        };
+
+        BufferType type;
+        size_t size;
 
         union Args {
             struct {
-                uint32_t vao;
                 uint32_t vbo;
             } vertex;
+            struct {
+                uint32_t ubo;
+            } uniform;
             struct {
                 uint32_t sbo;
             } general;

@@ -13,9 +13,18 @@
 namespace Pathfinder {
     class RenderPipeline {
     public:
+        RenderPipeline() {
+            glGenVertexArrays(1, &vao);
+        };
+        ~RenderPipeline() {
+            glDeleteVertexArrays(1, &vao);
+        };
+
         std::shared_ptr<RasterProgram> program;
-        VertexInputState vertex_input_state;
+        VertexInputState vertex_input_state{};
         std::vector<AttributeDescriptor> attribute_descriptors;
+
+        unsigned int vao{};
 
         GLenum blend_src{};
         GLenum blend_dst{};
