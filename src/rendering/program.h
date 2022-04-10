@@ -26,6 +26,10 @@ namespace Pathfinder {
                           const std::string &sampler_name,
                           unsigned int texture_id) const;
 
+        void bind_uniform_buffer(unsigned int binding_point,
+                                 const std::string &block_name,
+                                 unsigned int ubo) const;
+
         // Utility uniform functions.
         // ------------------------------------------------------------------------
         void set_bool(const std::string &name, bool value) const;

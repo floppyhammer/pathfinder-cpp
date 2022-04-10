@@ -40,6 +40,10 @@ namespace Pathfinder {
         unsigned int fill_vbo{}, fill_vao{};
         unsigned int tile_vbo{}, tile_vao{};
 
+        /// Uniform buffers.
+        unsigned int fixed_sizes_ubo{};
+        unsigned int tile_varying_sizes_ubo{}, tile_transform_ubo{};
+
         std::shared_ptr<Viewport> mask_viewport;
 
         void upload_and_draw_tiles(const std::vector<DrawTileBatch>& tile_batches,

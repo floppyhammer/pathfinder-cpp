@@ -15,12 +15,26 @@
 precision highp sampler2D;
 #endif
 
-uniform mat4 uTransform; // { c0: <0.0010416667, 0, 0, 0>, c1: <0, -0.0018518518, 0, 0>, c2: <0, 0, 1, 0>, c3: <-1, 1, 0, 1> }
-uniform vec2 uTileSize; // (16, 16)
 uniform sampler2D uTextureMetadata; // RGBA16F
-uniform vec2 uTextureMetadataSize; // (1280, 512)
 uniform sampler2D uZBuffer;
-uniform ivec2 uZBufferSize; // (120, 68)
+
+layout (std140) uniform bTransform {
+    mat4 uTransform; // Will vary.
+};
+
+layout (std140) uniform bVaryingSizesVert {
+    vec2 uZBufferSize; // Will vary.
+    vec2 uColorTextureSize0; // Will vary.
+    vec2 uFramebufferSize; // Will vary.
+    vec2 pad0;
+};
+
+layout (std140) uniform bFixedSizesVert {
+    vec2 uMaskTextureSize0; // Fixed as (4096, 1024). Not used here.
+    vec2 uTileSize; // Fixed as (16, 16).
+    vec2 uTextureMetadataSize; // Fixed as (1280, 512).
+    vec2 pad1;
+};
 
 layout(location=0) in uvec2 aTileOffset; // Tile local coordinates
 layout(location=1) in ivec2 aTileOrigin; // Tile index
@@ -100,7 +114,7 @@ void main() {
     // Tile culling.
     // --------------------------------------------------
     // Get the UV coordinates of the tile Z value.
-    vec2 zUV = ((tileOrigin + vec2(0.5)) / vec2(uZBufferSize)) * 255.0;
+    vec2 zUV = ((tileOrigin + vec2(0.5)) / uZBufferSize) * 255.0;
     zUV.y = 1.0f - zUV.y;
 
     // Sample Z value from the Z buffer texture.

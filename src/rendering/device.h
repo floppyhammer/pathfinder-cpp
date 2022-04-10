@@ -124,6 +124,21 @@ namespace Pathfinder {
             check_error("upload_to_vertex_buffer");
         }
 
+        static void create_uniform_buffer(uint32_t &ubo, size_t size) {
+            glGenBuffers(1, &ubo);
+            glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+            glBufferData(GL_UNIFORM_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+
+            check_error("create_uniform_buffer");
+        }
+
+        static void upload_to_uniform_buffer(uint32_t ubo, size_t offset, size_t size, void *data) {
+            glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+            glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
+
+            check_error("upload_to_uniform_buffer");
+        }
+
         static void bind_attributes(std::vector<AttributeDescriptor> &attribute_descriptors) {
             for (int i = 0; i < attribute_descriptors.size(); i++) {
                 auto &attrib = attribute_descriptors[i];

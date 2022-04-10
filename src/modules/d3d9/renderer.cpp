@@ -11,6 +11,8 @@
 #include "../../common/math/vec3.h"
 #include "../../common/math/mat4x4.h"
 
+#include <array>
+
 namespace Pathfinder {
     static uint16_t QUAD_VERTEX_POSITIONS[12] = {0, 0, 1, 0, 0, 1,
                                                  1, 0, 1, 1, 0, 1};
@@ -82,6 +84,18 @@ namespace Pathfinder {
         glGenBuffers(1, &quad_vbo);
         glBindBuffer(GL_ARRAY_BUFFER, quad_vbo);
         glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(uint16_t), QUAD_VERTEX_POSITIONS, GL_STATIC_DRAW);
+
+        // Create uniform buffers.
+        Device::create_uniform_buffer(fixed_sizes_ubo, 8 * sizeof(float));
+        Device::create_uniform_buffer(tile_transform_ubo, 16 * sizeof(float));
+        Device::create_uniform_buffer(tile_varying_sizes_ubo, 8 * sizeof(float));
+
+        // Upload data to the uniform buffer with fixed data.
+        std::array<float, 8> fixed_sizes_ubo_data = {MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT,
+                                                     TILE_WIDTH, TILE_HEIGHT,
+                                                     TEXTURE_METADATA_TEXTURE_WIDTH, TEXTURE_METADATA_TEXTURE_HEIGHT,
+                                                     0, 0};
+        Device::upload_to_uniform_buffer(fixed_sizes_ubo, 0, 8 * sizeof(float), fixed_sizes_ubo_data.data());
 
         Device::check_error("PathfinderD3D9::RendererD3D9() > setup");
     }
@@ -163,11 +177,8 @@ namespace Pathfinder {
 
         fill_program->use();
 
-        // Set uniforms.
-        fill_program->set_vec2("uFramebufferSize",
-                               (float) mask_viewport->get_width(),
-                               (float) mask_viewport->get_height());
-        fill_program->set_vec2("uTileSize", TILE_WIDTH, TILE_HEIGHT);
+        // Bind uniform buffer.
+        fill_program->bind_uniform_buffer(0, "bFixedSizes", fixed_sizes_ubo);
 
         // Bind textures.
         fill_program->bind_texture(0, "uAreaLUT", area_lut_texture->get_texture_id());
@@ -249,21 +260,21 @@ namespace Pathfinder {
 
         tile_program->use();
 
-        // Set uniforms.
-        tile_program->set_mat4("uTransform", mvp_mat);
-        tile_program->set_vec2("uTileSize", 16.0f, 16.0f);
-        tile_program->set_vec2("uTextureMetadataSize", (float) metadata_texture->get_width(),
-                               (float) metadata_texture->get_height());
-        tile_program->set_vec2("uMaskTextureSize0", 4096.0f, 1024.0f);
-        tile_program->set_vec2("uFramebufferSize", (float) descriptor.width, (float) descriptor.height);
-        tile_program->set_vec2i("uZBufferSize",
-                                (int) z_buffer_texture->get_width(),
-                                (int) z_buffer_texture->get_height());
-        if (color_texture.texture_id != 0) {
-            tile_program->set_vec2("uColorTextureSize0", (float) color_texture.size.x, (float) color_texture.size.y);
-        } else {
-            tile_program->set_vec2("uColorTextureSize0", 1, 1);
-        }
+        // Update uniform buffers.
+        Device::upload_to_uniform_buffer(tile_transform_ubo, 0, 16 * sizeof(float), &mvp_mat);
+
+        std::array<float, 8> ubo_data = {(float) z_buffer_texture->get_width(), (float) z_buffer_texture->get_height(),
+                                         (float) color_texture.size.x, (float) color_texture.size.y,
+                                         (float) descriptor.width, (float) descriptor.height,
+                                         0, 0};
+        Device::upload_to_uniform_buffer(tile_varying_sizes_ubo, 0, 8 * sizeof(float), ubo_data.data());
+
+        // Bind uniform buffers.
+        tile_program->bind_uniform_buffer(0, "bTransform", tile_transform_ubo);
+        tile_program->bind_uniform_buffer(1, "bVaryingSizesVert", tile_varying_sizes_ubo);
+        tile_program->bind_uniform_buffer(2, "bVaryingSizesFrag", tile_varying_sizes_ubo);
+        tile_program->bind_uniform_buffer(3, "bFixedSizesVert", fixed_sizes_ubo);
+        tile_program->bind_uniform_buffer(4, "bFixedSizesFrag", fixed_sizes_ubo);
 
         // Bind textures.
         tile_program->bind_texture(0, "uDestTexture", 0);

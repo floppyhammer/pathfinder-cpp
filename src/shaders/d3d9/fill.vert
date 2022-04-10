@@ -11,8 +11,12 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-uniform vec2 uFramebufferSize; // (4096, 1024), fixed size.
-uniform vec2 uTileSize; // (16, 16), fixed size.
+layout (std140) uniform bFixedSizes {
+    vec2 uFramebufferSize; // Fixed as (4096, 1024).
+    vec2 uTileSize; // Fixed as (16, 16).
+    vec2 uTextureMetadataSize; // Fixed as (1280, 512). Not used here.
+    vec2 pad;
+};
 
 layout(location=0) in uvec2 aTessCoord; // Vertex coordinates in a quad, fixed.
 layout(location=1) in uvec4 aLineSegment; // Line segment from the built batch.
