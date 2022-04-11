@@ -259,6 +259,8 @@ namespace Pathfinder {
     }
 
     void RendererD3D9::draw(const SceneBuilderD3D9 &scene_builder) {
+        if (scene_builder.pending_fills.empty()) return;
+
         // TODO: We should do this before the builder finishes building.
         {
             // Upload fills to buffer.

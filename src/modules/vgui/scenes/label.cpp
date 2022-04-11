@@ -7,8 +7,11 @@
 #include <string>
 
 namespace Pathfinder {
-    Label::Label(unsigned int viewport_width, unsigned int viewport_height, const std::vector<unsigned char> &area_lut_input) {
-        canvas = std::make_shared<Canvas>((float) viewport_width, (float) viewport_height, area_lut_input);
+    Label::Label(unsigned int width, unsigned int height, const std::vector<unsigned char> &area_lut_input) {
+        rect_size.x = width;
+        rect_size.y = height;
+
+        canvas = std::make_shared<Canvas>((float) width, (float) height, area_lut_input);
     }
 
     void Label::set_text(const std::string &p_text) {

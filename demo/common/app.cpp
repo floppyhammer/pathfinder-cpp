@@ -23,10 +23,9 @@ App::App(int window_width,
     canvas->load_svg(p_svg_input);
 
     // Set up a text label.
-    label = std::make_shared<Pathfinder::Label>(window_width,
-                                                window_height,
+    label = std::make_shared<Pathfinder::Label>(256,
+                                                64,
                                                 reinterpret_cast<std::vector<unsigned char> &>(area_lut_input));
-    label->set_rect_size((float) window_width, (float) window_width);
     label->set_style(64, Pathfinder::ColorU::white(), 0, Pathfinder::ColorU::red());
     label->set_font(std::make_shared<Pathfinder::Font>(font_input));
 
@@ -36,7 +35,8 @@ App::App(int window_width,
 
     // Set viewport texture to a texture rect.
     texture_rect0 = std::make_shared<Pathfinder::TextureRect>(window_width, window_height);
-    texture_rect1 = std::make_shared<Pathfinder::TextureRect>(window_width, window_height);
+    texture_rect1 = std::make_shared<Pathfinder::TextureRect>(label->get_rect_size().x,
+                                                              label->get_rect_size().y);
 
     // Timers.
     start_time = std::chrono::steady_clock::now();

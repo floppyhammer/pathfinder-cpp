@@ -17,7 +17,7 @@
 namespace Pathfinder {
     class Label : public Control {
     public:
-        Label(unsigned int viewport_width, unsigned int viewport_height, const std::vector<unsigned char> &area_lut_input);
+        Label(unsigned int width, unsigned int height, const std::vector<unsigned char> &area_lut_input);
 
         /**
          * Set text context.

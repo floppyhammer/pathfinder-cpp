@@ -19,5 +19,8 @@ void main() {
     vColor = aColor;
 
     gl_Position = uMvpMat * vec4(aPos, 1.0);
+
+    // When rendering to screen, the Y coordinate is flipped.
+    gl_Position.y *= -1.0;
 }
 )"

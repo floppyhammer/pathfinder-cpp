@@ -40,32 +40,6 @@ namespace Pathfinder {
         // Delete the shaders as they're linked into our program now and no longer necessary.
         glDeleteShader(compute);
     }
-
-    void ComputeProgram::bind_general_buffer(unsigned int binding_point, uint64_t buffer_id) {
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding_point, buffer_id);
-    }
-
-    void ComputeProgram::bind_image(unsigned int binding_point, unsigned int texture_id, int access_mode, int format) const {
-        glBindImageTexture(binding_point, texture_id, 0, GL_FALSE, 0, access_mode, format);
-    }
-
-//    void ComputeProgram::dispatch(unsigned int group_size_x, unsigned int group_size_y, unsigned int group_size_z) {
-//        if (group_size_x == 0 || group_size_y == 0 || group_size_z == 0) {
-//            Logger::error("Compute group size cannot be zero!", "ComputeProgram");
-//            return;
-//        }
-//
-//        // Max global (total) work group counts x:2147483647 y:65535 z:65535.
-//        // Max local (in one shader) work group sizes x:1536 y:1024 z:64.
-//        glDispatchCompute(group_size_x, group_size_y, group_size_z);
-//
-//        // In order to use timestamps more precisely.
-//#ifdef PATHFINDER_DEBUG
-//        glFinish();
-//#endif
-//
-//        Device::check_error("ComputeProgram::dispatch");
-//    }
 }
 
 #endif

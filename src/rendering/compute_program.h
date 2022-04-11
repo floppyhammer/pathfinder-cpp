@@ -9,10 +9,9 @@
 #include "../rendering/device.h"
 #include "../common/global_macros.h"
 
-#ifdef PATHFINDER_USE_D3D11
-
 namespace Pathfinder {
     class ComputeProgram : public Program {
+#ifdef PATHFINDER_USE_D3D11
     public:
         /// Constructor generates the shader on the fly.
         explicit ComputeProgram(const char *compute_path);
@@ -29,9 +28,8 @@ namespace Pathfinder {
 
     private:
         void compile(std::string& compute_code_s);
+#endif
     };
 }
-
-#endif
 
 #endif //PATHFINDER_COMPUTE_PROGRAM_H

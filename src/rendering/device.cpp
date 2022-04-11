@@ -11,7 +11,9 @@
 
 namespace Pathfinder {
     std::shared_ptr<Buffer> Device::create_buffer(BufferType type, size_t size) {
-        if (size == 0) Logger::error("Tried to create a buffer with zero size!");
+        if (size == 0) {
+            Logger::error("Tried to create a buffer with zero size!");
+        }
 
         auto buffer = std::make_shared<Buffer>();
 
@@ -63,7 +65,9 @@ namespace Pathfinder {
     }
 
     void Device::upload_to_buffer(const std::shared_ptr<Buffer>& buffer, size_t offset, size_t data_size, void *data) {
-        if (data_size == 0) Logger::error("Tried to upload data of zero size to buffer!");
+        if (data_size == 0) {
+            Logger::error("Tried to upload data of zero size to buffer!");
+        }
 
         switch (buffer->type) {
             case BufferType::Uniform: {
