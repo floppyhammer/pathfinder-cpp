@@ -6,6 +6,7 @@
 
 #include "../../src/common/global_macros.h"
 #include "../../src/common/logger.h"
+#include "../../src/rendering/command_buffer.h"
 
 App::App(int window_width,
          int window_height,
@@ -34,7 +35,8 @@ App::App(int window_width,
     screen_viewport->set_clear_color(Pathfinder::ColorF(0.3, 0.3, 0.3, 1.0));
 
     // Set viewport texture to a texture rect.
-    texture_rect = std::make_shared<Pathfinder::TextureRect>(window_width, window_height);
+    texture_rect0 = std::make_shared<Pathfinder::TextureRect>(window_width, window_height);
+    texture_rect1 = std::make_shared<Pathfinder::TextureRect>(window_width, window_height);
 
     // Timers.
     start_time = std::chrono::steady_clock::now();
@@ -75,15 +77,22 @@ void App::loop() {
     // Build and draw label.
     label->draw();
 
-    // Set render target to screen. Clear screen.
-    screen_viewport->use();
-    screen_viewport->clear();
+    auto cmd_buffer = std::make_shared<Pathfinder::CommandBuffer>();
+
+    cmd_buffer->begin_render_pass(screen_viewport->get_framebuffer_id(),
+                                 {(uint32_t) screen_viewport->get_width(), (uint32_t) screen_viewport->get_height()},
+                                 true,
+                                 screen_viewport->get_clear_color());
 
     // Draw canvas to screen.
-    texture_rect->set_texture(canvas->get_dest_texture());
-    texture_rect->draw();
+    texture_rect0->set_texture(canvas->get_dest_texture());
+    texture_rect0->draw(cmd_buffer, screen_viewport);
 
     // Draw label to screen.
-    texture_rect->set_texture(label->canvas->get_dest_texture());
-    texture_rect->draw();
+    texture_rect1->set_texture(label->canvas->get_dest_texture());
+    texture_rect1->draw(cmd_buffer, screen_viewport);
+
+    cmd_buffer->end_render_pass();
+
+    cmd_buffer->submit();
 }

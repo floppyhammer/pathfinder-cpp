@@ -35,6 +35,8 @@ namespace Pathfinder {
 
         void set_clear_color(const ColorF &color);
 
+        ColorF get_clear_color() const;
+
         int get_width() const;
 
         int get_height() const;

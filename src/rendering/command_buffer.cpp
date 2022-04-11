@@ -66,6 +66,17 @@ namespace Pathfinder {
         commands.push(cmd);
     }
 
+    void CommandBuffer::draw(uint32_t first_vertex, uint32_t vertex_count) {
+        Command cmd;
+        cmd.type = CommandType::Draw;
+
+        auto &args = cmd.args.draw;
+        args.first_vertex = first_vertex;
+        args.vertex_count = vertex_count;
+
+        commands.push(cmd);
+    }
+
     void CommandBuffer::draw_instanced(uint32_t vertex_count, uint32_t instance_count) {
         Command cmd;
         cmd.type = CommandType::DrawInstanced;
@@ -167,11 +178,29 @@ namespace Pathfinder {
 
                         last_vbo = vbo;
 
-                        glVertexAttribIPointer(location,
-                                               attrib.size,
-                                               static_cast<GLenum>(attrib.type),
-                                               attrib.stride,
-                                               (void *) attrib.offset);
+                        switch (attrib.type) {
+                            case DataType::BYTE:
+                            case DataType::UNSIGNED_BYTE:
+                            case DataType::SHORT:
+                            case DataType::UNSIGNED_SHORT:
+                            case DataType::INT:
+                            case DataType::UNSIGNED_INT: {
+                                glVertexAttribIPointer(location,
+                                                       attrib.size,
+                                                       static_cast<GLenum>(attrib.type),
+                                                       attrib.stride,
+                                                       (void *) attrib.offset);
+                            } break;
+                            case DataType::HALF_FLOAT:
+                            case DataType::FLOAT: {
+                                glVertexAttribPointer(location,
+                                                      attrib.size,
+                                                      static_cast<GLenum>(attrib.type),
+                                                      GL_FALSE,
+                                                      attrib.stride,
+                                                      (void *) attrib.offset);
+                            } break;
+                        }
 
                         glEnableVertexAttribArray(location);
 
@@ -181,12 +210,14 @@ namespace Pathfinder {
                             glVertexAttribDivisor(location, 1);
                         }
                     }
+
+                    Device::check_error("BindVertexBuffers");
                 }
                     break;
                 case CommandType::BindDescriptorSet: {
                     auto &args = cmd.args.bind_descriptor_set;
 
-                    for (auto &pair: args.descriptor_set->descriptors) {
+                    for (auto &pair: args.descriptor_set->get_descriptors()) {
                         auto &descriptor = pair.second;
 
                         // Note that pair.first is not the binding point.
@@ -200,8 +231,6 @@ namespace Pathfinder {
                                 unsigned int ubo_index = glGetUniformBlockIndex(render_pipeline->program->get_id(), binding_name.c_str());
                                 glUniformBlockBinding(render_pipeline->program->get_id(), ubo_index, binding_point);
                                 glBindBufferBase(GL_UNIFORM_BUFFER, binding_point, buffer->args.uniform.ubo);
-
-                                Device::check_error("bind_uniform_buffer");
                             }
                                 break;
                             case DescriptorType::Texture: {
@@ -223,6 +252,16 @@ namespace Pathfinder {
                                 break;
                         }
                     }
+
+                    Device::check_error("BindDescriptorSet");
+                }
+                    break;
+                case CommandType::Draw: {
+                    auto &args = cmd.args.draw;
+
+                    glDrawArrays(GL_TRIANGLES, (GLsizei) args.first_vertex, (GLsizei) args.vertex_count);
+
+                    Device::check_error("Draw");
                 }
                     break;
                 case CommandType::DrawInstanced: {

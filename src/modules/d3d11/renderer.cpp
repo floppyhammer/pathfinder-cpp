@@ -150,15 +150,15 @@ namespace Pathfinder {
         allocated_fill_count = INITIAL_ALLOCATED_FILL_COUNT;
 
         // Create uniform buffers.
-        Device::create_uniform_buffer(bin_ubo, 4 * sizeof(int32_t));
-        Device::create_uniform_buffer(bound_ubo, 4 * sizeof(int32_t));
-        Device::create_uniform_buffer(dice_ubo0, 10 * sizeof(float));
-        Device::create_uniform_buffer(dice_ubo1, 4 * sizeof(int32_t));
-        Device::create_uniform_buffer(fill_ubo, 4 * sizeof(int32_t));
-        Device::create_uniform_buffer(propagate_ubo, 4 * sizeof(int32_t));
-        Device::create_uniform_buffer(sort_ubo, 4 * sizeof(int32_t));
-        Device::create_uniform_buffer(tile_ubo0, 8 * sizeof(float));
-        Device::create_uniform_buffer(tile_ubo1, 8 * sizeof(float));
+        bin_ub = Device::create_buffer(BufferType::Uniform, 4 * sizeof(int32_t));
+        bound_ub = Device::create_buffer(BufferType::Uniform, 4 * sizeof(int32_t));
+        dice_ub0 = Device::create_buffer(BufferType::Uniform, 10 * sizeof(float));
+        dice_ub1 = Device::create_buffer(BufferType::Uniform, 4 * sizeof(int32_t));
+        fill_ub = Device::create_buffer(BufferType::Uniform, 4 * sizeof(int32_t));
+        propagate_ub = Device::create_buffer(BufferType::Uniform, 4 * sizeof(int32_t));
+        sort_ub = Device::create_buffer(BufferType::Uniform, 4 * sizeof(int32_t));
+        tile_ub0 = Device::create_buffer(BufferType::Uniform, 8 * sizeof(float));
+        tile_ub1 = Device::create_buffer(BufferType::Uniform, 8 * sizeof(float));
 
         // Unlike D3D9, we use RGBA8 here instead of RGBA16F.
         mask_texture = std::make_shared<Texture>(MASK_FRAMEBUFFER_WIDTH,

@@ -25,7 +25,7 @@ public:
 private:
     std::shared_ptr<Pathfinder::Canvas> canvas;
     std::shared_ptr<Pathfinder::Label> label;
-    std::shared_ptr<Pathfinder::TextureRect> texture_rect;
+    std::shared_ptr<Pathfinder::TextureRect> texture_rect0, texture_rect1;
     std::shared_ptr<Pathfinder::Viewport> screen_viewport;
 
     std::chrono::time_point<std::chrono::steady_clock> start_time;

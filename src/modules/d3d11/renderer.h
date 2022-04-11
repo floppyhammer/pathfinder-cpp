@@ -181,7 +181,7 @@ namespace Pathfinder {
         std::shared_ptr<ComputeProgram> tile_program;
 
         /// Uniform buffers.
-        unsigned int bin_ubo, bound_ubo, dice_ubo0, dice_ubo1, fill_ubo, propagate_ubo, sort_ubo, tile_ubo0, tile_ubo1;
+        std::shared_ptr<Buffer> bin_ub, bound_ub, dice_ub0, dice_ub1, fill_ub, propagate_ub, sort_ub, tile_ub0, tile_ub1;
 
         uint32_t allocated_microline_count = 0;
         uint32_t allocated_fill_count = 0;

@@ -25,6 +25,7 @@ namespace Pathfinder {
         BindVertexBuffers,
         BindIndexBuffer,
         BindDescriptorSet,
+        Draw,
         DrawInstanced,
         EndRenderPass,
 
@@ -67,6 +68,10 @@ namespace Pathfinder {
                 DescriptorSet *descriptor_set;
             } bind_descriptor_set;
             struct {
+                uint32_t first_vertex;
+                uint32_t vertex_count;
+            } draw;
+            struct {
                 uint32_t vertex_count;
                 uint32_t instance_count;
             } draw_instanced;
@@ -97,6 +102,7 @@ namespace Pathfinder {
         void bind_descriptor_set(const std::shared_ptr<DescriptorSet>& descriptor_set);
 
         // Draw call.
+        void draw(uint32_t first_vertex, uint32_t vertex_count);
         void draw_instanced(uint32_t vertex_count, uint32_t instance_count);
 
         void end_render_pass();

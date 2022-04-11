@@ -49,23 +49,23 @@ namespace Pathfinder {
         glBindImageTexture(binding_point, texture_id, 0, GL_FALSE, 0, access_mode, format);
     }
 
-    void ComputeProgram::dispatch(unsigned int group_size_x, unsigned int group_size_y, unsigned int group_size_z) {
-        if (group_size_x == 0 || group_size_y == 0 || group_size_z == 0) {
-            Logger::error("Compute group size cannot be zero!", "ComputeProgram");
-            return;
-        }
-
-        // Max global (total) work group counts x:2147483647 y:65535 z:65535.
-        // Max local (in one shader) work group sizes x:1536 y:1024 z:64.
-        glDispatchCompute(group_size_x, group_size_y, group_size_z);
-
-        // In order to use timestamps more precisely.
-#ifdef PATHFINDER_DEBUG
-        glFinish();
-#endif
-
-        Device::check_error("ComputeProgram::dispatch");
-    }
+//    void ComputeProgram::dispatch(unsigned int group_size_x, unsigned int group_size_y, unsigned int group_size_z) {
+//        if (group_size_x == 0 || group_size_y == 0 || group_size_z == 0) {
+//            Logger::error("Compute group size cannot be zero!", "ComputeProgram");
+//            return;
+//        }
+//
+//        // Max global (total) work group counts x:2147483647 y:65535 z:65535.
+//        // Max local (in one shader) work group sizes x:1536 y:1024 z:64.
+//        glDispatchCompute(group_size_x, group_size_y, group_size_z);
+//
+//        // In order to use timestamps more precisely.
+//#ifdef PATHFINDER_DEBUG
+//        glFinish();
+//#endif
+//
+//        Device::check_error("ComputeProgram::dispatch");
+//    }
 }
 
 #endif

@@ -79,4 +79,8 @@ namespace Pathfinder {
         assert("Tried to get texture id from screen viewport!");
         return 0;
     }
+
+    ColorF Viewport::get_clear_color() const {
+        return clear_color;
+    }
 }

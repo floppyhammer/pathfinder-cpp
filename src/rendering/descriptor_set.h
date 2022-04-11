@@ -15,10 +15,10 @@
 namespace Pathfinder {
     enum class DescriptorType {
         UniformBuffer = 0,
-        GeneralBuffer = 20,
-        Texture = 40,
-        Image = 50,
-        Max = 70,
+        Texture = 20,
+        GeneralBuffer = 40,
+        Image = 60,
+        Max = 80,
     };
 
     struct Descriptor {
@@ -33,8 +33,15 @@ namespace Pathfinder {
 
     class DescriptorSet {
     public:
-        void add_descriptor(const Descriptor& descriptor);
+        inline void add_descriptor(const Descriptor &descriptor) {
+            descriptors.insert(std::make_pair((uint32_t) descriptor.type + descriptor.binding, descriptor));
+        };
 
+        inline std::unordered_map<uint32_t, Descriptor> &get_descriptors() {
+            return descriptors;
+        }
+
+    private:
         std::unordered_map<uint32_t, Descriptor> descriptors;
     };
 }

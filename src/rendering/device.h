@@ -26,6 +26,7 @@ namespace Pathfinder {
         UNSIGNED_INT = GL_UNSIGNED_INT, // 4 bytes
 
         // Floats.
+        FLOAT = GL_FLOAT,
         HALF_FLOAT = GL_HALF_FLOAT, // 2 bytes
     };
 
