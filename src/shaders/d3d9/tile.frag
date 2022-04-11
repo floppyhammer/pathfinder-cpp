@@ -17,14 +17,14 @@ precision highp int; // Fix Android rendering artifacts.
 precision highp sampler2D;
 #endif
 
-layout (std140) uniform bVaryingSizesFrag {
+layout (std140) uniform bVaryingSizes {
     vec2 uZBufferSize; // Will vary.
     vec2 uColorTextureSize0; // Will vary.
     vec2 uFramebufferSize; // Will vary.
     vec2 pad0;
 };
 
-layout (std140) uniform bFixedSizesFrag {
+layout (std140) uniform bFixedSizes {
     vec2 uMaskTextureSize0; // Fixed as (4096, 1024).
     vec2 uTileSize; // Fixed as (16, 16). Not used here.
     vec2 uTextureMetadataSize; // Fixed as (1280, 512). Not used here.

@@ -135,6 +135,8 @@ namespace Pathfinder {
 #endif
 
         renderer->set_up_area_lut(area_lut_input);
+
+        renderer->set_up_pipelines();
     }
 
     void Canvas::push_shape(Shape p_shape,
@@ -331,7 +333,6 @@ namespace Pathfinder {
     }
 
     void Canvas::draw() {
-        renderer->dest_viewport->clear();
         renderer->draw(scene_builder);
     }
 

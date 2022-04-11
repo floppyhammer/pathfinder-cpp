@@ -22,6 +22,7 @@ layout(local_size_x = 64) in;
 layout (std140) uniform bUniform0 {
     mat2 uTransform;
     vec2 uTranslation;
+    vec2 pad0;
 };
 
 layout (std140) uniform bUniform1 {

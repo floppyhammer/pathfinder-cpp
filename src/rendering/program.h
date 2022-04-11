@@ -21,14 +21,7 @@ namespace Pathfinder {
         /// Activate the shader.
         void use() const;
 
-        /// Set sampler2D first, then bind texture to the corresponding binding point.
-        void bind_texture(unsigned int binding_point,
-                          const std::string &sampler_name,
-                          unsigned int texture_id) const;
-
-        void bind_uniform_buffer(unsigned int binding_point,
-                                 const std::string &block_name,
-                                 unsigned int ubo) const;
+        [[nodiscard]] unsigned int get_id() const;
 
         // Utility uniform functions.
         // ------------------------------------------------------------------------

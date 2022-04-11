@@ -12,26 +12,8 @@ namespace Pathfinder {
         glUseProgram(id);
     }
 
-    void Program::bind_texture(unsigned int binding_point,
-                               const std::string &sampler_name,
-                               unsigned int texture_id) const {
-        if (!sampler_name.empty()) {
-            glUniform1i(glGetUniformLocation(id, sampler_name.c_str()), binding_point);
-        }
-        glActiveTexture(GL_TEXTURE0 + binding_point);
-        glBindTexture(GL_TEXTURE_2D, texture_id);
-
-        Device::check_error("bind_texture");
-    }
-
-    void Program::bind_uniform_buffer(unsigned int binding_point,
-                                      const std::string &block_name,
-                                      unsigned int ubo) const {
-        unsigned int ubo_index = glGetUniformBlockIndex(id, block_name.c_str());
-        glUniformBlockBinding(id, ubo_index, binding_point);
-        glBindBufferBase(GL_UNIFORM_BUFFER, binding_point, ubo);
-
-        Device::check_error("bind_uniform_buffer");
+    unsigned int Program::get_id() const {
+        return id;
     }
 
     // Utility uniform functions.

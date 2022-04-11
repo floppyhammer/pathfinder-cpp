@@ -11,6 +11,7 @@
 #include <memory>
 
 namespace Pathfinder {
+    // TODO: Refactor to RenderTarget.
     class Viewport {
     public:
         /// Screen viewport.
@@ -34,6 +35,8 @@ namespace Pathfinder {
         void clear() const;
 
         void set_clear_color(const ColorF &color);
+
+        ColorF get_clear_color() const;
 
         int get_width() const;
 

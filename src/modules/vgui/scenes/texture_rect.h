@@ -8,7 +8,9 @@
 #include "control.h"
 #include "../../../rendering/viewport.h"
 #include "../../../rendering/texture.h"
-#include "../../../rendering/raster_program.h"
+#include "../../../rendering/render_pipeline.h"
+#include "../../../rendering/descriptor_set.h"
+#include "../../../rendering/command_buffer.h"
 
 #include <memory>
 
@@ -17,23 +19,20 @@ namespace Pathfinder {
     public:
         TextureRect(float viewport_width, float viewport_height);
 
-        ~TextureRect();
-
         void set_texture(std::shared_ptr<Texture> p_texture);
 
-        void attach_shader(std::shared_ptr<RasterProgram> p_shader);
+        [[nodiscard]] std::shared_ptr<Texture> get_texture() const;
 
-        std::shared_ptr<Texture> get_texture() const;
-
-        void draw();
+        void draw(const std::shared_ptr<Pathfinder::CommandBuffer>& cmd_buffer, const std::shared_ptr<Viewport>& render_target);
 
     private:
         std::shared_ptr<Texture> texture;
 
-        std::shared_ptr<RasterProgram> shader;
+        std::shared_ptr<RenderPipeline> pipeline;
 
-        unsigned int vao = 0;
-        unsigned int vbo = 0;
+        std::shared_ptr<Buffer> vertex_buffer, uniform_buffer;
+
+        std::shared_ptr<DescriptorSet> descriptor_set;
     };
 }
 
