@@ -3,6 +3,7 @@
 //
 
 #include "command_buffer.h"
+#include "compute_pipeline.h"
 
 #include "device.h"
 
@@ -38,8 +39,13 @@ namespace Pathfinder {
         commands.push(cmd);
     }
 
-    void CommandBuffer::bind_compute_pipeline() {
+    void CommandBuffer::bind_compute_pipeline(const std::shared_ptr<ComputePipeline>& pipeline) {
+        Command cmd;
+        cmd.type = CommandType::BindComputePipeline;
+        auto &args = cmd.args.bind_compute_pipeline;
+        args.pipeline = pipeline.get();
 
+        commands.push(cmd);
     }
 
     void CommandBuffer::bind_vertex_buffers(std::vector<std::shared_ptr<Buffer>> vertex_buffers) {
@@ -88,16 +94,16 @@ namespace Pathfinder {
         commands.push(cmd);
     }
 
-    void CommandBuffer::dispatch(uint32_t group_size_x = 1,
-                                 uint32_t group_size_y = 1,
-                                 uint32_t group_size_z = 1) {
+    void CommandBuffer::dispatch(uint32_t group_size_x,
+                                 uint32_t group_size_y,
+                                 uint32_t group_size_z) {
         if (group_size_x == 0 || group_size_y == 0 || group_size_z == 0) {
             Logger::error("Compute group size cannot be zero!", "ComputeProgram");
             return;
         }
 
         Command cmd;
-        cmd.type = CommandType::DrawInstanced;
+        cmd.type = CommandType::Dispatch;
 
         auto &args = cmd.args.dispatch;
         args.group_size_x = group_size_x;
@@ -142,10 +148,12 @@ namespace Pathfinder {
 
                     args.pipeline->program->use();
 
-                    render_pipeline = args.pipeline;
+                    current_pipeline = args.pipeline;
                 }
                     break;
                 case CommandType::BindVertexBuffers: {
+                    auto render_pipeline = static_cast<RenderPipeline *>(current_pipeline);
+
                     auto &args = cmd.args.bind_vertex_buffers;
 
                     auto buffer_count = args.buffer_count;
@@ -228,8 +236,8 @@ namespace Pathfinder {
                             case DescriptorType::UniformBuffer: {
                                 auto buffer = descriptor.buffer.value();
 
-                                unsigned int ubo_index = glGetUniformBlockIndex(render_pipeline->program->get_id(), binding_name.c_str());
-                                glUniformBlockBinding(render_pipeline->program->get_id(), ubo_index, binding_point);
+                                unsigned int ubo_index = glGetUniformBlockIndex(current_pipeline->get_program()->get_id(), binding_name.c_str());
+                                glUniformBlockBinding(current_pipeline->get_program()->get_id(), ubo_index, binding_point);
                                 glBindBufferBase(GL_UNIFORM_BUFFER, binding_point, buffer->args.uniform.ubo);
                             }
                                 break;
@@ -237,15 +245,23 @@ namespace Pathfinder {
                                 auto texture = descriptor.texture.value();
 
                                 if (!binding_name.empty()) {
-                                    glUniform1i(glGetUniformLocation(render_pipeline->program->get_id(), binding_name.c_str()),
+                                    glUniform1i(glGetUniformLocation(current_pipeline->get_program()->get_id(), binding_name.c_str()),
                                                 binding_point);
                                 }
                                 glActiveTexture(GL_TEXTURE0 + binding_point);
                                 glBindTexture(GL_TEXTURE_2D, texture->get_texture_id());
                             }
                                 break;
-                            case DescriptorType::Image: {
+                            case DescriptorType::GeneralBuffer: {
+                                auto buffer = descriptor.buffer.value();
 
+                                glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding_point, buffer->args.general.sbo);
+                            }
+                                break;
+                            case DescriptorType::Image: {
+                                auto texture = descriptor.texture.value();
+
+                                glBindImageTexture(binding_point, texture->get_texture_id(), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA8);
                             }
                                 break;
                             default:
@@ -281,7 +297,11 @@ namespace Pathfinder {
                 }
                     break;
                 case CommandType::BindComputePipeline: {
+                    auto &args = cmd.args.bind_compute_pipeline;
 
+                    args.pipeline->program->use();
+
+                    current_pipeline = args.pipeline;
                 }
                     break;
                 case CommandType::Dispatch: {

@@ -9,7 +9,7 @@
 #include "compute_program.h"
 #include "../common/color.h"
 #include "render_pipeline.h"
-//#include "compute_pipeline.h"
+#include "compute_pipeline.h"
 #include "buffer.h"
 #include "descriptor_set.h"
 
@@ -76,7 +76,7 @@ namespace Pathfinder {
                 uint32_t instance_count;
             } draw_instanced;
             struct {
-                //ComputeProgram *program;
+                ComputePipeline *pipeline;
             } bind_compute_pipeline;
             struct {
                 uint32_t group_size_x;
@@ -107,11 +107,11 @@ namespace Pathfinder {
 
         void end_render_pass();
 
-        void begin_compute_pass();
+        void begin_compute_pass() {};
 
-        void bind_compute_pipeline();
+        void bind_compute_pipeline(const std::shared_ptr<ComputePipeline>& pipeline);
 
-        void dispatch(uint32_t group_size_x, uint32_t group_size_y, uint32_t group_size_z);
+        void dispatch(uint32_t group_size_x = 1, uint32_t group_size_y = 1, uint32_t group_size_z = 1);
 
         void end_compute_pass();
 
@@ -122,7 +122,7 @@ namespace Pathfinder {
     private:
         std::queue<Command> commands;
 
-        RenderPipeline *render_pipeline;
+        Pipeline *current_pipeline;
     };
 }
 

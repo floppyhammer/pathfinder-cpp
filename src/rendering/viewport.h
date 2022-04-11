@@ -11,6 +11,7 @@
 #include <memory>
 
 namespace Pathfinder {
+    // TODO: Refactor to RenderTarget.
     class Viewport {
     public:
         /// Screen viewport.

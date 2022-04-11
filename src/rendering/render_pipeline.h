@@ -7,11 +7,12 @@
 
 #include "vertex_input.h"
 #include "raster_program.h"
+#include "pipeline.h"
 
 #include <memory>
 
 namespace Pathfinder {
-    class RenderPipeline {
+    class RenderPipeline : public Pipeline {
     public:
         RenderPipeline() {
             glGenVertexArrays(1, &vao);
@@ -20,9 +21,13 @@ namespace Pathfinder {
             glDeleteVertexArrays(1, &vao);
         };
 
+        inline std::shared_ptr<Program> get_program() override {
+            return program;
+        }
+
+        std::vector<AttributeDescriptor> attribute_descriptors;
         std::shared_ptr<RasterProgram> program;
         VertexInputState vertex_input_state{};
-        std::vector<AttributeDescriptor> attribute_descriptors;
 
         unsigned int vao{};
 

@@ -9,7 +9,9 @@
 #include "scene_builder.h"
 #include "../d3d9_d3d11/scene.h"
 #include "../d3d9/data/draw_tile_batch.h"
-#include "../../rendering/compute_program.h"
+#include "../../rendering/compute_pipeline.h"
+#include "../../rendering/buffer.h"
+#include "../../rendering/descriptor_set.h"
 #include "../d3d9_d3d11/renderer.h"
 
 #ifdef PATHFINDER_USE_D3D11
@@ -18,32 +20,32 @@ namespace Pathfinder {
     // Buffer data
     struct TileBatchInfoD3D11 {
         uint32_t tile_count;
-        uint64_t z_buffer_id;
-        uint64_t tiles_d3d11_buffer_id;
-        uint64_t propagate_metadata_buffer_id;
-        uint64_t first_tile_map_buffer_id;
+        std::shared_ptr<Buffer> z_buffer_id;
+        std::shared_ptr<Buffer> tiles_d3d11_buffer_id;
+        std::shared_ptr<Buffer> propagate_metadata_buffer_id;
+        std::shared_ptr<Buffer> first_tile_map_buffer_id;
 
         void clean();
     };
 
     struct FillBufferInfoD3D11 {
-        uint64_t fill_vertex_buffer_id;
+        std::shared_ptr<Buffer> fill_vertex_buffer_id;
     };
 
     struct PropagateMetadataBufferIDsD3D11 {
-        uint64_t propagate_metadata;
-        uint64_t backdrops;
+        std::shared_ptr<Buffer> propagate_metadata;
+        std::shared_ptr<Buffer> backdrops;
     };
 
     struct MicrolinesBufferIDsD3D11 {
-        uint64_t buffer_id; // Microlines buffer ID.
+        std::shared_ptr<Buffer> buffer_id; // Microlines buffer.
         uint32_t count; // Microline count.
     };
 
     struct SceneSourceBuffers {
-        uint64_t points_buffer = 0; // General buffer ID.
+        std::shared_ptr<Buffer> points_buffer; // General buffer.
         uint32_t points_capacity = 0;
-        uint64_t point_indices_buffer = 0; // General buffer ID.
+        std::shared_ptr<Buffer> point_indices_buffer; // General buffer.
         uint32_t point_indices_count = 0;
         uint32_t point_indices_capacity = 0;
 
@@ -75,11 +77,15 @@ namespace Pathfinder {
     public:
         explicit RendererD3D11(const Vec2<int> &p_viewport_size);
 
+        void set_up_pipelines();
+
         void draw(SceneBuilderD3D11 &scene_builder);
 
     private:
         /// RenderCommand::DrawTilesD3D11(draw_tile_batch)
-        void prepare_and_draw_tiles(DrawTileBatchD3D11 &batch, const std::vector<TextureMetadataEntry> &paint_metadata);
+        void prepare_and_draw_tiles(DrawTileBatchD3D11 &batch,
+                                    const std::vector<TextureMetadataEntry> &paint_metadata,
+                                    bool need_to_clear_dest);
 
         /**
          * Computes backdrops, performs clipping, and populates Z buffers on GPU.
@@ -108,7 +114,7 @@ namespace Pathfinder {
          * @param tile_path_info
          * @BufferWrite Tiles buffer
          */
-        void bound(uint64_t tiles_d3d11_buffer_id,
+        void bound(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
                    uint32_t tile_count,
                    std::vector<TilePathInfoD3D11> &tile_path_info);
 
@@ -121,41 +127,42 @@ namespace Pathfinder {
         FillBufferInfoD3D11 bin_segments(
                 MicrolinesBufferIDsD3D11 &microlines_storage,
                 PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids,
-                uint64_t tiles_d3d11_buffer_id,
-                uint64_t z_buffer_id);
+                const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
+                const std::shared_ptr<Buffer> &z_buffer_id);
 
         PropagateTilesInfoD3D11 propagate_tiles(uint32_t column_count,
-                                                uint64_t tiles_d3d11_buffer_id,
-                                                uint64_t z_buffer_id,
-                                                uint64_t first_tile_map_buffer_id,
-                                                uint64_t alpha_tiles_buffer_id,
+                                                const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
+                                                const std::shared_ptr<Buffer> &z_buffer_id,
+                                                const std::shared_ptr<Buffer> &first_tile_map_buffer_id,
+                                                const std::shared_ptr<Buffer> &alpha_tiles_buffer_id,
                                                 PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids);
 
         void draw_fills(FillBufferInfoD3D11 &fill_storage_info,
-                        uint64_t tiles_d3d11_buffer_id,
-                        uint64_t alpha_tiles_buffer_id,
+                        const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
+                        const std::shared_ptr<Buffer> &alpha_tiles_buffer_id,
                         PropagateTilesInfoD3D11 &propagate_tiles_info);
 
         /**
          * Called by prepare_tiles().
          */
-        void sort_tiles(uint64_t tiles_d3d11_buffer_id,
-                        uint64_t first_tile_map_buffer_id,
-                        uint64_t z_buffer_id);
+        void sort_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
+                        const std::shared_ptr<Buffer> &first_tile_map_buffer_id,
+                        const std::shared_ptr<Buffer> &z_buffer_id);
 
-        void draw_tiles(uint64_t tiles_d3d11_buffer_id,
-                        uint64_t first_tile_map_buffer_id,
+        void draw_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
+                        const std::shared_ptr<Buffer> &first_tile_map_buffer_id,
                         const RenderTarget &target_viewport,
-                        const RenderTarget &color_texture);
+                        const RenderTarget &color_texture,
+                        bool need_to_clear_dest);
 
-        void upload_initial_backdrops(uint64_t backdrops_buffer_id,
+        void upload_initial_backdrops(const std::shared_ptr<Buffer> &backdrops_buffer_id,
                                       std::vector<BackdropInfoD3D11> &backdrops);
 
-        uint64_t allocate_z_buffer();
+        std::shared_ptr<Buffer> allocate_z_buffer();
 
-        uint64_t allocate_first_tile_map();
+        std::shared_ptr<Buffer> allocate_first_tile_map();
 
-        uint64_t allocate_alpha_tile_info(uint32_t index_count);
+        std::shared_ptr<Buffer> allocate_alpha_tile_info(uint32_t index_count);
 
         /// RenderCommand::UploadSceneD3D11
         /// Upload scene to GPU.
@@ -165,23 +172,21 @@ namespace Pathfinder {
                 std::vector<PropagateMetadataD3D11> &propagate_metadata,
                 std::vector<BackdropInfoD3D11> &backdrops);
 
-        Vec2<int> tile_size() const;
+        [[nodiscard]] Vec2<int> tile_size() const;
 
         Vec2<int> framebuffer_tile_size();
 
         // Unlike D3D9, we only need a mask texture instead of a mask viewport.
         std::shared_ptr<Texture> mask_texture;
 
-        std::shared_ptr<ComputeProgram> bound_program;
-        std::shared_ptr<ComputeProgram> dice_program;
-        std::shared_ptr<ComputeProgram> bin_program;
-        std::shared_ptr<ComputeProgram> propagate_program;
-        std::shared_ptr<ComputeProgram> sort_program;
-        std::shared_ptr<ComputeProgram> fill_program;
-        std::shared_ptr<ComputeProgram> tile_program;
+        std::shared_ptr<ComputePipeline> bound_pipeline, dice_pipeline, bin_pipeline, propagate_pipeline,
+                sort_pipeline, fill_pipeline, tile_pipeline;
 
         /// Uniform buffers.
         std::shared_ptr<Buffer> bin_ub, bound_ub, dice_ub0, dice_ub1, fill_ub, propagate_ub, sort_ub, tile_ub0, tile_ub1;
+
+        std::shared_ptr<DescriptorSet> bound_descriptor_set, dice_descriptor_set, bin_descriptor_set,
+                propagate_descriptor_set, sort_descriptor_set, fill_descriptor_set, tile_descriptor_set;
 
         uint32_t allocated_microline_count = 0;
         uint32_t allocated_fill_count = 0;

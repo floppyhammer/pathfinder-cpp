@@ -26,13 +26,14 @@ namespace Pathfinder {
     public:
         ~Buffer() {
             unsigned int buffer_id;
+
             switch (type) {
                 case BufferType::Vertex: {
                     buffer_id = args.vertex.vbo;
                 }
                 case BufferType::Uniform: {
                     buffer_id = args.uniform.ubo;
-                } break;
+                }
                     break;
                 case BufferType::General: {
                     buffer_id = args.general.sbo;

@@ -6,18 +6,18 @@
 #define PATHFINDER_COMPUTE_PIPELINE_H
 
 #include "compute_program.h"
+#include "pipeline.h"
 
 #include <memory>
 
 namespace Pathfinder {
-    class ComputePipeline {
+    class ComputePipeline : public Pipeline {
     public:
-        ComputePipeline() {
-        };
-        ~ComputePipeline() {
-        };
+        std::shared_ptr<ComputeProgram> program;
 
-        //std::shared_ptr<ComputeProgram> program;
+        inline std::shared_ptr<Program> get_program() override {
+            return program;
+        }
     };
 }
 

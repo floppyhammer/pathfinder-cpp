@@ -34,7 +34,14 @@ namespace Pathfinder {
     class DescriptorSet {
     public:
         inline void add_descriptor(const Descriptor &descriptor) {
-            descriptors.insert(std::make_pair((uint32_t) descriptor.type + descriptor.binding, descriptor));
+            if (descriptor.buffer == nullptr && descriptor.texture == nullptr) return;
+
+            auto it = descriptors.find((uint32_t) descriptor.type + descriptor.binding);
+            if (it != descriptors.end()) {
+                it->second = descriptor;
+            } else{
+                descriptors.insert(std::make_pair((uint32_t) descriptor.type + descriptor.binding, descriptor));
+            }
         };
 
         inline std::unordered_map<uint32_t, Descriptor> &get_descriptors() {
