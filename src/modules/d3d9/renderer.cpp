@@ -253,7 +253,7 @@ namespace Pathfinder {
                     Descriptor descriptor;
                     descriptor.type = DescriptorType::UniformBuffer;
                     descriptor.binding = 1;
-                    descriptor.binding_name = "bVaryingSizesVert";
+                    descriptor.binding_name = "bVaryingSizes";
                     descriptor.buffer = tile_varying_sizes_ub;
 
                     tile_descriptor_set->add_descriptor(descriptor);
@@ -263,27 +263,7 @@ namespace Pathfinder {
                     Descriptor descriptor;
                     descriptor.type = DescriptorType::UniformBuffer;
                     descriptor.binding = 2;
-                    descriptor.binding_name = "bVaryingSizesFrag";
-                    descriptor.buffer = tile_varying_sizes_ub;
-
-                    tile_descriptor_set->add_descriptor(descriptor);
-                }
-
-                {
-                    Descriptor descriptor;
-                    descriptor.type = DescriptorType::UniformBuffer;
-                    descriptor.binding = 3;
-                    descriptor.binding_name = "bFixedSizesVert";
-                    descriptor.buffer = fixed_sizes_ub;
-
-                    tile_descriptor_set->add_descriptor(descriptor);
-                }
-
-                {
-                    Descriptor descriptor;
-                    descriptor.type = DescriptorType::UniformBuffer;
-                    descriptor.binding = 4;
-                    descriptor.binding_name = "bFixedSizesFrag";
+                    descriptor.binding_name = "bFixedSizes";
                     descriptor.buffer = fixed_sizes_ub;
 
                     tile_descriptor_set->add_descriptor(descriptor);

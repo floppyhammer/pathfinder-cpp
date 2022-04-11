@@ -22,14 +22,14 @@ layout (std140) uniform bTransform {
     mat4 uTransform; // Will vary.
 };
 
-layout (std140) uniform bVaryingSizesVert {
+layout (std140) uniform bVaryingSizes {
     vec2 uZBufferSize; // Will vary.
     vec2 uColorTextureSize0; // Will vary.
     vec2 uFramebufferSize; // Will vary.
     vec2 pad0;
 };
 
-layout (std140) uniform bFixedSizesVert {
+layout (std140) uniform bFixedSizes {
     vec2 uMaskTextureSize0; // Fixed as (4096, 1024). Not used here.
     vec2 uTileSize; // Fixed as (16, 16).
     vec2 uTextureMetadataSize; // Fixed as (1280, 512).

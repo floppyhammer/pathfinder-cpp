@@ -6,7 +6,6 @@
 #define PATHFINDER_TEXTURE_H
 
 #include "device.h"
-#include "base.h"
 #include "../common/math/rect.h"
 #include "../common/global_macros.h"
 #include "../common/logger.h"
