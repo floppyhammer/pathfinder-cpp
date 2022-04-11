@@ -33,16 +33,6 @@ namespace Pathfinder {
         void draw(const SceneBuilderD3D9& scene_builder);
 
     private:
-        /// Fill shader program.
-        std::shared_ptr<RasterProgram> fill_program;
-        /// Tile shader program.
-        std::shared_ptr<RasterProgram> tile_program;
-
-        /// VAOs and VBOs.
-        unsigned int quad_vbo{};
-        unsigned int fill_vbo{}, fill_vao{};
-        unsigned int tile_vbo{}, tile_vao{};
-
         std::shared_ptr<Buffer> quad_vertex_buffer, fill_vertex_buffer, tile_vertex_buffer;
 
         std::shared_ptr<RenderPipeline> fill_pipeline, tile_pipeline;
@@ -66,7 +56,8 @@ namespace Pathfinder {
         void draw_tiles(uint32_t tile_count,
                         const RenderTarget& target_viewport,
                         const RenderTarget& color_texture,
-                        const std::shared_ptr<Texture> &z_buffer_texture) const;
+                        const std::shared_ptr<Texture> &z_buffer_texture,
+                        bool need_to_clear_dest) const;
 
         /// Draw the mask texture. Use Renderer::buffered_fills.
         void draw_fills(uint32_t fills_count);

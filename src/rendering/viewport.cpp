@@ -31,27 +31,6 @@ namespace Pathfinder {
         glDeleteFramebuffers(1, &framebuffer_id);
     }
 
-    void Viewport::use() const {
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
-
-        glViewport(0, 0, width, height);
-
-        // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
-        // VAOs requires a call to glBindVertexArray anyway, so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-        glBindVertexArray(0);
-
-        // Make sure the texture you're going to render to is not bound before trying to render into it.
-        // An easy solution is to bind another texture.
-        glBindTexture(GL_TEXTURE_2D, 0);
-    }
-
-    void Viewport::clear() const {
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
-
-        glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a);
-        glClear(GL_COLOR_BUFFER_BIT);
-    }
-
     void Viewport::set_clear_color(const ColorF &color) {
         clear_color = color;
     }

@@ -37,46 +37,10 @@ namespace Pathfinder {
     }
 
     RendererD3D9::RendererD3D9(const Vec2<int> &p_viewport_size) : Renderer(p_viewport_size) {
-#ifdef PATHFINDER_SHADERS_EMBEDDED
-        const std::string fill_vert_source =
-#include "../src/shaders/minified/minified_fill.vert"
-;
-
-        const std::string fill_frag_source =
-#include "../src/shaders/minified/minified_fill.frag"
-;
-
-        const std::string tile_vert_source =
-#include "../src/shaders/minified/minified_tile.vert"
-;
-
-        const std::string tile_frag_source_0 =
-#include "../src/shaders/minified/minified_tile.frag.0"
-;
-
-        const std::string tile_frag_source_1 =
-#include "../src/shaders/minified/minified_tile.frag.1"
-;
-
-        fill_program = std::make_shared<RasterProgram>(fill_vert_source,
-                                                       fill_frag_source);
-
-        tile_program = std::make_shared<RasterProgram>(tile_vert_source,
-                                                       tile_frag_source_0 + tile_frag_source_1);
-#else
-        fill_program = std::make_shared<RasterProgram>(PATHFINDER_SHADER_DIR"d3d9/fill.vert",
-                                                       PATHFINDER_SHADER_DIR"d3d9/fill.frag");
-
-        tile_program = std::make_shared<RasterProgram>(PATHFINDER_SHADER_DIR"d3d9/tile.vert",
-                                                       PATHFINDER_SHADER_DIR"d3d9/tile.frag");
-#endif
         mask_viewport = std::make_shared<Viewport>(MASK_FRAMEBUFFER_WIDTH,
                                                    MASK_FRAMEBUFFER_HEIGHT,
                                                    TextureFormat::RGBA16F,
                                                    DataType::HALF_FLOAT);
-
-        glGenVertexArrays(1, &fill_vao);
-        glGenVertexArrays(1, &tile_vao);
 
         // Quad vertex buffer. Shared by fills and tiles drawing.
         quad_vertex_buffer = Device::create_buffer(BufferType::Vertex, 12 * sizeof(uint16_t));
@@ -88,6 +52,8 @@ namespace Pathfinder {
     void RendererD3D9::set_up_pipelines() {
         // Fill pipeline.
         {
+            fill_pipeline = std::make_shared<RenderPipeline>();
+
 #ifdef PATHFINDER_SHADERS_EMBEDDED
             const std::string fill_vert_source =
 #include "../src/shaders/minified/minified_fill.vert"
@@ -97,14 +63,12 @@ namespace Pathfinder {
 #include "../src/shaders/minified/minified_fill.frag"
             ;
 
-            fill_program = std::make_shared<RasterProgram>(fill_vert_source,
+            fill_pipeline->program = std::make_shared<RasterProgram>(fill_vert_source,
                                                            fill_frag_source);
 #else
-
-#endif
-            fill_pipeline = std::make_shared<RenderPipeline>();
             fill_pipeline->program = std::make_shared<RasterProgram>(PATHFINDER_SHADER_DIR"d3d9/fill.vert",
                                                                      PATHFINDER_SHADER_DIR"d3d9/fill.frag");
+#endif
 
             fill_pipeline->blend_src = GL_ONE;
             fill_pipeline->blend_dst = GL_ONE;
@@ -339,6 +303,8 @@ namespace Pathfinder {
         // Upload metadata (color, blur, etc...).
         upload_metadata(metadata_texture, metadata);
 
+        bool need_to_clear_dest = true;
+
         for (const auto &batch: tile_batches) {
             auto z_buffer_texture = upload_z_buffer(batch.z_buffer_data);
 
@@ -347,7 +313,10 @@ namespace Pathfinder {
             draw_tiles(batch.tiles.size(),
                        batch.viewport,
                        batch.color_texture,
-                       z_buffer_texture);
+                       z_buffer_texture,
+                       need_to_clear_dest);
+
+            need_to_clear_dest = false;
         }
     }
 
@@ -378,7 +347,8 @@ namespace Pathfinder {
     void RendererD3D9::draw_tiles(uint32_t tiles_count,
                                   const RenderTarget &target_viewport,
                                   const RenderTarget &color_texture,
-                                  const std::shared_ptr<Texture> &z_buffer_texture) const {
+                                  const std::shared_ptr<Texture> &z_buffer_texture,
+                                  bool need_to_clear_dest) const {
         // No tiles to draw.
         if (tiles_count == 0) return;
 
@@ -390,7 +360,7 @@ namespace Pathfinder {
         if (target_viewport.framebuffer_id == 0) {
             cmd_buffer.begin_render_pass(dest_viewport->get_framebuffer_id(),
                                          {(uint32_t) viewport_size.x, (uint32_t) viewport_size.y},
-                                         false,
+                                         need_to_clear_dest,
                                          ColorF());
             render_target_size = {(float) viewport_size.x, (float) viewport_size.y};
         } else { // Otherwise, we need to render to that render target.

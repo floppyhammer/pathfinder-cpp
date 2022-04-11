@@ -333,7 +333,6 @@ namespace Pathfinder {
     }
 
     void Canvas::draw() {
-        renderer->dest_viewport->clear();
         renderer->draw(scene_builder);
     }
 
