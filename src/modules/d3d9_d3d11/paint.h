@@ -113,12 +113,12 @@ namespace Pathfinder {
 
             int overlay_index_l = -1;
             if (overlay && overlay->contents.pattern) {
-                overlay_index_l = overlay->contents.pattern->source.render_target.texture_id;
+                overlay_index_l = overlay->contents.pattern->source.render_target.framebuffer->get_texture_id();
             }
 
             int overlay_index_r = -1;
             if (rhs.overlay && rhs.overlay->contents.pattern) {
-                overlay_index_r = rhs.overlay->contents.pattern->source.render_target.texture_id;
+                overlay_index_r = rhs.overlay->contents.pattern->source.render_target.framebuffer->get_texture_id();
             }
 
             if (base_color_index_l < base_color_index_r) {
@@ -233,7 +233,7 @@ namespace Pathfinder {
 
         RenderTarget push_render_target(const Vec2<int> &render_target_size);
 
-        std::shared_ptr<Viewport> get_render_target(uint32_t render_target_id) const;
+        std::shared_ptr<Framebuffer> get_render_target(uint32_t render_target_id) const;
 
         /// Core step.
         std::vector<TextureMetadataEntry> build_paint_info();
@@ -241,7 +241,7 @@ namespace Pathfinder {
     private:
         std::vector<Paint> paints;
 
-        std::vector<std::shared_ptr<Viewport>> render_targets;
+        std::vector<std::shared_ptr<Framebuffer>> render_targets;
 
         std::map<Paint, uint32_t> cache;
 

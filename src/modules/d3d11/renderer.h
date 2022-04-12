@@ -75,17 +75,18 @@ namespace Pathfinder {
 
     class RendererD3D11 : public Renderer {
     public:
-        explicit RendererD3D11(const Vec2<int> &p_viewport_size);
+        explicit RendererD3D11(uint32_t canvas_width, uint32_t canvas_height);
 
         void set_up_pipelines();
 
         void draw(SceneBuilderD3D11 &scene_builder);
 
+        std::shared_ptr<Texture> get_dest_texture() override;
+
     private:
         /// RenderCommand::DrawTilesD3D11(draw_tile_batch)
         void prepare_and_draw_tiles(DrawTileBatchD3D11 &batch,
-                                    const std::vector<TextureMetadataEntry> &paint_metadata,
-                                    bool need_to_clear_dest);
+                                    const std::vector<TextureMetadataEntry> &paint_metadata);
 
         /**
          * Computes backdrops, performs clipping, and populates Z buffers on GPU.
@@ -152,8 +153,7 @@ namespace Pathfinder {
         void draw_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
                         const std::shared_ptr<Buffer> &first_tile_map_buffer_id,
                         const RenderTarget &target_viewport,
-                        const RenderTarget &color_texture,
-                        bool need_to_clear_dest);
+                        const RenderTarget &color_texture);
 
         void upload_initial_backdrops(const std::shared_ptr<Buffer> &backdrops_buffer_id,
                                       std::vector<BackdropInfoD3D11> &backdrops);
@@ -172,12 +172,12 @@ namespace Pathfinder {
                 std::vector<PropagateMetadataD3D11> &propagate_metadata,
                 std::vector<BackdropInfoD3D11> &backdrops);
 
-        [[nodiscard]] Vec2<int> tile_size() const;
+        [[nodiscard]] Vec2<uint32_t> tile_size() const;
 
-        Vec2<int> framebuffer_tile_size();
+        Vec2<uint32_t> framebuffer_tile_size();
 
-        // Unlike D3D9, we only need a mask texture instead of a mask viewport.
-        std::shared_ptr<Texture> mask_texture;
+        // Unlike D3D9, we only need mask/dest textures instead of mask/dest framebuffers.
+        std::shared_ptr<Texture> mask_texture, dest_texture;
 
         std::shared_ptr<ComputePipeline> bound_pipeline, dice_pipeline, bin_pipeline, propagate_pipeline,
                 sort_pipeline, fill_pipeline, tile_pipeline;

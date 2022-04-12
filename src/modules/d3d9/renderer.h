@@ -7,7 +7,7 @@
 
 #include "object_builder.h"
 #include "../../rendering/raster_program.h"
-#include "../../rendering/viewport.h"
+#include "../../rendering/framebuffer.h"
 #include "../../rendering/texture.h"
 #include "../d3d9_d3d11/renderer.h"
 #include "../../rendering/render_pipeline.h"
@@ -26,22 +26,32 @@ namespace Pathfinder {
         /// Tiles to draw.
         std::vector<DrawTileBatch> pending_tile_batches;
 
-        explicit RendererD3D9(const Vec2<int>& p_viewport_size);
+        RendererD3D9(uint32_t canvas_width, uint32_t canvas_height);
 
         void set_up_pipelines();
 
         void draw(const SceneBuilderD3D9& scene_builder);
 
+        std::shared_ptr<Texture> get_dest_texture() override;
+
     private:
+        /// Vertex buffers.
         std::shared_ptr<Buffer> quad_vertex_buffer, fill_vertex_buffer, tile_vertex_buffer;
 
+        /// Pipelines.
         std::shared_ptr<RenderPipeline> fill_pipeline, tile_pipeline;
+
+        /// Descriptor sets.
         std::shared_ptr<DescriptorSet> fill_descriptor_set, tile_descriptor_set;
 
         /// Uniform buffers.
         std::shared_ptr<Buffer> tile_varying_sizes_ub{}, tile_transform_ub{};
 
-        std::shared_ptr<Viewport> mask_viewport;
+        /// Where the final rendering output goes.
+        std::shared_ptr<Framebuffer> dest_framebuffer;
+
+        /// Where to draw the mask texture.
+        std::shared_ptr<Framebuffer> mask_framebuffer;
 
         void upload_and_draw_tiles(const std::vector<DrawTileBatch>& tile_batches,
                                    const std::vector<TextureMetadataEntry>& metadata);
@@ -56,8 +66,7 @@ namespace Pathfinder {
         void draw_tiles(uint32_t tile_count,
                         const RenderTarget& target_viewport,
                         const RenderTarget& color_texture,
-                        const std::shared_ptr<Texture> &z_buffer_texture,
-                        bool need_to_clear_dest) const;
+                        const std::shared_ptr<Texture> &z_buffer_texture);
 
         /// Draw the mask texture. Use Renderer::buffered_fills.
         void draw_fills(uint32_t fills_count);

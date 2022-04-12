@@ -30,8 +30,7 @@ App::App(int window_width,
     label->set_font(std::make_shared<Pathfinder::Font>(font_input));
 
     // Create a screen viewport.
-    screen_viewport = std::make_shared<Pathfinder::Viewport>(window_width, window_height);
-    screen_viewport->set_clear_color(Pathfinder::ColorF(0.3, 0.3, 0.3, 1.0));
+    screen_framebuffer = std::make_shared<Pathfinder::Framebuffer>(window_width, window_height);
 
     // Set viewport texture to a texture rect.
     texture_rect0 = std::make_shared<Pathfinder::TextureRect>(window_width, window_height);
@@ -79,18 +78,17 @@ void App::loop() {
 
     auto cmd_buffer = std::make_shared<Pathfinder::CommandBuffer>();
 
-    cmd_buffer->begin_render_pass(screen_viewport->get_framebuffer_id(),
-                                 {(uint32_t) screen_viewport->get_width(), (uint32_t) screen_viewport->get_height()},
-                                 true,
-                                 screen_viewport->get_clear_color());
+    cmd_buffer->begin_render_pass(screen_framebuffer,
+                                  true,
+                                  Pathfinder::ColorF(0.3, 0.3, 0.3, 1.0));
 
     // Draw canvas to screen.
     texture_rect0->set_texture(canvas->get_dest_texture());
-    texture_rect0->draw(cmd_buffer, screen_viewport);
+    texture_rect0->draw(cmd_buffer, screen_framebuffer);
 
     // Draw label to screen.
     texture_rect1->set_texture(label->canvas->get_dest_texture());
-    texture_rect1->draw(cmd_buffer, screen_viewport);
+    texture_rect1->draw(cmd_buffer, screen_framebuffer);
 
     cmd_buffer->end_render_pass();
 

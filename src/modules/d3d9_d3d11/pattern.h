@@ -9,7 +9,7 @@
 #include "../../common/math/vec2.h"
 #include "../../common/math/transform2.h"
 #include "../../common/color.h"
-#include "../../rendering/viewport.h"
+#include "../../rendering/framebuffer.h"
 
 #include <cstdint>
 #include <utility>
@@ -26,19 +26,17 @@ namespace Pathfinder {
         uint32_t scene = 0;
         /// The ID of the render target within this scene.
         uint32_t id = 0;
-        /// Framebuffer ID.
-        uint32_t framebuffer_id = 0;
-        /// Texture ID.
-        uint32_t texture_id = 0;
+        /// Framebuffer.
+        std::shared_ptr<Framebuffer> framebuffer;
         /// Size.
-        Vec2<int> size;
+        Vec2<uint32_t> size;
         /// Optional name.
         std::string name;
     };
 
     /// A raster image, in 32-bit RGBA (8 bits per channel), non-premultiplied form.
     struct RawImage {
-        Vec2<int> size;
+        Vec2<uint32_t> size;
         std::vector<ColorU> pixels;
         bool is_opaque = false;
     };
@@ -130,7 +128,7 @@ namespace Pathfinder {
         }
 
         /// Returns the underlying pixel size of this pattern, not taking transforms into account.
-        inline Vec2<int> get_size() const {
+        inline Vec2<uint32_t> get_size() const {
             switch (source.type) {
                 case PatternSource::Type::Image:
                     return source.image.size;

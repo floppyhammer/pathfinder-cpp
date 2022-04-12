@@ -37,23 +37,19 @@ namespace Pathfinder {
     const uint32_t INITIAL_ALLOCATED_MICROLINE_COUNT = 1024 * 16;
     const uint32_t INITIAL_ALLOCATED_FILL_COUNT = 1024 * 16;
 
-    Vec2<int> pixel_size_to_tile_size(Vec2<int> &pixel_size) {
+    Vec2<uint32_t> pixel_size_to_tile_size(Vec2<uint32_t> pixel_size) {
         // Round up.
-        auto tile_size = Vec2<int>(TILE_WIDTH - 1, TILE_HEIGHT - 1);
+        auto tile_size = Vec2<uint32_t>(TILE_WIDTH - 1, TILE_HEIGHT - 1);
         auto size = pixel_size + tile_size;
         return {size.x / TILE_WIDTH, size.y / TILE_HEIGHT};
     }
 
-//    void TileBatchInfoD3D11::clean() {
-//        Device::free_general_buffer(z_buffer_id);
-//        Device::free_general_buffer(tiles_d3d11_buffer_id);
-//        Device::free_general_buffer(propagate_metadata_buffer_id);
-//        Device::free_general_buffer(first_tile_map_buffer_id);
-//        z_buffer_id = 0;
-//        tiles_d3d11_buffer_id = 0;
-//        propagate_metadata_buffer_id = 0;
-//        first_tile_map_buffer_id = 0;
-//    }
+    void TileBatchInfoD3D11::clean() {
+        z_buffer_id.reset();
+        tiles_d3d11_buffer_id.reset();
+        propagate_metadata_buffer_id.reset();
+        first_tile_map_buffer_id.reset();
+    }
 
     void SceneSourceBuffers::upload(SegmentsD3D11 &segments) {
         auto needed_points_capacity = upper_power_of_two(segments.points.size());
@@ -98,7 +94,7 @@ namespace Pathfinder {
         //clip.upload(clip_segments);
     }
 
-    RendererD3D11::RendererD3D11(const Vec2<int> &p_viewport_size) : Renderer(p_viewport_size) {
+    RendererD3D11::RendererD3D11(uint32_t canvas_width, uint32_t canvas_height) {
         allocated_microline_count = INITIAL_ALLOCATED_MICROLINE_COUNT;
         allocated_fill_count = INITIAL_ALLOCATED_FILL_COUNT;
 
@@ -116,6 +112,11 @@ namespace Pathfinder {
         // Unlike D3D9, we use RGBA8 here instead of RGBA16F.
         mask_texture = std::make_shared<Texture>(MASK_FRAMEBUFFER_WIDTH,
                                                  MASK_FRAMEBUFFER_HEIGHT,
+                                                 TextureFormat::RGBA8,
+                                                 DataType::UNSIGNED_BYTE);
+
+        dest_texture = std::make_shared<Texture>(canvas_width,
+                                                 canvas_height,
                                                  TextureFormat::RGBA8,
                                                  DataType::UNSIGNED_BYTE);
     }
@@ -297,15 +298,16 @@ namespace Pathfinder {
         // RenderCommand::UploadSceneD3D11
         upload_scene(scene_builder.built_segments.draw_segments, scene_builder.built_segments.clip_segments);
 
-        bool need_to_clear_dest = true;
-
         alpha_tile_count = 0;
+        need_to_clear_dest = true;
 
         for (auto &batch: scene_builder.tile_batches) {
-            prepare_and_draw_tiles(batch, scene_builder.metadata, need_to_clear_dest);
-
-            need_to_clear_dest = false;
+            prepare_and_draw_tiles(batch, scene_builder.metadata);
         }
+    }
+
+    std::shared_ptr<Texture> RendererD3D11::get_dest_texture() {
+        return dest_texture;
     }
 
     void RendererD3D11::upload_scene(SegmentsD3D11 &draw_segments, SegmentsD3D11 &clip_segments) {
@@ -313,8 +315,7 @@ namespace Pathfinder {
     }
 
     void RendererD3D11::prepare_and_draw_tiles(DrawTileBatchD3D11 &batch,
-                                               const std::vector<TextureMetadataEntry> &metadata,
-                                               bool need_to_clear_dest) {
+                                               const std::vector<TextureMetadataEntry> &metadata) {
         Timestamp timestamp;
 
         auto tile_batch_id = batch.tile_batch_data.batch_id;
@@ -330,53 +331,48 @@ namespace Pathfinder {
         draw_tiles(batch_info.tiles_d3d11_buffer_id,
                    batch_info.first_tile_map_buffer_id,
                    batch.viewport,
-                   batch.color_texture,
-                   need_to_clear_dest);
+                   batch.color_texture);
 
         timestamp.record("draw_tiles");
         timestamp.print();
 
         // Free general buffers in batch_info.
-        //batch_info.clean();
+        batch_info.clean();
     }
 
     void RendererD3D11::draw_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
                                    const std::shared_ptr<Buffer> &first_tile_map_buffer_id,
-                                   const RenderTarget &target_viewport,
-                                   const RenderTarget &color_texture,
-                                   bool need_to_clear_dest) {
+                                   const RenderTarget &render_target,
+                                   const RenderTarget &color_target) {
         // The framebuffer mentioned here is different from the target viewport.
         // This doesn't change as long as the destination texture's size doesn't change.
         auto framebuffer_tile_size0 = framebuffer_tile_size();
 
         // Decide render target.
-        Vec2<int> target_viewport_size;
-        int target_texture_id = 0;
+        Vec2<uint32_t> render_target_size;
+        std::shared_ptr<Texture> target_texture;
         int clear_op;
         // If no specific RenderTarget is given, we render to the destination texture.
-        if (target_viewport.framebuffer_id == 0) {
-            target_viewport_size = viewport_size;
-            target_texture_id = dest_viewport->get_texture_id();
+        if (render_target.framebuffer == nullptr) {
+            render_target_size = dest_texture->get_size();
+            target_texture = dest_texture;
             clear_op = need_to_clear_dest ? LOAD_ACTION_CLEAR : LOAD_ACTION_LOAD;
+            need_to_clear_dest = false;
         } else {
-            target_viewport_size = target_viewport.size;
-            glBindFramebuffer(GL_FRAMEBUFFER, target_viewport.framebuffer_id);
-            glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER,
-                                      GL_COLOR_ATTACHMENT0,
-                                      GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME,
-                                      &target_texture_id);
+            render_target_size = render_target.framebuffer->get_size();
+            target_texture = render_target.framebuffer->get_texture();
             clear_op = LOAD_ACTION_CLEAR;
         }
 
         // Update uniform buffers.
         {
             std::array<float, 8> ubo_data0 = {0, 0, 0, 0, // uClearColor
-                                              (float) color_texture.size.x, (float) color_texture.size.y, // uColorTextureSize0
-                                              (float) target_viewport_size.x, (float) target_viewport_size.y}; // uFramebufferSize
+                                              (float) color_target.size.x, (float) color_target.size.y, // uColorTextureSize0
+                                              (float) render_target_size.x, (float) render_target_size.y}; // uFramebufferSize
             Device::upload_to_buffer(tile_ub0, 0, 8 * sizeof(float), ubo_data0.data());
 
             std::array<int32_t, 5> ubo_data1 = {0, 0, // uZBufferSize
-                                                framebuffer_tile_size0.x, framebuffer_tile_size0.y, // uFramebufferTileSize
+                                                (int32_t) framebuffer_tile_size0.x, (int32_t) framebuffer_tile_size0.y, // uFramebufferTileSize
                                                 clear_op}; // uLoadAction
             Device::upload_to_buffer(tile_ub1, 0, 5 * sizeof(int32_t), ubo_data1.data());
         }
@@ -384,14 +380,15 @@ namespace Pathfinder {
         // Update descriptor set.
         {
             tile_descriptor_set->add_descriptor({DescriptorType::Texture, 1, "uZBuffer", nullptr, mask_texture});
-            tile_descriptor_set->add_descriptor({DescriptorType::Texture, 2, "uColorTexture0", nullptr, nullptr});
+            if (color_target.framebuffer != nullptr) {
+                tile_descriptor_set->add_descriptor({DescriptorType::Texture, 2, "uColorTexture0", nullptr, color_target.framebuffer->get_texture()});
+            }
             tile_descriptor_set->add_descriptor({DescriptorType::Texture, 4, "uGammaLUT", nullptr, nullptr});
 
             tile_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 0, "", tiles_d3d11_buffer_id, nullptr}); // Read only.
             tile_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 1, "", first_tile_map_buffer_id, nullptr}); // Read only.
 
-            // FIXME: Use render target instead of the dest texture.
-            tile_descriptor_set->add_descriptor({DescriptorType::Image, 0, "", nullptr, dest_viewport->get_texture()});
+            tile_descriptor_set->add_descriptor({DescriptorType::Image, 0, "", nullptr, target_texture});
         }
 
         CommandBuffer cmd_buffer;
@@ -409,8 +406,8 @@ namespace Pathfinder {
         cmd_buffer.submit();
     }
 
-    Vec2<int> RendererD3D11::tile_size() const {
-        auto temp = viewport_size + Vec2<int>(TILE_WIDTH - 1, TILE_HEIGHT - 1);
+    Vec2<uint32_t> RendererD3D11::tile_size() const {
+        auto temp = dest_texture->get_size() + Vec2<uint32_t>(TILE_WIDTH - 1, TILE_HEIGHT - 1);
         return {temp.x / TILE_WIDTH, temp.y / TILE_HEIGHT};
     }
 
@@ -798,10 +795,10 @@ namespace Pathfinder {
 
         // Update uniform buffers.
         auto framebuffer_tile_size0 = framebuffer_tile_size();
-        std::array<int32_t , 4> ubo_data = {framebuffer_tile_size0.x,
-                                            framebuffer_tile_size0.y,
-                                            static_cast<int32_t>(column_count),
-                                            static_cast<int32_t>(alpha_tile_count)};
+        std::array<int32_t , 4> ubo_data = {(int32_t) framebuffer_tile_size0.x,
+                                            (int32_t) framebuffer_tile_size0.y,
+                                            (int32_t) column_count,
+                                            (int32_t) alpha_tile_count};
         Device::upload_to_buffer(propagate_ub, 0, 4 * sizeof(int32_t), ubo_data.data());
 
         // Bind storage buffers.
@@ -843,8 +840,8 @@ namespace Pathfinder {
         return {Range(alpha_tile_start, alpha_tile_end)};
     }
 
-    Vec2<int> RendererD3D11::framebuffer_tile_size() {
-        return pixel_size_to_tile_size(viewport_size);
+    Vec2<uint32_t> RendererD3D11::framebuffer_tile_size() {
+        return pixel_size_to_tile_size(dest_texture->get_size());
     }
 
     void RendererD3D11::draw_fills(FillBufferInfoD3D11 &fill_storage_info,

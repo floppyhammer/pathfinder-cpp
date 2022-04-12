@@ -16,7 +16,7 @@ namespace Pathfinder {
     /// Use Texture via smart pointers as its de-constructor will release its GL resources.
     class Texture {
     public:
-        Texture(int p_width, int p_height, TextureFormat p_format, DataType p_type, const void *p_data = nullptr);
+        Texture(uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type, const void *p_data = nullptr);
 
         ~Texture();
 
@@ -32,11 +32,13 @@ namespace Pathfinder {
                                                     DataType p_type,
                                                     bool flip_y);
 
-        unsigned int get_texture_id() const;
+        uint32_t get_texture_id() const;
 
-        unsigned int get_width() const;
+        uint32_t get_width() const;
 
-        unsigned int get_height() const;
+        uint32_t get_height() const;
+
+        Vec2<uint32_t> get_size() const;
 
         TextureFormat get_format() const;
 
@@ -45,10 +47,10 @@ namespace Pathfinder {
         void update_region(const Rect<int> &p_rect, const void *p_data) const;
 
     private:
-        unsigned int texture_id = 0;
+        uint32_t texture_id = 0;
 
-        int width = 0;
-        int height = 0;
+        uint32_t width = 0;
+        uint32_t height = 0;
 
         /// Pixel data type (GPU).
         TextureFormat format;

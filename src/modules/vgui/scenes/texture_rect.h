@@ -6,7 +6,7 @@
 #define PATHFINDER_TEXTURE_RECT_H
 
 #include "control.h"
-#include "../../../rendering/viewport.h"
+#include "../../../rendering/framebuffer.h"
 #include "../../../rendering/texture.h"
 #include "../../../rendering/render_pipeline.h"
 #include "../../../rendering/descriptor_set.h"
@@ -23,7 +23,7 @@ namespace Pathfinder {
 
         [[nodiscard]] std::shared_ptr<Texture> get_texture() const;
 
-        void draw(const std::shared_ptr<Pathfinder::CommandBuffer>& cmd_buffer, const std::shared_ptr<Viewport>& render_target);
+        void draw(const std::shared_ptr<Pathfinder::CommandBuffer>& cmd_buffer, const std::shared_ptr<Framebuffer>& render_target);
 
     private:
         std::shared_ptr<Texture> texture;

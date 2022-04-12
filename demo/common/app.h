@@ -5,7 +5,7 @@
 #ifndef PATHFINDER_DEMO_APP_H
 #define PATHFINDER_DEMO_APP_H
 
-#include "../../src/rendering/viewport.h"
+#include "../../src/rendering/framebuffer.h"
 #include "../../src/modules/d3d9_d3d11/canvas.h"
 #include "../../src/modules/vgui/scenes/label.h"
 #include "../../src/modules/vgui/scenes/texture_rect.h"
@@ -26,7 +26,7 @@ private:
     std::shared_ptr<Pathfinder::Canvas> canvas;
     std::shared_ptr<Pathfinder::Label> label;
     std::shared_ptr<Pathfinder::TextureRect> texture_rect0, texture_rect1;
-    std::shared_ptr<Pathfinder::Viewport> screen_viewport;
+    std::shared_ptr<Pathfinder::Framebuffer> screen_framebuffer;
 
     std::chrono::time_point<std::chrono::steady_clock> start_time;
     std::chrono::time_point<std::chrono::steady_clock> last_time;

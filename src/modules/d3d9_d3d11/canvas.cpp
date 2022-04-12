@@ -129,9 +129,9 @@ namespace Pathfinder {
 
         // Set up a renderer.
 #ifndef PATHFINDER_USE_D3D11
-        renderer = std::make_shared<RendererD3D9>(Vec2<int>(size_x, size_y));
+        renderer = std::make_shared<RendererD3D9>(size_x, size_y);
 #else
-        renderer = std::make_shared<RendererD3D11>(Vec2<int>(size_x, size_y));
+        renderer = std::make_shared<RendererD3D11>(size_x, size_y);
 #endif
 
         renderer->set_up_area_lut(area_lut_input);
@@ -349,7 +349,7 @@ namespace Pathfinder {
     }
 
     std::shared_ptr<Texture> Canvas::get_dest_texture() {
-        return renderer->dest_viewport->get_texture();
+        return renderer->get_dest_texture();
     }
 
     /**

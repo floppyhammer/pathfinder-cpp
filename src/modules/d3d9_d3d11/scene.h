@@ -8,7 +8,7 @@
 #include "data/shape.h"
 #include "paint.h"
 #include "data/data.h"
-#include "../../rendering/viewport.h"
+#include "../../rendering/framebuffer.h"
 
 #include <vector>
 #include <limits>

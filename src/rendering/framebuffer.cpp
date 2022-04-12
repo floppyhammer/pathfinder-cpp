@@ -2,18 +2,18 @@
 // Created by floppyhammer on 6/25/2021.
 //
 
-#include "viewport.h"
+#include "framebuffer.h"
 
 #include <cassert>
 
 namespace Pathfinder {
-    Viewport::Viewport(int p_width, int p_height) : width(p_width), height(p_height) {
+    Framebuffer::Framebuffer(int p_width, int p_height) : width(p_width), height(p_height) {
         // Do nothing.
     }
 
-    Viewport::Viewport(int p_width, int p_height, TextureFormat p_format, DataType p_type)
+    Framebuffer::Framebuffer(int p_width, int p_height, TextureFormat p_format, DataType p_type)
             : width(p_width), height(p_height) {
-        // Create a texture.
+        // Create a color texture.
         texture = std::make_shared<Texture>(p_width, p_height, p_format, p_type);
 
         // Set up framebuffer.
@@ -27,39 +27,35 @@ namespace Pathfinder {
         }
     }
 
-    Viewport::~Viewport() {
+    Framebuffer::~Framebuffer() {
         glDeleteFramebuffers(1, &framebuffer_id);
     }
 
-    void Viewport::set_clear_color(const ColorF &color) {
-        clear_color = color;
-    }
-
-    int Viewport::get_width() const {
+    uint32_t Framebuffer::get_width() const {
         return width;
     }
 
-    int Viewport::get_height() const {
+    uint32_t Framebuffer::get_height() const {
         return height;
     }
 
-    unsigned int Viewport::get_framebuffer_id() const {
+    Vec2<uint32_t> Framebuffer::get_size() const {
+        return {width, height};
+    }
+
+    uint32_t Framebuffer::get_framebuffer_id() const {
         return framebuffer_id;
     }
 
-    std::shared_ptr<Texture> Viewport::get_texture() {
+    std::shared_ptr<Texture> Framebuffer::get_texture() {
         assert(texture != nullptr && "Tried to get texture from screen viewport!");
         return texture;
     }
 
-    unsigned int Viewport::get_texture_id() const {
+    uint32_t Framebuffer::get_texture_id() const {
         if (texture) return texture->get_texture_id();
 
         assert("Tried to get texture id from screen viewport!");
         return 0;
-    }
-
-    ColorF Viewport::get_clear_color() const {
-        return clear_color;
     }
 }

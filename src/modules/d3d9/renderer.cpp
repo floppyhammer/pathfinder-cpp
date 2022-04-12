@@ -36,8 +36,13 @@ namespace Pathfinder {
         return z_buffer_texture;
     }
 
-    RendererD3D9::RendererD3D9(const Vec2<int> &p_viewport_size) : Renderer(p_viewport_size) {
-        mask_viewport = std::make_shared<Viewport>(MASK_FRAMEBUFFER_WIDTH,
+    RendererD3D9::RendererD3D9(uint32_t canvas_width, uint32_t canvas_height) {
+        dest_framebuffer = std::make_shared<Framebuffer>(canvas_width,
+                                                         canvas_height,
+                                                         TextureFormat::RGBA8,
+                                                         DataType::UNSIGNED_BYTE);
+
+        mask_framebuffer = std::make_shared<Framebuffer>(MASK_FRAMEBUFFER_WIDTH,
                                                    MASK_FRAMEBUFFER_HEIGHT,
                                                    TextureFormat::RGBA16F,
                                                    DataType::HALF_FLOAT);
@@ -45,8 +50,6 @@ namespace Pathfinder {
         // Quad vertex buffer. Shared by fills and tiles drawing.
         quad_vertex_buffer = Device::create_buffer(BufferType::Vertex, 12 * sizeof(uint16_t));
         Device::upload_to_buffer(quad_vertex_buffer, 0, 12 * sizeof(uint16_t), QUAD_VERTEX_POSITIONS);
-
-        Device::check_error("PathfinderD3D9::RendererD3D9() > setup");
     }
 
     void RendererD3D9::set_up_pipelines() {
@@ -250,7 +253,7 @@ namespace Pathfinder {
                     descriptor.type = DescriptorType::Texture;
                     descriptor.binding = 3;
                     descriptor.binding_name = "uMaskTexture0";
-                    descriptor.texture = mask_viewport->get_texture();
+                    descriptor.texture = mask_framebuffer->get_texture();
 
                     tile_descriptor_set->add_descriptor(descriptor);
                 }
@@ -305,7 +308,7 @@ namespace Pathfinder {
         // Upload metadata (color, blur, etc...).
         upload_metadata(metadata_texture, metadata);
 
-        bool need_to_clear_dest = true;
+        need_to_clear_dest = true;
 
         for (const auto &batch: tile_batches) {
             auto z_buffer_texture = upload_z_buffer(batch.z_buffer_data);
@@ -313,23 +316,19 @@ namespace Pathfinder {
             upload_tiles(batch.tiles);
 
             draw_tiles(batch.tiles.size(),
-                       batch.viewport,
-                       batch.color_texture,
-                       z_buffer_texture,
-                       need_to_clear_dest);
-
-            need_to_clear_dest = false;
+                       batch.render_target,
+                       batch.color_target,
+                       z_buffer_texture);
         }
     }
 
     void RendererD3D9::draw_fills(uint32_t fills_count) {
         // No fills to draw or no valid mask viewport.
-        if (fills_count == 0 || mask_viewport == nullptr) return;
+        if (fills_count == 0 || mask_framebuffer == nullptr) return;
 
         CommandBuffer cmd_buffer;
 
-        cmd_buffer.begin_render_pass(mask_viewport->get_framebuffer_id(),
-                                     {(uint32_t) mask_viewport->get_width(), (uint32_t) mask_viewport->get_height()},
+        cmd_buffer.begin_render_pass(mask_framebuffer,
                                      true,
                                      ColorF());
 
@@ -347,10 +346,9 @@ namespace Pathfinder {
     }
 
     void RendererD3D9::draw_tiles(uint32_t tiles_count,
-                                  const RenderTarget &target_viewport,
-                                  const RenderTarget &color_texture,
-                                  const std::shared_ptr<Texture> &z_buffer_texture,
-                                  bool need_to_clear_dest) const {
+                                  const RenderTarget &render_target,
+                                  const RenderTarget &color_target,
+                                  const std::shared_ptr<Texture> &z_buffer_texture) {
         // No tiles to draw.
         if (tiles_count == 0) return;
 
@@ -359,18 +357,17 @@ namespace Pathfinder {
         Vec2<float> render_target_size;
 
         // If no specific RenderTarget is given.
-        if (target_viewport.framebuffer_id == 0) {
-            cmd_buffer.begin_render_pass(dest_viewport->get_framebuffer_id(),
-                                         {(uint32_t) viewport_size.x, (uint32_t) viewport_size.y},
+        if (render_target.framebuffer == nullptr) {
+            cmd_buffer.begin_render_pass(dest_framebuffer,
                                          need_to_clear_dest,
                                          ColorF());
-            render_target_size = {(float) viewport_size.x, (float) viewport_size.y};
+            render_target_size = {(float) dest_framebuffer->get_width(), (float) dest_framebuffer->get_height()};
+            need_to_clear_dest = false;
         } else { // Otherwise, we need to render to that render target.
-            cmd_buffer.begin_render_pass(target_viewport.framebuffer_id,
-                                         {(uint32_t) target_viewport.size.x, (uint32_t) target_viewport.size.y},
+            cmd_buffer.begin_render_pass(render_target.framebuffer,
                                          true,
                                          ColorF());
-            render_target_size = {(float) target_viewport.size.x, (float) target_viewport.size.y};
+            render_target_size = {(float) render_target.framebuffer->get_width(), (float) render_target.framebuffer->get_height()};
         }
 
         // Update uniform buffers.
@@ -383,43 +380,19 @@ namespace Pathfinder {
             Device::upload_to_buffer(tile_transform_ub, 0, 16 * sizeof(float), &mvp_mat);
 
             std::array<float, 6> ubo_data = {(float) z_buffer_texture->get_width(), (float) z_buffer_texture->get_height(),
-                                             (float) color_texture.size.x, (float) color_texture.size.y,
+                                             (float) color_target.size.x, (float) color_target.size.y,
                                              render_target_size.x, render_target_size.y};
             Device::upload_to_buffer(tile_varying_sizes_ub, 0, 6 * sizeof(float), ubo_data.data());
         }
 
-        // Update textures.
+        // Update descriptor set.
         {
-//            {
-//                Descriptor descriptor;
-//                descriptor.type = DescriptorType::Texture;
-//                descriptor.binding = 0;
-//                descriptor.binding_name = "uDestTexture";
-//                descriptor.texture = 0;
-//
-//                tile_descriptor_set->add_descriptor(descriptor);
-//            }
+            tile_descriptor_set->add_descriptor({DescriptorType::Texture, 0, "uDestTexture", nullptr, nullptr});
+            tile_descriptor_set->add_descriptor({DescriptorType::Texture, 2, "uZBuffer", nullptr, z_buffer_texture});
 
-            {
-                Descriptor descriptor;
-                descriptor.type = DescriptorType::Texture;
-                descriptor.binding = 2;
-                descriptor.binding_name = "uZBuffer";
-                descriptor.texture = z_buffer_texture;
-
-                tile_descriptor_set->add_descriptor(descriptor);
+            if (color_target.framebuffer != nullptr) {
+                tile_descriptor_set->add_descriptor({DescriptorType::Texture, 4, "uColorTexture0", nullptr, color_target.framebuffer->get_texture()});
             }
-
-            // FIXME: Fix broken color texture caused by OpenGL modernization.
-//            {
-//                Descriptor descriptor;
-//                descriptor.type = DescriptorType::Texture;
-//                descriptor.binding = 4;
-//                descriptor.binding_name = "uColorTexture0";
-//                //descriptor.texture = color_texture;
-//
-//                tile_descriptor_set->add_descriptor(descriptor);
-//            }
         }
 
         cmd_buffer.bind_render_pipeline(tile_pipeline);
@@ -433,5 +406,9 @@ namespace Pathfinder {
         cmd_buffer.end_render_pass();
 
         cmd_buffer.submit();
+    }
+
+    std::shared_ptr<Texture> RendererD3D9::get_dest_texture() {
+        return dest_framebuffer->get_texture();
     }
 }

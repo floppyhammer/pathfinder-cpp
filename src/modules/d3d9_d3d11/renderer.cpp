@@ -20,19 +20,12 @@ namespace Pathfinder {
     const int32_t COMBINER_CTRL_COLOR_COMBINE_SHIFT = 8;
     const int32_t COMBINER_CTRL_COMPOSITE_SHIFT = 10;
 
-    Renderer::Renderer(const Vec2<int> &p_viewport_size) {
-        viewport_size = p_viewport_size;
-
+    Renderer::Renderer() {
         // We only allocate the metadata texture once.
         metadata_texture = std::make_shared<Texture>(TEXTURE_METADATA_TEXTURE_WIDTH,
                                                      TEXTURE_METADATA_TEXTURE_HEIGHT,
                                                      TextureFormat::RGBA16F,
                                                      DataType::HALF_FLOAT);
-
-        dest_viewport = std::make_shared<Viewport>(viewport_size.x,
-                                                   viewport_size.y,
-                                                   TextureFormat::RGBA8,
-                                                   DataType::UNSIGNED_BYTE);
 
         // Uniform buffer.
         {

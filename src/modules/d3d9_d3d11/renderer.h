@@ -6,7 +6,7 @@
 #define PATHFINDER_RENDERER_H
 
 #include "../d3d9_d3d11/data/data.h"
-#include "../../rendering/viewport.h"
+#include "../../rendering/framebuffer.h"
 
 #include <cstdint>
 
@@ -31,16 +31,16 @@ namespace Pathfinder {
     /// Base for D3D9 and D3D11 renderers.
     class Renderer {
     public:
-        explicit Renderer(const Vec2<int> &vp_size);
-
-        /// Where the final rendering output goes.
-        std::shared_ptr<Viewport> dest_viewport;
+        Renderer();
 
         /// Set up Area Lut texture.
         void set_up_area_lut(const std::vector<unsigned char> &area_lut_input);
 
+        virtual std::shared_ptr<Texture> get_dest_texture() = 0;
+
     protected:
-        Vec2<int> viewport_size;
+        /// If we should clear the dest framebuffer or texture.
+        bool need_to_clear_dest;
 
         /// Pre-defined texture used to draw the mask texture. Shared by D3D9 and D3D10.
         std::shared_ptr<Texture> area_lut_texture;

@@ -70,7 +70,8 @@ namespace Pathfinder {
     }
 
     RenderTarget Palette::push_render_target(const Vec2<int> &render_target_size) {
-        auto viewport = std::make_shared<Viewport>(
+        // Create a new framebuffer.
+        auto framebuffer = std::make_shared<Framebuffer>(
                 render_target_size.x,
                 render_target_size.y,
                 TextureFormat::RGBA8,
@@ -78,16 +79,15 @@ namespace Pathfinder {
 
         RenderTarget render_target;
         render_target.id = render_targets.size();
-        render_target.framebuffer_id = viewport->get_framebuffer_id();
-        render_target.texture_id = viewport->get_texture_id();
-        render_target.size = render_target_size;
+        render_target.framebuffer = framebuffer;
+        render_target.size = {(uint32_t) render_target_size.x, (uint32_t) render_target_size.y};
 
-        render_targets.push_back(viewport);
+        render_targets.push_back(framebuffer);
 
         return render_target;
     }
 
-    std::shared_ptr<Viewport> Palette::get_render_target(uint32_t render_target_id) const {
+    std::shared_ptr<Framebuffer> Palette::get_render_target(uint32_t render_target_id) const {
         return render_targets[render_target_id];
     }
 

@@ -108,7 +108,7 @@ namespace Pathfinder {
     }
 
     void TextureRect::draw(const std::shared_ptr<Pathfinder::CommandBuffer>& cmd_buffer,
-                           const std::shared_ptr<Viewport>& render_target) {
+                           const std::shared_ptr<Framebuffer>& render_target) {
         // Get MVP matrix.
         // -------------------------------------------------
         // The actual application order of these matrices is reverse.

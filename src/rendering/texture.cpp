@@ -13,7 +13,7 @@
 #include <stdexcept>
 
 namespace Pathfinder {
-    Texture::Texture(int p_width, int p_height, TextureFormat p_format, DataType p_type, const void *p_data)
+    Texture::Texture(uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type, const void *p_data)
             : width(p_width), height(p_height), format(p_format), type(p_type) {
         // Allocate a texture.
         glGenTextures(1, &texture_id);
@@ -114,15 +114,19 @@ namespace Pathfinder {
         return texture;
     }
 
-    unsigned int Texture::get_width() const {
+    uint32_t Texture::get_width() const {
         return width;
     }
 
-    unsigned int Texture::get_height() const {
+    uint32_t Texture::get_height() const {
         return height;
     }
 
-    unsigned int Texture::get_texture_id() const {
+    Vec2<uint32_t> Texture::get_size() const {
+        return {width, height};
+    }
+
+    uint32_t Texture::get_texture_id() const {
         return texture_id;
     }
 

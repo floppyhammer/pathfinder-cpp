@@ -10,6 +10,7 @@
 #include "../common/color.h"
 #include "render_pipeline.h"
 #include "compute_pipeline.h"
+#include "framebuffer.h"
 #include "buffer.h"
 #include "descriptor_set.h"
 
@@ -88,8 +89,7 @@ namespace Pathfinder {
 
     class CommandBuffer {
     public:
-        void begin_render_pass(uint32_t framebuffer_id,
-                               Vec2<uint32_t> extent,
+        void begin_render_pass(const std::shared_ptr<Framebuffer>& framebuffer,
                                bool clear,
                                ColorF clear_color);
 

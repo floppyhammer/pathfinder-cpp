@@ -10,7 +10,7 @@
 #include "../../d3d9_d3d11/effects.h"
 #include "../../d3d9_d3d11/paint.h"
 #include "../../../rendering/texture.h"
-#include "../../../rendering/viewport.h"
+#include "../../../rendering/framebuffer.h"
 
 #include <cstdint>
 #include <vector>
@@ -35,10 +35,10 @@ namespace Pathfinder {
         DenseTileMap <uint32_t> z_buffer_data;
 
         /// The color texture to use.
-        RenderTarget color_texture;
+        RenderTarget color_target;
 
         /// Render target.
-        RenderTarget viewport;
+        RenderTarget render_target;
 
         /// The filter to use.
         //Filter filter;

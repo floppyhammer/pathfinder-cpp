@@ -27,8 +27,8 @@ namespace Pathfinder {
         uint32_t binding;
         std::string binding_name; // For uniforms.
 
-        std::optional<std::shared_ptr<Buffer>> buffer;
-        std::optional<std::shared_ptr<Texture>> texture;
+        std::shared_ptr<Buffer> buffer;
+        std::shared_ptr<Texture> texture;
     };
 
     class DescriptorSet {

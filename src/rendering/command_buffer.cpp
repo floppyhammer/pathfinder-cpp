@@ -10,16 +10,15 @@
 #include <cassert>
 
 namespace Pathfinder {
-    void CommandBuffer::begin_render_pass(uint32_t framebuffer_id,
-                                          Vec2<uint32_t> extent,
+    void CommandBuffer::begin_render_pass(const std::shared_ptr<Framebuffer>& framebuffer,
                                           bool clear,
                                           ColorF clear_color) {
         Command cmd;
         cmd.type = CommandType::BeginRenderPass;
 
         auto &args = cmd.args.begin_render_pass;
-        args.framebuffer_id = framebuffer_id;
-        args.extent = extent;
+        args.framebuffer_id = framebuffer->get_framebuffer_id();
+        args.extent = {framebuffer->get_width(), framebuffer->get_height()};
         args.clear = clear;
         args.clear_color = clear_color;
 
@@ -234,7 +233,7 @@ namespace Pathfinder {
 
                         switch (descriptor.type) {
                             case DescriptorType::UniformBuffer: {
-                                auto buffer = descriptor.buffer.value();
+                                auto buffer = descriptor.buffer;
 
                                 unsigned int ubo_index = glGetUniformBlockIndex(current_pipeline->get_program()->get_id(), binding_name.c_str());
                                 glUniformBlockBinding(current_pipeline->get_program()->get_id(), ubo_index, binding_point);
@@ -242,7 +241,7 @@ namespace Pathfinder {
                             }
                                 break;
                             case DescriptorType::Texture: {
-                                auto texture = descriptor.texture.value();
+                                auto texture = descriptor.texture;
 
                                 if (!binding_name.empty()) {
                                     glUniform1i(glGetUniformLocation(current_pipeline->get_program()->get_id(), binding_name.c_str()),
@@ -253,13 +252,13 @@ namespace Pathfinder {
                             }
                                 break;
                             case DescriptorType::GeneralBuffer: {
-                                auto buffer = descriptor.buffer.value();
+                                auto buffer = descriptor.buffer;
 
                                 glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding_point, buffer->args.general.sbo);
                             }
                                 break;
                             case DescriptorType::Image: {
-                                auto texture = descriptor.texture.value();
+                                auto texture = descriptor.texture;
 
                                 glBindImageTexture(binding_point, texture->get_texture_id(), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA8);
                             }

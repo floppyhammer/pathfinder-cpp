@@ -176,12 +176,12 @@ namespace Pathfinder {
                     Paint paint = scene->palette.get_paint(paint_id);
                     auto overlay = paint.get_overlay();
                     if (overlay && overlay->contents.pattern) {
-                        tile_batch.color_texture = overlay->contents.pattern->source.render_target;
+                        tile_batch.color_target = overlay->contents.pattern->source.render_target;
                     }
 
                     // Set render target. Render to screen if there's no render targets on the stack.
                     if (!render_target_stack.empty()) {
-                        tile_batch.viewport = render_target_stack.back();
+                        tile_batch.render_target = render_target_stack.back();
                     }
 
                     tile_batches.push_back(tile_batch);
