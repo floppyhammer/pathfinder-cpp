@@ -20,6 +20,12 @@ namespace Pathfinder {
 
         text = p_text;
 
+        measure();
+
+        adjust_layout();
+    }
+
+    void Label::measure() {
         // Get font info. Get font scaling.
         int ascent, descent, line_gap;
         float scale = font->get_metrics(line_height, ascent, descent, line_gap);
@@ -32,6 +38,9 @@ namespace Pathfinder {
 
         glyphs.clear();
         glyphs.reserve(utf32_str.size());
+
+        // Reset text's layout box.
+        layout_box = Rect<float>();
 
         for (char32_t u_codepoint: utf32_str) {
             Glyph g;
@@ -91,6 +100,9 @@ namespace Pathfinder {
             g.layout_box = Rect<float>(x, line_height + descent - ascent + y, x + advance_width * scale,
                                        line_height + y);
 
+            // Update text's layout box.
+            layout_box = layout_box.union_rect(g.layout_box);
+
             // Bbox.
             g.bbox = Rect<float>(x + bounding_box.left, line_height + descent + bounding_box.bottom + y,
                                  x + bounding_box.right, line_height + descent + bounding_box.top + y);
@@ -106,11 +118,57 @@ namespace Pathfinder {
     }
 
     void Label::set_font(std::shared_ptr<Font> p_font) {
+        if (p_font == nullptr) return;
+
         font = std::move(p_font);
+
+        if (text.empty()) return;
+
+        measure();
+
+        adjust_layout();
+    }
+
+    void Label::adjust_layout() {
+        Vec2<float> shift;
+
+        switch (horizontal_alignment) {
+            case Alignment::Begin: {
+
+            }
+                break;
+            case Alignment::Center: {
+                shift.x = rect_size.x * 0.5f - layout_box.center().x;
+            }
+                break;
+            case Alignment::End: {
+                shift.x = rect_size.x - layout_box.width();
+            }
+                break;
+        }
+
+        for (Glyph &g: glyphs) {
+            g.layout_box.left += shift.x;
+            g.layout_box.right += shift.x;
+
+            g.bbox.left += shift.x;
+            g.bbox.right += shift.x;
+
+            g.shape.translate(shift);
+        }
+
+        // TODO: Don't rebuild shapes upon layout adjustment.
+        is_dirty = true;
     }
 
     void Label::update() {
         canvas->clear();
+
+        // Draw label background.
+        Shape shape;
+        shape.add_rect(Rect<float>(Vec2<float>(), rect_size), 8);
+        canvas->set_fill_paint(Paint::from_color(ColorU(0, 0, 0, 50)));
+        canvas->fill_shape(shape, FillRule::Winding);
 
         // Add stroke.
         for (Glyph &g: glyphs) {
@@ -149,6 +207,7 @@ namespace Pathfinder {
 
         is_dirty = false;
 
+        // Rebuild shapes.
         canvas->update();
     }
 
@@ -162,8 +221,26 @@ namespace Pathfinder {
     }
 
     void Label::draw() {
+        // Update glyphs.
         if (is_dirty) update();
 
+        // Draw shapes.
         canvas->draw();
+    }
+
+    void Label::set_horizontal_alignment(Alignment alignment) {
+        if (horizontal_alignment == alignment) return;
+
+        horizontal_alignment = alignment;
+
+        adjust_layout();
+    }
+
+    void Label::set_vertical_alignment(Alignment alignment) {
+        if (vertical_alignment == alignment) return;
+
+        vertical_alignment = alignment;
+
+        adjust_layout();
     }
 }

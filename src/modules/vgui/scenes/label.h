@@ -15,6 +15,34 @@
 #include <cstdint>
 
 namespace Pathfinder {
+    enum class Alignment {
+        Begin,
+        Center,
+        End,
+    };
+
+    struct Glyph {
+        int start = -1; // Start offset in the source string.
+        int end = -1; // End offset in the source string.
+
+        uint8_t count = 0; // Number of glyphs in the grapheme, set in the first glyph only.
+        uint8_t repeat = 1; // Draw multiple times in the row.
+        uint16_t flags = 0; // Grapheme flags (valid, rtl, virtual), set in the first glyph only.
+
+        float x_off = 0.f; // Offset from the origin of the glyph on baseline.
+        float y_off = 0.f;
+        float advance = 0.f; // Advance to the next glyph along baseline(x for horizontal layout, y for vertical).
+
+        int font_size = 0; // Font size;
+        char32_t text{};
+        int32_t index = 0; // Glyph index (font specific) or UTF-32 codepoint (for the invalid glyphs).
+
+        Rect<float> layout_box;
+        Rect<float> bbox;
+
+        Shape shape; // Glyph shape.
+    };
+
     class Label : public Control {
     public:
         Label(unsigned int width, unsigned int height, const std::vector<unsigned char> &area_lut_input);
@@ -36,6 +64,15 @@ namespace Pathfinder {
 
         std::shared_ptr<Canvas> canvas;
 
+        void set_horizontal_alignment(Alignment alignment);
+
+        void set_vertical_alignment(Alignment alignment);
+
+    private:
+        void adjust_layout();
+
+        void update();
+
     private:
         std::string text;
 
@@ -45,36 +82,22 @@ namespace Pathfinder {
 
         bool is_dirty = false;
 
-        struct Glyph {
-            int start = -1; // Start offset in the source string.
-            int end = -1; // End offset in the source string.
-
-            uint8_t count = 0; // Number of glyphs in the grapheme, set in the first glyph only.
-            uint8_t repeat = 1; // Draw multiple times in the row.
-            uint16_t flags = 0; // Grapheme flags (valid, rtl, virtual), set in the first glyph only.
-
-            float x_off = 0.f; // Offset from the origin of the glyph on baseline.
-            float y_off = 0.f;
-            float advance = 0.f; // Advance to the next glyph along baseline(x for horizontal layout, y for vertical).
-
-            int font_size = 0; // Font size;
-            char32_t text{};
-            int32_t index = 0; // Glyph index (font specific) or UTF-32 codepoint (for the invalid glyphs).
-
-            Rect<float> layout_box;
-            Rect<float> bbox;
-
-            Shape shape; // Glyph shape.
-        };
-
         std::vector<Glyph> glyphs;
 
+        Rect<float> layout_box;
+
+        // Fill
         ColorU color;
 
+        // Stroke
         float stroke_width = 0;
         ColorU stroke_color;
 
-        void update();
+        // Layout
+        Alignment horizontal_alignment = Alignment::Begin;
+        Alignment vertical_alignment = Alignment::Begin;
+
+        void measure();
     };
 }
 

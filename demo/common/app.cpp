@@ -28,6 +28,7 @@ App::App(int window_width,
                                                 reinterpret_cast<std::vector<unsigned char> &>(area_lut_input));
     label->set_style(64, Pathfinder::ColorU::white(), 0, Pathfinder::ColorU::red());
     label->set_font(std::make_shared<Pathfinder::Font>(font_input));
+    label->set_horizontal_alignment(Pathfinder::Alignment::Center);
 
     // Create a screen viewport.
     screen_framebuffer = std::make_shared<Pathfinder::Framebuffer>(window_width, window_height);

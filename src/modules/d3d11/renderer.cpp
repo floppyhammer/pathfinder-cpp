@@ -349,17 +349,17 @@ namespace Pathfinder {
         auto framebuffer_tile_size0 = framebuffer_tile_size();
 
         // Decide render target.
-        Vec2<uint32_t> render_target_size;
+        Vec2<uint32_t> target_size;
         std::shared_ptr<Texture> target_texture;
         int clear_op;
         // If no specific RenderTarget is given, we render to the destination texture.
         if (render_target.framebuffer == nullptr) {
-            render_target_size = dest_texture->get_size();
+            target_size = dest_texture->get_size();
             target_texture = dest_texture;
             clear_op = need_to_clear_dest ? LOAD_ACTION_CLEAR : LOAD_ACTION_LOAD;
             need_to_clear_dest = false;
         } else {
-            render_target_size = render_target.framebuffer->get_size();
+            target_size = render_target.framebuffer->get_size();
             target_texture = render_target.framebuffer->get_texture();
             clear_op = LOAD_ACTION_CLEAR;
         }
@@ -368,7 +368,7 @@ namespace Pathfinder {
         {
             std::array<float, 8> ubo_data0 = {0, 0, 0, 0, // uClearColor
                                               (float) color_target.size.x, (float) color_target.size.y, // uColorTextureSize0
-                                              (float) render_target_size.x, (float) render_target_size.y}; // uFramebufferSize
+                                              (float) target_size.x, (float) target_size.y}; // uFramebufferSize
             Device::upload_to_buffer(tile_ub0, 0, 8 * sizeof(float), ubo_data0.data());
 
             std::array<int32_t, 5> ubo_data1 = {0, 0, // uZBufferSize
