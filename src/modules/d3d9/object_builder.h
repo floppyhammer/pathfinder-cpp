@@ -5,7 +5,7 @@
 #ifndef PATHFINDER_D3D9_OBJECT_BUILDER_H
 #define PATHFINDER_D3D9_OBJECT_BUILDER_H
 
-#include "../d3d9_d3d11/data/built_path.h"
+#include "../d3dx/data/built_path.h"
 #include "data/gpu_data.h"
 #include "scene_builder.h"
 

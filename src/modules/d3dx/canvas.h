@@ -5,7 +5,6 @@
 #ifndef PATHFINDER_CANVAS_H
 #define PATHFINDER_CANVAS_H
 
-#include "scene.h"
 #include "../d3d9/scene_builder.h"
 #include "../d3d9/renderer.h"
 #include "../d3d11/scene_builder.h"

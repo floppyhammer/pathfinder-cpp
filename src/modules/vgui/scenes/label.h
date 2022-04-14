@@ -7,8 +7,8 @@
 
 #include "control.h"
 #include "../font.h"
-#include "../../d3d9_d3d11/canvas.h"
-#include "../../d3d9_d3d11/scene.h"
+#include "../../d3dx/canvas.h"
+#include "../../d3dx/scene.h"
 #include "../../d3d9/scene_builder.h"
 #include "../../d3d9/renderer.h"
 

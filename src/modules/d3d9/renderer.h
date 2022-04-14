@@ -9,7 +9,7 @@
 #include "../../rendering/raster_program.h"
 #include "../../rendering/framebuffer.h"
 #include "../../rendering/texture.h"
-#include "../d3d9_d3d11/renderer.h"
+#include "../d3dx/renderer.h"
 #include "../../rendering/render_pipeline.h"
 #include "../../rendering/descriptor_set.h"
 

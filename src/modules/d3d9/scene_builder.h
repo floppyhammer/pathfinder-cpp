@@ -5,8 +5,8 @@
 #ifndef PATHFINDER_D3D9_SCENE_BUILDER_H
 #define PATHFINDER_D3D9_SCENE_BUILDER_H
 
-#include "../d3d9_d3d11/scene.h"
-#include "../d3d9_d3d11/data/built_path.h"
+#include "../d3dx/scene.h"
+#include "../d3dx/data/built_path.h"
 #include "data/alpha_tile_id.h"
 #include "data/gpu_data.h"
 #include "data/draw_tile_batch.h"

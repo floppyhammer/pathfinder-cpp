@@ -6,7 +6,7 @@
 #define PATHFINDER_D3D9_TILER_H
 
 #include "object_builder.h"
-#include "../d3d9_d3d11/data/data.h"
+#include "../d3dx/data/data.h"
 
 namespace Pathfinder {
     enum class StepDirection {

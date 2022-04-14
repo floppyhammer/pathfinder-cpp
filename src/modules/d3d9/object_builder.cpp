@@ -4,7 +4,7 @@
 
 #include "object_builder.h"
 
-#include "../d3d9_d3d11/data/data.h"
+#include "../d3dx/data/data.h"
 #include "../../common/f32x4.h"
 #include "../../common/global_macros.h"
 #include "../../common/math/basic.h"

@@ -7,7 +7,7 @@
 
 #include <stb_truetype.h>
 
-#include "../d3d9_d3d11/data/shape.h"
+#include "../d3dx/data/shape.h"
 #include "../../common/logger.h"
 #include "../../common/io.h"
 

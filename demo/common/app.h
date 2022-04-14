@@ -6,7 +6,7 @@
 #define PATHFINDER_DEMO_APP_H
 
 #include "../../src/rendering/framebuffer.h"
-#include "../../src/modules/d3d9_d3d11/canvas.h"
+#include "../../src/modules/d3dx/canvas.h"
 #include "../../src/modules/vgui/scenes/label.h"
 #include "../../src/modules/vgui/scenes/texture_rect.h"
 

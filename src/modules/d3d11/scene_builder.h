@@ -6,7 +6,7 @@
 #define PATHFINDER_D3D11_SCENE_BUILDER_H
 
 #include "gpu_data.h"
-#include "../d3d9_d3d11/scene.h"
+#include "../d3dx/scene.h"
 
 #include <vector>
 

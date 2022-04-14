@@ -5,10 +5,10 @@
 #ifndef PATHFINDER_D3D9_DRAW_TILE_BATCH_H
 #define PATHFINDER_D3D9_DRAW_TILE_BATCH_H
 
-#include "../../d3d9_d3d11/data/dense_tile_map.h"
+#include "../../d3dx/data/dense_tile_map.h"
 #include "gpu_data.h"
-#include "../../d3d9_d3d11/effects.h"
-#include "../../d3d9_d3d11/paint.h"
+#include "../../d3dx/effects.h"
+#include "../../d3dx/paint.h"
 #include "../../../rendering/texture.h"
 #include "../../../rendering/framebuffer.h"
 

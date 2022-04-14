@@ -5,8 +5,8 @@
 #ifndef PATHFINDER_SCENE_H
 #define PATHFINDER_SCENE_H
 
-#include "data/shape.h"
 #include "paint.h"
+#include "data/shape.h"
 #include "data/data.h"
 #include "../../rendering/framebuffer.h"
 
