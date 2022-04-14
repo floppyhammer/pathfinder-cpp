@@ -73,7 +73,7 @@ namespace Pathfinder {
             ;
 
             fill_pipeline->program = std::make_shared<RasterProgram>(fill_vert_source,
-                                                           fill_frag_source);
+                                                                     fill_frag_source);
 #else
             fill_pipeline->program = std::make_shared<RasterProgram>(PATHFINDER_SHADER_DIR"d3d9/fill.vert",
                                                                      PATHFINDER_SHADER_DIR"d3d9/fill.frag");
@@ -145,8 +145,26 @@ namespace Pathfinder {
         // Tile pipeline.
         {
             tile_pipeline = std::make_shared<RenderPipeline>();
+
+#ifdef PATHFINDER_SHADERS_EMBEDDED
+            const std::string tile_vert_source =
+#include "../src/shaders/minified/minified_tile.vert"
+            ;
+
+            const std::string tile_frag_source_0 =
+#include "../src/shaders/minified/minified_tile.frag.0"
+            ;
+
+            const std::string tile_frag_source_1 =
+#include "../src/shaders/minified/minified_tile.frag.1"
+            ;
+
+            tile_pipeline->program = std::make_shared<RasterProgram>(tile_vert_source,
+                                                                     tile_frag_source_0 + tile_frag_source_1);
+#else
             tile_pipeline->program = std::make_shared<RasterProgram>(PATHFINDER_SHADER_DIR"d3d9/tile.vert",
                                                                      PATHFINDER_SHADER_DIR"d3d9/tile.frag");
+#endif
 
             tile_pipeline->blend_src = GL_ONE;
             tile_pipeline->blend_dst = GL_ONE_MINUS_SRC_ALPHA;

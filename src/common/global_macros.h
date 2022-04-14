@@ -18,7 +18,7 @@
 #define PATHFINDER_SIMD_ENABLED
 
 // This is optional for the native demo, as we can access shader files directly.
-//#define PATHFINDER_SHADERS_EMBEDDED
+#define PATHFINDER_SHADERS_EMBEDDED
 #define PATHFINDER_SHADER_DIR "../src/shaders/"
 #define PATHFINDER_ASSET_DIR "../assets/"
 

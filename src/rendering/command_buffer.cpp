@@ -316,19 +316,21 @@ namespace Pathfinder {
                                 glBindTexture(GL_TEXTURE_2D, texture->get_texture_id());
                             }
                                 break;
-                            case DescriptorType::GeneralBuffer: {
-                                auto buffer = descriptor.buffer;
+#ifdef PATHFINDER_USE_D3D11
+                                case DescriptorType::GeneralBuffer: {
+                                    auto buffer = descriptor.buffer;
 
-                                glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding_point, buffer->id);
-                            }
-                                break;
-                            case DescriptorType::Image: {
-                                auto texture = descriptor.texture;
+                                    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding_point, buffer->id);
+                                }
+                                    break;
+                                case DescriptorType::Image: {
+                                    auto texture = descriptor.texture;
 
-                                glBindImageTexture(binding_point, texture->get_texture_id(), 0, GL_FALSE, 0,
-                                                   GL_READ_WRITE, GL_RGBA8);
-                            }
-                                break;
+                                    glBindImageTexture(binding_point, texture->get_texture_id(), 0, GL_FALSE, 0,
+                                                       GL_READ_WRITE, GL_RGBA8);
+                                }
+                                    break;
+#endif
                             default:
                                 break;
                         }
@@ -373,6 +375,7 @@ namespace Pathfinder {
                 case CommandType::Dispatch: {
                     auto &args = cmd.args.dispatch;
 
+#ifdef PATHFINDER_USE_D3D11
                     // Max global (total) work group counts x:2147483647 y:65535 z:65535.
                     // Max local (in one shader) work group sizes x:1536 y:1024 z:64.
                     glDispatchCompute(args.group_size_x, args.group_size_y, args.group_size_z);
@@ -380,6 +383,7 @@ namespace Pathfinder {
                     // In order to use timestamps more precisely.
 #ifdef PATHFINDER_DEBUG
                     glFinish();
+#endif
 #endif
 
                     check_error("Dispatch");
@@ -425,8 +429,8 @@ namespace Pathfinder {
                     glBindBuffer(GL_SHADER_STORAGE_BUFFER, args.buffer->id);
 
 #ifdef __ANDROID__
-                    void *ptr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, offset, size, GL_MAP_READ_BIT);
-                    if (ptr) memcpy(data, ptr, byte_size);
+                    void *ptr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, args.offset, args.data_size, GL_MAP_READ_BIT);
+                    if (ptr) memcpy(args.data, ptr, args.data_size);
                     glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 #else
                     glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, args.offset, args.data_size, args.data);

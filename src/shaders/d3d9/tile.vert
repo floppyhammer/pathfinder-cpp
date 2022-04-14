@@ -1,5 +1,5 @@
-//#version 330
 #version 300 es
+//#version 330
 
 // pathfinder/shaders/tile.vs.glsl
 //
