@@ -21,6 +21,9 @@ namespace Pathfinder {
 
         ~Device() = default;
 
+        static std::shared_ptr<Framebuffer> create_framebuffer(uint32_t p_width, uint32_t p_height,
+                                                               TextureFormat p_format, DataType p_type);
+
         static std::shared_ptr<Buffer> create_buffer(BufferType type, size_t size);
 
         static std::shared_ptr<Texture> create_texture(uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type);

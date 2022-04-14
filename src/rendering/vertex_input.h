@@ -12,42 +12,17 @@
 
 namespace Pathfinder {
     enum class VertexInputRate {
-        Vertex,
-        Instance,
-    };
-
-    struct VertexInputBindingDescription {
-        uint32_t binding;
-        uint32_t stride;
-        VertexInputRate input_rate;
+        VERTEX = 0,
+        INSTANCE = 1,
     };
 
     struct VertexInputAttributeDescription {
-        uint32_t binding;
-        uint32_t location;
-        uint32_t format;
-        size_t offset;
-    };
-
-    struct VertexInputState {
-        uint32_t binding_description_count;
-        uint32_t attribute_description_count;
-        VertexInputBindingDescription *binding_descriptions;
-        VertexInputAttributeDescription *attribute_descriptions;
-    };
-
-    enum class VertexStep {
-        PER_VERTEX,
-        PER_INSTANCE,
-    };
-
-    struct AttributeDescriptor {
         uint32_t binding;
         uint8_t size; // Must be 1, 2, 3, 4.
         DataType type;
         uint32_t stride;
         size_t offset;
-        VertexStep vertex_step;
+        VertexInputRate vertex_input_rate;
     };
 }
 

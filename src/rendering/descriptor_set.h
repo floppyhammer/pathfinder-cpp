@@ -25,24 +25,20 @@ namespace Pathfinder {
         DescriptorType type;
 
         uint32_t binding;
-        std::string binding_name; // For uniforms.
+        std::string binding_name; // For compatibility with lower versions of OpenGL.
 
+        // Only one is valid.
         std::shared_ptr<Buffer> buffer;
         std::shared_ptr<Texture> texture;
     };
 
     class DescriptorSet {
     public:
-        inline void add_descriptor(const Descriptor &descriptor) {
+        inline void add_or_update_descriptor(const Descriptor &descriptor) {
             if (descriptor.buffer == nullptr && descriptor.texture == nullptr) return;
 
-            auto it = descriptors.find((uint32_t) descriptor.type + descriptor.binding);
-            if (it != descriptors.end()) {
-                it->second = descriptor;
-            } else{
-                descriptors.insert(std::make_pair((uint32_t) descriptor.type + descriptor.binding, descriptor));
-            }
-        };
+            descriptors[(uint32_t) descriptor.type + descriptor.binding] = descriptor;
+        }
 
         inline std::unordered_map<uint32_t, Descriptor> &get_descriptors() {
             return descriptors;

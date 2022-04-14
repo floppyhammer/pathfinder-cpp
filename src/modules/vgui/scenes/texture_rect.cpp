@@ -53,31 +53,31 @@ namespace Pathfinder {
             pipeline->blend_src = GL_ONE;
             pipeline->blend_dst = GL_ONE_MINUS_SRC_ALPHA;
 
-            auto &attribute_descriptors = pipeline->attribute_descriptors;
-            attribute_descriptors.reserve(3);
+            auto &attribute_descriptions = pipeline->attribute_descriptions;
+            attribute_descriptions.reserve(3);
 
             uint32_t stride = 8 * sizeof(float);
 
-            attribute_descriptors.push_back({0,
+            attribute_descriptions.push_back({0,
                                              3,
                                              DataType::FLOAT,
                                              stride,
                                              0,
-                                             VertexStep::PER_VERTEX});
+                                             VertexInputRate::VERTEX});
 
-            attribute_descriptors.push_back({0,
+            attribute_descriptions.push_back({0,
                                              3,
                                              DataType::FLOAT,
                                              stride,
                                              3 * sizeof(float),
-                                             VertexStep::PER_VERTEX});
+                                             VertexInputRate::VERTEX});
 
-            attribute_descriptors.push_back({0,
+            attribute_descriptions.push_back({0,
                                              2,
                                              DataType::FLOAT,
                                              stride,
                                              6 * sizeof(float),
-                                             VertexStep::PER_VERTEX});
+                                             VertexInputRate::VERTEX});
         }
 
         {
@@ -89,7 +89,7 @@ namespace Pathfinder {
             descriptor.binding_name = "bUniform";
             descriptor.buffer = uniform_buffer;
 
-            descriptor_set->add_descriptor(descriptor);
+            descriptor_set->add_or_update_descriptor(descriptor);
         }
     }
 
@@ -102,7 +102,7 @@ namespace Pathfinder {
         descriptor.binding_name = "uTexture";
         descriptor.texture = texture;
 
-        descriptor_set->add_descriptor(descriptor);
+        descriptor_set->add_or_update_descriptor(descriptor);
     }
 
     std::shared_ptr<Texture> TextureRect::get_texture() const {

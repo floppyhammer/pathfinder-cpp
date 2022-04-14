@@ -20,18 +20,6 @@ namespace Pathfinder {
 
         ~Texture();
 
-//        /// From file.
-//        static std::shared_ptr<Texture> from_file(const char *file_path,
-//                                                  TextureFormat p_format,
-//                                                  DataType p_type,
-//                                                  bool flip_y);
-//
-//        /// From memory.
-//        static std::shared_ptr<Texture> from_memory(const std::vector<unsigned char> &bytes,
-//                                                    TextureFormat p_format,
-//                                                    DataType p_type,
-//                                                    bool flip_y);
-
         uint32_t get_texture_id() const;
 
         uint32_t get_width() const;

@@ -6,7 +6,7 @@
 
 #include "../../src/common/global_macros.h"
 #include "../../src/common/logger.h"
-#include "../../src/rendering/command_buffer.h"
+#include "../../src/rendering/device.h"
 
 App::App(int window_width,
          int window_height,
@@ -77,7 +77,7 @@ void App::loop() {
     // Build and draw label.
     label->draw();
 
-    auto cmd_buffer = std::make_shared<Pathfinder::CommandBuffer>();
+    auto cmd_buffer = Pathfinder::Device::create_command_buffer();
 
     cmd_buffer->begin_render_pass(screen_framebuffer,
                                   true,

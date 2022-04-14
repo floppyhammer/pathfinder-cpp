@@ -220,11 +220,11 @@ namespace Pathfinder {
 
                     glBindVertexArray(render_pipeline->vao);
 
-                    auto &attribute_descriptors = render_pipeline->attribute_descriptors;
+                    auto &attribute_descriptions = render_pipeline->attribute_descriptions;
 
                     auto last_vbo = 0;
-                    for (int location = 0; location < attribute_descriptors.size(); location++) {
-                        auto &attrib = attribute_descriptors[location];
+                    for (int location = 0; location < attribute_descriptions.size(); location++) {
+                        auto &attrib = attribute_descriptions[location];
 
                         if (attrib.binding >= buffer_count) {
                             assert("Vertex buffer binding exceeded buffer count!");
@@ -273,7 +273,7 @@ namespace Pathfinder {
 
                         glEnableVertexAttribArray(location);
 
-                        if (attrib.vertex_step == VertexStep::PER_VERTEX) {
+                        if (attrib.vertex_input_rate == VertexInputRate::VERTEX) {
                             glVertexAttribDivisor(location, 0);
                         } else {
                             glVertexAttribDivisor(location, 1);

@@ -40,12 +40,12 @@ namespace Pathfinder {
     }
 
     RendererD3D9::RendererD3D9(uint32_t canvas_width, uint32_t canvas_height) {
-        dest_framebuffer = std::make_shared<Framebuffer>(canvas_width,
+        dest_framebuffer = Device::create_framebuffer(canvas_width,
                                                          canvas_height,
                                                          TextureFormat::RGBA8,
                                                          DataType::UNSIGNED_BYTE);
 
-        mask_framebuffer = std::make_shared<Framebuffer>(MASK_FRAMEBUFFER_WIDTH,
+        mask_framebuffer = Device::create_framebuffer(MASK_FRAMEBUFFER_WIDTH,
                                                    MASK_FRAMEBUFFER_HEIGHT,
                                                    TextureFormat::RGBA16F,
                                                    DataType::HALF_FLOAT);
@@ -84,36 +84,36 @@ namespace Pathfinder {
 
             // Set vertex attributes.
             {
-                std::vector<AttributeDescriptor> attribute_descriptors;
-                attribute_descriptors.reserve(3);
+                std::vector<VertexInputAttributeDescription> attribute_descriptions;
+                attribute_descriptions.reserve(3);
 
                 // Quad vertex.
-                attribute_descriptors.push_back({0,
+                attribute_descriptions.push_back({0,
                                                  2,
                                                  DataType::UNSIGNED_SHORT,
                                                  0,
                                                  0,
-                                                 VertexStep::PER_VERTEX});
+                                                 VertexInputRate::VERTEX});
 
                 // Vertex stride for the second vertex buffer.
                 uint32_t stride = sizeof(Fill);
 
                 // LineSegmentU16.
-                attribute_descriptors.push_back({1,
+                attribute_descriptions.push_back({1,
                                                  4,
                                                  DataType::UNSIGNED_SHORT,
                                                  stride,
                                                  0,
-                                                 VertexStep::PER_INSTANCE});
+                                                 VertexInputRate::INSTANCE});
                 // Link.
-                attribute_descriptors.push_back({1,
+                attribute_descriptions.push_back({1,
                                                  1,
                                                  DataType::UNSIGNED_INT,
                                                  stride,
                                                  offsetof(Fill, link),
-                                                 VertexStep::PER_INSTANCE});
+                                                 VertexInputRate::INSTANCE});
 
-                fill_pipeline->attribute_descriptors = attribute_descriptors;
+                fill_pipeline->attribute_descriptions = attribute_descriptions;
             }
 
             // Set descriptor set.
@@ -127,7 +127,7 @@ namespace Pathfinder {
                     descriptor.binding_name = "bFixedSizes";
                     descriptor.buffer = fixed_sizes_ub;
 
-                    fill_descriptor_set->add_descriptor(descriptor);
+                    fill_descriptor_set->add_or_update_descriptor(descriptor);
                 }
 
                 {
@@ -137,7 +137,7 @@ namespace Pathfinder {
                     descriptor.binding_name = "uAreaLUT";
                     descriptor.texture = area_lut_texture;
 
-                    fill_descriptor_set->add_descriptor(descriptor);
+                    fill_descriptor_set->add_or_update_descriptor(descriptor);
                 }
             }
         }
@@ -171,53 +171,53 @@ namespace Pathfinder {
 
             // Set vertex attributes.
             {
-                std::vector<AttributeDescriptor> attribute_descriptors;
-                attribute_descriptors.reserve(6);
+                std::vector<VertexInputAttributeDescription> attribute_descriptions;
+                attribute_descriptions.reserve(6);
 
                 // Quad vertex.
-                attribute_descriptors.push_back({0,
+                attribute_descriptions.push_back({0,
                                                  2,
                                                  DataType::UNSIGNED_SHORT,
                                                  0,
                                                  0,
-                                                 VertexStep::PER_VERTEX});
+                                                 VertexInputRate::VERTEX});
 
                 // Vertex stride for the second vertex buffer.
                 uint32_t stride = sizeof(TileObjectPrimitive);
 
                 // Other attributes.
-                attribute_descriptors.push_back({1,
+                attribute_descriptions.push_back({1,
                                                  2,
                                                  DataType::SHORT,
                                                  stride,
                                                  0,
-                                                 VertexStep::PER_INSTANCE});
-                attribute_descriptors.push_back({1,
+                                                 VertexInputRate::INSTANCE});
+                attribute_descriptions.push_back({1,
                                                  4,
                                                  DataType::UNSIGNED_BYTE,
                                                  stride,
                                                  offsetof(TileObjectPrimitive, alpha_tile_id),
-                                                 VertexStep::PER_INSTANCE});
-                attribute_descriptors.push_back({1,
+                                                 VertexInputRate::INSTANCE});
+                attribute_descriptions.push_back({1,
                                                  2,
                                                  DataType::BYTE,
                                                  stride,
                                                  offsetof(TileObjectPrimitive, ctrl),
-                                                 VertexStep::PER_INSTANCE});
-                attribute_descriptors.push_back({1,
+                                                 VertexInputRate::INSTANCE});
+                attribute_descriptions.push_back({1,
                                                  1,
                                                  DataType::INT,
                                                  stride,
                                                  offsetof(TileObjectPrimitive, path_id),
-                                                 VertexStep::PER_INSTANCE});
-                attribute_descriptors.push_back({1,
+                                                 VertexInputRate::INSTANCE});
+                attribute_descriptions.push_back({1,
                                                  1,
                                                  DataType::UNSIGNED_INT,
                                                  stride,
                                                  offsetof(TileObjectPrimitive, metadata_id),
-                                                 VertexStep::PER_INSTANCE});
+                                                 VertexInputRate::INSTANCE});
 
-                tile_pipeline->attribute_descriptors = attribute_descriptors;
+                tile_pipeline->attribute_descriptions = attribute_descriptions;
             }
 
             // Create uniform buffers.
@@ -237,7 +237,7 @@ namespace Pathfinder {
                     descriptor.binding_name = "bTransform";
                     descriptor.buffer = tile_transform_ub;
 
-                    tile_descriptor_set->add_descriptor(descriptor);
+                    tile_descriptor_set->add_or_update_descriptor(descriptor);
                 }
 
                 {
@@ -247,7 +247,7 @@ namespace Pathfinder {
                     descriptor.binding_name = "bVaryingSizes";
                     descriptor.buffer = tile_varying_sizes_ub;
 
-                    tile_descriptor_set->add_descriptor(descriptor);
+                    tile_descriptor_set->add_or_update_descriptor(descriptor);
                 }
 
                 {
@@ -257,7 +257,7 @@ namespace Pathfinder {
                     descriptor.binding_name = "bFixedSizes";
                     descriptor.buffer = fixed_sizes_ub;
 
-                    tile_descriptor_set->add_descriptor(descriptor);
+                    tile_descriptor_set->add_or_update_descriptor(descriptor);
                 }
 
                 // Textures.
@@ -269,7 +269,7 @@ namespace Pathfinder {
                     descriptor.binding_name = "uTextureMetadata";
                     descriptor.texture = metadata_texture;
 
-                    tile_descriptor_set->add_descriptor(descriptor);
+                    tile_descriptor_set->add_or_update_descriptor(descriptor);
                 }
 
                 {
@@ -279,7 +279,7 @@ namespace Pathfinder {
                     descriptor.binding_name = "uMaskTexture0";
                     descriptor.texture = mask_framebuffer->get_texture();
 
-                    tile_descriptor_set->add_descriptor(descriptor);
+                    tile_descriptor_set->add_or_update_descriptor(descriptor);
                 }
             }
         }
@@ -418,11 +418,11 @@ namespace Pathfinder {
 
         // Update descriptor set.
         {
-            tile_descriptor_set->add_descriptor({DescriptorType::Texture, 0, "uDestTexture", nullptr, nullptr});
-            tile_descriptor_set->add_descriptor({DescriptorType::Texture, 2, "uZBuffer", nullptr, z_buffer_texture});
+            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, 0, "uDestTexture", nullptr, nullptr});
+            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, 2, "uZBuffer", nullptr, z_buffer_texture});
 
             if (color_target.framebuffer != nullptr) {
-                tile_descriptor_set->add_descriptor({DescriptorType::Texture, 4, "uColorTexture0", nullptr, color_target.framebuffer->get_texture()});
+                tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, 4, "uColorTexture0", nullptr, color_target.framebuffer->get_texture()});
             }
         }
 

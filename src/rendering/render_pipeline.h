@@ -25,9 +25,8 @@ namespace Pathfinder {
             return program;
         }
 
-        std::vector<AttributeDescriptor> attribute_descriptors;
+        std::vector<VertexInputAttributeDescription> attribute_descriptions;
         std::shared_ptr<RasterProgram> program;
-        VertexInputState vertex_input_state{};
 
         unsigned int vao{};
 

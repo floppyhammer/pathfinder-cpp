@@ -200,29 +200,29 @@ namespace Pathfinder {
         {
             bound_descriptor_set = std::make_shared<DescriptorSet>();
 
-            bound_descriptor_set->add_descriptor({DescriptorType::UniformBuffer, 0, "bUniform", bound_ub, nullptr});
+            bound_descriptor_set->add_or_update_descriptor({DescriptorType::UniformBuffer, 0, "bUniform", bound_ub, nullptr});
         }
 
         // Dice pipeline.
         {
             dice_descriptor_set = std::make_shared<DescriptorSet>();
 
-            dice_descriptor_set->add_descriptor({DescriptorType::UniformBuffer, 0, "bUniform0", dice_ub0, nullptr});
-            dice_descriptor_set->add_descriptor({DescriptorType::UniformBuffer, 1, "bUniform1", dice_ub1, nullptr});
+            dice_descriptor_set->add_or_update_descriptor({DescriptorType::UniformBuffer, 0, "bUniform0", dice_ub0, nullptr});
+            dice_descriptor_set->add_or_update_descriptor({DescriptorType::UniformBuffer, 1, "bUniform1", dice_ub1, nullptr});
         }
 
         // Bin pipeline.
         {
             bin_descriptor_set = std::make_shared<DescriptorSet>();
 
-            bin_descriptor_set->add_descriptor({DescriptorType::UniformBuffer, 0, "bUniform", bin_ub, nullptr});
+            bin_descriptor_set->add_or_update_descriptor({DescriptorType::UniformBuffer, 0, "bUniform", bin_ub, nullptr});
         }
 
         // Propagate pipeline.
         {
             propagate_descriptor_set = std::make_shared<DescriptorSet>();
 
-            propagate_descriptor_set->add_descriptor(
+            propagate_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::UniformBuffer, 0, "bUniform", propagate_ub, nullptr});
         }
 
@@ -230,16 +230,16 @@ namespace Pathfinder {
         {
             sort_descriptor_set = std::make_shared<DescriptorSet>();
 
-            sort_descriptor_set->add_descriptor({DescriptorType::UniformBuffer, 0, "bUniform", sort_ub, nullptr});
+            sort_descriptor_set->add_or_update_descriptor({DescriptorType::UniformBuffer, 0, "bUniform", sort_ub, nullptr});
         }
 
         // Fill pipeline.
         {
             fill_descriptor_set = std::make_shared<DescriptorSet>();
 
-            fill_descriptor_set->add_descriptor({DescriptorType::UniformBuffer, 0, "bUniform", fill_ub, nullptr});
+            fill_descriptor_set->add_or_update_descriptor({DescriptorType::UniformBuffer, 0, "bUniform", fill_ub, nullptr});
 
-            fill_descriptor_set->add_descriptor({DescriptorType::Texture, 0, "uAreaLUT", nullptr, area_lut_texture});
+            fill_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, 0, "uAreaLUT", nullptr, area_lut_texture});
         }
 
         // Tile pipeline.
@@ -255,7 +255,7 @@ namespace Pathfinder {
                     descriptor.binding_name = "bFixedUniform";
                     descriptor.buffer = fixed_sizes_ub;
 
-                    tile_descriptor_set->add_descriptor(descriptor);
+                    tile_descriptor_set->add_or_update_descriptor(descriptor);
                 }
 
                 {
@@ -265,7 +265,7 @@ namespace Pathfinder {
                     descriptor.binding_name = "bUniform0";
                     descriptor.buffer = tile_ub0;
 
-                    tile_descriptor_set->add_descriptor(descriptor);
+                    tile_descriptor_set->add_or_update_descriptor(descriptor);
                 }
 
                 {
@@ -275,7 +275,7 @@ namespace Pathfinder {
                     descriptor.binding_name = "bUniform1";
                     descriptor.buffer = tile_ub1;
 
-                    tile_descriptor_set->add_descriptor(descriptor);
+                    tile_descriptor_set->add_or_update_descriptor(descriptor);
                 }
 
                 {
@@ -285,7 +285,7 @@ namespace Pathfinder {
                     descriptor.binding_name = "uTextureMetadata";
                     descriptor.texture = metadata_texture;
 
-                    tile_descriptor_set->add_descriptor(descriptor);
+                    tile_descriptor_set->add_or_update_descriptor(descriptor);
                 }
 
                 {
@@ -295,7 +295,7 @@ namespace Pathfinder {
                     descriptor.binding_name = "uMaskTexture0";
                     descriptor.texture = mask_texture;
 
-                    tile_descriptor_set->add_descriptor(descriptor);
+                    tile_descriptor_set->add_or_update_descriptor(descriptor);
                 }
             }
         }
@@ -394,19 +394,19 @@ namespace Pathfinder {
 
         // Update descriptor set.
         {
-            tile_descriptor_set->add_descriptor({DescriptorType::Texture, 1, "uZBuffer", nullptr, mask_texture});
+            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, 1, "uZBuffer", nullptr, mask_texture});
             if (color_target.framebuffer != nullptr) {
-                tile_descriptor_set->add_descriptor({DescriptorType::Texture, 2, "uColorTexture0", nullptr,
+                tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, 2, "uColorTexture0", nullptr,
                                                      color_target.framebuffer->get_texture()});
             }
-            tile_descriptor_set->add_descriptor({DescriptorType::Texture, 4, "uGammaLUT", nullptr, nullptr});
+            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, 4, "uGammaLUT", nullptr, nullptr});
 
-            tile_descriptor_set->add_descriptor(
+            tile_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 0, "", tiles_d3d11_buffer_id, nullptr}); // Read only.
-            tile_descriptor_set->add_descriptor(
+            tile_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 1, "", first_tile_map_buffer_id, nullptr}); // Read only.
 
-            tile_descriptor_set->add_descriptor({DescriptorType::Image, 0, "", nullptr, target_texture});
+            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Image, 0, "", nullptr, target_texture});
         }
 
         auto cmd_buffer = Device::create_command_buffer();
@@ -639,15 +639,15 @@ namespace Pathfinder {
 
         // Bind storage buffers.
         {
-            dice_descriptor_set->add_descriptor(
+            dice_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 0, "", indirect_draw_params_buffer_id, nullptr}); // Read write.
-            dice_descriptor_set->add_descriptor(
+            dice_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 1, "", dice_metadata_buffer_id, nullptr}); // Read only.
-            dice_descriptor_set->add_descriptor(
+            dice_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 2, "", points_buffer_id, nullptr}); // Read only.
-            dice_descriptor_set->add_descriptor(
+            dice_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 3, "", point_indices_buffer_id, nullptr}); // Read only.
-            dice_descriptor_set->add_descriptor(
+            dice_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 4, "", microlines_buffer_id, nullptr}); // Write only.
         }
 
@@ -715,9 +715,9 @@ namespace Pathfinder {
 
         // Bind storage buffers.
         {
-            bound_descriptor_set->add_descriptor(
+            bound_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 0, "", path_info_buffer_id, nullptr}); // Read only.
-            bound_descriptor_set->add_descriptor(
+            bound_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 1, "", tiles_d3d11_buffer_id, nullptr}); // Write only.
         }
 
@@ -767,18 +767,18 @@ namespace Pathfinder {
 
         // Bind storage buffers.
         {
-            bin_descriptor_set->add_descriptor(
+            bin_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 0, "", microlines_storage.buffer_id, nullptr}); // Read only.
-            bin_descriptor_set->add_descriptor(
+            bin_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 1, "", propagate_metadata_buffer_ids.propagate_metadata,
                      nullptr}); // Read only.
-            bin_descriptor_set->add_descriptor(
+            bin_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 2, "", z_buffer_id, nullptr}); // Read write.
-            bin_descriptor_set->add_descriptor(
+            bin_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 3, "", fill_vertex_buffer_id, nullptr}); // Write only.
-            bin_descriptor_set->add_descriptor(
+            bin_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 4, "", tiles_d3d11_buffer_id, nullptr}); // Read write.
-            bin_descriptor_set->add_descriptor(
+            bin_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 5, "", propagate_metadata_buffer_ids.backdrops,
                      nullptr}); // Read write.
         }
@@ -857,23 +857,23 @@ namespace Pathfinder {
 
         // Bind storage buffers.
         {
-            propagate_descriptor_set->add_descriptor(
+            propagate_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 0, "", propagate_metadata_buffer_ids.propagate_metadata,
                      nullptr}); // Read only.
-            propagate_descriptor_set->add_descriptor(
+            propagate_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 1, "", nullptr, nullptr}); // Clip metadata, read only.
-            propagate_descriptor_set->add_descriptor(
+            propagate_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 2, "", propagate_metadata_buffer_ids.backdrops,
                      nullptr}); // Read only.
-            propagate_descriptor_set->add_descriptor(
+            propagate_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 3, "", tiles_d3d11_buffer_id, nullptr}); // Read write.
-            propagate_descriptor_set->add_descriptor(
+            propagate_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 4, "", nullptr, nullptr}); // Clip tiles, read write.
-            propagate_descriptor_set->add_descriptor(
+            propagate_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 5, "", z_buffer_id, nullptr}); // Read write.
-            propagate_descriptor_set->add_descriptor(
+            propagate_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 6, "", first_tile_map_buffer_id, nullptr}); // Read write.
-            propagate_descriptor_set->add_descriptor(
+            propagate_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 7, "", alpha_tiles_buffer_id, nullptr}); // Write only.
         }
 
@@ -935,14 +935,14 @@ namespace Pathfinder {
 
         // Update descriptor set.
         {
-            fill_descriptor_set->add_descriptor(
+            fill_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 0, "", fill_storage_info.fill_vertex_buffer_id,
                      nullptr}); // Read only.
-            fill_descriptor_set->add_descriptor(
+            fill_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 1, "", tiles_d3d11_buffer_id, nullptr}); // Read only.
-            fill_descriptor_set->add_descriptor(
+            fill_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 2, "", alpha_tiles_buffer_id, nullptr}); // Read only.
-            fill_descriptor_set->add_descriptor({DescriptorType::Image, 0, "", nullptr, mask_texture});
+            fill_descriptor_set->add_or_update_descriptor({DescriptorType::Image, 0, "", nullptr, mask_texture});
         }
 
         auto cmd_buffer = Device::create_command_buffer();
@@ -975,11 +975,11 @@ namespace Pathfinder {
 
         // Update descriptor set.
         {
-            sort_descriptor_set->add_descriptor(
+            sort_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 0, "", tiles_d3d11_buffer_id, nullptr}); // Read write.
-            sort_descriptor_set->add_descriptor(
+            sort_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 1, "", first_tile_map_buffer_id, nullptr}); // Read write.
-            sort_descriptor_set->add_descriptor(
+            sort_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, 2, "", z_buffer_id, nullptr}); // Read only.
         }
 

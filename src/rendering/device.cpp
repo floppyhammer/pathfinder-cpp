@@ -8,6 +8,14 @@
 #include "../common/logger.h"
 
 namespace Pathfinder {
+    std::shared_ptr<Framebuffer> Device::create_framebuffer(uint32_t p_width, uint32_t p_height,
+                                                            TextureFormat p_format, DataType p_type) {
+        auto framebuffer = std::make_shared<Framebuffer>(p_width, p_height, p_format, p_type);
+
+        check_error("create_framebuffer");
+        return framebuffer;
+    }
+
     std::shared_ptr<Buffer> Device::create_buffer(BufferType type, size_t size) {
         if (size == 0) {
             Logger::error("Tried to create a buffer with zero size!");
@@ -66,11 +74,11 @@ namespace Pathfinder {
         auto texture = std::make_shared<Texture>(p_width, p_height, p_format, p_type);
 
         check_error("create_texture");
-
         return texture;
     }
 
     std::shared_ptr<CommandBuffer> Device::create_command_buffer() {
+        check_error("create_command_buffer");
         return std::make_shared<CommandBuffer>();
     }
 }
