@@ -20,7 +20,7 @@
 // This is optional for the native demo, as we can access shader files directly.
 //#define PATHFINDER_SHADERS_EMBEDDED
 #define PATHFINDER_SHADER_DIR "../src/shaders/"
-#define PATHFINDER_RES_DIR "../res/"
+#define PATHFINDER_ASSET_DIR "../assets/"
 
 // OpenGL headers.
 #ifdef __ANDROID__

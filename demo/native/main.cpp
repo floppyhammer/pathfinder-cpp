@@ -36,9 +36,9 @@ int main() {
     // Create a window.
     Window window(1920, 1080);
 
-    auto area_lut_input = load_file_as_bytes(PATHFINDER_RES_DIR"area-lut.png");
-    auto font_input = load_file_as_bytes(PATHFINDER_RES_DIR"OpenSans-Regular.ttf");
-    auto svg_input = load_file_as_string(PATHFINDER_RES_DIR"tiger.svg");
+    auto area_lut_input = load_file_as_bytes(PATHFINDER_ASSET_DIR"area-lut.png");
+    auto font_input = load_file_as_bytes(PATHFINDER_ASSET_DIR"OpenSans-Regular.ttf");
+    auto svg_input = load_file_as_string(PATHFINDER_ASSET_DIR"tiger.svg");
 
     App app(window.width, window.height, area_lut_input, font_input, svg_input);
 
