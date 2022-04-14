@@ -7,8 +7,8 @@
 
 #include "../../src/rendering/framebuffer.h"
 #include "../../src/modules/d3dx/canvas.h"
-#include "../../src/modules/vgui/scenes/label.h"
-#include "../../src/modules/vgui/scenes/texture_rect.h"
+#include "../../src/modules/vgui/nodes/label.h"
+#include "../../src/modules/vgui/nodes/texture_rect.h"
 
 #include <chrono>
 

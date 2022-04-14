@@ -33,6 +33,8 @@ namespace Pathfinder {
 
         Vec2<float> get_rect_pivot_offset() const;
 
+        void handle_input_events();
+
     protected:
         Vec2<float> rect_position = Vec2<float>(0);
 
