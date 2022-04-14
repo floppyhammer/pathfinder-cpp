@@ -13,6 +13,7 @@
 
 #include <cstdint>
 #include <utility>
+#include <vector>
 
 //! Raster image patterns.
 namespace Pathfinder {

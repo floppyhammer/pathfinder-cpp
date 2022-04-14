@@ -6,7 +6,7 @@
 #define PATHFINDER_COMPUTE_PROGRAM_H
 
 #include "program.h"
-#include "../rendering/device.h"
+#include "data.h"
 #include "../common/global_macros.h"
 
 namespace Pathfinder {

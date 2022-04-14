@@ -6,6 +6,7 @@
 #define PATHFINDER_RENDERER_H
 
 #include "../d3d9_d3d11/data/data.h"
+#include "../../rendering/buffer.h"
 #include "../../rendering/framebuffer.h"
 
 #include <cstdint>

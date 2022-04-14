@@ -3,14 +3,13 @@
 //
 
 #include "command_buffer.h"
-#include "compute_pipeline.h"
 
-#include "device.h"
+#include "validation.h"
 
 #include <cassert>
 
 namespace Pathfinder {
-    void CommandBuffer::begin_render_pass(const std::shared_ptr<Framebuffer>& framebuffer,
+    void CommandBuffer::begin_render_pass(const std::shared_ptr<Framebuffer> &framebuffer,
                                           bool clear,
                                           ColorF clear_color) {
         Command cmd;
@@ -29,7 +28,7 @@ namespace Pathfinder {
 
     }
 
-    void CommandBuffer::bind_render_pipeline(const std::shared_ptr<RenderPipeline>& pipeline) {
+    void CommandBuffer::bind_render_pipeline(const std::shared_ptr<RenderPipeline> &pipeline) {
         Command cmd;
         cmd.type = CommandType::BindRenderPipeline;
         auto &args = cmd.args.bind_render_pipeline;
@@ -38,7 +37,7 @@ namespace Pathfinder {
         commands.push(cmd);
     }
 
-    void CommandBuffer::bind_compute_pipeline(const std::shared_ptr<ComputePipeline>& pipeline) {
+    void CommandBuffer::bind_compute_pipeline(const std::shared_ptr<ComputePipeline> &pipeline) {
         Command cmd;
         cmd.type = CommandType::BindComputePipeline;
         auto &args = cmd.args.bind_compute_pipeline;
@@ -61,7 +60,7 @@ namespace Pathfinder {
         commands.push(cmd);
     }
 
-    void CommandBuffer::bind_descriptor_set(const std::shared_ptr<DescriptorSet>& descriptor_set) {
+    void CommandBuffer::bind_descriptor_set(const std::shared_ptr<DescriptorSet> &descriptor_set) {
         Command cmd;
         cmd.type = CommandType::BindDescriptorSet;
 
@@ -116,7 +115,67 @@ namespace Pathfinder {
 
     }
 
-    // Data
+    void CommandBuffer::upload_to_buffer(const std::shared_ptr<Buffer> &buffer, uint32_t offset, uint32_t data_size,
+                                         void *data) {
+        if (data_size == 0 || data == nullptr) {
+            Logger::error("Tried to upload invalid data to buffer!");
+        }
+
+        Command cmd;
+        cmd.type = CommandType::UploadToBuffer;
+
+        auto &args = cmd.args.upload_to_buffer;
+        args.buffer = buffer.get();
+        args.offset = offset;
+        args.data_size = data_size;
+        args.data = data;
+
+        commands.push(cmd);
+    }
+
+    void CommandBuffer::upload_to_texture(const std::shared_ptr<Texture> &texture, Rect<uint32_t> p_region,
+                                          const void *data) {
+        // Invalid region represents the whole texture.
+        auto region = p_region.is_valid() ? p_region : Rect<uint32_t>(0, 0, texture->get_width(),
+                                                                      texture->get_height());
+
+        Command cmd;
+        cmd.type = CommandType::UploadToTexture;
+
+        auto &args = cmd.args.upload_to_texture;
+        args.texture = texture.get();
+        args.offset_x = region.left;
+        args.offset_y = region.top;
+        args.width = region.width();
+        args.height = region.height();
+        args.data = data;
+
+        commands.push(cmd);
+    }
+
+    void
+    CommandBuffer::read_buffer(const std::shared_ptr<Buffer> &buffer, uint32_t offset, uint32_t data_size, void *data) {
+        switch (buffer->type) {
+            case BufferType::Vertex:
+            case BufferType::Uniform: {
+                Logger::error("It's not possible to read data from vertex/uniform buffers!", "Command Buffer");
+            }
+                break;
+            case BufferType::General: {
+                Command cmd;
+                cmd.type = CommandType::ReadBuffer;
+
+                auto &args = cmd.args.read_buffer;
+                args.buffer = buffer.get();
+                args.offset = offset;
+                args.data_size = data_size;
+                args.data = data;
+
+                commands.push(cmd);
+            }
+                break;
+        }
+    }
 
     void CommandBuffer::submit() {
         while (!commands.empty()) {
@@ -129,13 +188,14 @@ namespace Pathfinder {
                     glBindFramebuffer(GL_FRAMEBUFFER, args.framebuffer_id);
 
                     if (args.clear) {
-                        glClearColor(args.clear_color.r, args.clear_color.g, args.clear_color.b, args.clear_color.a);
+                        glClearColor(args.clear_color.r, args.clear_color.g, args.clear_color.b,
+                                     args.clear_color.a);
                         glClear(GL_COLOR_BUFFER_BIT);
                     }
 
                     glViewport(0, 0, args.extent.x, args.extent.y);
 
-                    Device::check_error("BeginRenderPass");
+                    check_error("BeginRenderPass");
                 }
                     break;
                 case CommandType::BindRenderPipeline: {
@@ -172,7 +232,7 @@ namespace Pathfinder {
                         }
 
                         auto buffer = vertex_buffers[attrib.binding];
-                        auto vbo = buffer->args.vertex.vbo;
+                        auto vbo = buffer->id;
 
                         if (location == 0) {
                             glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -197,7 +257,8 @@ namespace Pathfinder {
                                                        static_cast<GLenum>(attrib.type),
                                                        attrib.stride,
                                                        (void *) attrib.offset);
-                            } break;
+                            }
+                                break;
                             case DataType::HALF_FLOAT:
                             case DataType::FLOAT: {
                                 glVertexAttribPointer(location,
@@ -206,7 +267,8 @@ namespace Pathfinder {
                                                       GL_FALSE,
                                                       attrib.stride,
                                                       (void *) attrib.offset);
-                            } break;
+                            }
+                                break;
                         }
 
                         glEnableVertexAttribArray(location);
@@ -218,7 +280,7 @@ namespace Pathfinder {
                         }
                     }
 
-                    Device::check_error("BindVertexBuffers");
+                    check_error("BindVertexBuffers");
                 }
                     break;
                 case CommandType::BindDescriptorSet: {
@@ -235,16 +297,19 @@ namespace Pathfinder {
                             case DescriptorType::UniformBuffer: {
                                 auto buffer = descriptor.buffer;
 
-                                unsigned int ubo_index = glGetUniformBlockIndex(current_pipeline->get_program()->get_id(), binding_name.c_str());
-                                glUniformBlockBinding(current_pipeline->get_program()->get_id(), ubo_index, binding_point);
-                                glBindBufferBase(GL_UNIFORM_BUFFER, binding_point, buffer->args.uniform.ubo);
+                                unsigned int ubo_index = glGetUniformBlockIndex(
+                                        current_pipeline->get_program()->get_id(), binding_name.c_str());
+                                glUniformBlockBinding(current_pipeline->get_program()->get_id(), ubo_index,
+                                                      binding_point);
+                                glBindBufferBase(GL_UNIFORM_BUFFER, binding_point, buffer->id);
                             }
                                 break;
                             case DescriptorType::Texture: {
                                 auto texture = descriptor.texture;
 
                                 if (!binding_name.empty()) {
-                                    glUniform1i(glGetUniformLocation(current_pipeline->get_program()->get_id(), binding_name.c_str()),
+                                    glUniform1i(glGetUniformLocation(current_pipeline->get_program()->get_id(),
+                                                                     binding_name.c_str()),
                                                 binding_point);
                                 }
                                 glActiveTexture(GL_TEXTURE0 + binding_point);
@@ -254,13 +319,14 @@ namespace Pathfinder {
                             case DescriptorType::GeneralBuffer: {
                                 auto buffer = descriptor.buffer;
 
-                                glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding_point, buffer->args.general.sbo);
+                                glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding_point, buffer->id);
                             }
                                 break;
                             case DescriptorType::Image: {
                                 auto texture = descriptor.texture;
 
-                                glBindImageTexture(binding_point, texture->get_texture_id(), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA8);
+                                glBindImageTexture(binding_point, texture->get_texture_id(), 0, GL_FALSE, 0,
+                                                   GL_READ_WRITE, GL_RGBA8);
                             }
                                 break;
                             default:
@@ -268,7 +334,7 @@ namespace Pathfinder {
                         }
                     }
 
-                    Device::check_error("BindDescriptorSet");
+                    check_error("BindDescriptorSet");
                 }
                     break;
                 case CommandType::Draw: {
@@ -276,15 +342,16 @@ namespace Pathfinder {
 
                     glDrawArrays(GL_TRIANGLES, (GLsizei) args.first_vertex, (GLsizei) args.vertex_count);
 
-                    Device::check_error("Draw");
+                    check_error("Draw");
                 }
                     break;
                 case CommandType::DrawInstanced: {
                     auto &args = cmd.args.draw_instanced;
 
-                    glDrawArraysInstanced(GL_TRIANGLES, 0, (GLsizei) args.vertex_count, (GLsizei) args.instance_count);
+                    glDrawArraysInstanced(GL_TRIANGLES, 0, (GLsizei) args.vertex_count,
+                                          (GLsizei) args.instance_count);
 
-                    Device::check_error("DrawInstanced");
+                    check_error("DrawInstanced");
                 }
                     break;
                 case CommandType::EndRenderPass: {
@@ -315,19 +382,73 @@ namespace Pathfinder {
                     glFinish();
 #endif
 
-                    Device::check_error("Dispatch");
+                    check_error("Dispatch");
                 }
                     break;
                 case CommandType::EndComputePass: {
 
                 }
                     break;
-                case CommandType::UploadGeneralBuffer: {
+                case CommandType::UploadToBuffer: {
+                    auto &args = cmd.args.upload_to_buffer;
 
+                    int gl_buffer_type;
+
+                    switch (args.buffer->type) {
+                        case BufferType::Uniform: {
+                            gl_buffer_type = GL_UNIFORM_BUFFER;
+                        }
+                            break;
+                        case BufferType::Vertex: {
+                            gl_buffer_type = GL_ARRAY_BUFFER;
+                        }
+                            break;
+#ifdef PATHFINDER_USE_D3D11
+                            case BufferType::General: {
+                                gl_buffer_type = GL_SHADER_STORAGE_BUFFER;
+                            }
+                                break;
+#endif
+                    }
+
+                    glBindBuffer(gl_buffer_type, args.buffer->id);
+                    glBufferSubData(gl_buffer_type, args.offset, args.data_size, args.data);
+                    glBindBuffer(gl_buffer_type, 0); // Unbind.
+
+                    check_error("UploadToBuffer");
                 }
                     break;
-                case CommandType::ReadGeneralBuffer: {
+                case CommandType::ReadBuffer: {
+                    auto &args = cmd.args.read_buffer;
 
+#ifdef PATHFINDER_USE_D3D11
+                    glBindBuffer(GL_SHADER_STORAGE_BUFFER, args.buffer->id);
+
+#ifdef __ANDROID__
+                    void *ptr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, offset, size, GL_MAP_READ_BIT);
+                    if (ptr) memcpy(data, ptr, byte_size);
+                    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+#else
+                    glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, args.offset, args.data_size, args.data);
+#endif
+
+                    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // Unbind.
+#endif
+
+                    check_error("ReadBuffer");
+                }
+                    break;
+                case CommandType::UploadToTexture: {
+                    auto &args = cmd.args.upload_to_texture;
+
+                    glBindTexture(GL_TEXTURE_2D, args.texture->get_texture_id());
+                    glTexSubImage2D(GL_TEXTURE_2D, 0,
+                                    args.offset_x, args.offset_y, args.width, args.height,
+                                    static_cast<GLint>(PixelDataFormat::RGBA),
+                                    static_cast<GLenum>(args.texture->get_pixel_type()), args.data);
+                    glBindTexture(GL_TEXTURE_2D, 0);
+
+                    check_error("UploadToTexture");
                 }
                     break;
                 case CommandType::Max:

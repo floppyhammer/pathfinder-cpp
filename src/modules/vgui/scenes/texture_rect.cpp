@@ -7,7 +7,7 @@
 #include "../../../common/math/basic.h"
 #include "../../../common/math/mat4x4.h"
 #include "../../../common/global_macros.h"
-#include "../../../rendering/command_buffer.h"
+#include "../../../rendering/device.h"
 
 namespace Pathfinder {
     TextureRect::TextureRect(float viewport_width, float viewport_height) {
@@ -29,12 +29,14 @@ namespace Pathfinder {
         };
 
         vertex_buffer = Device::create_buffer(BufferType::Vertex, sizeof(vertices));
-        Device::upload_to_buffer(vertex_buffer,
-                                 0,
-                                 sizeof(vertices),
-                                 (void *) vertices);
-
         uniform_buffer = Device::create_buffer(BufferType::Uniform, 16 * sizeof(float));
+
+        auto cmd_buffer = Device::create_command_buffer();
+        cmd_buffer->upload_to_buffer(vertex_buffer,
+                                     0,
+                                     sizeof(vertices),
+                                     (void *) vertices);
+        cmd_buffer->submit();
 
         // Pipeline.
         {
@@ -126,7 +128,9 @@ namespace Pathfinder {
         auto mvp_mat = model_mat;
         // -------------------------------------------------
 
-        Device::upload_to_buffer(uniform_buffer, 0, 16 * sizeof(float), &mvp_mat);
+        auto one_shot_cmd_buffer = Device::create_command_buffer();
+        one_shot_cmd_buffer->upload_to_buffer(uniform_buffer, 0, 16 * sizeof(float), &mvp_mat);
+        one_shot_cmd_buffer->submit();
 
         cmd_buffer->bind_render_pipeline(pipeline);
 

@@ -2,8 +2,8 @@
 // Created by floppyhammer on 6/24/2021.
 //
 
-#ifndef PATHFINDER_DATA_H
-#define PATHFINDER_DATA_H
+#ifndef PATHFINDER_D3DX_DATA_H
+#define PATHFINDER_D3DX_DATA_H
 
 #include "../effects.h"
 #include "../../../common/math/vec2.h"
@@ -150,4 +150,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_DATA_H
+#endif //PATHFINDER_D3DX_DATA_H

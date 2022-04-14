@@ -6,6 +6,10 @@
 
 #include "logger.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+
+#include <stb_image.h>
+
 #include <stdexcept>
 
 namespace Pathfinder {
@@ -45,5 +49,59 @@ namespace Pathfinder {
         input.close();
 
         return bytes;
+    }
+
+    std::shared_ptr<ImageData> ImageData::from_memory(const std::vector<unsigned char> &bytes, bool flip_y) {
+        stbi_set_flip_vertically_on_load(flip_y);
+
+        int32_t img_width, img_height, img_channels;
+        unsigned char *img_data = stbi_load_from_memory(bytes.data(),
+                                                        (int) (bytes.size() * sizeof(unsigned char)),
+                                                        &img_width,
+                                                        &img_height,
+                                                        &img_channels,
+                                                        0);
+
+        // Generate a texture using the previously loaded image data.
+        if (!img_data) {
+            Logger::error("Failed to load image from memory!", "ImageData");
+            throw std::runtime_error(std::string("Failed to load image from memory!"));
+        }
+
+        auto image_data = std::make_shared<ImageData>();
+        image_data->width = img_width;
+        image_data->height = img_height;
+        image_data->channel_count = img_channels;
+        image_data->data = img_data;
+
+        return image_data;
+    }
+
+    std::shared_ptr<ImageData> ImageData::from_file(const char *file_path, bool flip_y) {
+        stbi_set_flip_vertically_on_load(flip_y);
+
+        int32_t img_width, img_height, img_channels;
+        unsigned char *img_data = stbi_load(file_path,
+                                            &img_width,
+                                            &img_height,
+                                            &img_channels,
+                                            0);
+
+        if (!img_data) {
+            Logger::error("Failed to load image from file!", "ImageData");
+            throw std::runtime_error(std::string("Failed to load image from disk: ") + std::string(file_path));
+        }
+
+        auto image_data = std::make_shared<ImageData>();
+        image_data->width = img_width;
+        image_data->height = img_height;
+        image_data->channel_count = img_channels;
+        image_data->data = img_data;
+
+        return image_data;
+    }
+
+    ImageData::~ImageData() {
+        if (data) stbi_image_free(data);
     }
 }

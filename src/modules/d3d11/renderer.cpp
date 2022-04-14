@@ -66,22 +66,30 @@ namespace Pathfinder {
         // Reallocate if capacity is not enough.
         if (point_indices_capacity < needed_point_indices_capacity) {
             // Old buffer will be dropped automatically.
-            point_indices_buffer = Device::create_buffer(BufferType::General, needed_point_indices_capacity * sizeof(SegmentIndicesD3D11));
+            point_indices_buffer = Device::create_buffer(BufferType::General,
+                                                         needed_point_indices_capacity * sizeof(SegmentIndicesD3D11));
 
             point_indices_capacity = needed_point_indices_capacity;
         }
 
-        Device::upload_to_buffer(points_buffer,
-                                 0,
-                                 segments.points.size() * sizeof(Vec2<float>),
-                                 segments.points.data());
-
-        Device::upload_to_buffer(point_indices_buffer,
-                                 0,
-                                 segments.indices.size() * sizeof(SegmentIndicesD3D11),
-                                 segments.indices.data());
-
         point_indices_count = segments.indices.size();
+
+        // Upload data.
+        {
+            auto cmd_buffer = Device::create_command_buffer();
+
+            cmd_buffer->upload_to_buffer(points_buffer,
+                                         0,
+                                         segments.points.size() * sizeof(Vec2<float>),
+                                         segments.points.data());
+
+            cmd_buffer->upload_to_buffer(point_indices_buffer,
+                                         0,
+                                         segments.indices.size() * sizeof(SegmentIndicesD3D11),
+                                         segments.indices.data());
+
+            cmd_buffer->submit();
+        }
     }
 
     SceneBuffers::~SceneBuffers() {
@@ -110,15 +118,15 @@ namespace Pathfinder {
         tile_ub1 = Device::create_buffer(BufferType::Uniform, 8 * sizeof(float));
 
         // Unlike D3D9, we use RGBA8 here instead of RGBA16F.
-        mask_texture = std::make_shared<Texture>(MASK_FRAMEBUFFER_WIDTH,
-                                                 MASK_FRAMEBUFFER_HEIGHT,
-                                                 TextureFormat::RGBA8,
-                                                 DataType::UNSIGNED_BYTE);
+        mask_texture = Device::create_texture(MASK_FRAMEBUFFER_WIDTH,
+                                              MASK_FRAMEBUFFER_HEIGHT,
+                                              TextureFormat::RGBA8,
+                                              DataType::UNSIGNED_BYTE);
 
-        dest_texture = std::make_shared<Texture>(canvas_width,
-                                                 canvas_height,
-                                                 TextureFormat::RGBA8,
-                                                 DataType::UNSIGNED_BYTE);
+        dest_texture = Device::create_texture(canvas_width,
+                                              canvas_height,
+                                              TextureFormat::RGBA8,
+                                              DataType::UNSIGNED_BYTE);
     }
 
     void RendererD3D11::set_up_pipelines() {
@@ -214,7 +222,8 @@ namespace Pathfinder {
         {
             propagate_descriptor_set = std::make_shared<DescriptorSet>();
 
-            propagate_descriptor_set->add_descriptor({DescriptorType::UniformBuffer, 0, "bUniform", propagate_ub, nullptr});
+            propagate_descriptor_set->add_descriptor(
+                    {DescriptorType::UniformBuffer, 0, "bUniform", propagate_ub, nullptr});
         }
 
         // Sort pipeline.
@@ -367,43 +376,52 @@ namespace Pathfinder {
         // Update uniform buffers.
         {
             std::array<float, 8> ubo_data0 = {0, 0, 0, 0, // uClearColor
-                                              (float) color_target.size.x, (float) color_target.size.y, // uColorTextureSize0
+                                              (float) color_target.size.x,
+                                              (float) color_target.size.y, // uColorTextureSize0
                                               (float) target_size.x, (float) target_size.y}; // uFramebufferSize
-            Device::upload_to_buffer(tile_ub0, 0, 8 * sizeof(float), ubo_data0.data());
+
 
             std::array<int32_t, 5> ubo_data1 = {0, 0, // uZBufferSize
-                                                (int32_t) framebuffer_tile_size0.x, (int32_t) framebuffer_tile_size0.y, // uFramebufferTileSize
+                                                (int32_t) framebuffer_tile_size0.x,
+                                                (int32_t) framebuffer_tile_size0.y, // uFramebufferTileSize
                                                 clear_op}; // uLoadAction
-            Device::upload_to_buffer(tile_ub1, 0, 5 * sizeof(int32_t), ubo_data1.data());
+
+            auto one_shot_cmd_buffer = Device::create_command_buffer();
+            one_shot_cmd_buffer->upload_to_buffer(tile_ub0, 0, 8 * sizeof(float), ubo_data0.data());
+            one_shot_cmd_buffer->upload_to_buffer(tile_ub1, 0, 5 * sizeof(int32_t), ubo_data1.data());
+            one_shot_cmd_buffer->submit();
         }
 
         // Update descriptor set.
         {
             tile_descriptor_set->add_descriptor({DescriptorType::Texture, 1, "uZBuffer", nullptr, mask_texture});
             if (color_target.framebuffer != nullptr) {
-                tile_descriptor_set->add_descriptor({DescriptorType::Texture, 2, "uColorTexture0", nullptr, color_target.framebuffer->get_texture()});
+                tile_descriptor_set->add_descriptor({DescriptorType::Texture, 2, "uColorTexture0", nullptr,
+                                                     color_target.framebuffer->get_texture()});
             }
             tile_descriptor_set->add_descriptor({DescriptorType::Texture, 4, "uGammaLUT", nullptr, nullptr});
 
-            tile_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 0, "", tiles_d3d11_buffer_id, nullptr}); // Read only.
-            tile_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 1, "", first_tile_map_buffer_id, nullptr}); // Read only.
+            tile_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 0, "", tiles_d3d11_buffer_id, nullptr}); // Read only.
+            tile_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 1, "", first_tile_map_buffer_id, nullptr}); // Read only.
 
             tile_descriptor_set->add_descriptor({DescriptorType::Image, 0, "", nullptr, target_texture});
         }
 
-        CommandBuffer cmd_buffer;
+        auto cmd_buffer = Device::create_command_buffer();
 
-        cmd_buffer.begin_compute_pass();
+        cmd_buffer->begin_compute_pass();
 
-        cmd_buffer.bind_compute_pipeline(tile_pipeline);
+        cmd_buffer->bind_compute_pipeline(tile_pipeline);
 
-        cmd_buffer.bind_descriptor_set(tile_descriptor_set);
+        cmd_buffer->bind_descriptor_set(tile_descriptor_set);
 
-        cmd_buffer.dispatch(framebuffer_tile_size0.x, framebuffer_tile_size0.y);
+        cmd_buffer->dispatch(framebuffer_tile_size0.x, framebuffer_tile_size0.y);
 
-        cmd_buffer.end_compute_pass();
+        cmd_buffer->end_compute_pass();
 
-        cmd_buffer.submit();
+        cmd_buffer->submit();
     }
 
     Vec2<uint32_t> RendererD3D11::tile_size() const {
@@ -441,11 +459,12 @@ namespace Pathfinder {
                 Device::create_buffer(BufferType::General,
                                       propagate_metadata.size() * sizeof(PropagateMetadataD3D11));
 
-        Device::upload_to_buffer(
-                propagate_metadata_storage_id,
-                0,
-                propagate_metadata.size() * sizeof(PropagateMetadataD3D11),
-                propagate_metadata.data());
+        auto one_shot_cmd_buffer = Device::create_command_buffer();
+        one_shot_cmd_buffer->upload_to_buffer(propagate_metadata_storage_id,
+                                     0,
+                                     propagate_metadata.size() * sizeof(PropagateMetadataD3D11),
+                                     propagate_metadata.data());
+        one_shot_cmd_buffer->submit();
 
         auto backdrops_storage_id = Device::create_buffer(BufferType::General,
                                                           backdrops.size() * sizeof(BackdropInfoD3D11));
@@ -455,10 +474,12 @@ namespace Pathfinder {
 
     void RendererD3D11::upload_initial_backdrops(const std::shared_ptr<Buffer> &backdrops_buffer_id,
                                                  std::vector<BackdropInfoD3D11> &backdrops) {
-        Device::upload_to_buffer(backdrops_buffer_id,
-                                 0,
-                                 backdrops.size() * sizeof(BackdropInfoD3D11),
-                                 backdrops.data());
+        auto one_shot_cmd_buffer = Device::create_command_buffer();
+        one_shot_cmd_buffer->upload_to_buffer(backdrops_buffer_id,
+                                     0,
+                                     backdrops.size() * sizeof(BackdropInfoD3D11),
+                                     backdrops.data());
+        one_shot_cmd_buffer->submit();
     }
 
     void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
@@ -585,14 +606,16 @@ namespace Pathfinder {
 
         // Upload dice indirect draw params, which are also used for output.
         uint32_t indirect_compute_params[8] = {0, 0, 0, 0, point_indices_count, 0, 0, 0};
-        Device::upload_to_buffer(
+
+        auto one_shot_cmd_buffer = Device::create_command_buffer();
+        one_shot_cmd_buffer->upload_to_buffer(
                 indirect_draw_params_buffer_id,
                 0,
                 8 * sizeof(uint32_t),
                 indirect_compute_params);
 
         // Upload dice metadata.
-        Device::upload_to_buffer(
+        one_shot_cmd_buffer->upload_to_buffer(
                 dice_metadata_buffer_id,
                 0,
                 dice_metadata.size() * sizeof(DiceMetadataD3D11),
@@ -604,42 +627,51 @@ namespace Pathfinder {
             std::array<float, 10> ubo_data0 = {transform.matrix.v[0], transform.matrix.v[1], 0, 0,
                                                transform.matrix.v[2], transform.matrix.v[3], 0, 0,
                                                transform.vector.x, transform.vector.y};
-            Device::upload_to_buffer(dice_ub0, 0, 10 * sizeof(float), ubo_data0.data());
+            one_shot_cmd_buffer->upload_to_buffer(dice_ub0, 0, 10 * sizeof(float), ubo_data0.data());
 
             std::array<int32_t, 3> ubo_data1 = {static_cast<int32_t>(dice_metadata.size()),
                                                 static_cast<int32_t>(batch_segment_count),
                                                 static_cast<int32_t>(allocated_microline_count)};
-            Device::upload_to_buffer(dice_ub1, 0, 3 * sizeof(int32_t), ubo_data1.data());
+            one_shot_cmd_buffer->upload_to_buffer(dice_ub1, 0, 3 * sizeof(int32_t), ubo_data1.data());
         }
+
+        one_shot_cmd_buffer->submit();
 
         // Bind storage buffers.
         {
-            dice_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 0, "", indirect_draw_params_buffer_id, nullptr}); // Read write.
-            dice_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 1, "", dice_metadata_buffer_id, nullptr}); // Read only.
-            dice_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 2, "", points_buffer_id, nullptr}); // Read only.
-            dice_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 3, "", point_indices_buffer_id, nullptr}); // Read only.
-            dice_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 4, "", microlines_buffer_id, nullptr}); // Write only.
+            dice_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 0, "", indirect_draw_params_buffer_id, nullptr}); // Read write.
+            dice_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 1, "", dice_metadata_buffer_id, nullptr}); // Read only.
+            dice_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 2, "", points_buffer_id, nullptr}); // Read only.
+            dice_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 3, "", point_indices_buffer_id, nullptr}); // Read only.
+            dice_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 4, "", microlines_buffer_id, nullptr}); // Write only.
         }
 
-        CommandBuffer cmd_buffer;
+        auto cmd_buffer = Device::create_command_buffer();
 
-        cmd_buffer.begin_compute_pass();
+        cmd_buffer->begin_compute_pass();
 
-        cmd_buffer.bind_compute_pipeline(dice_pipeline);
+        cmd_buffer->bind_compute_pipeline(dice_pipeline);
 
-        cmd_buffer.bind_descriptor_set(dice_descriptor_set);
+        cmd_buffer->bind_descriptor_set(dice_descriptor_set);
 
-        cmd_buffer.dispatch((batch_segment_count + DICE_WORKGROUP_SIZE - 1) / DICE_WORKGROUP_SIZE);
+        cmd_buffer->dispatch((batch_segment_count + DICE_WORKGROUP_SIZE - 1) / DICE_WORKGROUP_SIZE);
 
-        cmd_buffer.end_compute_pass();
+        cmd_buffer->end_compute_pass();
 
-        cmd_buffer.submit();
+        cmd_buffer->submit();
 
         // Read indirect draw params back to CPU memory.
-        Device::read_buffer(indirect_draw_params_buffer_id,
-                            0,
-                            8 * sizeof(uint32_t),
-                            indirect_compute_params);
+        one_shot_cmd_buffer = Device::create_command_buffer();
+        one_shot_cmd_buffer->read_buffer(indirect_draw_params_buffer_id,
+                                         0,
+                                         8 * sizeof(uint32_t),
+                                         indirect_compute_params);
+        one_shot_cmd_buffer->submit();
 
         // Free some general buffers which are no longer useful.
         //Device::free_general_buffer(dice_metadata_buffer_id);
@@ -664,38 +696,44 @@ namespace Pathfinder {
     void RendererD3D11::bound(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
                               uint32_t tile_count,
                               std::vector<TilePathInfoD3D11> &tile_path_info) {
+        auto one_shot_cmd_buffer = Device::create_command_buffer();
+
         // This is a staging buffer, which will be freed in the end of this function.
         auto path_info_buffer_id = Device::create_buffer(BufferType::General,
                                                          tile_path_info.size() * sizeof(TilePathInfoD3D11));
-        Device::upload_to_buffer(path_info_buffer_id,
-                                 0,
-                                 tile_path_info.size() * sizeof(TilePathInfoD3D11),
-                                 tile_path_info.data());
+        one_shot_cmd_buffer->upload_to_buffer(path_info_buffer_id,
+                                              0,
+                                              tile_path_info.size() * sizeof(TilePathInfoD3D11),
+                                              tile_path_info.data());
 
         // Update uniform buffers.
         std::array<int32_t, 2> ubo_data = {static_cast<int32_t>(tile_path_info.size()),
                                            static_cast<int32_t>(tile_count)};
-        Device::upload_to_buffer(bound_ub, 0, 2 * sizeof(int32_t), ubo_data.data());
+        one_shot_cmd_buffer->upload_to_buffer(bound_ub, 0, 2 * sizeof(int32_t), ubo_data.data());
+
+        one_shot_cmd_buffer->submit();
 
         // Bind storage buffers.
         {
-            bound_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 0, "", path_info_buffer_id, nullptr}); // Read only.
-            bound_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 1, "", tiles_d3d11_buffer_id, nullptr}); // Write only.
+            bound_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 0, "", path_info_buffer_id, nullptr}); // Read only.
+            bound_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 1, "", tiles_d3d11_buffer_id, nullptr}); // Write only.
         }
 
-        CommandBuffer cmd_buffer;
+        auto cmd_buffer = Device::create_command_buffer();
 
-        cmd_buffer.begin_compute_pass();
+        cmd_buffer->begin_compute_pass();
 
-        cmd_buffer.bind_compute_pipeline(bound_pipeline);
+        cmd_buffer->bind_compute_pipeline(bound_pipeline);
 
-        cmd_buffer.bind_descriptor_set(bound_descriptor_set);
+        cmd_buffer->bind_descriptor_set(bound_descriptor_set);
 
-        cmd_buffer.dispatch((tile_count + BOUND_WORKGROUP_SIZE - 1) / BOUND_WORKGROUP_SIZE);
+        cmd_buffer->dispatch((tile_count + BOUND_WORKGROUP_SIZE - 1) / BOUND_WORKGROUP_SIZE);
 
-        cmd_buffer.end_compute_pass();
+        cmd_buffer->end_compute_pass();
 
-        cmd_buffer.submit();
+        cmd_buffer->submit();
 
         //Device::free_general_buffer(path_info_buffer_id);
     }
@@ -705,6 +743,8 @@ namespace Pathfinder {
             PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids,
             const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
             const std::shared_ptr<Buffer> &z_buffer_id) {
+        auto one_shot_cmd_buffer = Device::create_command_buffer();
+
         // What will be the output of this function.
         auto fill_vertex_buffer_id = Device::create_buffer(BufferType::General,
                                                            allocated_fill_count * sizeof(Fill));
@@ -714,43 +754,55 @@ namespace Pathfinder {
         // some drivers (#373).
         uint32_t indirect_draw_params[8] = {6, 0, 0, 0, 0, microlines_storage.count, 0, 0};
 
-        Device::upload_to_buffer(z_buffer_id,
-                                 0,
-                                 8 * sizeof(uint32_t),
-                                 indirect_draw_params);
+        one_shot_cmd_buffer->upload_to_buffer(z_buffer_id,
+                                              0,
+                                              8 * sizeof(uint32_t),
+                                              indirect_draw_params);
 
         // Update uniform buffers.
         std::array<int32_t, 2> ubo_data = {(int32_t) microlines_storage.count, (int32_t) allocated_fill_count};
-        Device::upload_to_buffer(bin_ub, 0, 2 * sizeof(int32_t), ubo_data.data());
+        one_shot_cmd_buffer->upload_to_buffer(bin_ub, 0, 2 * sizeof(int32_t), ubo_data.data());
+
+        one_shot_cmd_buffer->submit();
 
         // Bind storage buffers.
         {
-            bin_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 0, "", microlines_storage.buffer_id, nullptr}); // Read only.
-            bin_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 1, "", propagate_metadata_buffer_ids.propagate_metadata, nullptr}); // Read only.
-            bin_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 2, "", z_buffer_id, nullptr}); // Read write.
-            bin_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 3, "", fill_vertex_buffer_id, nullptr}); // Write only.
-            bin_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 4, "", tiles_d3d11_buffer_id, nullptr}); // Read write.
-            bin_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 5, "", propagate_metadata_buffer_ids.backdrops, nullptr}); // Read write.
+            bin_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 0, "", microlines_storage.buffer_id, nullptr}); // Read only.
+            bin_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 1, "", propagate_metadata_buffer_ids.propagate_metadata,
+                     nullptr}); // Read only.
+            bin_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 2, "", z_buffer_id, nullptr}); // Read write.
+            bin_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 3, "", fill_vertex_buffer_id, nullptr}); // Write only.
+            bin_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 4, "", tiles_d3d11_buffer_id, nullptr}); // Read write.
+            bin_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 5, "", propagate_metadata_buffer_ids.backdrops,
+                     nullptr}); // Read write.
         }
 
-        CommandBuffer cmd_buffer;
+        auto cmd_buffer = Device::create_command_buffer();
 
-        cmd_buffer.begin_compute_pass();
+        cmd_buffer->begin_compute_pass();
 
-        cmd_buffer.bind_compute_pipeline(bin_pipeline);
+        cmd_buffer->bind_compute_pipeline(bin_pipeline);
 
-        cmd_buffer.bind_descriptor_set(bin_descriptor_set);
+        cmd_buffer->bind_descriptor_set(bin_descriptor_set);
 
-        cmd_buffer.dispatch((microlines_storage.count + BIN_WORKGROUP_SIZE - 1) / BIN_WORKGROUP_SIZE);
+        cmd_buffer->dispatch((microlines_storage.count + BIN_WORKGROUP_SIZE - 1) / BIN_WORKGROUP_SIZE);
 
-        cmd_buffer.end_compute_pass();
+        cmd_buffer->end_compute_pass();
 
-        cmd_buffer.submit();
+        cmd_buffer->submit();
 
-        Device::read_buffer(z_buffer_id,
-                            0,
-                            8 * sizeof(uint32_t),
-                            indirect_draw_params);
+        one_shot_cmd_buffer = Device::create_command_buffer();
+        one_shot_cmd_buffer->read_buffer(z_buffer_id,
+                                         0,
+                                         8 * sizeof(uint32_t),
+                                         indirect_draw_params);
+        one_shot_cmd_buffer->submit();
 
         // How many fills we need.
         auto needed_fill_count = indirect_draw_params[FILL_INDIRECT_DRAW_PARAMS_INSTANCE_COUNT_INDEX];
@@ -775,61 +827,79 @@ namespace Pathfinder {
             const std::shared_ptr<Buffer> &first_tile_map_buffer_id,
             const std::shared_ptr<Buffer> &alpha_tiles_buffer_id,
             PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids) {
+        auto one_shot_cmd_buffer = Device::create_command_buffer();
+
         // TODO(pcwalton): Zero out the Z-buffer on GPU?
         auto z_buffer_size = tile_size();
         auto tile_area = z_buffer_size.area();
         auto z_buffer_data = std::vector<int32_t>(tile_area, 0);
-        Device::upload_to_buffer(z_buffer_id,
-                                 0,
-                                 tile_area * sizeof(int32_t),
-                                 z_buffer_data.data());
+        one_shot_cmd_buffer->upload_to_buffer(z_buffer_id,
+                                              0,
+                                              tile_area * sizeof(int32_t),
+                                              z_buffer_data.data());
 
         // TODO(pcwalton): Initialize the first tiles buffer on GPU?
         auto first_tile_map = std::vector<FirstTileD3D11>(tile_area, FirstTileD3D11());
-        Device::upload_to_buffer(first_tile_map_buffer_id,
-                                 0,
-                                 tile_area * sizeof(FirstTileD3D11),
-                                 first_tile_map.data());
-
-        CommandBuffer cmd_buffer;
+        one_shot_cmd_buffer->upload_to_buffer(first_tile_map_buffer_id,
+                                              0,
+                                              tile_area * sizeof(FirstTileD3D11),
+                                              first_tile_map.data());
 
         // Update uniform buffers.
         auto framebuffer_tile_size0 = framebuffer_tile_size();
-        std::array<int32_t , 4> ubo_data = {(int32_t) framebuffer_tile_size0.x,
-                                            (int32_t) framebuffer_tile_size0.y,
-                                            (int32_t) column_count,
-                                            (int32_t) alpha_tile_count};
-        Device::upload_to_buffer(propagate_ub, 0, 4 * sizeof(int32_t), ubo_data.data());
+        std::array<int32_t, 4> ubo_data = {(int32_t) framebuffer_tile_size0.x,
+                                           (int32_t) framebuffer_tile_size0.y,
+                                           (int32_t) column_count,
+                                           (int32_t) alpha_tile_count};
+        one_shot_cmd_buffer->upload_to_buffer(propagate_ub, 0, 4 * sizeof(int32_t), ubo_data.data());
+
+        one_shot_cmd_buffer->submit();
 
         // Bind storage buffers.
         {
-            propagate_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 0, "", propagate_metadata_buffer_ids.propagate_metadata, nullptr}); // Read only.
-            propagate_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 1, "", nullptr, nullptr}); // Clip metadata, read only.
-            propagate_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 2, "", propagate_metadata_buffer_ids.backdrops, nullptr}); // Read only.
-            propagate_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 3, "", tiles_d3d11_buffer_id, nullptr}); // Read write.
-            propagate_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 4, "", nullptr, nullptr}); // Clip tiles, read write.
-            propagate_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 5, "", z_buffer_id, nullptr}); // Read write.
-            propagate_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 6, "", first_tile_map_buffer_id, nullptr}); // Read write.
-            propagate_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 7, "", alpha_tiles_buffer_id, nullptr}); // Write only.
+            propagate_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 0, "", propagate_metadata_buffer_ids.propagate_metadata,
+                     nullptr}); // Read only.
+            propagate_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 1, "", nullptr, nullptr}); // Clip metadata, read only.
+            propagate_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 2, "", propagate_metadata_buffer_ids.backdrops,
+                     nullptr}); // Read only.
+            propagate_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 3, "", tiles_d3d11_buffer_id, nullptr}); // Read write.
+            propagate_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 4, "", nullptr, nullptr}); // Clip tiles, read write.
+            propagate_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 5, "", z_buffer_id, nullptr}); // Read write.
+            propagate_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 6, "", first_tile_map_buffer_id, nullptr}); // Read write.
+            propagate_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 7, "", alpha_tiles_buffer_id, nullptr}); // Write only.
         }
 
-        cmd_buffer.begin_compute_pass();
+        auto cmd_buffer = Device::create_command_buffer();
 
-        cmd_buffer.bind_compute_pipeline(propagate_pipeline);
+        cmd_buffer->begin_compute_pass();
 
-        cmd_buffer.bind_descriptor_set(propagate_descriptor_set);
+        cmd_buffer->bind_compute_pipeline(propagate_pipeline);
 
-        cmd_buffer.dispatch((column_count + PROPAGATE_WORKGROUP_SIZE - 1) / PROPAGATE_WORKGROUP_SIZE);
+        cmd_buffer->bind_descriptor_set(propagate_descriptor_set);
 
-        cmd_buffer.end_compute_pass();
+        cmd_buffer->dispatch((column_count + PROPAGATE_WORKGROUP_SIZE - 1) / PROPAGATE_WORKGROUP_SIZE);
 
-        cmd_buffer.submit();
+        cmd_buffer->end_compute_pass();
+
+        cmd_buffer->submit();
+
+        one_shot_cmd_buffer = Device::create_command_buffer();
 
         uint32_t fill_indirect_draw_params[8];
-        Device::read_buffer(z_buffer_id,
-                            0,
-                            8 * sizeof(uint32_t),
-                            fill_indirect_draw_params);
+        one_shot_cmd_buffer->read_buffer(z_buffer_id,
+                                         0,
+                                         8 * sizeof(uint32_t),
+                                         fill_indirect_draw_params);
+
+        one_shot_cmd_buffer->submit();
 
         auto batch_alpha_tile_count = fill_indirect_draw_params[FILL_INDIRECT_DRAW_PARAMS_ALPHA_TILE_COUNT_INDEX];
 
@@ -853,34 +923,42 @@ namespace Pathfinder {
         // This setup is a workaround for the annoying 64K limit of compute invocation in OpenGL.
         auto local_alpha_tile_count = alpha_tile_range.end - alpha_tile_range.start;
 
-        CommandBuffer cmd_buffer;
+        auto one_shot_cmd_buffer = Device::create_command_buffer();
 
         // Update uniform buffers.
         auto framebuffer_tile_size0 = framebuffer_tile_size();
-        std::array<int32_t , 2> ubo_data = {static_cast<int32_t>(alpha_tile_range.start),
-                                            static_cast<int32_t>(alpha_tile_range.end)};
-        Device::upload_to_buffer(fill_ub, 0, 2 * sizeof(int32_t), ubo_data.data());
+        std::array<int32_t, 2> ubo_data = {static_cast<int32_t>(alpha_tile_range.start),
+                                           static_cast<int32_t>(alpha_tile_range.end)};
+        one_shot_cmd_buffer->upload_to_buffer(fill_ub, 0, 2 * sizeof(int32_t), ubo_data.data());
+
+        one_shot_cmd_buffer->submit();
 
         // Update descriptor set.
         {
-            fill_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 0, "", fill_storage_info.fill_vertex_buffer_id, nullptr}); // Read only.
-            fill_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 1, "", tiles_d3d11_buffer_id, nullptr}); // Read only.
-            fill_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 2, "", alpha_tiles_buffer_id, nullptr}); // Read only.
+            fill_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 0, "", fill_storage_info.fill_vertex_buffer_id,
+                     nullptr}); // Read only.
+            fill_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 1, "", tiles_d3d11_buffer_id, nullptr}); // Read only.
+            fill_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 2, "", alpha_tiles_buffer_id, nullptr}); // Read only.
             fill_descriptor_set->add_descriptor({DescriptorType::Image, 0, "", nullptr, mask_texture});
         }
 
-        cmd_buffer.begin_compute_pass();
+        auto cmd_buffer = Device::create_command_buffer();
 
-        cmd_buffer.bind_compute_pipeline(fill_pipeline);
+        cmd_buffer->begin_compute_pass();
 
-        cmd_buffer.bind_descriptor_set(fill_descriptor_set);
+        cmd_buffer->bind_compute_pipeline(fill_pipeline);
 
-        cmd_buffer.dispatch(std::min(local_alpha_tile_count, (unsigned long long) 1 << 15),
-                            ((local_alpha_tile_count + (1 << 15) - 1) >> 15));
+        cmd_buffer->bind_descriptor_set(fill_descriptor_set);
 
-        cmd_buffer.end_compute_pass();
+        cmd_buffer->dispatch(std::min(local_alpha_tile_count, (unsigned long long) 1 << 15),
+                             ((local_alpha_tile_count + (1 << 15) - 1) >> 15));
 
-        cmd_buffer.submit();
+        cmd_buffer->end_compute_pass();
+
+        cmd_buffer->submit();
     }
 
     void RendererD3D11::sort_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
@@ -888,29 +966,36 @@ namespace Pathfinder {
                                    const std::shared_ptr<Buffer> &z_buffer_id) {
         auto tile_count = framebuffer_tile_size().area();
 
-        CommandBuffer cmd_buffer;
+        auto one_shot_cmd_buffer = Device::create_command_buffer();
 
         // Update uniform buffers.
-        Device::upload_to_buffer(sort_ub, 0, sizeof(int32_t), &tile_count);
+        one_shot_cmd_buffer->upload_to_buffer(sort_ub, 0, sizeof(int32_t), &tile_count);
+
+        one_shot_cmd_buffer->submit();
 
         // Update descriptor set.
         {
-            sort_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 0, "", tiles_d3d11_buffer_id, nullptr}); // Read write.
-            sort_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 1, "", first_tile_map_buffer_id, nullptr}); // Read write.
-            sort_descriptor_set->add_descriptor({DescriptorType::GeneralBuffer, 2, "", z_buffer_id, nullptr}); // Read only.
+            sort_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 0, "", tiles_d3d11_buffer_id, nullptr}); // Read write.
+            sort_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 1, "", first_tile_map_buffer_id, nullptr}); // Read write.
+            sort_descriptor_set->add_descriptor(
+                    {DescriptorType::GeneralBuffer, 2, "", z_buffer_id, nullptr}); // Read only.
         }
 
-        cmd_buffer.begin_compute_pass();
+        auto cmd_buffer = Device::create_command_buffer();
 
-        cmd_buffer.bind_compute_pipeline(sort_pipeline);
+        cmd_buffer->begin_compute_pass();
 
-        cmd_buffer.bind_descriptor_set(sort_descriptor_set);
+        cmd_buffer->bind_compute_pipeline(sort_pipeline);
 
-        cmd_buffer.dispatch((tile_count + SORT_WORKGROUP_SIZE - 1) / SORT_WORKGROUP_SIZE);
+        cmd_buffer->bind_descriptor_set(sort_descriptor_set);
 
-        cmd_buffer.end_compute_pass();
+        cmd_buffer->dispatch((tile_count + SORT_WORKGROUP_SIZE - 1) / SORT_WORKGROUP_SIZE);
 
-        cmd_buffer.submit();
+        cmd_buffer->end_compute_pass();
+
+        cmd_buffer->submit();
     }
 }
 

@@ -5,7 +5,7 @@
 #ifndef PATHFINDER_TEXTURE_H
 #define PATHFINDER_TEXTURE_H
 
-#include "device.h"
+#include "data.h"
 #include "../common/math/rect.h"
 #include "../common/global_macros.h"
 #include "../common/logger.h"
@@ -16,21 +16,21 @@ namespace Pathfinder {
     /// Use Texture via smart pointers as its de-constructor will release its GL resources.
     class Texture {
     public:
-        Texture(uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type, const void *p_data = nullptr);
+        Texture(uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type);
 
         ~Texture();
 
-        /// From file.
-        static std::shared_ptr<Texture> from_file(const char *file_path,
-                                                  TextureFormat p_format,
-                                                  DataType p_type,
-                                                  bool flip_y);
-
-        /// From memory.
-        static std::shared_ptr<Texture> from_memory(const std::vector<unsigned char> &bytes,
-                                                    TextureFormat p_format,
-                                                    DataType p_type,
-                                                    bool flip_y);
+//        /// From file.
+//        static std::shared_ptr<Texture> from_file(const char *file_path,
+//                                                  TextureFormat p_format,
+//                                                  DataType p_type,
+//                                                  bool flip_y);
+//
+//        /// From memory.
+//        static std::shared_ptr<Texture> from_memory(const std::vector<unsigned char> &bytes,
+//                                                    TextureFormat p_format,
+//                                                    DataType p_type,
+//                                                    bool flip_y);
 
         uint32_t get_texture_id() const;
 
@@ -43,8 +43,6 @@ namespace Pathfinder {
         TextureFormat get_format() const;
 
         DataType get_pixel_type() const;
-
-        void update_region(const Rect<int> &p_rect, const void *p_data) const;
 
     private:
         uint32_t texture_id = 0;

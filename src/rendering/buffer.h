@@ -25,39 +25,12 @@ namespace Pathfinder {
     class Buffer {
     public:
         ~Buffer() {
-            unsigned int buffer_id;
-
-            switch (type) {
-                case BufferType::Vertex: {
-                    buffer_id = args.vertex.vbo;
-                }
-                case BufferType::Uniform: {
-                    buffer_id = args.uniform.ubo;
-                }
-                    break;
-                case BufferType::General: {
-                    buffer_id = args.general.sbo;
-                }
-                    break;
-            }
-
-            glDeleteBuffers(1, &buffer_id);
+            glDeleteBuffers(1, &id);
         };
 
-        BufferType type;
+        uint32_t id;
         size_t size;
-
-        union Args {
-            struct {
-                uint32_t vbo;
-            } vertex;
-            struct {
-                uint32_t ubo;
-            } uniform;
-            struct {
-                uint32_t sbo;
-            } general;
-        } args;
+        BufferType type;
     };
 }
 

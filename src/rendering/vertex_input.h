@@ -5,7 +5,7 @@
 #ifndef PATHFINDER_VERTEX_INPUT_H
 #define PATHFINDER_VERTEX_INPUT_H
 
-#include "device.h"
+#include "data.h"
 
 #include <cstdint>
 #include <array>

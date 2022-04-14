@@ -4,6 +4,9 @@
 
 #include "renderer.h"
 
+#include "../../rendering/device.h"
+#include "../../rendering/command_buffer.h"
+
 #include <umHalf.h>
 #include <array>
 
@@ -22,10 +25,10 @@ namespace Pathfinder {
 
     Renderer::Renderer() {
         // We only allocate the metadata texture once.
-        metadata_texture = std::make_shared<Texture>(TEXTURE_METADATA_TEXTURE_WIDTH,
-                                                     TEXTURE_METADATA_TEXTURE_HEIGHT,
-                                                     TextureFormat::RGBA16F,
-                                                     DataType::HALF_FLOAT);
+        metadata_texture = Device::create_texture(TEXTURE_METADATA_TEXTURE_WIDTH,
+                                                  TEXTURE_METADATA_TEXTURE_HEIGHT,
+                                                  TextureFormat::RGBA16F,
+                                                  DataType::HALF_FLOAT);
 
         // Uniform buffer.
         {
@@ -35,15 +38,23 @@ namespace Pathfinder {
             std::array<float, 6> fixed_sizes_ubo_data = {MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT,
                                                          TILE_WIDTH, TILE_HEIGHT,
                                                          TEXTURE_METADATA_TEXTURE_WIDTH, TEXTURE_METADATA_TEXTURE_HEIGHT};
-            Device::upload_to_buffer(fixed_sizes_ub, 0, 6 * sizeof(float), fixed_sizes_ubo_data.data());
+
+            auto cmd_buffer = Device::create_command_buffer();
+            cmd_buffer->upload_to_buffer(fixed_sizes_ub, 0, 6 * sizeof(float), fixed_sizes_ubo_data.data());
+            cmd_buffer->submit();
         }
     }
 
     void Renderer::set_up_area_lut(const std::vector<unsigned char> &area_lut_input) {
-        area_lut_texture = Texture::from_memory(area_lut_input,
-                                                TextureFormat::RGBA8,
-                                                DataType::UNSIGNED_BYTE,
-                                                false);
+        auto image_data = ImageData::from_memory(area_lut_input, false);
+
+        area_lut_texture = Device::create_texture(image_data->width, image_data->height,
+                                                  TextureFormat::RGBA8,
+                                                  DataType::UNSIGNED_BYTE);
+
+        auto cmd_buffer = Device::create_command_buffer();
+        cmd_buffer->upload_to_texture(area_lut_texture, {}, image_data->data);
+        cmd_buffer->submit();
     }
 
     struct FilterParams {
@@ -182,9 +193,11 @@ namespace Pathfinder {
 
         // Only update valid region.
         auto width = TEXTURE_METADATA_TEXTURE_WIDTH;
-        auto height = (int) texels.size() / (4 * TEXTURE_METADATA_TEXTURE_WIDTH);
-        auto region_rect = Rect<int>(0, 0, width, height);
+        auto height = texels.size() / (4 * TEXTURE_METADATA_TEXTURE_WIDTH);
+        auto region_rect = Rect<uint32_t>(0, 0, width, height);
 
-        metadata_texture->update_region(region_rect, texels.data());
+        auto cmd_buffer = Device::create_command_buffer();
+        cmd_buffer->upload_to_texture(metadata_texture, region_rect, texels.data());
+        cmd_buffer->submit();
     }
 }
