@@ -6,7 +6,13 @@
 #define PATHFINDER_CONTROL_H
 
 #include "node.h"
+#include "../servers/vector_server.h"
+#include "../resources/style_box.h"
 #include "../../../common/math/vec2.h"
+#include "../../d3dx/canvas.h"
+#include "../../d3dx/scene.h"
+#include "../../d3d9/scene_builder.h"
+#include "../../d3d9/renderer.h"
 
 namespace Pathfinder {
     class Control : public Node {
@@ -35,6 +41,10 @@ namespace Pathfinder {
 
         void handle_input_events();
 
+        void set_style_box(const StyleBox &p_style_box);
+
+        StyleBox get_style_box() const;
+
     protected:
         Vec2<float> rect_position = Vec2<float>(0);
 
@@ -45,6 +55,13 @@ namespace Pathfinder {
         float rect_rotation = 0;
 
         Vec2<float> rect_pivot_offset = Vec2<float>(0);
+
+        StyleBox style_box;
+
+    public:
+        virtual void update();
+
+        virtual void draw();
     };
 }
 

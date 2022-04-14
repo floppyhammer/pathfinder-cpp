@@ -328,11 +328,8 @@ namespace Pathfinder {
         current_state.line_dash_offset = p_line_dash_offset;
     }
 
-    void Canvas::update() {
-        scene_builder.build();
-    }
-
     void Canvas::draw() {
+        scene_builder.build();
         renderer->draw(scene_builder);
     }
 

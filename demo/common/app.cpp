@@ -7,6 +7,7 @@
 #include "../../src/common/global_macros.h"
 #include "../../src/common/logger.h"
 #include "../../src/rendering/device.h"
+#include "../../src/modules/vgui/servers/vector_server.h"
 
 App::App(int window_width,
          int window_height,
@@ -16,6 +17,10 @@ App::App(int window_width,
     // Set logger level.
     Pathfinder::Logger::set_level(Pathfinder::Logger::Level::DEBUG);
 
+    Pathfinder::VectorServer::get_singleton().init(window_width,
+                                                   window_height,
+                                                   reinterpret_cast<std::vector<unsigned char> &>(area_lut_input));
+
     // Set up a canvas.
     canvas = std::make_shared<Pathfinder::Canvas>(window_width,
                                                   window_height,
@@ -23,9 +28,8 @@ App::App(int window_width,
     canvas->load_svg(p_svg_input);
 
     // Set up a text label.
-    label = std::make_shared<Pathfinder::Label>(256,
-                                                64,
-                                                reinterpret_cast<std::vector<unsigned char> &>(area_lut_input));
+    label = std::make_shared<Pathfinder::Label>();
+    label->set_rect_size(128, 64);
     label->set_style(64, Pathfinder::ColorU::white(), 0, Pathfinder::ColorU::red());
     label->set_font(std::make_shared<Pathfinder::Font>(font_input));
     label->set_horizontal_alignment(Pathfinder::Alignment::Center);
@@ -35,8 +39,7 @@ App::App(int window_width,
 
     // Set viewport texture to a texture rect.
     texture_rect0 = std::make_shared<Pathfinder::TextureRect>(window_width, window_height);
-    texture_rect1 = std::make_shared<Pathfinder::TextureRect>(label->get_rect_size().x,
-                                                              label->get_rect_size().y);
+    texture_rect1 = std::make_shared<Pathfinder::TextureRect>(window_width, window_height);
 
     // Timers.
     start_time = std::chrono::steady_clock::now();
@@ -70,12 +73,22 @@ void App::loop() {
     }
     // ----------------------------------------
 
-    // Build and draw canvas.
-    canvas->update();
-    canvas->draw();
+    // Server process.
+    Pathfinder::VectorServer::get_singleton().canvas->clear();
 
-    // Build and draw label.
-    label->draw();
+    // Update.
+    {
+        label->update();
+    }
+
+    // Draw.
+    {
+        canvas->draw();
+        label->draw();
+    }
+
+    // Server process.
+    Pathfinder::VectorServer::get_singleton().canvas->draw();
 
     auto cmd_buffer = Pathfinder::Device::create_command_buffer();
 
@@ -88,7 +101,7 @@ void App::loop() {
     texture_rect0->draw(cmd_buffer, screen_framebuffer);
 
     // Draw label to screen.
-    texture_rect1->set_texture(label->canvas->get_dest_texture());
+    texture_rect1->set_texture(Pathfinder::VectorServer::get_singleton().canvas->get_dest_texture());
     texture_rect1->draw(cmd_buffer, screen_framebuffer);
 
     cmd_buffer->end_render_pass();

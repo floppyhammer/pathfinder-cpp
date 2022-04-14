@@ -10,13 +10,5 @@
 #include "../../../rendering/device.h"
 
 namespace Pathfinder {
-    void Panel::set_style_box(const StyleBox& p_style_box) {
-        style_box = p_style_box;
 
-        // Rebuild & draw the style box here.
-    }
-
-    StyleBox Panel::get_style_box() const {
-        return style_box;
-    }
 }

@@ -11,8 +11,8 @@
 #include <vector>
 
 namespace Pathfinder {
-/// A shape drawn to the output or to a render target.
-/// Same as DrawPath + Outline in Pathfinder Rust.
+    /// A shape drawn to the output or to a render target.
+    /// Same as DrawPath + Outline in Pathfinder Rust.
     struct Shape {
     public:
         /// Paths (each path starts with the MoveTo command).
@@ -89,7 +89,7 @@ namespace Pathfinder {
         void push_path(const Path &p_path);
     };
 
-/// Describes a shape that can be used to clip other shapes.
+    /// Describes a shape that can be used to clip other shapes.
     struct ClipShape {
         /// The actual vector paths.
         std::vector<Path> paths;

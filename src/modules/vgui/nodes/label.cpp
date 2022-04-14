@@ -7,22 +7,13 @@
 #include <string>
 
 namespace Pathfinder {
-    Label::Label(unsigned int width, unsigned int height, const std::vector<unsigned char> &area_lut_input) {
-        rect_size.x = width;
-        rect_size.y = height;
-
-        canvas = std::make_shared<Canvas>((float) width, (float) height, area_lut_input);
-    }
-
     void Label::set_text(const std::string &p_text) {
         // Only update glyphs when text has changed.
         if (text == p_text || font == nullptr) return;
 
         text = p_text;
 
-        measure();
-
-        adjust_layout();
+        is_dirty = true;
     }
 
     void Label::measure() {
@@ -112,9 +103,6 @@ namespace Pathfinder {
 
             glyphs.push_back(g);
         }
-
-        // Mark the label as dirty, so it needs to be redrawn.
-        is_dirty = true;
     }
 
     void Label::set_font(std::shared_ptr<Font> p_font) {
@@ -124,9 +112,7 @@ namespace Pathfinder {
 
         if (text.empty()) return;
 
-        measure();
-
-        adjust_layout();
+        is_dirty = true;
     }
 
     void Label::adjust_layout() {
@@ -156,19 +142,33 @@ namespace Pathfinder {
 
             g.shape.translate(shift);
         }
-
-        // TODO: Don't rebuild shapes upon layout adjustment.
-        is_dirty = true;
     }
 
     void Label::update() {
-        canvas->clear();
+        Control::update();
 
-        // Draw label background.
-        Shape shape;
-        shape.add_rect(Rect<float>(Vec2<float>(), rect_size), 8);
-        canvas->set_fill_paint(Paint::from_color(ColorU(0, 0, 0, 50)));
-        canvas->fill_shape(shape, FillRule::Winding);
+        if (is_dirty) {
+            measure();
+
+            adjust_layout();
+
+            is_dirty = false;
+        }
+    }
+
+    void Label::set_style(float p_size, ColorU p_color, float p_stroke_width, ColorU p_stroke_color) {
+        line_height = p_size;
+        color = p_color;
+        stroke_width = p_stroke_width;
+        stroke_color = p_stroke_color;
+
+        is_dirty = true;
+    }
+
+    void Label::draw() {
+        auto canvas = VectorServer::get_singleton().canvas;
+
+        Control::draw();
 
         // Add stroke.
         for (Glyph &g: glyphs) {
@@ -204,28 +204,6 @@ namespace Pathfinder {
             canvas->set_fill_paint(Paint::from_color(ColorU(color)));
             canvas->fill_shape(g.shape, FillRule::Winding);
         }
-
-        is_dirty = false;
-
-        // Rebuild shapes.
-        canvas->update();
-    }
-
-    void Label::set_style(float p_size, ColorU p_color, float p_stroke_width, ColorU p_stroke_color) {
-        line_height = p_size;
-        color = p_color;
-        stroke_width = p_stroke_width;
-        stroke_color = p_stroke_color;
-
-        is_dirty = true;
-    }
-
-    void Label::draw() {
-        // Update glyphs.
-        if (is_dirty) update();
-
-        // Draw shapes.
-        canvas->draw();
     }
 
     void Label::set_horizontal_alignment(Alignment alignment) {

@@ -117,10 +117,7 @@ namespace Pathfinder {
         /// Stroke a shape.
         void stroke_shape(Shape p_shape);
 
-        /// Rebuild the scene.
-        void update();
-
-        /// Draw the scene.
+        /// Rebuild and redraw the scene.
         void draw();
 
         /// Clear the scene.

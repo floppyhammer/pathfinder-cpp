@@ -4,27 +4,20 @@
 #include "../../d3dx/data/shape.h"
 
 namespace Pathfinder {
-    class StyleBox {
-    public:
-
-    private:
-        ColorF bg_color;
+    struct StyleBox {
+        ColorU bg_color = ColorU(30, 30, 30, 255);
         bool draw_center = true;
 
-        ColorF border_color;
-        Rect<float> border_width;
+        ColorU border_color;
+        float border_width;
 
-        Rect<float> corner_radius;
+        float corner_radius = 8;
 
         float margin = 0;
 
-        ColorF shadow_color;
+        ColorU shadow_color;
         float shadow_size;
         Vec2<float> shadow_offset;
-
-    private:
-        Shape fill;
-        Shape stroke;
     };
 }
 

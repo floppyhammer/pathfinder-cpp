@@ -6,11 +6,8 @@
 #define PATHFINDER_LABEL_H
 
 #include "control.h"
+#include "../resources/style_box.h"
 #include "../font.h"
-#include "../../d3dx/canvas.h"
-#include "../../d3dx/scene.h"
-#include "../../d3d9/scene_builder.h"
-#include "../../d3d9/renderer.h"
 
 #include <cstdint>
 
@@ -45,8 +42,6 @@ namespace Pathfinder {
 
     class Label : public Control {
     public:
-        Label(unsigned int width, unsigned int height, const std::vector<unsigned char> &area_lut_input);
-
         /**
          * Set text context.
          * @note See https://www.freetype.org/freetype2/docs/glyphs/glyphs-3.html for glyph conventions.
@@ -58,20 +53,20 @@ namespace Pathfinder {
 
         void set_style(float p_size, ColorU p_color, float p_stroke_width, ColorU p_stroke_color);
 
-        void draw();
+        void update() override;
+
+        void draw() override;
 
         bool debug = false;
-
-        std::shared_ptr<Canvas> canvas;
 
         void set_horizontal_alignment(Alignment alignment);
 
         void set_vertical_alignment(Alignment alignment);
 
     private:
-        void adjust_layout();
+        void measure();
 
-        void update();
+        void adjust_layout();
 
     private:
         std::string text;
@@ -96,8 +91,6 @@ namespace Pathfinder {
         // Layout
         Alignment horizontal_alignment = Alignment::Begin;
         Alignment vertical_alignment = Alignment::Begin;
-
-        void measure();
     };
 }
 
