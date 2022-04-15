@@ -92,7 +92,7 @@ namespace Pathfinder {
         return pipeline_gl;
     }
 
-    std::shared_ptr<ComputePipeline> DeviceGl::create_compute_pipeline() {
-        return std::shared_ptr<ComputePipeline>();
+    std::shared_ptr<ComputePipeline> DeviceGl::create_compute_pipeline(const std::string &comp_source) {
+        return std::make_shared<ComputePipelineGl>(comp_source);
     }
 }

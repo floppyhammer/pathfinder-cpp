@@ -18,8 +18,6 @@ namespace Pathfinder {
         };
 
         uint32_t id;
-        size_t size;
-        BufferType type;
     };
 }
 
