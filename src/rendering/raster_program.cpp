@@ -5,23 +5,12 @@
 #include "raster_program.h"
 
 namespace Pathfinder {
-    RasterProgram::RasterProgram(std::string vertex_code, std::string fragment_code) : Program() {
-        compile(vertex_code, fragment_code);
+    RasterProgram::RasterProgram(const std::string &vertex_code,
+                                 const std::string &fragment_code) : Program() {
+        compile(vertex_code.c_str(), fragment_code.c_str());
     }
 
-    RasterProgram::RasterProgram(const char *vertex_path, const char *fragment_path) : Program() {
-        // Retrieve the vertex/fragment source code from file.
-        std::string vertex_code = load_file_as_string(vertex_path);
-        std::string fragment_code = load_file_as_string(fragment_path);
-
-        compile(vertex_code, fragment_code);
-    }
-
-    void RasterProgram::compile(std::string &vertex_code_s, std::string &fragment_code_s) {
-        // Convert std::strings to C strings.
-        const char *vertex_code = vertex_code_s.c_str();
-        const char *fragment_code = fragment_code_s.c_str();
-
+    void RasterProgram::compile(const char *vertex_code, const char *fragment_code) {
         // Vertex shader.
         unsigned int vertex = glCreateShader(GL_VERTEX_SHADER);
         glShaderSource(vertex, 1, &vertex_code, nullptr);

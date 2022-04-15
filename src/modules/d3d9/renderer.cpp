@@ -61,8 +61,6 @@ namespace Pathfinder {
     void RendererD3D9::set_up_pipelines() {
         // Fill pipeline.
         {
-            fill_pipeline = std::make_shared<RenderPipeline>();
-
 #ifdef PATHFINDER_SHADERS_EMBEDDED
             const std::string fill_vert_source =
 #include "../src/shaders/minified/minified_fill.vert"
@@ -71,27 +69,21 @@ namespace Pathfinder {
             const std::string fill_frag_source =
 #include "../src/shaders/minified/minified_fill.frag"
             ;
-
-            fill_pipeline->program = std::make_shared<RasterProgram>(fill_vert_source,
-                                                                     fill_frag_source);
 #else
-            fill_pipeline->program = std::make_shared<RasterProgram>(PATHFINDER_SHADER_DIR"d3d9/fill.vert",
-                                                                     PATHFINDER_SHADER_DIR"d3d9/fill.frag");
+            const auto fill_vert_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d9/fill.vert");
+            const auto fill_frag_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d9/fill.frag");
 #endif
 
-            fill_pipeline->blend_src = GL_ONE;
-            fill_pipeline->blend_dst = GL_ONE;
-
             // Set vertex attributes.
+            std::vector<VertexInputAttributeDescription> attribute_descriptions;
             {
-                std::vector<VertexInputAttributeDescription> attribute_descriptions;
                 attribute_descriptions.reserve(3);
 
                 // Quad vertex.
                 attribute_descriptions.push_back({0,
                                                  2,
                                                  DataType::UNSIGNED_SHORT,
-                                                 0,
+                                                 2 * sizeof(uint16_t),
                                                  0,
                                                  VertexInputRate::VERTEX});
 
@@ -112,40 +104,36 @@ namespace Pathfinder {
                                                  stride,
                                                  offsetof(Fill, link),
                                                  VertexInputRate::INSTANCE});
-
-                fill_pipeline->attribute_descriptions = attribute_descriptions;
             }
+
+            ColorBlendState blend_state = {true, BlendFactor::ONE, BlendFactor::ONE};
+
+            fill_pipeline = std::make_shared<RenderPipeline>(fill_vert_source,
+                                                             fill_frag_source,
+                                                             attribute_descriptions,
+                                                             blend_state);
 
             // Set descriptor set.
             {
                 fill_descriptor_set = std::make_shared<DescriptorSet>();
 
-                {
-                    Descriptor descriptor;
-                    descriptor.type = DescriptorType::UniformBuffer;
-                    descriptor.binding = 0;
-                    descriptor.binding_name = "bFixedSizes";
-                    descriptor.buffer = fixed_sizes_ub;
-
-                    fill_descriptor_set->add_or_update_descriptor(descriptor);
-                }
-
-                {
-                    Descriptor descriptor;
-                    descriptor.type = DescriptorType::Texture;
-                    descriptor.binding = 0;
-                    descriptor.binding_name = "uAreaLUT";
-                    descriptor.texture = area_lut_texture;
-
-                    fill_descriptor_set->add_or_update_descriptor(descriptor);
-                }
+                fill_descriptor_set->add_or_update_descriptor({
+                    DescriptorType::UniformBuffer,
+                    0,
+                    "bFixedSizes",
+                    fixed_sizes_ub,
+                    nullptr});
+                fill_descriptor_set->add_or_update_descriptor({
+                    DescriptorType::Texture,
+                    0,
+                    "uAreaLUT",
+                    nullptr,
+                    area_lut_texture});
             }
         }
 
         // Tile pipeline.
         {
-            tile_pipeline = std::make_shared<RenderPipeline>();
-
 #ifdef PATHFINDER_SHADERS_EMBEDDED
             const std::string tile_vert_source =
 #include "../src/shaders/minified/minified_tile.vert"
@@ -158,20 +146,15 @@ namespace Pathfinder {
             const std::string tile_frag_source_1 =
 #include "../src/shaders/minified/minified_tile.frag.1"
             ;
-
-            tile_pipeline->program = std::make_shared<RasterProgram>(tile_vert_source,
-                                                                     tile_frag_source_0 + tile_frag_source_1);
+            const std::string tile_frag_source = tile_frag_source_0 + tile_frag_source_1;
 #else
-            tile_pipeline->program = std::make_shared<RasterProgram>(PATHFINDER_SHADER_DIR"d3d9/tile.vert",
-                                                                     PATHFINDER_SHADER_DIR"d3d9/tile.frag");
+            const auto tile_vert_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d9/tile.vert");
+            const auto tile_frag_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d9/tile.frag");
 #endif
 
-            tile_pipeline->blend_src = GL_ONE;
-            tile_pipeline->blend_dst = GL_ONE_MINUS_SRC_ALPHA;
-
             // Set vertex attributes.
+            std::vector<VertexInputAttributeDescription> attribute_descriptions;
             {
-                std::vector<VertexInputAttributeDescription> attribute_descriptions;
                 attribute_descriptions.reserve(6);
 
                 // Quad vertex.
@@ -216,9 +199,14 @@ namespace Pathfinder {
                                                  stride,
                                                  offsetof(TileObjectPrimitive, metadata_id),
                                                  VertexInputRate::INSTANCE});
-
-                tile_pipeline->attribute_descriptions = attribute_descriptions;
             }
+
+            ColorBlendState blend_state = {true, BlendFactor::ONE, BlendFactor::ONE_MINUS_SRC_ALPHA};
+
+            tile_pipeline = std::make_shared<RenderPipeline>(tile_vert_source,
+                                                             tile_frag_source,
+                                                             attribute_descriptions,
+                                                             blend_state);
 
             // Create uniform buffers.
             tile_transform_ub = Device::create_buffer(BufferType::Uniform, 16 * sizeof(float));

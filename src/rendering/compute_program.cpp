@@ -10,21 +10,11 @@
 #ifdef PATHFINDER_USE_D3D11
 
 namespace Pathfinder {
-    ComputeProgram::ComputeProgram(std::string compute_code) : Program() {
-        compile(compute_code);
+    ComputeProgram::ComputeProgram(const std::string &compute_code) : Program() {
+        compile(compute_code.c_str());
     }
 
-    ComputeProgram::ComputeProgram(const char *computePath) : Program() {
-        // Retrieve source code from file.
-        std::string compute_code = load_file_as_string(computePath);
-
-        compile(compute_code);
-    }
-
-    void ComputeProgram::compile(std::string& compute_code_s) {
-        // Convert std::strings to C strings.
-        const char *compute_code = compute_code_s.c_str();
-
+    void ComputeProgram::compile(const char *compute_code) {
         // Compile shaders.
         unsigned int compute = glCreateShader(GL_COMPUTE_SHADER);
         glShaderSource(compute, 1, &compute_code, nullptr);

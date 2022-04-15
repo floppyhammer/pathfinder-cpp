@@ -130,29 +130,6 @@ namespace Pathfinder {
     }
 
     void RendererD3D11::set_up_pipelines() {
-        // Step 1
-        dice_pipeline = std::make_shared<ComputePipeline>();
-        // Step 2
-        bound_pipeline = std::make_shared<ComputePipeline>();
-        // Step 3
-        bin_pipeline = std::make_shared<ComputePipeline>();
-        // Step 4
-        propagate_pipeline = std::make_shared<ComputePipeline>();
-        // Step 5
-        fill_pipeline = std::make_shared<ComputePipeline>();
-        // Step 6
-        sort_pipeline = std::make_shared<ComputePipeline>();
-        // Step 7
-        tile_pipeline = std::make_shared<ComputePipeline>();
-
-        bound_pipeline->name = "bound_pipeline";
-        dice_pipeline->name = "dice_pipeline";
-        bin_pipeline->name = "bin_pipeline";
-        propagate_pipeline->name = "propagate_pipeline";
-        sort_pipeline->name = "sort_pipeline";
-        fill_pipeline->name = "fill_pipeline";
-        tile_pipeline->name = "tile_pipeline";
-
 #ifdef PATHFINDER_SHADERS_EMBEDDED
         const std::string dice_source =
 #include "../src/shaders/minified/minified_dice.comp"
@@ -178,23 +155,24 @@ namespace Pathfinder {
         const std::string tile_source_1 =
 #include "../src/shaders/minified/minified_tile.comp.1"
         ;
-
-        bound_pipeline->program = std::make_shared<ComputeProgram>(bound_source);
-        dice_pipeline->program = std::make_shared<ComputeProgram>(dice_source);
-        bin_pipeline->program = std::make_shared<ComputeProgram>(bin_source);
-        propagate_pipeline->program = std::make_shared<ComputeProgram>(propagate_source);
-        sort_pipeline->program = std::make_shared<ComputeProgram>(sort_source);
-        fill_pipeline->program = std::make_shared<ComputeProgram>(fill_source);
-        tile_pipeline->program = std::make_shared<ComputeProgram>(tile_source_0 + tile_source_1);
+        const std::string tile_source = tile_source_0 + tile_source_1;
 #else
-        bound_pipeline->program = std::make_shared<ComputeProgram>(PATHFINDER_SHADER_DIR"d3d11/bound.comp");
-        dice_pipeline->program = std::make_shared<ComputeProgram>(PATHFINDER_SHADER_DIR"d3d11/dice.comp");
-        bin_pipeline->program = std::make_shared<ComputeProgram>(PATHFINDER_SHADER_DIR"d3d11/bin.comp");
-        propagate_pipeline->program = std::make_shared<ComputeProgram>(PATHFINDER_SHADER_DIR"d3d11/propagate.comp");
-        sort_pipeline->program = std::make_shared<ComputeProgram>(PATHFINDER_SHADER_DIR"d3d11/sort.comp");
-        fill_pipeline->program = std::make_shared<ComputeProgram>(PATHFINDER_SHADER_DIR"d3d11/fill.comp");
-        tile_pipeline->program = std::make_shared<ComputeProgram>(PATHFINDER_SHADER_DIR"d3d11/tile.comp");
+        const auto bound_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d11/bound.comp");
+        const auto dice_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d11/dice.comp");
+        const auto bin_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d11/bin.comp");
+        const auto propagate_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d11/propagate.comp");
+        const auto sort_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d11/sort.comp");
+        const auto fill_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d11/fill.comp");
+        const auto tile_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d11/tile.comp");
 #endif
+
+        dice_pipeline = std::make_shared<ComputePipeline>(dice_source); // 1
+        bound_pipeline = std::make_shared<ComputePipeline>(bound_source); // 2
+        bin_pipeline = std::make_shared<ComputePipeline>(bin_source); // 3
+        propagate_pipeline = std::make_shared<ComputePipeline>(propagate_source); // 4
+        fill_pipeline = std::make_shared<ComputePipeline>(fill_source); // 5
+        sort_pipeline = std::make_shared<ComputePipeline>(sort_source); // 6
+        tile_pipeline = std::make_shared<ComputePipeline>(tile_source); // 7
 
         // Bound pipeline.
         {

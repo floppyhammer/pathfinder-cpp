@@ -49,6 +49,26 @@ namespace Pathfinder {
         GL4, // Or ES 3.1
         Vulkan,
     };
+
+    enum class BlendFactor {
+        ONE = 0,
+        ONE_MINUS_SRC_ALPHA = 1,
+    };
+
+    struct ColorBlendState {
+        bool blend_enable;
+        BlendFactor src_blend_factor;
+        BlendFactor dst_blend_factor;
+    };
+
+    inline GLenum to_gl_blend_factor(BlendFactor blend_factor) {
+        switch (blend_factor) {
+            case BlendFactor::ONE:
+                return GL_ONE;
+            case BlendFactor::ONE_MINUS_SRC_ALPHA:
+                return GL_ONE_MINUS_SRC_ALPHA;
+        }
+    }
 }
 
 #endif //PATHFINDER_DATA_H

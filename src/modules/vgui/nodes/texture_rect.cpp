@@ -42,54 +42,53 @@ namespace Pathfinder {
         {
             const std::string vert_source =
 #include "../src/shaders/blit.vert"
-            ;
+        ;
             const std::string frag_source =
 #include "../src/shaders/blit.frag"
-            ;
+        ;
 
-            pipeline = std::make_shared<RenderPipeline>();
-            pipeline->program = std::make_shared<RasterProgram>(vert_source, frag_source);
-
-            pipeline->blend_src = GL_ONE;
-            pipeline->blend_dst = GL_ONE_MINUS_SRC_ALPHA;
-
-            auto &attribute_descriptions = pipeline->attribute_descriptions;
+            std::vector<VertexInputAttributeDescription> attribute_descriptions;
             attribute_descriptions.reserve(3);
 
             uint32_t stride = 8 * sizeof(float);
 
             attribute_descriptions.push_back({0,
-                                             3,
-                                             DataType::FLOAT,
-                                             stride,
-                                             0,
-                                             VertexInputRate::VERTEX});
+                                              3,
+                                              DataType::FLOAT,
+                                              stride,
+                                              0,
+                                              VertexInputRate::VERTEX});
 
             attribute_descriptions.push_back({0,
-                                             3,
-                                             DataType::FLOAT,
-                                             stride,
-                                             3 * sizeof(float),
-                                             VertexInputRate::VERTEX});
+                                              3,
+                                              DataType::FLOAT,
+                                              stride,
+                                              3 * sizeof(float),
+                                              VertexInputRate::VERTEX});
 
             attribute_descriptions.push_back({0,
-                                             2,
-                                             DataType::FLOAT,
-                                             stride,
-                                             6 * sizeof(float),
-                                             VertexInputRate::VERTEX});
+                                              2,
+                                              DataType::FLOAT,
+                                              stride,
+                                              6 * sizeof(float),
+                                              VertexInputRate::VERTEX});
+
+            ColorBlendState blend_state = {true, BlendFactor::ONE, BlendFactor::ONE_MINUS_SRC_ALPHA};
+
+            pipeline = std::make_shared<RenderPipeline>(vert_source,
+                                                        frag_source,
+                                                        attribute_descriptions,
+                                                        blend_state);
         }
 
         {
             descriptor_set = std::make_shared<DescriptorSet>();
 
-            Descriptor descriptor;
-            descriptor.type = DescriptorType::UniformBuffer;
-            descriptor.binding = 0;
-            descriptor.binding_name = "bUniform";
-            descriptor.buffer = uniform_buffer;
-
-            descriptor_set->add_or_update_descriptor(descriptor);
+            descriptor_set->add_or_update_descriptor({
+                                                             DescriptorType::UniformBuffer,
+                                                             0,
+                                                             "bUniform",
+                                                             uniform_buffer});
         }
     }
 
@@ -109,8 +108,8 @@ namespace Pathfinder {
         return texture;
     }
 
-    void TextureRect::draw(const std::shared_ptr<Pathfinder::CommandBuffer>& cmd_buffer,
-                           const std::shared_ptr<Framebuffer>& render_target) {
+    void TextureRect::draw(const std::shared_ptr<Pathfinder::CommandBuffer> &cmd_buffer,
+                           const std::shared_ptr<Framebuffer> &render_target) {
         // Get MVP matrix.
         // -------------------------------------------------
         // The actual application order of these matrices is reverse.

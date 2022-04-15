@@ -8,6 +8,8 @@
 // Choose between D3D9 and D3D11.
 //#define PATHFINDER_USE_D3D11
 
+//#define PATHFINDER_USE_VULKAN
+
 // Enable DEBUG mode, in which we will check for GL errors. Influencing performance.
 #define PATHFINDER_DEBUG
 
@@ -18,10 +20,16 @@
 #define PATHFINDER_SIMD_ENABLED
 
 // This is optional for the native demo, as we can access shader files directly.
-#define PATHFINDER_SHADERS_EMBEDDED
+//#define PATHFINDER_SHADERS_EMBEDDED
 #define PATHFINDER_SHADER_DIR "../src/shaders/"
 #define PATHFINDER_ASSET_DIR "../assets/"
 
+#ifdef PATHFINDER_USE_VULKAN
+#define GLFW_INCLUDE_VULKAN
+
+#include "GLFW/glfw3.h"
+
+#else
 // OpenGL headers.
 #ifdef __ANDROID__
 #ifdef PATHFINDER_USE_D3D11
@@ -32,6 +40,7 @@
 #else
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#endif
 #endif
 
 #endif //PATHFINDER_GLOBAL_MACROS_H

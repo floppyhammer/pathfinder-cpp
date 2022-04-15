@@ -12,13 +12,12 @@
 namespace Pathfinder {
     class RasterProgram : public Program {
     public:
-        /// Constructor generates the shader on the fly.
-        RasterProgram(std::string vertex_code, std::string fragment_code);
-
-        RasterProgram(const char *vertex_path, const char *fragment_path);
+        /// Has to use string, as vector<char> won't work.
+        RasterProgram(const std::string &vertex_code,
+                      const std::string &fragment_code);
 
     private:
-        void compile(std::string &vertex_code_s, std::string &fragment_code_s);
+        void compile(const char *vertex_code, const char *fragment_code);
     };
 }
 

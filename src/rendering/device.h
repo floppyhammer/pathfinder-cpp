@@ -21,6 +21,11 @@ namespace Pathfinder {
 
         ~Device() = default;
 
+        static Device &get_singleton() {
+            static Device singleton;
+            return singleton;
+        }
+
         static std::shared_ptr<Framebuffer> create_framebuffer(uint32_t p_width, uint32_t p_height,
                                                                TextureFormat p_format, DataType p_type);
 

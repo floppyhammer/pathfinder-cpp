@@ -11,24 +11,12 @@
 
 namespace Pathfinder {
     class ComputeProgram : public Program {
-#ifdef PATHFINDER_USE_D3D11
     public:
-        /// Constructor generates the shader on the fly.
-        explicit ComputeProgram(const char *compute_path);
-
-        explicit ComputeProgram(std::string compute_code);
-
-        /// Bind a general buffer to a binding point.
-        void bind_general_buffer(unsigned int binding_point, uint64_t buffer_id);
-
-        void bind_image(unsigned int binding_point, unsigned int texture_id, int access_mode, int format) const;
-
-        /// Launch computing.
-        void dispatch(unsigned int group_size_x = 1, unsigned int group_size_y = 1, unsigned int group_size_z = 1);
+        /// Has to use string, as vector<char> won't work.
+        explicit ComputeProgram(const std::string &compute_code);
 
     private:
-        void compile(std::string& compute_code_s);
-#endif
+        void compile(const char *compute_code);
     };
 }
 

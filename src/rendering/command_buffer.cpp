@@ -201,11 +201,13 @@ namespace Pathfinder {
                 case CommandType::BindRenderPipeline: {
                     auto &args = cmd.args.bind_render_pipeline;
 
+                    auto blend_state = args.pipeline->get_blend_state();
+
                     // Color blend.
                     glEnable(GL_BLEND);
-                    glBlendFunc(args.pipeline->blend_src, args.pipeline->blend_dst);
+                    glBlendFunc(to_gl_blend_factor(blend_state.src_blend_factor), to_gl_blend_factor(blend_state.dst_blend_factor));
 
-                    args.pipeline->program->use();
+                    args.pipeline->get_program()->use();
 
                     current_pipeline = args.pipeline;
                 }
@@ -218,9 +220,9 @@ namespace Pathfinder {
                     auto buffer_count = args.buffer_count;
                     auto vertex_buffers = args.buffers;
 
-                    glBindVertexArray(render_pipeline->vao);
+                    glBindVertexArray(render_pipeline->get_vao());
 
-                    auto &attribute_descriptions = render_pipeline->attribute_descriptions;
+                    auto &attribute_descriptions = render_pipeline->get_attribute_descriptions();
 
                     auto last_vbo = 0;
                     for (int location = 0; location < attribute_descriptions.size(); location++) {
@@ -367,7 +369,7 @@ namespace Pathfinder {
                 case CommandType::BindComputePipeline: {
                     auto &args = cmd.args.bind_compute_pipeline;
 
-                    args.pipeline->program->use();
+                    args.pipeline->get_program()->use();
 
                     current_pipeline = args.pipeline;
                 }
