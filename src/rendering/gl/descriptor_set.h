@@ -10,7 +10,6 @@
 
 #include <cstdint>
 #include <unordered_map>
-#include <optional>
 
 namespace Pathfinder {
     enum class DescriptorType {

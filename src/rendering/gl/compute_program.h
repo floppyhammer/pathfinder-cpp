@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 6/25/2021.
-//
-
 #ifndef PATHFINDER_COMPUTE_PROGRAM_H
 #define PATHFINDER_COMPUTE_PROGRAM_H
 

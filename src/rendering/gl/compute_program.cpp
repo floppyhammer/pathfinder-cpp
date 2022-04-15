@@ -1,13 +1,7 @@
-//
-// Created by floppyhammer on 7/5/2021.
-//
-
 #include "compute_program.h"
 
 #include "../../common/io.h"
 #include "../../common/logger.h"
-
-#ifdef PATHFINDER_USE_D3D11
 
 namespace Pathfinder {
     ComputeProgram::ComputeProgram(const std::string &compute_code) : Program() {
@@ -15,6 +9,7 @@ namespace Pathfinder {
     }
 
     void ComputeProgram::compile(const char *compute_code) {
+#ifdef PATHFINDER_USE_D3D11
         // Compile shaders.
         unsigned int compute = glCreateShader(GL_COMPUTE_SHADER);
         glShaderSource(compute, 1, &compute_code, nullptr);
@@ -29,7 +24,6 @@ namespace Pathfinder {
 
         // Delete the shaders as they're linked into our program now and no longer necessary.
         glDeleteShader(compute);
+#endif
     }
 }
-
-#endif

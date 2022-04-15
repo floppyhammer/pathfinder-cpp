@@ -35,7 +35,7 @@ namespace Pathfinder {
         Renderer();
 
         /// Set up Area Lut texture.
-        void set_up_area_lut(const std::vector<unsigned char> &area_lut_input);
+        void set_up_area_lut(const std::vector<char> &area_lut_input);
 
         virtual std::shared_ptr<Texture> get_dest_texture() = 0;
 

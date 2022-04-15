@@ -33,7 +33,7 @@ namespace Pathfinder {
                                                                        const std::vector<VertexInputAttributeDescription> &p_attribute_descriptions,
                                                                        ColorBlendState p_blend_state) = 0;
 
-        virtual std::shared_ptr<ComputePipeline> create_compute_pipeline() = 0;
+        virtual std::shared_ptr<ComputePipeline> create_compute_pipeline(const std::string &comp_source) = 0;
     };
 }
 

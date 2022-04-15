@@ -310,11 +310,11 @@ namespace Pathfinder {
 
                         switch (descriptor.type) {
                             case DescriptorType::UniformBuffer: {
-                                auto buffer = static_cast<BufferGl *>(descriptor.buffer.get());
+                                auto buffer_gl = static_cast<BufferGl *>(descriptor.buffer.get());
 
                                 unsigned int ubo_index = glGetUniformBlockIndex(program_id, binding_name.c_str());
                                 glUniformBlockBinding(program_id, ubo_index, binding_point);
-                                glBindBufferBase(GL_UNIFORM_BUFFER, binding_point, buffer->id);
+                                glBindBufferBase(GL_UNIFORM_BUFFER, binding_point, buffer_gl->id);
                             }
                                 break;
                             case DescriptorType::Texture: {
@@ -329,9 +329,9 @@ namespace Pathfinder {
                                 break;
 #ifdef PATHFINDER_USE_D3D11
                                 case DescriptorType::GeneralBuffer: {
-                                    auto buffer = descriptor.buffer;
+                                    auto buffer_gl = static_cast<BufferGl *>(descriptor.buffer.get());
 
-                                    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding_point, buffer->id);
+                                    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding_point, buffer_gl->id);
                                 }
                                     break;
                                 case DescriptorType::Image: {
@@ -410,7 +410,7 @@ namespace Pathfinder {
                 case CommandType::UploadToBuffer: {
                     auto &args = cmd.args.upload_to_buffer;
 
-                    auto buffer = static_cast<BufferGl *>(args.buffer);
+                    auto buffer_gl = static_cast<BufferGl *>(args.buffer);
 
                     int gl_buffer_type;
 
@@ -431,7 +431,7 @@ namespace Pathfinder {
 #endif
                     }
 
-                    glBindBuffer(gl_buffer_type, buffer->id);
+                    glBindBuffer(gl_buffer_type, buffer_gl->id);
                     glBufferSubData(gl_buffer_type, args.offset, args.data_size, args.data);
                     glBindBuffer(gl_buffer_type, 0); // Unbind.
 
@@ -441,8 +441,10 @@ namespace Pathfinder {
                 case CommandType::ReadBuffer: {
                     auto &args = cmd.args.read_buffer;
 
+                    auto buffer_gl = static_cast<BufferGl *>(args.buffer);
+
 #ifdef PATHFINDER_USE_D3D11
-                    glBindBuffer(GL_SHADER_STORAGE_BUFFER, args.buffer->id);
+                    glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer_gl->id);
 
 #ifdef __ANDROID__
                     void *ptr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, args.offset, args.data_size, GL_MAP_READ_BIT);

@@ -8,7 +8,7 @@
 #include "../d3dx/data/data.h"
 #include "../d3d9/data/draw_tile_batch.h"
 #include "../../common/math/basic.h"
-#include "../../rendering/gl/device.h"
+#include "../../rendering/platform.h"
 #include "../../rendering/gl/command_buffer.h"
 #include "../../common/logger.h"
 #include "../../common/timestamp.h"
@@ -52,13 +52,15 @@ namespace Pathfinder {
     }
 
     void SceneSourceBuffers::upload(SegmentsD3D11 &segments) {
+        auto device = Platform::get_singleton().device;
+
         auto needed_points_capacity = upper_power_of_two(segments.points.size());
         auto needed_point_indices_capacity = upper_power_of_two(segments.indices.size());
 
         // Reallocate if capacity is not enough.
         if (points_capacity < needed_points_capacity) {
             // Old buffer will be dropped automatically.
-            points_buffer = Device::create_buffer(BufferType::General, needed_points_capacity * sizeof(Vec2<float>));
+            points_buffer = device->create_buffer(BufferType::General, needed_points_capacity * sizeof(Vec2<float>));
 
             points_capacity = needed_points_capacity;
         }
@@ -66,7 +68,7 @@ namespace Pathfinder {
         // Reallocate if capacity is not enough.
         if (point_indices_capacity < needed_point_indices_capacity) {
             // Old buffer will be dropped automatically.
-            point_indices_buffer = Device::create_buffer(BufferType::General,
+            point_indices_buffer = device->create_buffer(BufferType::General,
                                                          needed_point_indices_capacity * sizeof(SegmentIndicesD3D11));
 
             point_indices_capacity = needed_point_indices_capacity;
@@ -76,7 +78,7 @@ namespace Pathfinder {
 
         // Upload data.
         {
-            auto cmd_buffer = Device::create_command_buffer();
+            auto cmd_buffer = device->create_command_buffer();
 
             cmd_buffer->upload_to_buffer(points_buffer,
                                          0,
@@ -93,8 +95,8 @@ namespace Pathfinder {
     }
 
     SceneBuffers::~SceneBuffers() {
-        //Device::free_general_buffer(draw.points_buffer);
-        //Device::free_general_buffer(draw.point_indices_buffer);
+        //device->free_general_buffer(draw.points_buffer);
+        //device->free_general_buffer(draw.point_indices_buffer);
     }
 
     void SceneBuffers::upload(SegmentsD3D11 &draw_segments, SegmentsD3D11 &clip_segments) {
@@ -103,33 +105,37 @@ namespace Pathfinder {
     }
 
     RendererD3D11::RendererD3D11(uint32_t canvas_width, uint32_t canvas_height) {
+        auto device = Platform::get_singleton().device;
+
         allocated_microline_count = INITIAL_ALLOCATED_MICROLINE_COUNT;
         allocated_fill_count = INITIAL_ALLOCATED_FILL_COUNT;
 
         // Create uniform buffers.
-        bin_ub = Device::create_buffer(BufferType::Uniform, 4 * sizeof(int32_t));
-        bound_ub = Device::create_buffer(BufferType::Uniform, 4 * sizeof(int32_t));
-        dice_ub0 = Device::create_buffer(BufferType::Uniform, 12 * sizeof(float));
-        dice_ub1 = Device::create_buffer(BufferType::Uniform, 4 * sizeof(int32_t));
-        fill_ub = Device::create_buffer(BufferType::Uniform, 4 * sizeof(int32_t));
-        propagate_ub = Device::create_buffer(BufferType::Uniform, 4 * sizeof(int32_t));
-        sort_ub = Device::create_buffer(BufferType::Uniform, 4 * sizeof(int32_t));
-        tile_ub0 = Device::create_buffer(BufferType::Uniform, 8 * sizeof(float));
-        tile_ub1 = Device::create_buffer(BufferType::Uniform, 8 * sizeof(float));
+        bin_ub = device->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t));
+        bound_ub = device->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t));
+        dice_ub0 = device->create_buffer(BufferType::Uniform, 12 * sizeof(float));
+        dice_ub1 = device->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t));
+        fill_ub = device->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t));
+        propagate_ub = device->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t));
+        sort_ub = device->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t));
+        tile_ub0 = device->create_buffer(BufferType::Uniform, 8 * sizeof(float));
+        tile_ub1 = device->create_buffer(BufferType::Uniform, 8 * sizeof(float));
 
         // Unlike D3D9, we use RGBA8 here instead of RGBA16F.
-        mask_texture = Device::create_texture(MASK_FRAMEBUFFER_WIDTH,
+        mask_texture = device->create_texture(MASK_FRAMEBUFFER_WIDTH,
                                               MASK_FRAMEBUFFER_HEIGHT,
                                               TextureFormat::RGBA8,
                                               DataType::UNSIGNED_BYTE);
 
-        dest_texture = Device::create_texture(canvas_width,
+        dest_texture = device->create_texture(canvas_width,
                                               canvas_height,
                                               TextureFormat::RGBA8,
                                               DataType::UNSIGNED_BYTE);
     }
 
     void RendererD3D11::set_up_pipelines() {
+        auto device = Platform::get_singleton().device;
+
 #ifdef PATHFINDER_SHADERS_EMBEDDED
         const std::string dice_source =
 #include "../src/shaders/minified/minified_dice.comp"
@@ -166,13 +172,13 @@ namespace Pathfinder {
         const auto tile_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d11/tile.comp");
 #endif
 
-        dice_pipeline = std::make_shared<ComputePipeline>(dice_source); // 1
-        bound_pipeline = std::make_shared<ComputePipeline>(bound_source); // 2
-        bin_pipeline = std::make_shared<ComputePipeline>(bin_source); // 3
-        propagate_pipeline = std::make_shared<ComputePipeline>(propagate_source); // 4
-        fill_pipeline = std::make_shared<ComputePipeline>(fill_source); // 5
-        sort_pipeline = std::make_shared<ComputePipeline>(sort_source); // 6
-        tile_pipeline = std::make_shared<ComputePipeline>(tile_source); // 7
+        dice_pipeline = device->create_compute_pipeline(dice_source); // 1
+        bound_pipeline = device->create_compute_pipeline(bound_source); // 2
+        bin_pipeline = device->create_compute_pipeline(bin_source); // 3
+        propagate_pipeline = device->create_compute_pipeline(propagate_source); // 4
+        fill_pipeline = device->create_compute_pipeline(fill_source); // 5
+        sort_pipeline = device->create_compute_pipeline(sort_source); // 6
+        tile_pipeline = device->create_compute_pipeline(tile_source); // 7
 
         // Bound pipeline.
         {
@@ -331,6 +337,8 @@ namespace Pathfinder {
                                    const std::shared_ptr<Buffer> &first_tile_map_buffer_id,
                                    const RenderTarget &render_target,
                                    const RenderTarget &color_target) {
+        auto device = Platform::get_singleton().device;
+
         // The framebuffer mentioned here is different from the target viewport.
         // This doesn't change as long as the destination texture's size doesn't change.
         auto framebuffer_tile_size0 = framebuffer_tile_size();
@@ -364,7 +372,7 @@ namespace Pathfinder {
                                                 (int32_t) framebuffer_tile_size0.y, // uFramebufferTileSize
                                                 clear_op}; // uLoadAction
 
-            auto one_shot_cmd_buffer = Device::create_command_buffer();
+            auto one_shot_cmd_buffer = device->create_command_buffer();
             one_shot_cmd_buffer->upload_to_buffer(tile_ub0, 0, 8 * sizeof(float), ubo_data0.data());
             one_shot_cmd_buffer->upload_to_buffer(tile_ub1, 0, 5 * sizeof(int32_t), ubo_data1.data());
             one_shot_cmd_buffer->submit();
@@ -387,7 +395,7 @@ namespace Pathfinder {
             tile_descriptor_set->add_or_update_descriptor({DescriptorType::Image, 0, "", nullptr, target_texture});
         }
 
-        auto cmd_buffer = Device::create_command_buffer();
+        auto cmd_buffer = device->create_command_buffer();
 
         cmd_buffer->begin_compute_pass();
 
@@ -408,24 +416,30 @@ namespace Pathfinder {
     }
 
     std::shared_ptr<Buffer> RendererD3D11::allocate_z_buffer() {
+        auto device = Platform::get_singleton().device;
+
         // This includes the fill indirect draw params because some drivers limit the number of
         // SSBOs to 8 (#373).
         // Add FILL_INDIRECT_DRAW_PARAMS_SIZE in case tile size is zero.
         auto size = tile_size().area() + FILL_INDIRECT_DRAW_PARAMS_SIZE;
-        auto buffer_id = Device::create_buffer(BufferType::General, size * sizeof(int32_t));
+        auto buffer_id = device->create_buffer(BufferType::General, size * sizeof(int32_t));
 
         return buffer_id;
     }
 
     std::shared_ptr<Buffer> RendererD3D11::allocate_first_tile_map() {
+        auto device = Platform::get_singleton().device;
+
         auto size = tile_size().area();
-        auto buffer_id = Device::create_buffer(BufferType::General, size * sizeof(FirstTileD3D11));
+        auto buffer_id = device->create_buffer(BufferType::General, size * sizeof(FirstTileD3D11));
 
         return buffer_id;
     }
 
     std::shared_ptr<Buffer> RendererD3D11::allocate_alpha_tile_info(uint32_t index_count) {
-        auto buffer_id = Device::create_buffer(BufferType::General, index_count * sizeof(AlphaTileD3D11));
+        auto device = Platform::get_singleton().device;
+
+        auto buffer_id = device->create_buffer(BufferType::General, index_count * sizeof(AlphaTileD3D11));
 
         return buffer_id;
     }
@@ -433,18 +447,20 @@ namespace Pathfinder {
     PropagateMetadataBufferIDsD3D11 RendererD3D11::upload_propagate_metadata(
             std::vector<PropagateMetadataD3D11> &propagate_metadata,
             std::vector<BackdropInfoD3D11> &backdrops) {
+        auto device = Platform::get_singleton().device;
+
         auto propagate_metadata_storage_id =
-                Device::create_buffer(BufferType::General,
+                device->create_buffer(BufferType::General,
                                       propagate_metadata.size() * sizeof(PropagateMetadataD3D11));
 
-        auto one_shot_cmd_buffer = Device::create_command_buffer();
+        auto one_shot_cmd_buffer = device->create_command_buffer();
         one_shot_cmd_buffer->upload_to_buffer(propagate_metadata_storage_id,
                                      0,
                                      propagate_metadata.size() * sizeof(PropagateMetadataD3D11),
                                      propagate_metadata.data());
         one_shot_cmd_buffer->submit();
 
-        auto backdrops_storage_id = Device::create_buffer(BufferType::General,
+        auto backdrops_storage_id = device->create_buffer(BufferType::General,
                                                           backdrops.size() * sizeof(BackdropInfoD3D11));
 
         return {propagate_metadata_storage_id, backdrops_storage_id};
@@ -452,7 +468,9 @@ namespace Pathfinder {
 
     void RendererD3D11::upload_initial_backdrops(const std::shared_ptr<Buffer> &backdrops_buffer_id,
                                                  std::vector<BackdropInfoD3D11> &backdrops) {
-        auto one_shot_cmd_buffer = Device::create_command_buffer();
+        auto device = Platform::get_singleton().device;
+
+        auto one_shot_cmd_buffer = device->create_command_buffer();
         one_shot_cmd_buffer->upload_to_buffer(backdrops_buffer_id,
                                      0,
                                      backdrops.size() * sizeof(BackdropInfoD3D11),
@@ -461,8 +479,10 @@ namespace Pathfinder {
     }
 
     void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
+        auto device = Platform::get_singleton().device;
+
         // Upload tiles to GPU or allocate them as appropriate.
-        auto tiles_d3d11_buffer_id = Device::create_buffer(BufferType::General,
+        auto tiles_d3d11_buffer_id = device->create_buffer(BufferType::General,
                                                            batch.tile_count * sizeof(TileD3D11));
 
         // Allocate a Z-buffer.
@@ -568,12 +588,14 @@ namespace Pathfinder {
             uint32_t batch_segment_count,
             PathSource path_source,
             Transform2 transform) {
+        auto device = Platform::get_singleton().device;
+
         // Allocate some general buffers.
-        auto microlines_buffer_id = Device::create_buffer(BufferType::General,
+        auto microlines_buffer_id = device->create_buffer(BufferType::General,
                                                           allocated_microline_count * sizeof(MicrolineD3D11));
-        auto dice_metadata_buffer_id = Device::create_buffer(BufferType::General,
+        auto dice_metadata_buffer_id = device->create_buffer(BufferType::General,
                                                              dice_metadata.size() * sizeof(DiceMetadataD3D11));
-        auto indirect_draw_params_buffer_id = Device::create_buffer(BufferType::General,
+        auto indirect_draw_params_buffer_id = device->create_buffer(BufferType::General,
                                                                     8 * sizeof(uint32_t));
 
         // Get scene source buffers.
@@ -585,7 +607,7 @@ namespace Pathfinder {
         // Upload dice indirect draw params, which are also used for output.
         uint32_t indirect_compute_params[8] = {0, 0, 0, 0, point_indices_count, 0, 0, 0};
 
-        auto one_shot_cmd_buffer = Device::create_command_buffer();
+        auto one_shot_cmd_buffer = device->create_command_buffer();
         one_shot_cmd_buffer->upload_to_buffer(
                 indirect_draw_params_buffer_id,
                 0,
@@ -629,7 +651,7 @@ namespace Pathfinder {
                     {DescriptorType::GeneralBuffer, 4, "", microlines_buffer_id, nullptr}); // Write only.
         }
 
-        auto cmd_buffer = Device::create_command_buffer();
+        auto cmd_buffer = device->create_command_buffer();
 
         cmd_buffer->begin_compute_pass();
 
@@ -644,7 +666,7 @@ namespace Pathfinder {
         cmd_buffer->submit();
 
         // Read indirect draw params back to CPU memory.
-        one_shot_cmd_buffer = Device::create_command_buffer();
+        one_shot_cmd_buffer = device->create_command_buffer();
         one_shot_cmd_buffer->read_buffer(indirect_draw_params_buffer_id,
                                          0,
                                          8 * sizeof(uint32_t),
@@ -652,8 +674,8 @@ namespace Pathfinder {
         one_shot_cmd_buffer->submit();
 
         // Free some general buffers which are no longer useful.
-        //Device::free_general_buffer(dice_metadata_buffer_id);
-        //Device::free_general_buffer(indirect_draw_params_buffer_id);
+        //device->free_general_buffer(dice_metadata_buffer_id);
+        //device->free_general_buffer(indirect_draw_params_buffer_id);
 
         // Fetch microline count from indirect draw params.
         auto microline_count = indirect_compute_params[BIN_INDIRECT_DRAW_PARAMS_MICROLINE_COUNT_INDEX];
@@ -663,7 +685,7 @@ namespace Pathfinder {
             allocated_microline_count = upper_power_of_two(microline_count);
 
             // We need a larger buffer, but we should free the old one first.
-            //Device::free_general_buffer(microlines_buffer_id);
+            //device->free_general_buffer(microlines_buffer_id);
 
             return {{}, 0};
         }
@@ -674,10 +696,12 @@ namespace Pathfinder {
     void RendererD3D11::bound(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
                               uint32_t tile_count,
                               std::vector<TilePathInfoD3D11> &tile_path_info) {
-        auto one_shot_cmd_buffer = Device::create_command_buffer();
+        auto device = Platform::get_singleton().device;
+
+        auto one_shot_cmd_buffer = device->create_command_buffer();
 
         // This is a staging buffer, which will be freed in the end of this function.
-        auto path_info_buffer_id = Device::create_buffer(BufferType::General,
+        auto path_info_buffer_id = device->create_buffer(BufferType::General,
                                                          tile_path_info.size() * sizeof(TilePathInfoD3D11));
         one_shot_cmd_buffer->upload_to_buffer(path_info_buffer_id,
                                               0,
@@ -699,7 +723,7 @@ namespace Pathfinder {
                     {DescriptorType::GeneralBuffer, 1, "", tiles_d3d11_buffer_id, nullptr}); // Write only.
         }
 
-        auto cmd_buffer = Device::create_command_buffer();
+        auto cmd_buffer = device->create_command_buffer();
 
         cmd_buffer->begin_compute_pass();
 
@@ -713,7 +737,7 @@ namespace Pathfinder {
 
         cmd_buffer->submit();
 
-        //Device::free_general_buffer(path_info_buffer_id);
+        //device->free_general_buffer(path_info_buffer_id);
     }
 
     FillBufferInfoD3D11 RendererD3D11::bin_segments(
@@ -721,10 +745,12 @@ namespace Pathfinder {
             PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids,
             const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
             const std::shared_ptr<Buffer> &z_buffer_id) {
-        auto one_shot_cmd_buffer = Device::create_command_buffer();
+        auto device = Platform::get_singleton().device;
+
+        auto one_shot_cmd_buffer = device->create_command_buffer();
 
         // What will be the output of this function.
-        auto fill_vertex_buffer_id = Device::create_buffer(BufferType::General,
+        auto fill_vertex_buffer_id = device->create_buffer(BufferType::General,
                                                            allocated_fill_count * sizeof(Fill));
 
         // Upload fill indirect draw params to header of the Z-buffer.
@@ -761,7 +787,7 @@ namespace Pathfinder {
                      nullptr}); // Read write.
         }
 
-        auto cmd_buffer = Device::create_command_buffer();
+        auto cmd_buffer = device->create_command_buffer();
 
         cmd_buffer->begin_compute_pass();
 
@@ -775,7 +801,7 @@ namespace Pathfinder {
 
         cmd_buffer->submit();
 
-        one_shot_cmd_buffer = Device::create_command_buffer();
+        one_shot_cmd_buffer = device->create_command_buffer();
         one_shot_cmd_buffer->read_buffer(z_buffer_id,
                                          0,
                                          8 * sizeof(uint32_t),
@@ -790,7 +816,7 @@ namespace Pathfinder {
             allocated_fill_count = upper_power_of_two(needed_fill_count);
 
             // We need a larger buffer, but we should free the old one first.
-            //Device::free_general_buffer(fill_vertex_buffer_id);
+            //device->free_general_buffer(fill_vertex_buffer_id);
 
             return {};
         }
@@ -805,7 +831,9 @@ namespace Pathfinder {
             const std::shared_ptr<Buffer> &first_tile_map_buffer_id,
             const std::shared_ptr<Buffer> &alpha_tiles_buffer_id,
             PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids) {
-        auto one_shot_cmd_buffer = Device::create_command_buffer();
+        auto device = Platform::get_singleton().device;
+
+        auto one_shot_cmd_buffer = device->create_command_buffer();
 
         // TODO(pcwalton): Zero out the Z-buffer on GPU?
         auto z_buffer_size = tile_size();
@@ -855,7 +883,7 @@ namespace Pathfinder {
                     {DescriptorType::GeneralBuffer, 7, "", alpha_tiles_buffer_id, nullptr}); // Write only.
         }
 
-        auto cmd_buffer = Device::create_command_buffer();
+        auto cmd_buffer = device->create_command_buffer();
 
         cmd_buffer->begin_compute_pass();
 
@@ -869,7 +897,7 @@ namespace Pathfinder {
 
         cmd_buffer->submit();
 
-        one_shot_cmd_buffer = Device::create_command_buffer();
+        one_shot_cmd_buffer = device->create_command_buffer();
 
         uint32_t fill_indirect_draw_params[8];
         one_shot_cmd_buffer->read_buffer(z_buffer_id,
@@ -896,12 +924,14 @@ namespace Pathfinder {
                                    const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
                                    const std::shared_ptr<Buffer> &alpha_tiles_buffer_id,
                                    PropagateTilesInfoD3D11 &propagate_tiles_info) {
+        auto device = Platform::get_singleton().device;
+
         auto alpha_tile_range = propagate_tiles_info.alpha_tile_range;
 
         // This setup is a workaround for the annoying 64K limit of compute invocation in OpenGL.
         auto local_alpha_tile_count = alpha_tile_range.end - alpha_tile_range.start;
 
-        auto one_shot_cmd_buffer = Device::create_command_buffer();
+        auto one_shot_cmd_buffer = device->create_command_buffer();
 
         // Update uniform buffers.
         auto framebuffer_tile_size0 = framebuffer_tile_size();
@@ -923,7 +953,7 @@ namespace Pathfinder {
             fill_descriptor_set->add_or_update_descriptor({DescriptorType::Image, 0, "", nullptr, mask_texture});
         }
 
-        auto cmd_buffer = Device::create_command_buffer();
+        auto cmd_buffer = device->create_command_buffer();
 
         cmd_buffer->begin_compute_pass();
 
@@ -942,9 +972,11 @@ namespace Pathfinder {
     void RendererD3D11::sort_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
                                    const std::shared_ptr<Buffer> &first_tile_map_buffer_id,
                                    const std::shared_ptr<Buffer> &z_buffer_id) {
+        auto device = Platform::get_singleton().device;
+
         auto tile_count = framebuffer_tile_size().area();
 
-        auto one_shot_cmd_buffer = Device::create_command_buffer();
+        auto one_shot_cmd_buffer = device->create_command_buffer();
 
         // Update uniform buffers.
         one_shot_cmd_buffer->upload_to_buffer(sort_ub, 0, sizeof(int32_t), &tile_count);
@@ -961,7 +993,7 @@ namespace Pathfinder {
                     {DescriptorType::GeneralBuffer, 2, "", z_buffer_id, nullptr}); // Read only.
         }
 
-        auto cmd_buffer = Device::create_command_buffer();
+        auto cmd_buffer = device->create_command_buffer();
 
         cmd_buffer->begin_compute_pass();
 

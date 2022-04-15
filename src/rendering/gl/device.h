@@ -37,7 +37,7 @@ namespace Pathfinder {
                                                                const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
                                                                ColorBlendState blend_state) override;
 
-        std::shared_ptr<ComputePipeline> create_compute_pipeline() override;
+        std::shared_ptr<ComputePipeline> create_compute_pipeline(const std::string &comp_source) override;
     };
 }
 

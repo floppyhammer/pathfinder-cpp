@@ -19,12 +19,12 @@ App::App(int window_width,
 
     Pathfinder::VectorServer::get_singleton().init(window_width,
                                                    window_height,
-                                                   reinterpret_cast<std::vector<unsigned char> &>(area_lut_input));
+                                                   area_lut_input);
 
     // Set up a canvas.
     canvas = std::make_shared<Pathfinder::Canvas>(window_width,
                                                   window_height,
-                                                  reinterpret_cast<std::vector<unsigned char> &>(area_lut_input));
+                                                  area_lut_input);
     canvas->load_svg(p_svg_input);
 
     // Set up a text label.
@@ -96,7 +96,7 @@ void App::loop() {
 
     cmd_buffer->begin_render_pass(screen_framebuffer,
                                   true,
-                                  Pathfinder::ColorF(0.3, 0.3, 0.3, 1.0));
+                                  Pathfinder::ColorF(0.2, 0.2, 0.2, 1.0));
 
     // Draw canvas to screen.
     texture_rect0->set_texture(canvas->get_dest_texture());
