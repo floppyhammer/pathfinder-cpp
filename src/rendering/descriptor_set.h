@@ -44,7 +44,7 @@ namespace Pathfinder {
             return descriptors;
         }
 
-    private:
+    protected:
         std::unordered_map<uint32_t, Descriptor> descriptors;
     };
 }
