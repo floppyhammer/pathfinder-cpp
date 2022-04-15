@@ -7,9 +7,9 @@
 
 #include <stb_truetype.h>
 
-#include "../d3dx/data/shape.h"
-#include "../../common/logger.h"
-#include "../../common/io.h"
+#include "../../d3dx/data/shape.h"
+#include "../../../common/logger.h"
+#include "../../../common/io.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -18,6 +18,7 @@ namespace Pathfinder {
     class Font {
     public:
         explicit Font(std::vector<char> &bytes);
+
         ~Font();
 
         static std::shared_ptr<Font> from_file(const char *file_path) {

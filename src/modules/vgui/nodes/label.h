@@ -7,7 +7,7 @@
 
 #include "control.h"
 #include "../resources/style_box.h"
-#include "../font.h"
+#include "../resources/font.h"
 
 #include <cstdint>
 
