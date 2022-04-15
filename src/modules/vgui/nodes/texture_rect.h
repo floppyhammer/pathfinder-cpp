@@ -6,11 +6,11 @@
 #define PATHFINDER_TEXTURE_RECT_H
 
 #include "control.h"
-#include "../../../rendering/framebuffer.h"
-#include "../../../rendering/texture.h"
-#include "../../../rendering/render_pipeline.h"
-#include "../../../rendering/descriptor_set.h"
-#include "../../../rendering/command_buffer.h"
+#include "../../../rendering/gl/framebuffer.h"
+#include "../../../rendering/gl/texture.h"
+#include "../../../rendering/gl/render_pipeline.h"
+#include "../../../rendering/gl/descriptor_set.h"
+#include "../../../rendering/gl/command_buffer.h"
 
 #include <memory>
 

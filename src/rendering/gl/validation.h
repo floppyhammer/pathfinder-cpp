@@ -5,8 +5,8 @@
 #ifndef PATHFINDER_VALIDATION_H
 #define PATHFINDER_VALIDATION_H
 
-#include "../common/global_macros.h"
-#include "../common/logger.h"
+#include "../../common/global_macros.h"
+#include "../../common/logger.h"
 
 #include <iostream>
 #include <sstream>

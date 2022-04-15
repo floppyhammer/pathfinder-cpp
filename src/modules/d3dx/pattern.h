@@ -9,7 +9,7 @@
 #include "../../common/math/vec2.h"
 #include "../../common/math/transform2.h"
 #include "../../common/color.h"
-#include "../../rendering/framebuffer.h"
+#include "../../rendering/gl/framebuffer.h"
 
 #include <cstdint>
 #include <utility>

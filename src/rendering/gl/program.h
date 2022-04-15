@@ -5,10 +5,10 @@
 #ifndef PATHFINDER_PROGRAM_H
 #define PATHFINDER_PROGRAM_H
 
-#include "../common/math/mat2x2.h"
-#include "../common/math/mat4x4.h"
-#include "../common/logger.h"
-#include "../common/global_macros.h"
+#include "../../common/math/mat2x2.h"
+#include "../../common/math/mat4x4.h"
+#include "../../common/logger.h"
+#include "../../common/global_macros.h"
 
 #include <string>
 #include <fstream>

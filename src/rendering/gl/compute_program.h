@@ -7,7 +7,7 @@
 
 #include "program.h"
 #include "data.h"
-#include "../common/global_macros.h"
+#include "../../common/global_macros.h"
 
 namespace Pathfinder {
     class ComputeProgram : public Program {

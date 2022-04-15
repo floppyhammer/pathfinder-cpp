@@ -6,11 +6,11 @@
 #define PATHFINDER_TEXTURE_H
 
 #include "data.h"
-#include "../common/math/rect.h"
-#include "../common/global_macros.h"
-#include "../common/logger.h"
+#include "../../common/math/rect.h"
+#include "../../common/global_macros.h"
+#include "../../common/logger.h"
 
-#include <stb_image.h>
+#include "stb_image.h"
 
 namespace Pathfinder {
     /// Use Texture via smart pointers as its de-constructor will release its GL resources.

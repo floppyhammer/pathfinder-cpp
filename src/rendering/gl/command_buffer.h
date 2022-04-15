@@ -10,7 +10,7 @@
 #include "framebuffer.h"
 #include "buffer.h"
 #include "descriptor_set.h"
-#include "../common/color.h"
+#include "../../common/color.h"
 
 #include <cstdint>
 #include <queue>
@@ -158,7 +158,9 @@ namespace Pathfinder {
     private:
         std::queue<Command> commands;
 
-        Pipeline *current_pipeline;
+        bool during_render_pass = true;
+        RenderPipeline *render_pipeline;
+        ComputePipeline *compute_pipeline;
     };
 }
 

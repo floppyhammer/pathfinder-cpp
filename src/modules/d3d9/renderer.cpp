@@ -4,13 +4,14 @@
 
 #include "renderer.h"
 
-#include "../../rendering/device.h"
+#include "../../rendering/gl/device.h"
 #include "../../common/timestamp.h"
 #include "../../common/math/basic.h"
 #include "../../common/global_macros.h"
 #include "../../common/math/vec3.h"
 #include "../../common/math/mat4x4.h"
-#include "../../rendering/command_buffer.h"
+#include "../../rendering/gl/command_buffer.h"
+#include "../../rendering/platform.h"
 
 #include <array>
 
@@ -26,13 +27,15 @@ namespace Pathfinder {
 
     /// It might not be worth it to cache z buffer textures as they're generally small.
     std::shared_ptr<Texture> upload_z_buffer(const DenseTileMap<uint32_t> &z_buffer_map) {
-        auto z_buffer_texture = Device::create_texture(
+        auto device = Platform::get_singleton().device;
+        
+        auto z_buffer_texture = device->create_texture(
                 z_buffer_map.rect.width(),
                 z_buffer_map.rect.height(),
                 TextureFormat::RGBA8,
                 DataType::UNSIGNED_BYTE);
 
-        auto cmd_buffer = Device::create_command_buffer();
+        auto cmd_buffer = device->create_command_buffer();
         cmd_buffer->upload_to_texture(z_buffer_texture, {}, z_buffer_map.data.data());
         cmd_buffer->submit();
 
@@ -40,25 +43,29 @@ namespace Pathfinder {
     }
 
     RendererD3D9::RendererD3D9(uint32_t canvas_width, uint32_t canvas_height) {
-        dest_framebuffer = Device::create_framebuffer(canvas_width,
+        auto device = Platform::get_singleton().device;
+
+        dest_framebuffer = device->create_framebuffer(canvas_width,
                                                          canvas_height,
                                                          TextureFormat::RGBA8,
                                                          DataType::UNSIGNED_BYTE);
 
-        mask_framebuffer = Device::create_framebuffer(MASK_FRAMEBUFFER_WIDTH,
+        mask_framebuffer = device->create_framebuffer(MASK_FRAMEBUFFER_WIDTH,
                                                    MASK_FRAMEBUFFER_HEIGHT,
                                                    TextureFormat::RGBA16F,
                                                    DataType::HALF_FLOAT);
 
         // Quad vertex buffer. Shared by fills and tiles drawing.
-        quad_vertex_buffer = Device::create_buffer(BufferType::Vertex, 12 * sizeof(uint16_t));
+        quad_vertex_buffer = device->create_buffer(BufferType::Vertex, 12 * sizeof(uint16_t));
 
-        auto cmd_buffer = Device::create_command_buffer();
+        auto cmd_buffer = device->create_command_buffer();
         cmd_buffer->upload_to_buffer(quad_vertex_buffer, 0, 12 * sizeof(uint16_t), QUAD_VERTEX_POSITIONS);
         cmd_buffer->submit();
     }
 
     void RendererD3D9::set_up_pipelines() {
+        auto device = Platform::get_singleton().device;
+
         // Fill pipeline.
         {
 #ifdef PATHFINDER_SHADERS_EMBEDDED
@@ -108,10 +115,10 @@ namespace Pathfinder {
 
             ColorBlendState blend_state = {true, BlendFactor::ONE, BlendFactor::ONE};
 
-            fill_pipeline = std::make_shared<RenderPipeline>(fill_vert_source,
-                                                             fill_frag_source,
-                                                             attribute_descriptions,
-                                                             blend_state);
+            fill_pipeline = device->create_render_pipeline(fill_vert_source,
+                                                           fill_frag_source,
+                                                           attribute_descriptions,
+                                                           blend_state);
 
             // Set descriptor set.
             {
@@ -203,14 +210,14 @@ namespace Pathfinder {
 
             ColorBlendState blend_state = {true, BlendFactor::ONE, BlendFactor::ONE_MINUS_SRC_ALPHA};
 
-            tile_pipeline = std::make_shared<RenderPipeline>(tile_vert_source,
-                                                             tile_frag_source,
-                                                             attribute_descriptions,
-                                                             blend_state);
+            tile_pipeline = device->create_render_pipeline(tile_vert_source,
+                                                           tile_frag_source,
+                                                           attribute_descriptions,
+                                                           blend_state);
 
             // Create uniform buffers.
-            tile_transform_ub = Device::create_buffer(BufferType::Uniform, 16 * sizeof(float));
-            tile_varying_sizes_ub = Device::create_buffer(BufferType::Uniform, 8 * sizeof(float));
+            tile_transform_ub = device->create_buffer(BufferType::Uniform, 16 * sizeof(float));
+            tile_varying_sizes_ub = device->create_buffer(BufferType::Uniform, 8 * sizeof(float));
 
             // Set descriptor set.
             {
@@ -290,13 +297,15 @@ namespace Pathfinder {
     }
 
     void RendererD3D9::upload_fills(const std::vector<Fill> &fills) {
+        auto device = Platform::get_singleton().device;
+
         auto byte_size = sizeof(Fill) * fills.size();
 
         if (fill_vertex_buffer == nullptr || byte_size > fill_vertex_buffer->size) {
-            fill_vertex_buffer = Device::create_buffer(BufferType::Vertex, byte_size);
+            fill_vertex_buffer = device->create_buffer(BufferType::Vertex, byte_size);
         }
 
-        auto cmd_buffer = Device::create_command_buffer();
+        auto cmd_buffer = device->create_command_buffer();
         cmd_buffer->upload_to_buffer(fill_vertex_buffer,
                                      0,
                                      byte_size,
@@ -305,13 +314,15 @@ namespace Pathfinder {
     }
 
     void RendererD3D9::upload_tiles(const std::vector<TileObjectPrimitive> &tiles) {
+        auto device = Platform::get_singleton().device;
+
         auto byte_size = sizeof(TileObjectPrimitive) * tiles.size();
 
         if (tile_vertex_buffer == nullptr || byte_size > tile_vertex_buffer->size) {
-            tile_vertex_buffer = Device::create_buffer(BufferType::Vertex, byte_size);
+            tile_vertex_buffer = device->create_buffer(BufferType::Vertex, byte_size);
         }
 
-        auto cmd_buffer = Device::create_command_buffer();
+        auto cmd_buffer = device->create_command_buffer();
         cmd_buffer->upload_to_buffer(tile_vertex_buffer,
                                      0,
                                      byte_size,
@@ -342,7 +353,9 @@ namespace Pathfinder {
         // No fills to draw or no valid mask viewport.
         if (fills_count == 0 || mask_framebuffer == nullptr) return;
 
-        auto cmd_buffer = Device::create_command_buffer();
+        auto device = Platform::get_singleton().device;
+
+        auto cmd_buffer = device->create_command_buffer();
 
         cmd_buffer->begin_render_pass(mask_framebuffer,
                                      true,
@@ -368,7 +381,9 @@ namespace Pathfinder {
         // No tiles to draw.
         if (tiles_count == 0) return;
 
-        auto cmd_buffer = Device::create_command_buffer();
+        auto device = Platform::get_singleton().device;
+
+        auto cmd_buffer = device->create_command_buffer();
 
         Vec2<float> render_target_size;
 
@@ -398,10 +413,10 @@ namespace Pathfinder {
                                              (float) color_target.size.x, (float) color_target.size.y,
                                              render_target_size.x, render_target_size.y};
 
-            auto cmd_buffer = Device::create_command_buffer();
-            cmd_buffer->upload_to_buffer(tile_transform_ub, 0, 16 * sizeof(float), &mvp_mat);
-            cmd_buffer->upload_to_buffer(tile_varying_sizes_ub, 0, 6 * sizeof(float), ubo_data.data());
-            cmd_buffer->submit();
+            auto one_shot_cmd_buffer = device->create_command_buffer();
+            one_shot_cmd_buffer->upload_to_buffer(tile_transform_ub, 0, 16 * sizeof(float), &mvp_mat);
+            one_shot_cmd_buffer->upload_to_buffer(tile_varying_sizes_ub, 0, 6 * sizeof(float), ubo_data.data());
+            one_shot_cmd_buffer->submit();
         }
 
         // Update descriptor set.

@@ -1,39 +1,39 @@
 //
-// Created by floppyhammer on 8/26/2021.
+// Created by chy on 4/15/2022.
 //
 
 #ifndef PATHFINDER_DEVICE_H
 #define PATHFINDER_DEVICE_H
 
-#include "buffer.h"
-#include "texture.h"
-#include "command_buffer.h"
-#include "../common/math/basic.h"
-#include "../common/global_macros.h"
-#include "../common/logger.h"
-
-#include <vector>
+#include "gl/framebuffer.h"
+#include "gl/buffer.h"
+#include "gl/command_buffer.h"
+#include "render_pipeline.h"
+#include "compute_pipeline.h"
 
 namespace Pathfinder {
     class Device {
     public:
-        Device() = default;
+        virtual std::shared_ptr<Framebuffer> create_framebuffer(uint32_t p_width,
+                                                                uint32_t p_height,
+                                                                TextureFormat p_format,
+                                                                DataType p_type) = 0;
 
-        ~Device() = default;
+        virtual std::shared_ptr<Buffer> create_buffer(BufferType type, size_t size) = 0;
 
-        static Device &get_singleton() {
-            static Device singleton;
-            return singleton;
-        }
+        virtual std::shared_ptr<Texture> create_texture(uint32_t p_width,
+                                                        uint32_t p_height,
+                                                        TextureFormat p_format,
+                                                        DataType p_type) = 0;
 
-        static std::shared_ptr<Framebuffer> create_framebuffer(uint32_t p_width, uint32_t p_height,
-                                                               TextureFormat p_format, DataType p_type);
+        virtual std::shared_ptr<CommandBuffer> create_command_buffer() = 0;
 
-        static std::shared_ptr<Buffer> create_buffer(BufferType type, size_t size);
+        virtual std::shared_ptr<RenderPipeline> create_render_pipeline(const std::string &vert_source,
+                                                                       const std::string &frag_source,
+                                                                       const std::vector<VertexInputAttributeDescription> &p_attribute_descriptions,
+                                                                       ColorBlendState p_blend_state) = 0;
 
-        static std::shared_ptr<Texture> create_texture(uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type);
-
-        static std::shared_ptr<CommandBuffer> create_command_buffer();
+        virtual std::shared_ptr<ComputePipeline> create_compute_pipeline() = 0;
     };
 }
 

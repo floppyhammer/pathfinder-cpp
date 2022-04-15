@@ -9,8 +9,8 @@
 #include "gpu_data.h"
 #include "../../d3dx/effects.h"
 #include "../../d3dx/paint.h"
-#include "../../../rendering/texture.h"
-#include "../../../rendering/framebuffer.h"
+#include "../../../rendering/gl/texture.h"
+#include "../../../rendering/gl/framebuffer.h"
 
 #include <cstdint>
 #include <vector>

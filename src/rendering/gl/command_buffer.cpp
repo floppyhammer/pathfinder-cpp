@@ -201,28 +201,32 @@ namespace Pathfinder {
                 case CommandType::BindRenderPipeline: {
                     auto &args = cmd.args.bind_render_pipeline;
 
-                    auto blend_state = args.pipeline->get_blend_state();
+                    auto pipeline_gl = static_cast<RenderPipelineGl *>(args.pipeline);
+
+                    auto blend_state = pipeline_gl->get_blend_state();
 
                     // Color blend.
                     glEnable(GL_BLEND);
-                    glBlendFunc(to_gl_blend_factor(blend_state.src_blend_factor), to_gl_blend_factor(blend_state.dst_blend_factor));
+                    glBlendFunc(to_gl_blend_factor(blend_state.src_blend_factor),
+                                to_gl_blend_factor(blend_state.dst_blend_factor));
 
-                    args.pipeline->get_program()->use();
+                    pipeline_gl->get_program()->use();
 
-                    current_pipeline = args.pipeline;
+                    render_pipeline = args.pipeline;
+                    compute_pipeline = nullptr;
                 }
                     break;
                 case CommandType::BindVertexBuffers: {
-                    auto render_pipeline = static_cast<RenderPipeline *>(current_pipeline);
+                    auto pipeline_gl = static_cast<RenderPipelineGl *>(render_pipeline);
 
                     auto &args = cmd.args.bind_vertex_buffers;
 
                     auto buffer_count = args.buffer_count;
                     auto vertex_buffers = args.buffers;
 
-                    glBindVertexArray(render_pipeline->get_vao());
+                    glBindVertexArray(pipeline_gl->get_vao());
 
-                    auto &attribute_descriptions = render_pipeline->get_attribute_descriptions();
+                    auto &attribute_descriptions = pipeline_gl->get_attribute_descriptions();
 
                     auto last_vbo = 0;
                     for (int location = 0; location < attribute_descriptions.size(); location++) {
@@ -233,7 +237,7 @@ namespace Pathfinder {
                             return;
                         }
 
-                        auto buffer = vertex_buffers[attrib.binding];
+                        auto buffer = static_cast<BufferGl *>(vertex_buffers[attrib.binding]);
                         auto vbo = buffer->id;
 
                         if (location == 0) {
@@ -288,6 +292,15 @@ namespace Pathfinder {
                 case CommandType::BindDescriptorSet: {
                     auto &args = cmd.args.bind_descriptor_set;
 
+                    uint32_t program_id;
+                    if (render_pipeline != nullptr) {
+                        auto pipeline_gl = static_cast<RenderPipelineGl *>(render_pipeline);
+                        program_id = pipeline_gl->get_program()->get_id();
+                    } else {
+                        auto pipeline_gl = static_cast<ComputePipelineGl *>(compute_pipeline);
+                        program_id = pipeline_gl->get_program()->get_id();
+                    }
+
                     for (auto &pair: args.descriptor_set->get_descriptors()) {
                         auto &descriptor = pair.second;
 
@@ -297,12 +310,10 @@ namespace Pathfinder {
 
                         switch (descriptor.type) {
                             case DescriptorType::UniformBuffer: {
-                                auto buffer = descriptor.buffer;
+                                auto buffer = static_cast<BufferGl *>(descriptor.buffer.get());
 
-                                unsigned int ubo_index = glGetUniformBlockIndex(
-                                        current_pipeline->get_program()->get_id(), binding_name.c_str());
-                                glUniformBlockBinding(current_pipeline->get_program()->get_id(), ubo_index,
-                                                      binding_point);
+                                unsigned int ubo_index = glGetUniformBlockIndex(program_id, binding_name.c_str());
+                                glUniformBlockBinding(program_id, ubo_index, binding_point);
                                 glBindBufferBase(GL_UNIFORM_BUFFER, binding_point, buffer->id);
                             }
                                 break;
@@ -310,9 +321,7 @@ namespace Pathfinder {
                                 auto texture = descriptor.texture;
 
                                 if (!binding_name.empty()) {
-                                    glUniform1i(glGetUniformLocation(current_pipeline->get_program()->get_id(),
-                                                                     binding_name.c_str()),
-                                                binding_point);
+                                    glUniform1i(glGetUniformLocation(program_id, binding_name.c_str()), binding_point);
                                 }
                                 glActiveTexture(GL_TEXTURE0 + binding_point);
                                 glBindTexture(GL_TEXTURE_2D, texture->get_texture_id());
@@ -369,9 +378,12 @@ namespace Pathfinder {
                 case CommandType::BindComputePipeline: {
                     auto &args = cmd.args.bind_compute_pipeline;
 
-                    args.pipeline->get_program()->use();
+                    auto pipeline_gl = static_cast<ComputePipelineGl *>(args.pipeline);
 
-                    current_pipeline = args.pipeline;
+                    pipeline_gl->get_program()->use();
+
+                    render_pipeline = nullptr;
+                    compute_pipeline = args.pipeline;
                 }
                     break;
                 case CommandType::Dispatch: {
@@ -398,6 +410,8 @@ namespace Pathfinder {
                 case CommandType::UploadToBuffer: {
                     auto &args = cmd.args.upload_to_buffer;
 
+                    auto buffer = static_cast<BufferGl *>(args.buffer);
+
                     int gl_buffer_type;
 
                     switch (args.buffer->type) {
@@ -417,7 +431,7 @@ namespace Pathfinder {
 #endif
                     }
 
-                    glBindBuffer(gl_buffer_type, args.buffer->id);
+                    glBindBuffer(gl_buffer_type, buffer->id);
                     glBufferSubData(gl_buffer_type, args.offset, args.data_size, args.data);
                     glBindBuffer(gl_buffer_type, 0); // Unbind.
 

@@ -5,7 +5,7 @@
 #ifndef PATHFINDER_DATA_H
 #define PATHFINDER_DATA_H
 
-#include "../common/global_macros.h"
+#include "../../common/global_macros.h"
 
 namespace Pathfinder {
     // Everything above 16 MB is allocated exactly for general buffer.

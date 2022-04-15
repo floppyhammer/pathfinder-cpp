@@ -4,7 +4,7 @@
 
 #include "paint.h"
 
-#include "../../rendering/device.h"
+#include "../../rendering/platform.h"
 
 #include <stdexcept>
 
@@ -72,8 +72,10 @@ namespace Pathfinder {
     }
 
     RenderTarget Palette::push_render_target(const Vec2<int> &render_target_size) {
+        auto device = Platform::get_singleton().device;
+        
         // Create a new framebuffer.
-        auto framebuffer = Device::create_framebuffer(
+        auto framebuffer = device->create_framebuffer(
                 render_target_size.x,
                 render_target_size.y,
                 TextureFormat::RGBA8,

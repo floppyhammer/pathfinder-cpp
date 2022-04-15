@@ -8,8 +8,8 @@
 #include "../d3dx/data/data.h"
 #include "../d3d9/data/draw_tile_batch.h"
 #include "../../common/math/basic.h"
-#include "../../rendering/device.h"
-#include "../../rendering/command_buffer.h"
+#include "../../rendering/gl/device.h"
+#include "../../rendering/gl/command_buffer.h"
 #include "../../common/logger.h"
 #include "../../common/timestamp.h"
 

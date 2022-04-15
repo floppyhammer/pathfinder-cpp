@@ -7,10 +7,12 @@
 #include "../../../common/math/basic.h"
 #include "../../../common/math/mat4x4.h"
 #include "../../../common/global_macros.h"
-#include "../../../rendering/device.h"
+#include "../../../rendering/platform.h"
 
 namespace Pathfinder {
     TextureRect::TextureRect(float viewport_width, float viewport_height) {
+        auto device = Platform::get_singleton().device;
+
         rect_size.x = viewport_width;
         rect_size.y = viewport_height;
 
@@ -28,10 +30,10 @@ namespace Pathfinder {
                 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0
         };
 
-        vertex_buffer = Device::create_buffer(BufferType::Vertex, sizeof(vertices));
-        uniform_buffer = Device::create_buffer(BufferType::Uniform, 16 * sizeof(float));
+        vertex_buffer = device->create_buffer(BufferType::Vertex, sizeof(vertices));
+        uniform_buffer = device->create_buffer(BufferType::Uniform, 16 * sizeof(float));
 
-        auto cmd_buffer = Device::create_command_buffer();
+        auto cmd_buffer = device->create_command_buffer();
         cmd_buffer->upload_to_buffer(vertex_buffer,
                                      0,
                                      sizeof(vertices),
@@ -75,10 +77,10 @@ namespace Pathfinder {
 
             ColorBlendState blend_state = {true, BlendFactor::ONE, BlendFactor::ONE_MINUS_SRC_ALPHA};
 
-            pipeline = std::make_shared<RenderPipeline>(vert_source,
-                                                        frag_source,
-                                                        attribute_descriptions,
-                                                        blend_state);
+            pipeline = device->create_render_pipeline(vert_source,
+                                                      frag_source,
+                                                      attribute_descriptions,
+                                                      blend_state);
         }
 
         {
@@ -110,6 +112,8 @@ namespace Pathfinder {
 
     void TextureRect::draw(const std::shared_ptr<Pathfinder::CommandBuffer> &cmd_buffer,
                            const std::shared_ptr<Framebuffer> &render_target) {
+        auto device = Platform::get_singleton().device;
+
         // Get MVP matrix.
         // -------------------------------------------------
         // The actual application order of these matrices is reverse.
@@ -127,7 +131,7 @@ namespace Pathfinder {
         auto mvp_mat = model_mat;
         // -------------------------------------------------
 
-        auto one_shot_cmd_buffer = Device::create_command_buffer();
+        auto one_shot_cmd_buffer =device->create_command_buffer();
         one_shot_cmd_buffer->upload_to_buffer(uniform_buffer, 0, 16 * sizeof(float), &mvp_mat);
         one_shot_cmd_buffer->submit();
 

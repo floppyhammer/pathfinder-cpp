@@ -1,11 +1,7 @@
-//
-// Created by floppyhammer on 4/9/2022.
-//
-
 #ifndef PATHFINDER_VERTEX_INPUT_H
 #define PATHFINDER_VERTEX_INPUT_H
 
-#include "data.h"
+#include "gl/data.h"
 
 #include <cstdint>
 #include <array>

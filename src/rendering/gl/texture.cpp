@@ -4,7 +4,7 @@
 
 #include "texture.h"
 
-#include "../common/global_macros.h"
+#include "../../common/global_macros.h"
 
 namespace Pathfinder {
     Texture::Texture(uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type)

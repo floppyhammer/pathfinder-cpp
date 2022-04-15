@@ -4,8 +4,8 @@
 
 #include "compute_program.h"
 
-#include "../common/io.h"
-#include "../common/logger.h"
+#include "../../common/io.h"
+#include "../../common/logger.h"
 
 #ifdef PATHFINDER_USE_D3D11
 

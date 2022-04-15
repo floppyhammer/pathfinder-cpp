@@ -1,11 +1,7 @@
-//
-// Created by floppyhammer on 2021/12/31.
-//
-
 #include "renderer.h"
 
-#include "../../rendering/device.h"
-#include "../../rendering/command_buffer.h"
+#include "../../rendering/platform.h"
+#include "../../rendering/gl/command_buffer.h"
 
 #include <umHalf.h>
 #include <array>
@@ -24,35 +20,39 @@ namespace Pathfinder {
     const int32_t COMBINER_CTRL_COMPOSITE_SHIFT = 10;
 
     Renderer::Renderer() {
+        auto device = Platform::get_singleton().device;
+
         // We only allocate the metadata texture once.
-        metadata_texture = Device::create_texture(TEXTURE_METADATA_TEXTURE_WIDTH,
+        metadata_texture = device->create_texture(TEXTURE_METADATA_TEXTURE_WIDTH,
                                                   TEXTURE_METADATA_TEXTURE_HEIGHT,
                                                   TextureFormat::RGBA16F,
                                                   DataType::HALF_FLOAT);
 
         // Uniform buffer.
         {
-            fixed_sizes_ub = Device::create_buffer(BufferType::Uniform, 8 * sizeof(float));
+            fixed_sizes_ub = device->create_buffer(BufferType::Uniform, 8 * sizeof(float));
 
             // Upload data to the uniform buffer with fixed data.
             std::array<float, 6> fixed_sizes_ubo_data = {MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT,
                                                          TILE_WIDTH, TILE_HEIGHT,
                                                          TEXTURE_METADATA_TEXTURE_WIDTH, TEXTURE_METADATA_TEXTURE_HEIGHT};
 
-            auto cmd_buffer = Device::create_command_buffer();
+            auto cmd_buffer = device->create_command_buffer();
             cmd_buffer->upload_to_buffer(fixed_sizes_ub, 0, 6 * sizeof(float), fixed_sizes_ubo_data.data());
             cmd_buffer->submit();
         }
     }
 
     void Renderer::set_up_area_lut(const std::vector<unsigned char> &area_lut_input) {
+        auto device = Platform::get_singleton().device;
+
         auto image_data = ImageData::from_memory(area_lut_input, false);
 
-        area_lut_texture = Device::create_texture(image_data->width, image_data->height,
+        area_lut_texture = device->create_texture(image_data->width, image_data->height,
                                                   TextureFormat::RGBA8,
                                                   DataType::UNSIGNED_BYTE);
 
-        auto cmd_buffer = Device::create_command_buffer();
+        auto cmd_buffer = device->create_command_buffer();
         cmd_buffer->upload_to_texture(area_lut_texture, {}, image_data->data);
         cmd_buffer->submit();
     }
@@ -117,8 +117,10 @@ namespace Pathfinder {
 
     void upload_metadata(const std::shared_ptr<Texture>& metadata_texture,
                          const std::vector<TextureMetadataEntry> &metadata) {
-        auto padded_texel_size = alignup_i32((int32_t) metadata.size(), TEXTURE_METADATA_ENTRIES_PER_ROW)
-                * TEXTURE_METADATA_TEXTURE_WIDTH * 4;
+        auto device = Platform::get_singleton().device;
+
+        auto padded_texel_size = alignup_i32((int32_t) metadata.size(),
+                                             TEXTURE_METADATA_ENTRIES_PER_ROW) * TEXTURE_METADATA_TEXTURE_WIDTH * 4;
 
         std::vector<half> texels;
         texels.reserve(padded_texel_size);
@@ -196,7 +198,7 @@ namespace Pathfinder {
         auto height = texels.size() / (4 * TEXTURE_METADATA_TEXTURE_WIDTH);
         auto region_rect = Rect<uint32_t>(0, 0, width, height);
 
-        auto cmd_buffer = Device::create_command_buffer();
+        auto cmd_buffer = device->create_command_buffer();
         cmd_buffer->upload_to_texture(metadata_texture, region_rect, texels.data());
         cmd_buffer->submit();
     }

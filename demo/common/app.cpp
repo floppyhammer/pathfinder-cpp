@@ -6,8 +6,8 @@
 
 #include "../../src/common/global_macros.h"
 #include "../../src/common/logger.h"
-#include "../../src/rendering/device.h"
 #include "../../src/modules/vgui/servers/vector_server.h"
+#include "../../src/rendering/platform.h"
 
 App::App(int window_width,
          int window_height,
@@ -45,6 +45,8 @@ App::App(int window_width,
     start_time = std::chrono::steady_clock::now();
     last_time = start_time;
     last_time_updated_fps = start_time;
+
+    Pathfinder::Platform::get_singleton();
 }
 
 void App::loop() {
@@ -90,7 +92,7 @@ void App::loop() {
     // Server process.
     Pathfinder::VectorServer::get_singleton().canvas->draw();
 
-    auto cmd_buffer = Pathfinder::Device::create_command_buffer();
+    auto cmd_buffer = Pathfinder::Platform::get_singleton().device->create_command_buffer();
 
     cmd_buffer->begin_render_pass(screen_framebuffer,
                                   true,

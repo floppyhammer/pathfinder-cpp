@@ -1,7 +1,7 @@
 #ifndef PATHFINDER_DESCRIPTOR_SET_VK_H
 #define PATHFINDER_DESCRIPTOR_SET_VK_H
 
-#include "../descriptor_set.h"
+#include "../gl/descriptor_set.h"
 #include "../../common/global_macros.h"
 
 #include <cstdint>

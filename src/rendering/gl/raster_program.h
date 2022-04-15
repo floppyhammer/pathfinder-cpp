@@ -6,8 +6,8 @@
 #define PATHFINDER_RASTER_PROGRAM_H
 
 #include "program.h"
-#include "../common/global_macros.h"
-#include "../common/io.h"
+#include "../../common/global_macros.h"
+#include "../../common/io.h"
 
 namespace Pathfinder {
     class RasterProgram : public Program {

@@ -5,10 +5,11 @@
 #ifndef PATHFINDER_DEMO_APP_H
 #define PATHFINDER_DEMO_APP_H
 
-#include "../../src/rendering/framebuffer.h"
+#include "../../src/rendering/gl/framebuffer.h"
 #include "../../src/modules/d3dx/canvas.h"
 #include "../../src/modules/vgui/nodes/label.h"
 #include "../../src/modules/vgui/nodes/texture_rect.h"
+#include "../../src/rendering/gl/device.h"
 
 #include <chrono>
 

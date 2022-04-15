@@ -2,7 +2,7 @@
 #define PATHFINDER_BUFFER_VK_H
 
 #include "device.h"
-#include "../buffer.h"
+#include "../gl/buffer.h"
 #include "../../common/global_macros.h"
 
 #include <cstdint>
@@ -43,7 +43,7 @@ namespace Pathfinder {
         vkBindBufferMemory(device, buffer, bufferMemory, 0);
     }
 
-    class BufferVk {
+    class BufferVk : Buffer {
     public:
         BufferVk(uint32_t bufferSize) {
             if (HOST_VISIBLE) {
@@ -60,7 +60,6 @@ namespace Pathfinder {
                              id,
                              device_memory);
             }
-
         }
 
         ~BufferVk() {
