@@ -1,5 +1,5 @@
-#ifndef PATHFINDER_DATA_GL_H
-#define PATHFINDER_DATA_GL_H
+#ifndef PATHFINDER_HAL_DATA_GL_H
+#define PATHFINDER_HAL_DATA_GL_H
 
 #include "../data.h"
 #include "../../common/global_macros.h"

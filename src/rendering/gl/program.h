@@ -1,5 +1,5 @@
-#ifndef PATHFINDER_PROGRAM_H
-#define PATHFINDER_PROGRAM_H
+#ifndef PATHFINDER_HAL_PROGRAM_H
+#define PATHFINDER_HAL_PROGRAM_H
 
 #include "../../common/math/mat2x2.h"
 #include "../../common/math/mat4x4.h"
@@ -88,4 +88,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_PROGRAM_H
+#endif //PATHFINDER_HAL_PROGRAM_H

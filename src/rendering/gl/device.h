@@ -1,17 +1,13 @@
-//
-// Created by floppyhammer on 8/26/2021.
-//
-
-#ifndef PATHFINDER_DEVICE_GL_H
-#define PATHFINDER_DEVICE_GL_H
+#ifndef PATHFINDER_HAL_DEVICE_GL_H
+#define PATHFINDER_HAL_DEVICE_GL_H
 
 #include "buffer.h"
 #include "texture.h"
 #include "command_buffer.h"
+#include "../device.h"
 #include "../../common/math/basic.h"
 #include "../../common/global_macros.h"
 #include "../../common/logger.h"
-#include "../device.h"
 
 #include <vector>
 
@@ -41,4 +37,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_DEVICE_GL_H
+#endif //PATHFINDER_HAL_DEVICE_GL_H

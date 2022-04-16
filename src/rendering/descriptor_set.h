@@ -1,5 +1,5 @@
-#ifndef PATHFINDER_DESCRIPTOR_SET_H
-#define PATHFINDER_DESCRIPTOR_SET_H
+#ifndef PATHFINDER_HAL_DESCRIPTOR_SET_H
+#define PATHFINDER_HAL_DESCRIPTOR_SET_H
 
 #include "buffer.h"
 #include "texture.h"
@@ -44,4 +44,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_DESCRIPTOR_SET_H
+#endif //PATHFINDER_HAL_DESCRIPTOR_SET_H

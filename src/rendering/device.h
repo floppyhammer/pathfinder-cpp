@@ -1,5 +1,5 @@
-#ifndef PATHFINDER_DEVICE_H
-#define PATHFINDER_DEVICE_H
+#ifndef PATHFINDER_HAL_DEVICE_H
+#define PATHFINDER_HAL_DEVICE_H
 
 #include "framebuffer.h"
 #include "buffer.h"
@@ -33,4 +33,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_DEVICE_H
+#endif //PATHFINDER_HAL_DEVICE_H

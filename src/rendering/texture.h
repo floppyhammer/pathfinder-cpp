@@ -1,7 +1,7 @@
-#ifndef PATHFINDER_TEXTURE_H
-#define PATHFINDER_TEXTURE_H
+#ifndef PATHFINDER_HAL_TEXTURE_H
+#define PATHFINDER_HAL_TEXTURE_H
 
-#include "gl/data.h"
+#include "data.h"
 #include "../common/math/vec2.h"
 #include "../common/global_macros.h"
 
@@ -44,4 +44,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_TEXTURE_H
+#endif //PATHFINDER_HAL_TEXTURE_H

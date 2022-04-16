@@ -1,5 +1,5 @@
-#ifndef PATHFINDER_BUFFER_H
-#define PATHFINDER_BUFFER_H
+#ifndef PATHFINDER_HAL_BUFFER_H
+#define PATHFINDER_HAL_BUFFER_H
 
 #include "../common/global_macros.h"
 
@@ -30,4 +30,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_BUFFER_H
+#endif //PATHFINDER_HAL_BUFFER_H

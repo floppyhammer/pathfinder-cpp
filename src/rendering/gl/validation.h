@@ -1,9 +1,5 @@
-//
-// Created by floppyhammer on 4/14/2022.
-//
-
-#ifndef PATHFINDER_VALIDATION_H
-#define PATHFINDER_VALIDATION_H
+#ifndef PATHFINDER_HAL_VALIDATION_H
+#define PATHFINDER_HAL_VALIDATION_H
 
 #include "../../common/global_macros.h"
 #include "../../common/logger.h"
@@ -34,4 +30,4 @@ namespace Pathfinder {
     }
 }
 
-#endif //PATHFINDER_VALIDATION_H
+#endif //PATHFINDER_HAL_VALIDATION_H

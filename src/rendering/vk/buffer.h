@@ -1,5 +1,5 @@
-#ifndef PATHFINDER_BUFFER_VK_H
-#define PATHFINDER_BUFFER_VK_H
+#ifndef PATHFINDER_HAL_BUFFER_VK_H
+#define PATHFINDER_HAL_BUFFER_VK_H
 
 #include "../buffer.h"
 #include "../platform.h"
@@ -24,4 +24,4 @@ namespace Pathfinder {
 
 #endif
 
-#endif //PATHFINDER_BUFFER_VK_H
+#endif //PATHFINDER_HAL_BUFFER_VK_H

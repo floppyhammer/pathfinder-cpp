@@ -1,7 +1,6 @@
-#ifndef PATHFINDER_PLATFORM_H
-#define PATHFINDER_PLATFORM_H
+#ifndef PATHFINDER_HAL_PLATFORM_H
+#define PATHFINDER_HAL_PLATFORM_H
 
-#include "data.h"
 #include "gl/device.h"
 #include "vk/device.h"
 
@@ -32,4 +31,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_PLATFORM_H
+#endif //PATHFINDER_HAL_PLATFORM_H

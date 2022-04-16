@@ -1,5 +1,5 @@
-#ifndef PATHFINDER_DESCRIPTOR_SET_VK_H
-#define PATHFINDER_DESCRIPTOR_SET_VK_H
+#ifndef PATHFINDER_HAL_DESCRIPTOR_SET_VK_H
+#define PATHFINDER_HAL_DESCRIPTOR_SET_VK_H
 
 #include "../descriptor_set.h"
 #include "../../common/global_macros.h"
@@ -21,4 +21,4 @@ namespace Pathfinder {
 
 #endif
 
-#endif //PATHFINDER_DESCRIPTOR_SET_VK_H
+#endif //PATHFINDER_HAL_DESCRIPTOR_SET_VK_H

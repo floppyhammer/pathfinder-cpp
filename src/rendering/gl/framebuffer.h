@@ -1,5 +1,5 @@
-#ifndef PATHFINDER_FRAMEBUFFER_GL_H
-#define PATHFINDER_FRAMEBUFFER_GL_H
+#ifndef PATHFINDER_HAL_FRAMEBUFFER_GL_H
+#define PATHFINDER_HAL_FRAMEBUFFER_GL_H
 
 #include "texture.h"
 #include "../framebuffer.h"
@@ -31,4 +31,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_FRAMEBUFFER_GL_H
+#endif //PATHFINDER_HAL_FRAMEBUFFER_GL_H

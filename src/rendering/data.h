@@ -1,7 +1,5 @@
-#ifndef PATHFINDER_DATA_H
-#define PATHFINDER_DATA_H
-
-#include "../common/global_macros.h"
+#ifndef PATHFINDER_HAL_DATA_H
+#define PATHFINDER_HAL_DATA_H
 
 namespace Pathfinder {
     enum class DataType {
@@ -55,4 +53,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_DATA_H
+#endif //PATHFINDER_HAL_DATA_H

@@ -1,9 +1,5 @@
-//
-// Created by floppyhammer on 4/9/2022.
-//
-
-#ifndef PATHFINDER_BUFFER_GL_H
-#define PATHFINDER_BUFFER_GL_H
+#ifndef PATHFINDER_HAL_BUFFER_GL_H
+#define PATHFINDER_HAL_BUFFER_GL_H
 
 #include "../buffer.h"
 #include "../../common/global_macros.h"
@@ -23,4 +19,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_BUFFER_GL_H
+#endif //PATHFINDER_HAL_BUFFER_GL_H

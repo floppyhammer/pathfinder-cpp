@@ -1,5 +1,5 @@
-#ifndef PATHFINDER_TEXTURE_GL_H
-#define PATHFINDER_TEXTURE_GL_H
+#ifndef PATHFINDER_HAL_TEXTURE_GL_H
+#define PATHFINDER_HAL_TEXTURE_GL_H
 
 #include "data.h"
 #include "../texture.h"
@@ -24,4 +24,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_TEXTURE_GL_H
+#endif //PATHFINDER_HAL_TEXTURE_GL_H

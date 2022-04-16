@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 8/3/2021.
-//
-
 #ifndef PATHFINDER_GLOBAL_MACROS_H
 #define PATHFINDER_GLOBAL_MACROS_H
 

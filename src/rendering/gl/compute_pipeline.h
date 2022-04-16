@@ -1,5 +1,5 @@
-#ifndef PATHFINDER_COMPUTE_PIPELINE_GL_H
-#define PATHFINDER_COMPUTE_PIPELINE_GL_H
+#ifndef PATHFINDER_HAL_COMPUTE_PIPELINE_GL_H
+#define PATHFINDER_HAL_COMPUTE_PIPELINE_GL_H
 
 #include "program.h"
 #include "../compute_pipeline.h"
@@ -29,4 +29,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_COMPUTE_PIPELINE_GL_H
+#endif //PATHFINDER_HAL_COMPUTE_PIPELINE_GL_H

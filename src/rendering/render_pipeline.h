@@ -1,5 +1,5 @@
-#ifndef PATHFINDER_RENDER_PIPELINE_H
-#define PATHFINDER_RENDER_PIPELINE_H
+#ifndef PATHFINDER_HAL_RENDER_PIPELINE_H
+#define PATHFINDER_HAL_RENDER_PIPELINE_H
 
 #include "vertex_input.h"
 
@@ -13,4 +13,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_RENDER_PIPELINE_H
+#endif //PATHFINDER_HAL_RENDER_PIPELINE_H

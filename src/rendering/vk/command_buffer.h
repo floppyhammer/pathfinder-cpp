@@ -1,5 +1,5 @@
-#ifndef PATHFINDER_COMMAND_BUFFER_VK_H
-#define PATHFINDER_COMMAND_BUFFER_VK_H
+#ifndef PATHFINDER_HAL_COMMAND_BUFFER_VK_H
+#define PATHFINDER_HAL_COMMAND_BUFFER_VK_H
 
 #include "../command_buffer.h"
 
@@ -58,4 +58,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_COMMAND_BUFFER_VK_H
+#endif //PATHFINDER_HAL_COMMAND_BUFFER_VK_H

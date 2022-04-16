@@ -1,5 +1,5 @@
-#ifndef PATHFINDER_COMMAND_BUFFER_H
-#define PATHFINDER_COMMAND_BUFFER_H
+#ifndef PATHFINDER_HAL_COMMAND_BUFFER_H
+#define PATHFINDER_HAL_COMMAND_BUFFER_H
 
 #include "render_pipeline.h"
 #include "compute_pipeline.h"
@@ -172,4 +172,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_COMMAND_BUFFER_H
+#endif //PATHFINDER_HAL_COMMAND_BUFFER_H

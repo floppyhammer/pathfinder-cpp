@@ -1,8 +1,7 @@
-#ifndef PATHFINDER_RENDER_PIPELINE_GL_H
-#define PATHFINDER_RENDER_PIPELINE_GL_H
+#ifndef PATHFINDER_HAL_RENDER_PIPELINE_GL_H
+#define PATHFINDER_HAL_RENDER_PIPELINE_GL_H
 
 #include "program.h"
-#include "../vertex_input.h"
 #include "../render_pipeline.h"
 
 #include <memory>
@@ -54,4 +53,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_RENDER_PIPELINE_GL_H
+#endif //PATHFINDER_HAL_RENDER_PIPELINE_GL_H

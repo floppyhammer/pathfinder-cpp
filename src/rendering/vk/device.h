@@ -1,5 +1,5 @@
-#ifndef PATHFINDER_DEVICE_VK_H
-#define PATHFINDER_DEVICE_VK_H
+#ifndef PATHFINDER_HAL_DEVICE_VK_H
+#define PATHFINDER_HAL_DEVICE_VK_H
 
 #include "../device.h"
 #include "../vertex_input.h"
@@ -53,4 +53,4 @@ namespace Pathfinder {
 
 #endif
 
-#endif //PATHFINDER_DEVICE_VK_H
+#endif //PATHFINDER_HAL_DEVICE_VK_H
