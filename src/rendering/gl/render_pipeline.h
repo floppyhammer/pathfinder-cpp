@@ -1,8 +1,8 @@
 #ifndef PATHFINDER_RENDER_PIPELINE_GL_H
 #define PATHFINDER_RENDER_PIPELINE_GL_H
 
+#include "program.h"
 #include "../vertex_input.h"
-#include "raster_program.h"
 #include "../render_pipeline.h"
 
 #include <memory>

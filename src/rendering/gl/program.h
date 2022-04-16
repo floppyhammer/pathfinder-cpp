@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 8/26/2021.
-//
-
 #ifndef PATHFINDER_PROGRAM_H
 #define PATHFINDER_PROGRAM_H
 
@@ -24,7 +20,7 @@ namespace Pathfinder {
         [[nodiscard]] unsigned int get_id() const;
 
         // Utility uniform functions.
-        // ------------------------------------------------------------------------
+        // ------------------------------------------------------
         void set_bool(const std::string &name, bool value) const;
 
         void set_int(const std::string &name, int value) const;
@@ -42,7 +38,7 @@ namespace Pathfinder {
         void set_mat2(const std::string &name, const Mat2x2<float> &mat) const;
 
         void set_mat4(const std::string &name, const Mat4x4<float> &mat) const;
-        // ------------------------------------------------------------------------
+        // ------------------------------------------------------
 
     protected:
         /// Program ID.
@@ -70,6 +66,25 @@ namespace Pathfinder {
                 }
             }
         }
+    };
+
+    class RasterProgram : public Program {
+    public:
+        /// Has to use string, as vector<char> won't work.
+        RasterProgram(const std::string &vertex_code,
+                      const std::string &fragment_code);
+
+    private:
+        void compile(const char *vertex_code, const char *fragment_code);
+    };
+
+    class ComputeProgram : public Program {
+    public:
+        /// Has to use string, as vector<char> won't work.
+        explicit ComputeProgram(const std::string &compute_code);
+
+    private:
+        void compile(const char *compute_code);
     };
 }
 

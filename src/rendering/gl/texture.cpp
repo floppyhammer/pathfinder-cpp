@@ -12,12 +12,13 @@ namespace Pathfinder {
         // Allocate space.
         // We need to use glTexStorage2D() in order to access the texture via image2D in compute shaders.
 #ifdef PATHFINDER_USE_D3D11
-        glTexStorage2D(GL_TEXTURE_2D, 1, static_cast<GLint>(format), width, height);
+        glTexStorage2D(GL_TEXTURE_2D, 1, to_gl_texture_format(p_format), width, height);
 #else
-        glTexImage2D(GL_TEXTURE_2D, 0, static_cast<GLint>(format),
+        glTexImage2D(GL_TEXTURE_2D, 0,
+                     to_gl_texture_format(p_format),
                      width, height, 0,
-                     static_cast<GLint>(PixelDataFormat::RGBA),
-                     static_cast<GLenum>(type), nullptr);
+                     to_gl_pixel_data_format(PixelDataFormat::RGBA),
+                     to_gl_data_type(type), nullptr);
 #endif
 
         // Set texture sampler.

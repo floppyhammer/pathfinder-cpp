@@ -10,6 +10,7 @@
 #include "../../common/global_macros.h"
 #include "../../common/math/vec3.h"
 #include "../../common/math/mat4x4.h"
+#include "../../common/io.h"
 #include "../../rendering/gl/command_buffer.h"
 #include "../../rendering/platform.h"
 

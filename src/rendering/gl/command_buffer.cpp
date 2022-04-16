@@ -274,7 +274,7 @@ namespace Pathfinder {
                             case DataType::UNSIGNED_INT: {
                                 glVertexAttribIPointer(location,
                                                        attrib.size,
-                                                       static_cast<GLenum>(attrib.type),
+                                                       to_gl_data_type(attrib.type),
                                                        attrib.stride,
                                                        (void *) attrib.offset);
                             }
@@ -283,7 +283,7 @@ namespace Pathfinder {
                             case DataType::FLOAT: {
                                 glVertexAttribPointer(location,
                                                       attrib.size,
-                                                      static_cast<GLenum>(attrib.type),
+                                                      to_gl_data_type(attrib.type),
                                                       GL_FALSE,
                                                       attrib.stride,
                                                       (void *) attrib.offset);
@@ -482,8 +482,9 @@ namespace Pathfinder {
                     glBindTexture(GL_TEXTURE_2D, texture_gl->get_texture_id());
                     glTexSubImage2D(GL_TEXTURE_2D, 0,
                                     args.offset_x, args.offset_y, args.width, args.height,
-                                    static_cast<GLint>(PixelDataFormat::RGBA),
-                                    static_cast<GLenum>(args.texture->get_pixel_type()), args.data);
+                                    to_gl_pixel_data_format(PixelDataFormat::RGBA),
+                                    to_gl_data_type(args.texture->get_pixel_type()),
+                                    args.data);
                     glBindTexture(GL_TEXTURE_2D, 0);
 
                     check_error("UploadToTexture");

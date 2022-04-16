@@ -1,7 +1,7 @@
 #ifndef PATHFINDER_COMPUTE_PIPELINE_GL_H
 #define PATHFINDER_COMPUTE_PIPELINE_GL_H
 
-#include "compute_program.h"
+#include "program.h"
 #include "../compute_pipeline.h"
 
 #include <memory>

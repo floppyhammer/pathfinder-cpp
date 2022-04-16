@@ -8,7 +8,6 @@
 #include "object_builder.h"
 #include "../d3dx/renderer.h"
 #include "../../common/global_macros.h"
-#include "../../rendering/gl/raster_program.h"
 #include "../../rendering/gl/framebuffer.h"
 #include "../../rendering/gl/texture.h"
 
