@@ -1,13 +1,10 @@
-//
-// Created by floppyhammer on 8/26/2021.
-//
-
 #include "renderer.h"
 
 #include "gpu_data.h"
 #include "../d3dx/data/data.h"
 #include "../d3d9/data/draw_tile_batch.h"
 #include "../../common/math/basic.h"
+#include "../../common/io.h"
 #include "../../rendering/platform.h"
 #include "../../rendering/gl/command_buffer.h"
 #include "../../common/logger.h"
@@ -403,7 +400,7 @@ namespace Pathfinder {
 
         cmd_buffer->bind_descriptor_set(tile_descriptor_set);
 
-        cmd_buffer->dispatch(framebuffer_tile_size0.x, framebuffer_tile_size0.y);
+        cmd_buffer->dispatch(framebuffer_tile_size0.x, framebuffer_tile_size0.y, 1);
 
         cmd_buffer->end_compute_pass();
 
@@ -659,7 +656,7 @@ namespace Pathfinder {
 
         cmd_buffer->bind_descriptor_set(dice_descriptor_set);
 
-        cmd_buffer->dispatch((batch_segment_count + DICE_WORKGROUP_SIZE - 1) / DICE_WORKGROUP_SIZE);
+        cmd_buffer->dispatch((batch_segment_count + DICE_WORKGROUP_SIZE - 1) / DICE_WORKGROUP_SIZE, 1, 1);
 
         cmd_buffer->end_compute_pass();
 
@@ -731,7 +728,7 @@ namespace Pathfinder {
 
         cmd_buffer->bind_descriptor_set(bound_descriptor_set);
 
-        cmd_buffer->dispatch((tile_count + BOUND_WORKGROUP_SIZE - 1) / BOUND_WORKGROUP_SIZE);
+        cmd_buffer->dispatch((tile_count + BOUND_WORKGROUP_SIZE - 1) / BOUND_WORKGROUP_SIZE, 1, 1);
 
         cmd_buffer->end_compute_pass();
 
@@ -795,7 +792,7 @@ namespace Pathfinder {
 
         cmd_buffer->bind_descriptor_set(bin_descriptor_set);
 
-        cmd_buffer->dispatch((microlines_storage.count + BIN_WORKGROUP_SIZE - 1) / BIN_WORKGROUP_SIZE);
+        cmd_buffer->dispatch((microlines_storage.count + BIN_WORKGROUP_SIZE - 1) / BIN_WORKGROUP_SIZE , 1, 1);
 
         cmd_buffer->end_compute_pass();
 
@@ -891,7 +888,7 @@ namespace Pathfinder {
 
         cmd_buffer->bind_descriptor_set(propagate_descriptor_set);
 
-        cmd_buffer->dispatch((column_count + PROPAGATE_WORKGROUP_SIZE - 1) / PROPAGATE_WORKGROUP_SIZE);
+        cmd_buffer->dispatch((column_count + PROPAGATE_WORKGROUP_SIZE - 1) / PROPAGATE_WORKGROUP_SIZE, 1, 1);
 
         cmd_buffer->end_compute_pass();
 
@@ -929,7 +926,7 @@ namespace Pathfinder {
         auto alpha_tile_range = propagate_tiles_info.alpha_tile_range;
 
         // This setup is a workaround for the annoying 64K limit of compute invocation in OpenGL.
-        auto local_alpha_tile_count = alpha_tile_range.end - alpha_tile_range.start;
+        uint32_t local_alpha_tile_count = alpha_tile_range.end - alpha_tile_range.start;
 
         auto one_shot_cmd_buffer = device->create_command_buffer();
 
@@ -961,8 +958,9 @@ namespace Pathfinder {
 
         cmd_buffer->bind_descriptor_set(fill_descriptor_set);
 
-        cmd_buffer->dispatch(std::min(local_alpha_tile_count, (unsigned long long) 1 << 15),
-                             ((local_alpha_tile_count + (1 << 15) - 1) >> 15));
+        cmd_buffer->dispatch(std::min(local_alpha_tile_count, 1u << 15u),
+                             (local_alpha_tile_count + (1 << 15) - 1) >> 15,
+                             1);
 
         cmd_buffer->end_compute_pass();
 
@@ -1001,7 +999,7 @@ namespace Pathfinder {
 
         cmd_buffer->bind_descriptor_set(sort_descriptor_set);
 
-        cmd_buffer->dispatch((tile_count + SORT_WORKGROUP_SIZE - 1) / SORT_WORKGROUP_SIZE);
+        cmd_buffer->dispatch((tile_count + SORT_WORKGROUP_SIZE - 1) / SORT_WORKGROUP_SIZE, 1, 1);
 
         cmd_buffer->end_compute_pass();
 

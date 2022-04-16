@@ -1,4 +1,7 @@
 #include "device.h"
+
+#include "render_pipeline.h"
+#include "compute_pipeline.h"
 #include "validation.h"
 
 #include "../../common/logger.h"
@@ -42,8 +45,8 @@ namespace Pathfinder {
                 buffer->id = buffer_id;
             }
                 break;
-#ifdef PATHFINDER_USE_D3D11
                 case BufferType::General: {
+#ifdef PATHFINDER_USE_D3D11
                     if (size < MAX_BUFFER_SIZE_CLASS) {
                         size = upper_power_of_two(size);
                     }
@@ -58,9 +61,9 @@ namespace Pathfinder {
                     buffer->type = BufferType::General;
                     buffer->size = size;
                     buffer->id = buffer_id;
+#endif
                 }
                     break;
-#endif
         }
 
         check_error("create_buffer");
@@ -77,7 +80,7 @@ namespace Pathfinder {
 
     std::shared_ptr<CommandBuffer> DeviceGl::create_command_buffer() {
         check_error("create_command_buffer");
-        return std::make_shared<CommandBuffer>();
+        return std::make_shared<CommandBufferGl>();
     }
 
     std::shared_ptr<RenderPipeline> DeviceGl::create_render_pipeline(const std::string &vert_source,

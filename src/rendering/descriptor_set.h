@@ -5,8 +5,8 @@
 #ifndef PATHFINDER_DESCRIPTOR_SET_H
 #define PATHFINDER_DESCRIPTOR_SET_H
 
-#include "buffer.h"
-#include "texture.h"
+#include "gl/buffer.h"
+#include "gl/texture.h"
 
 #include <cstdint>
 #include <unordered_map>

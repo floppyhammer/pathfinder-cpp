@@ -2,6 +2,7 @@
 
 #include "../../rendering/platform.h"
 #include "../../rendering/gl/command_buffer.h"
+#include "../../common/io.h"
 
 #include <umHalf.h>
 #include <array>

@@ -9,7 +9,7 @@
 #include "../../../rendering/gl/framebuffer.h"
 #include "../../../rendering/gl/texture.h"
 #include "../../../rendering/gl/render_pipeline.h"
-#include "../../../rendering/gl/descriptor_set.h"
+#include "../../../rendering/descriptor_set.h"
 #include "../../../rendering/gl/command_buffer.h"
 
 #include <memory>

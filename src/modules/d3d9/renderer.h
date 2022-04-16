@@ -13,7 +13,7 @@
 #include "../../rendering/gl/texture.h"
 
 #include "../../rendering/render_pipeline.h"
-#include "../../rendering/gl/descriptor_set.h"
+#include "../../rendering/descriptor_set.h"
 
 #include <vector>
 
