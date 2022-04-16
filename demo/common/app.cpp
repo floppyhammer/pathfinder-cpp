@@ -1,10 +1,5 @@
-//
-// Created by floppyhammer on 2/24/2022.
-//
-
 #include "app.h"
 
-#include "../../src/common/global_macros.h"
 #include "../../src/common/logger.h"
 #include "../../src/modules/vgui/servers/vector_server.h"
 #include "../../src/rendering/platform.h"

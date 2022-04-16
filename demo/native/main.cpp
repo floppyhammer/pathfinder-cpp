@@ -1,12 +1,4 @@
-//
-// Created by floppyhammer on 6/25/2021.
-//
-
-#include "../../src/common/io.h"
-#include "../../src/common/global_macros.h"
 #include "../common/app.h"
-
-#include <iostream>
 
 using namespace Pathfinder;
 
