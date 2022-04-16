@@ -17,7 +17,7 @@ namespace Pathfinder {
         return shaderModule;
     }
 
-    void DeviceVk::create_pipeline(std::vector<char> vertShaderCode,
+    void DeviceVk::create_prender_ipeline(std::vector<char> vertShaderCode,
                                    std::vector<char> fragShaderCode,
                                    std::vector<VertexInputAttributeDescription> pDescriptions) {
         VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
@@ -182,6 +182,35 @@ namespace Pathfinder {
 
     VkDevice DeviceVk::get_device() const {
         return device;
+    }
+
+    std::shared_ptr<Framebuffer>
+    DeviceVk::create_framebuffer(uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type) {
+        return std::shared_ptr<Framebuffer>();
+    }
+
+    std::shared_ptr<Buffer> DeviceVk::create_buffer(BufferType type, size_t size) {
+        return std::shared_ptr<Buffer>();
+    }
+
+    std::shared_ptr<Texture>
+    DeviceVk::create_texture(uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type) {
+        return std::shared_ptr<Texture>();
+    }
+
+    std::shared_ptr<CommandBuffer> DeviceVk::create_command_buffer() {
+        return std::shared_ptr<CommandBuffer>();
+    }
+
+    std::shared_ptr<RenderPipeline>
+    DeviceVk::create_render_pipeline(const std::string &vert_source, const std::string &frag_source,
+                                     const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
+                                     ColorBlendState blend_state) {
+        return std::shared_ptr<RenderPipeline>();
+    }
+
+    std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(const std::string &comp_source) {
+        return std::shared_ptr<ComputePipeline>();
     }
 }
 

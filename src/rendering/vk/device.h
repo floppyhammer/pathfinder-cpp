@@ -1,42 +1,53 @@
 #ifndef PATHFINDER_DEVICE_VK_H
 #define PATHFINDER_DEVICE_VK_H
 
+#include "../device.h"
 #include "../vertex_input.h"
-#include "../gl/buffer.h"
-#include "../gl/texture.h"
-#include "../gl/command_buffer.h"
+#include "../buffer.h"
+#include "../command_buffer.h"
 #include "../../common/io.h"
 #include "../../common/global_macros.h"
 
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    class DeviceVk {
+    class DeviceVk : public Device {
     public:
-        static DeviceVk &getSingleton() {
-            static DeviceVk singleton;
-            return singleton;
-        }
+        std::shared_ptr<Framebuffer> create_framebuffer(uint32_t p_width,
+                                                        uint32_t p_height,
+                                                        TextureFormat p_format,
+                                                        DataType p_type) override;
 
-        void init(VkDevice p_device);
+        std::shared_ptr<Buffer> create_buffer(BufferType type, size_t size) override;
 
-    public:
-        void create_pipeline(std::vector<char> vertShaderCode,
-                             std::vector<char> fragShaderCode,
-                             std::vector<VertexInputAttributeDescription> pDescriptions);
+        std::shared_ptr<Texture> create_texture(uint32_t p_width,
+                                                uint32_t p_height,
+                                                TextureFormat p_format,
+                                                DataType p_type) override;
 
-        static std::shared_ptr<Buffer> create_buffer(BufferType type, size_t size) override;
+        std::shared_ptr<CommandBuffer> create_command_buffer() override;
 
-        static std::shared_ptr<Texture> create_texture(uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type);
+        std::shared_ptr<RenderPipeline> create_render_pipeline(const std::string &vert_source,
+                                                               const std::string &frag_source,
+                                                               const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
+                                                               ColorBlendState blend_state) override;
 
-        static std::shared_ptr<CommandBuffer> create_command_buffer();
+        std::shared_ptr<ComputePipeline> create_compute_pipeline(const std::string &comp_source) override;
 
         VkDevice get_device() const;
 
     private:
         VkShaderModule createShaderModule(const std::vector<char> &code);
 
-        VkDevice device{}
+        VkInstance instance{};
+        VkDebugUtilsMessengerEXT debugMessenger{};
+
+        VkSurfaceKHR surface{};
+
+        /// The graphics card that we'll end up selecting will be stored in a VkPhysicalDevice handle.
+        VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+
+        VkDevice device{};
     };
 }
 

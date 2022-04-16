@@ -1,16 +1,16 @@
 #ifndef PATHFINDER_BUFFER_VK_H
 #define PATHFINDER_BUFFER_VK_H
 
-#include "device.h"
 #include "../gl/buffer.h"
 #include "../../common/global_macros.h"
+#include "../platform.h"
 
 #include <cstdint>
 
 namespace Pathfinder {
     void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
                       VkBuffer &buffer, VkDeviceMemory &bufferMemory) {
-        auto device = DeviceVk::getSingleton().get_device();
+        auto device = dynamic_cast<DeviceVk *>(Platform::get_singleton().device.get())->get_device();
 
         // Structure specifying the parameters of a newly created buffer object.
         VkBufferCreateInfo bufferInfo{};
@@ -45,31 +45,24 @@ namespace Pathfinder {
 
     class BufferVk : Buffer {
     public:
-        BufferVk(uint32_t bufferSize) {
-            if (HOST_VISIBLE) {
-                // Create the GPU buffer and link it with the CPU memory.
-                createBuffer(bufferSize,
-                             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                             id,
-                             device_memory);
-            } else {
-                createBuffer(bufferSize,
-                             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                             id,
-                             device_memory);
-            }
+        BufferVk(BufferType p_type, size_t p_size) : Buffer(p_type, p_size) {
+            createBuffer(p_size,
+                         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                         id,
+                         device_memory);
         }
 
         ~BufferVk() {
-            vkDestroyBuffer(DeviceVk::getSingleton().device, id, nullptr);
-            vkFreeMemory(DeviceVk::getSingleton().device, device_memory, nullptr);
+            auto device = dynamic_cast<DeviceVk *>(Platform::get_singleton().device.get())->get_device();
+
+            vkDestroyBuffer(device, id, nullptr);
+            vkFreeMemory(device, device_memory, nullptr);
         };
 
     private:
-        VkBuffer id;
-        VkDeviceMemory device_memory;
+        VkBuffer id{};
+        VkDeviceMemory device_memory{};
     };
 }
 
