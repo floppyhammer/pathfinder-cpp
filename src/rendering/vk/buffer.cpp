@@ -1,12 +1,51 @@
 #include "buffer.h"
 
+#include "device.h"
+
+#include <stdexcept>
+
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
-                      VkBuffer &buffer, VkDeviceMemory &bufferMemory) {
-        auto device = dynamic_cast<DeviceVk *>(Platform::get_singleton().device.get())->get_device();
+    BufferVk::BufferVk(DeviceVk *p_device, BufferType p_type, size_t p_size)
+            : Buffer(p_type, p_size) {
+        device = p_device->get_device();
 
+        switch (type) {
+            case BufferType::Uniform: {
+                create_buffer(p_device,
+                              p_size,
+                              VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                              VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                              id,
+                              device_memory);
+            }
+                break;
+            case BufferType::Vertex: {
+                create_buffer(p_device,
+                              p_size,
+                              VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                              VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                              id,
+                              device_memory);
+            }
+                break;
+            case BufferType::General:
+                break;
+        }
+    }
+
+    BufferVk::~BufferVk() {
+        vkDestroyBuffer(device, id, nullptr);
+        vkFreeMemory(device, device_memory, nullptr);
+    }
+
+    void BufferVk::create_buffer(DeviceVk *p_device,
+                                 VkDeviceSize size,
+                                 VkBufferUsageFlags usage,
+                                 VkMemoryPropertyFlags properties,
+                                 VkBuffer &buffer,
+                                 VkDeviceMemory &bufferMemory) {
         // Structure specifying the parameters of a newly created buffer object.
         VkBufferCreateInfo bufferInfo{};
         bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -26,8 +65,8 @@ namespace Pathfinder {
         VkMemoryAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits,
-                                                   properties); // Index identifying a memory type.
+        allocInfo.memoryTypeIndex = p_device->find_memory_type(memRequirements.memoryTypeBits,
+                                                               properties); // Index identifying a memory type.
 
         // Allocate CPU buffer memory.
         if (vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
@@ -36,34 +75,6 @@ namespace Pathfinder {
 
         // Bind GPU buffer and CPU buffer memory.
         vkBindBufferMemory(device, buffer, bufferMemory, 0);
-    }
-
-    BufferVk::BufferVk(BufferType p_type, size_t p_size) : Buffer(p_type, p_size) {
-        switch (type) {
-            case BufferType::Uniform: {
-                createBuffer(p_size,
-                             VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                             id,
-                             device_memory);
-            }
-                break;
-            case BufferType::Vertex: {
-                createBuffer(p_size,
-                             VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                             id,
-                             device_memory);
-            }
-                break;
-        }
-    }
-
-    BufferVk::~BufferVk() {
-        auto device = dynamic_cast<DeviceVk *>(Platform::get_singleton().device.get());
-
-        vkDestroyBuffer(device, id, nullptr);
-        vkFreeMemory(device, device_memory, nullptr);
     }
 }
 

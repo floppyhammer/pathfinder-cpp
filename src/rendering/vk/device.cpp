@@ -1,27 +1,36 @@
 #include "device.h"
 
+#include "buffer.h"
+
+#include <memory>
+
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    VkShaderModule DeviceVk::createShaderModule(const std::vector<char> &code) {
-        VkShaderModuleCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        createInfo.codeSize = code.size();
-        createInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
+    DeviceVk::DeviceVk(VkDevice device, VkPhysicalDevice physicalDevice) {
 
-        VkShaderModule shaderModule;
-        if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+    }
+
+    VkShaderModule DeviceVk::create_shader_module(const std::vector<char> &code) {
+        VkShaderModuleCreateInfo create_info{};
+        create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        create_info.codeSize = code.size();
+        create_info.pCode = reinterpret_cast<const uint32_t *>(code.data());
+
+        VkShaderModule shader_module;
+        if (vkCreateShaderModule(device, &create_info, nullptr, &shader_module) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create shader module!");
         }
 
-        return shaderModule;
+        return shader_module;
     }
 
-    void DeviceVk::create_prender_ipeline(std::vector<char> vertShaderCode,
-                                   std::vector<char> fragShaderCode,
-                                   std::vector<VertexInputAttributeDescription> pDescriptions) {
-        VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
-        VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
+    void DeviceVk::create_prender_ipeline(const std::vector<char> &vert_shader_code,
+                                          const std::vector<char> &frag_shader_code,
+                                          const std::vector<VertexInputAttributeDescription> &p_descriptions,
+                                          VkExtent2D viewportExtent) {
+        VkShaderModule vertShaderModule = create_shader_module(vert_shader_code);
+        VkShaderModule fragShaderModule = create_shader_module(frag_shader_code);
 
         // Specify shader stages.
         VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
@@ -45,20 +54,21 @@ namespace Pathfinder {
 
         int32_t lastBinding = -1;
         std::vector<VkVertexInputBindingDescription> bindingDescriptions;
-        for (auto &d : pDescriptions) {
+        for (auto &d: p_descriptions) {
             if (d.binding == lastBinding) return;
             lastBinding = d.binding;
 
             VkVertexInputBindingDescription bindingDescription{};
             bindingDescription.binding = d.binding;
             bindingDescription.stride = d.stride;
-            bindingDescription.inputRate = d.vertex_input_rate == VertexInputRate::VERTEX ? VK_VERTEX_INPUT_RATE_VERTEX : VK_VERTEX_INPUT_RATE_INSTANCE;
+            bindingDescription.inputRate = d.vertex_input_rate == VertexInputRate::VERTEX ? VK_VERTEX_INPUT_RATE_VERTEX
+                                                                                          : VK_VERTEX_INPUT_RATE_INSTANCE;
             bindingDescriptions.push_back(bindingDescription);
         }
 
         std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
         uint32_t location = 0;
-        for (auto &d : pDescriptions) {
+        for (auto &d: p_descriptions) {
             VkVertexInputAttributeDescription attributeDescription{};
             attributeDescription.binding = d.binding;
             attributeDescription.location = location++;
@@ -190,7 +200,9 @@ namespace Pathfinder {
     }
 
     std::shared_ptr<Buffer> DeviceVk::create_buffer(BufferType type, size_t size) {
-        return std::shared_ptr<Buffer>();
+        auto buffer_vk = std::make_shared<BufferVk>(this, type, size);
+
+        return buffer_vk;
     }
 
     std::shared_ptr<Texture>
@@ -211,6 +223,119 @@ namespace Pathfinder {
 
     std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(const std::string &comp_source) {
         return std::shared_ptr<ComputePipeline>();
+    }
+
+    uint32_t DeviceVk::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const {
+        VkPhysicalDeviceMemoryProperties memProperties;
+
+        // Reports memory information for the specified physical device.
+        vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+
+        for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+            if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+                return i;
+            }
+        }
+
+        throw std::runtime_error("Failed to find suitable memory type!");
+    }
+
+    void DeviceVk::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
+                               VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage &image,
+                               VkDeviceMemory &imageMemory) const {
+        VkImageCreateInfo imageInfo{};
+        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        imageInfo.imageType = VK_IMAGE_TYPE_2D;
+        imageInfo.extent.width = width;
+        imageInfo.extent.height = height;
+        imageInfo.extent.depth = 1;
+        imageInfo.mipLevels = 1;
+        imageInfo.arrayLayers = 1;
+        imageInfo.format = format;
+        imageInfo.tiling = tiling;
+        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageInfo.usage = usage;
+        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        if (vkCreateImage(device, &imageInfo, nullptr, &image) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to create image!");
+        }
+
+        // Allocating memory for an image.
+        // -------------------------------------
+        VkMemoryRequirements memRequirements;
+        // Returns the memory requirements for specified Vulkan object.
+        vkGetImageMemoryRequirements(device, image, &memRequirements);
+
+        VkMemoryAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memRequirements.size;
+        allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+
+        if (vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to allocate image memory!");
+        }
+
+        vkBindImageMemory(device, image, imageMemory, 0);
+        // -------------------------------------
+    }
+
+    VkImageView DeviceVk::createImageView(VkImage image,
+                                          VkFormat format,
+                                          VkImageAspectFlags aspectFlags) const {
+        VkImageViewCreateInfo viewInfo{};
+        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        viewInfo.image = image;
+        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        viewInfo.format = format;
+        viewInfo.subresourceRange.aspectMask = aspectFlags;
+        viewInfo.subresourceRange.baseMipLevel = 0;
+        viewInfo.subresourceRange.levelCount = 1;
+        viewInfo.subresourceRange.baseArrayLayer = 0;
+        viewInfo.subresourceRange.layerCount = 1;
+
+        VkImageView imageView;
+        if (vkCreateImageView(device, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to create texture image view!");
+        }
+
+        return imageView;
+    }
+
+    void DeviceVk::createTextureSampler(VkSampler &textureSampler) const {
+        VkSamplerCreateInfo samplerInfo{};
+        samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        samplerInfo.magFilter = VK_FILTER_LINEAR;
+        samplerInfo.minFilter = VK_FILTER_LINEAR;
+
+        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+
+        VkPhysicalDeviceProperties properties{};
+        vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+
+        samplerInfo.anisotropyEnable = VK_TRUE;
+        samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+
+        // The borderColor field specifies which color is returned when sampling beyond the image with clamp to border addressing mode.
+        samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+
+        samplerInfo.unnormalizedCoordinates = VK_FALSE;
+
+        samplerInfo.compareEnable = VK_FALSE;
+        samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+
+        // All of these fields apply to mipmapping.
+        samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        samplerInfo.mipLodBias = 0.0f;
+        samplerInfo.minLod = 0.0f;
+        samplerInfo.maxLod = 0.0f;
+
+        if (vkCreateSampler(device, &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to create texture sampler!");
+        }
     }
 }
 

@@ -13,6 +13,8 @@
 namespace Pathfinder {
     class DeviceVk : public Device {
     public:
+        DeviceVk(VkDevice device, VkPhysicalDevice physicalDevice);
+
         std::shared_ptr<Framebuffer> create_framebuffer(uint32_t p_width,
                                                         uint32_t p_height,
                                                         TextureFormat p_format,
@@ -36,18 +38,23 @@ namespace Pathfinder {
 
         VkDevice get_device() const;
 
+        uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const ;
+
     private:
-        VkShaderModule createShaderModule(const std::vector<char> &code);
-
-        VkInstance instance{};
-        VkDebugUtilsMessengerEXT debugMessenger{};
-
-        VkSurfaceKHR surface{};
+        VkShaderModule create_shader_module(const std::vector<char> &code);
 
         /// The graphics card that we'll end up selecting will be stored in a VkPhysicalDevice handle.
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 
         VkDevice device{};
+
+        void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
+                         VkImageUsageFlags usage, VkMemoryPropertyFlags properties,
+                         VkImage &image, VkDeviceMemory &imageMemory) const;
+
+        VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags) const;
+
+        void createTextureSampler(VkSampler &textureSampler) const;
     };
 }
 

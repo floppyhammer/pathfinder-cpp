@@ -4,6 +4,8 @@
 
 #include <cassert>
 
+#ifdef PATHFINDER_USE_VULKAN
+
 namespace Pathfinder {
     void CommandBufferVk::begin_render_pass(const std::shared_ptr<Framebuffer> &framebuffer,
                                             bool clear,
@@ -250,6 +252,41 @@ namespace Pathfinder {
                 case CommandType::UploadToTexture: {
                     auto &args = cmd.args.upload_to_texture;
 
+                    // In bytes. 4 bytes per pixel.
+                    VkDeviceSize imageSize = tex_width * tex_height * 4;
+
+                    // Temporary buffer and CPU memory.
+                    VkBuffer stagingBuffer;
+                    VkDeviceMemory stagingBufferMemory;
+
+                    RS::getSingleton().createBuffer(imageSize,
+                                                    VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                                    stagingBuffer,
+                                                    stagingBufferMemory);
+
+                    // Copy the pixel values that we got from the image loading library to the buffer.
+                    RS::getSingleton().copyDataToMemory(pixels, stagingBufferMemory, imageSize);
+
+                    // Transition the texture image to VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
+                    RS::getSingleton().transitionImageLayout(image,
+                                                             VK_FORMAT_R8G8B8A8_SRGB,
+                                                             VK_IMAGE_LAYOUT_UNDEFINED,
+                                                             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+                    // Execute the buffer to image copy operation.
+                    RS::getSingleton().copyBufferToImage(stagingBuffer, image, static_cast<uint32_t>(width),
+                                                         static_cast<uint32_t>(height));
+
+                    // To be able to start sampling from the texture image in the shader, we need one last transition to prepare it for shader access.
+                    RS::getSingleton().transitionImageLayout(image,
+                                                             VK_FORMAT_R8G8B8A8_SRGB,
+                                                             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                                             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+                    // Clean up staging stuff.
+                    vkDestroyBuffer(Device::getSingleton().device, stagingBuffer, nullptr);
+                    vkFreeMemory(Device::getSingleton().device, stagingBufferMemory, nullptr);
                 }
                     break;
                 case CommandType::Max:
@@ -260,3 +297,5 @@ namespace Pathfinder {
         }
     }
 }
+
+#endif
