@@ -9,7 +9,7 @@
 namespace Pathfinder {
     std::shared_ptr<Framebuffer> DeviceGl::create_framebuffer(uint32_t p_width, uint32_t p_height,
                                                               TextureFormat p_format, DataType p_type) {
-        auto framebuffer = std::make_shared<Framebuffer>(p_width, p_height, p_format, p_type);
+        auto framebuffer = std::make_shared<FramebufferGl>(p_width, p_height, p_format, p_type);
 
         check_error("create_framebuffer");
         return framebuffer;
@@ -70,9 +70,11 @@ namespace Pathfinder {
         return buffer;
     }
 
-    std::shared_ptr<Texture>
-    DeviceGl::create_texture(uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type) {
-        auto texture = std::make_shared<Texture>(p_width, p_height, p_format, p_type);
+    std::shared_ptr<Texture> DeviceGl::create_texture(uint32_t p_width,
+                                                      uint32_t p_height,
+                                                      TextureFormat p_format,
+                                                      DataType p_type) {
+        auto texture = std::make_shared<TextureGl>(p_width, p_height, p_format, p_type);
 
         check_error("create_texture");
         return texture;

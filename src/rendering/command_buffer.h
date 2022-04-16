@@ -45,7 +45,7 @@ namespace Pathfinder {
 
         union Args {
             struct {
-                uint32_t framebuffer_id;
+                Framebuffer *framebuffer;
                 Vec2<uint32_t> extent;
                 bool clear;
                 ColorF clear_color;

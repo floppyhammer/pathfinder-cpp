@@ -35,7 +35,7 @@ App::App(int window_width,
     label->set_horizontal_alignment(Pathfinder::Alignment::Center);
 
     // Create a screen viewport.
-    screen_framebuffer = std::make_shared<Pathfinder::Framebuffer>(window_width, window_height);
+    screen_framebuffer = std::make_shared<Pathfinder::FramebufferGl>(window_width, window_height);
 
     // Set viewport texture to a texture rect.
     texture_rect0 = std::make_shared<Pathfinder::TextureRect>(window_width, window_height);

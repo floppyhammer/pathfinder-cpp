@@ -18,7 +18,7 @@ namespace Pathfinder {
         cmd.type = CommandType::BeginRenderPass;
 
         auto &args = cmd.args.begin_render_pass;
-        args.framebuffer_id = framebuffer->get_framebuffer_id();
+        args.framebuffer = framebuffer.get();
         args.extent = {framebuffer->get_width(), framebuffer->get_height()};
         args.clear = clear;
         args.clear_color = clear_color;
@@ -197,7 +197,9 @@ namespace Pathfinder {
                 case CommandType::BeginRenderPass: {
                     auto &args = cmd.args.begin_render_pass;
 
-                    glBindFramebuffer(GL_FRAMEBUFFER, args.framebuffer_id);
+                    auto framebuffer_gl = dynamic_cast<FramebufferGl *>(args.framebuffer);
+
+                    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_gl->get_framebuffer_id());
 
                     if (args.clear) {
                         glClearColor(args.clear_color.r, args.clear_color.g, args.clear_color.b,
@@ -330,13 +332,13 @@ namespace Pathfinder {
                             }
                                 break;
                             case DescriptorType::Texture: {
-                                auto texture = descriptor.texture;
+                                auto texture_gl = static_cast<TextureGl *>(descriptor.texture.get());
 
                                 if (!binding_name.empty()) {
                                     glUniform1i(glGetUniformLocation(program_id, binding_name.c_str()), binding_point);
                                 }
                                 glActiveTexture(GL_TEXTURE0 + binding_point);
-                                glBindTexture(GL_TEXTURE_2D, texture->get_texture_id());
+                                glBindTexture(GL_TEXTURE_2D, texture_gl->get_texture_id());
                             }
                                 break;
 #ifdef PATHFINDER_USE_D3D11
@@ -347,9 +349,9 @@ namespace Pathfinder {
                                 }
                                     break;
                                 case DescriptorType::Image: {
-                                    auto texture = descriptor.texture;
+                                    auto texture_gl = static_cast<TextureGl *>(descriptor.texture.get());
 
-                                    glBindImageTexture(binding_point, texture->get_texture_id(), 0, GL_FALSE, 0,
+                                    glBindImageTexture(binding_point, texture_gl->get_texture_id(), 0, GL_FALSE, 0,
                                                        GL_READ_WRITE, GL_RGBA8);
                                 }
                                     break;
@@ -475,7 +477,9 @@ namespace Pathfinder {
                 case CommandType::UploadToTexture: {
                     auto &args = cmd.args.upload_to_texture;
 
-                    glBindTexture(GL_TEXTURE_2D, args.texture->get_texture_id());
+                    auto texture_gl = static_cast<TextureGl *>(args.texture);
+
+                    glBindTexture(GL_TEXTURE_2D, texture_gl->get_texture_id());
                     glTexSubImage2D(GL_TEXTURE_2D, 0,
                                     args.offset_x, args.offset_y, args.width, args.height,
                                     static_cast<GLint>(PixelDataFormat::RGBA),
