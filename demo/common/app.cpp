@@ -17,6 +17,8 @@ App::App(int window_width,
     // Set logger level.
     Pathfinder::Logger::set_level(Pathfinder::Logger::Level::DEBUG);
 
+    Pathfinder::Platform::get_singleton().init(Pathfinder::DeviceType::GL4);
+
     Pathfinder::VectorServer::get_singleton().init(window_width,
                                                    window_height,
                                                    area_lut_input);
@@ -45,8 +47,6 @@ App::App(int window_width,
     start_time = std::chrono::steady_clock::now();
     last_time = start_time;
     last_time_updated_fps = start_time;
-
-    Pathfinder::Platform::get_singleton();
 }
 
 void App::loop() {

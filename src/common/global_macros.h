@@ -8,7 +8,7 @@
 // Choose between D3D9 and D3D11.
 //#define PATHFINDER_USE_D3D11
 
-#define PATHFINDER_USE_VULKAN
+//#define PATHFINDER_USE_VULKAN
 
 // Enable DEBUG mode, in which we will check for GL errors. Influencing performance.
 #define PATHFINDER_DEBUG

@@ -1,5 +1,5 @@
-#ifndef PATHFINDER_COMMAND_BUFFER_GL_H
-#define PATHFINDER_COMMAND_BUFFER_GL_H
+#ifndef PATHFINDER_COMMAND_BUFFER_VK_H
+#define PATHFINDER_COMMAND_BUFFER_VK_H
 
 #include "../command_buffer.h"
 
@@ -8,7 +8,7 @@
 #include <memory>
 
 namespace Pathfinder {
-    class CommandBufferGl : public CommandBuffer {
+    class CommandBufferVk : public CommandBuffer {
     public:
         void begin_render_pass(const std::shared_ptr<Framebuffer> &framebuffer,
                                bool clear,
@@ -58,4 +58,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_COMMAND_BUFFER_GL_H
+#endif //PATHFINDER_COMMAND_BUFFER_VK_H

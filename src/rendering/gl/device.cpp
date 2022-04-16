@@ -2,6 +2,7 @@
 
 #include "render_pipeline.h"
 #include "compute_pipeline.h"
+#include "framebuffer.h"
 #include "validation.h"
 
 #include "../../common/logger.h"

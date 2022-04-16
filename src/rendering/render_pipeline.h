@@ -1,14 +1,15 @@
 #ifndef PATHFINDER_RENDER_PIPELINE_H
 #define PATHFINDER_RENDER_PIPELINE_H
 
-#include "pipeline.h"
 #include "vertex_input.h"
 
 #include <memory>
+#include <string>
 
 namespace Pathfinder {
-    class RenderPipeline : public Pipeline {
+    class RenderPipeline {
     public:
+        std::string name;
     };
 }
 

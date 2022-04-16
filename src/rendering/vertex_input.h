@@ -1,7 +1,7 @@
 #ifndef PATHFINDER_VERTEX_INPUT_H
 #define PATHFINDER_VERTEX_INPUT_H
 
-#include "gl/data.h"
+#include "data.h"
 
 #include <cstdint>
 #include <array>

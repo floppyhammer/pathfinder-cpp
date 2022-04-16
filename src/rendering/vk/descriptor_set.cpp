@@ -2,6 +2,8 @@
 
 #include "../platform.h"
 
+#ifdef PATHFINDER_USE_VULKAN
+
 namespace Pathfinder {
     void DescriptorSetVk::update_vk_descriptor_set() {
         std::vector<VkWriteDescriptorSet> descriptor_writes{};
@@ -49,3 +51,5 @@ namespace Pathfinder {
                                nullptr);
     }
 }
+
+#endif

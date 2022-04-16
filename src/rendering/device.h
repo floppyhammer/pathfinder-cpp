@@ -1,13 +1,9 @@
-//
-// Created by chy on 4/15/2022.
-//
-
 #ifndef PATHFINDER_DEVICE_H
 #define PATHFINDER_DEVICE_H
 
-#include "gl/framebuffer.h"
-#include "gl/buffer.h"
-#include "gl/command_buffer.h"
+#include "framebuffer.h"
+#include "buffer.h"
+#include "command_buffer.h"
 #include "render_pipeline.h"
 #include "compute_pipeline.h"
 

@@ -7,6 +7,8 @@
 #include <cstdint>
 #include <unordered_map>
 
+#ifdef PATHFINDER_USE_VULKAN
+
 namespace Pathfinder {
     class DescriptorSetVk : public DescriptorSet {
     public:
@@ -16,5 +18,7 @@ namespace Pathfinder {
         VkDescriptorSet descriptor_set;
     };
 }
+
+#endif
 
 #endif //PATHFINDER_DESCRIPTOR_SET_VK_H

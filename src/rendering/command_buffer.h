@@ -7,6 +7,7 @@
 #include "buffer.h"
 #include "descriptor_set.h"
 #include "../common/color.h"
+#include "../common/math/rect.h"
 
 #include <cstdint>
 #include <queue>
