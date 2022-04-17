@@ -28,6 +28,8 @@ namespace Pathfinder {
     private:
         std::shared_ptr<Texture> texture;
 
+        bool ignore_texture_size = false;
+
         std::shared_ptr<RenderPipeline> pipeline;
 
         std::shared_ptr<Buffer> vertex_buffer, uniform_buffer;

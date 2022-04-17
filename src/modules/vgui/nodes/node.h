@@ -6,13 +6,11 @@ namespace Pathfinder {
         Node = 0,
         Control,
         TextureRect,
+        Label,
 
         Container,
         HBoxContainer,
         VBoxContainer,
-
-        Label,
-        SubViewportContainer,
 
         Max,
     };

@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 6/7/2021.
-//
-
 #include "texture_rect.h"
 
 #include "../../../common/math/basic.h"
@@ -11,6 +7,8 @@
 
 namespace Pathfinder {
     TextureRect::TextureRect(float viewport_width, float viewport_height) {
+        type = NodeType::TextureRect;
+
         auto device = Platform::get_singleton().device;
 
         rect_size.x = viewport_width;

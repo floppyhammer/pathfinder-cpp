@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 7/19/2021.
-//
-
 #ifndef PATHFINDER_LABEL_H
 #define PATHFINDER_LABEL_H
 
@@ -42,6 +38,10 @@ namespace Pathfinder {
 
     class Label : public Control {
     public:
+        Label() {
+            type = NodeType::Label;
+        }
+
         /**
          * Set text context.
          * @note See https://www.freetype.org/freetype2/docs/glyphs/glyphs-3.html for glyph conventions.
@@ -63,10 +63,12 @@ namespace Pathfinder {
 
         void set_vertical_alignment(Alignment alignment);
 
+        Vec2<float> calculate_minimum_size() const override;
+
     private:
         void measure();
 
-        void adjust_layout();
+        void consider_alignment();
 
     private:
         std::string text;
@@ -75,7 +77,7 @@ namespace Pathfinder {
 
         float line_height = 64;
 
-        bool is_dirty = false;
+        bool need_to_remeasure = false;
 
         std::vector<Glyph> glyphs;
 

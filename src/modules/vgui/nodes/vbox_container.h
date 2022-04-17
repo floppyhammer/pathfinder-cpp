@@ -6,6 +6,10 @@
 namespace Pathfinder {
     class VBoxContainer : public Container {
     public:
+        VBoxContainer() {
+            type = NodeType::VBoxContainer;
+        }
+
         void adjust_layout() override;
     };
 }

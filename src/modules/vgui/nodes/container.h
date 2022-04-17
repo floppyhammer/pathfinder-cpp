@@ -9,6 +9,10 @@ namespace Pathfinder {
      */
     class Container : public Control {
     public:
+        Container() {
+            type = NodeType::Container;
+        }
+
         virtual void adjust_layout() = 0;
     };
 }
