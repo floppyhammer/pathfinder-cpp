@@ -49,9 +49,13 @@ namespace Pathfinder {
 
     // RASTER PROGRAM
 
-    RasterProgram::RasterProgram(const std::string &vertex_code,
-                                 const std::string &fragment_code) : Program() {
-        compile(vertex_code.c_str(), fragment_code.c_str());
+    RasterProgram::RasterProgram(const std::vector<char> &vertex_code,
+                                 const std::vector<char> &fragment_code) : Program() {
+        /// Has to pass string.c_str(), as vector<char>.data() doesn't work.
+        std::string vert_string = {vertex_code.begin(), vertex_code.end()};
+        std::string frag_string = {fragment_code.begin(), fragment_code.end()};
+
+        compile(vert_string.c_str(), frag_string.c_str());
     }
 
     void RasterProgram::compile(const char *vertex_code, const char *fragment_code) {
@@ -81,8 +85,11 @@ namespace Pathfinder {
 
     // COMPUTE PROGRAM
 
-    ComputeProgram::ComputeProgram(const std::string &compute_code) : Program() {
-        compile(compute_code.c_str());
+    ComputeProgram::ComputeProgram(const std::vector<char> &compute_code) : Program() {
+        /// Has to pass string.c_str(), as vector<char>.data() doesn't work.
+        std::string compute_string = {compute_code.begin(), compute_code.end()};
+
+        compile(compute_string.c_str());
     }
 
     void ComputeProgram::compile(const char *compute_code) {

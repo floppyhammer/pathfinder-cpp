@@ -29,7 +29,7 @@ namespace Pathfinder {
     /// It might not be worth it to cache z buffer textures as they're generally small.
     std::shared_ptr<Texture> upload_z_buffer(const DenseTileMap<uint32_t> &z_buffer_map) {
         auto device = Platform::get_singleton().device;
-        
+
         auto z_buffer_texture = device->create_texture(
                 z_buffer_map.rect.width(),
                 z_buffer_map.rect.height(),
@@ -46,15 +46,21 @@ namespace Pathfinder {
     RendererD3D9::RendererD3D9(uint32_t canvas_width, uint32_t canvas_height) {
         auto device = Platform::get_singleton().device;
 
-        dest_framebuffer = device->create_framebuffer(canvas_width,
-                                                         canvas_height,
-                                                         TextureFormat::RGBA8,
-                                                         DataType::UNSIGNED_BYTE);
+        mask_render_pass = device->create_render_pass();
+
+        dest_render_pass = device->create_render_pass();
 
         mask_framebuffer = device->create_framebuffer(MASK_FRAMEBUFFER_WIDTH,
-                                                   MASK_FRAMEBUFFER_HEIGHT,
-                                                   TextureFormat::RGBA16F,
-                                                   DataType::HALF_FLOAT);
+                                                      MASK_FRAMEBUFFER_HEIGHT,
+                                                      TextureFormat::RGBA16F,
+                                                      DataType::HALF_FLOAT,
+                                                      mask_render_pass);
+
+        dest_framebuffer = device->create_framebuffer(canvas_width,
+                                                      canvas_height,
+                                                      TextureFormat::RGBA8,
+                                                      DataType::UNSIGNED_BYTE,
+                                                      dest_render_pass);
 
         // Quad vertex buffer. Shared by fills and tiles drawing.
         quad_vertex_buffer = device->create_buffer(BufferType::Vertex, 12 * sizeof(uint16_t));
@@ -70,16 +76,19 @@ namespace Pathfinder {
         // Fill pipeline.
         {
 #ifdef PATHFINDER_SHADERS_EMBEDDED
-            const std::string fill_vert_source =
+            const std::string fill_vert_string =
 #include "../src/shaders/minified/minified_fill.vert"
             ;
 
-            const std::string fill_frag_source =
+            const std::string fill_frag_string =
 #include "../src/shaders/minified/minified_fill.frag"
             ;
+
+            const std::vector<char> fill_vert_source = {fill_vert_string.begin(), fill_vert_string.end()};
+            const std::vector<char> fill_frag_source = {fill_frag_string.begin(), fill_frag_string.end()};
 #else
-            const auto fill_vert_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d9/fill.vert");
-            const auto fill_frag_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d9/fill.frag");
+            const auto fill_vert_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/fill.vert");
+            const auto fill_frag_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/fill.frag");
 #endif
 
             // Set vertex attributes.
@@ -119,7 +128,8 @@ namespace Pathfinder {
             fill_pipeline = device->create_render_pipeline(fill_vert_source,
                                                            fill_frag_source,
                                                            attribute_descriptions,
-                                                           blend_state);
+                                                           blend_state,
+                                                           mask_render_pass);
 
             // Set descriptor set.
             {
@@ -143,21 +153,24 @@ namespace Pathfinder {
         // Tile pipeline.
         {
 #ifdef PATHFINDER_SHADERS_EMBEDDED
-            const std::string tile_vert_source =
+            const std::string tile_vert_string =
 #include "../src/shaders/minified/minified_tile.vert"
             ;
 
-            const std::string tile_frag_source_0 =
+            const std::string tile_frag_string_0 =
 #include "../src/shaders/minified/minified_tile.frag.0"
             ;
 
-            const std::string tile_frag_source_1 =
+            const std::string tile_frag_string_1 =
 #include "../src/shaders/minified/minified_tile.frag.1"
             ;
-            const std::string tile_frag_source = tile_frag_source_0 + tile_frag_source_1;
+            const std::string tile_frag_string = tile_frag_string_0 + tile_frag_string_1;
+
+            const std::vector<char> tile_vert_source = {tile_vert_string.begin(), tile_vert_string.end()};
+            const std::vector<char> tile_frag_source = {tile_frag_string.begin(), tile_frag_string.end()};
 #else
-            const auto tile_vert_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d9/tile.vert");
-            const auto tile_frag_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d9/tile.frag");
+            const auto tile_vert_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/tile.vert");
+            const auto tile_frag_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/tile.frag");
 #endif
 
             // Set vertex attributes.
@@ -214,7 +227,8 @@ namespace Pathfinder {
             tile_pipeline = device->create_render_pipeline(tile_vert_source,
                                                            tile_frag_source,
                                                            attribute_descriptions,
-                                                           blend_state);
+                                                           blend_state,
+                                                           dest_render_pass);
 
             // Create uniform buffers.
             tile_transform_ub = device->create_buffer(BufferType::Uniform, 16 * sizeof(float));

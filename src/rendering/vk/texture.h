@@ -6,15 +6,12 @@
 #include "../../common/global_macros.h"
 #include "../../common/logger.h"
 
-#include "stb_image.h"
-
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    /// Use Texture via smart pointers as its de-constructor will release its GL resources.
     class TextureVk : public Texture {
     public:
-        TextureVk(uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type);
+        TextureVk(VkDevice p_device, uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type);
 
         ~TextureVk();
 
@@ -37,7 +34,10 @@ namespace Pathfinder {
         /// How image should be filtered.
         VkSampler sampler{};
 
+        /// For releasing resources in destructor.
         VkDevice device;
+
+        friend class DeviceVk;
     };
 }
 

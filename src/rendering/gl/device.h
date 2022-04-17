@@ -17,7 +17,8 @@ namespace Pathfinder {
         std::shared_ptr<Framebuffer> create_framebuffer(uint32_t p_width,
                                                         uint32_t p_height,
                                                         TextureFormat p_format,
-                                                        DataType p_type) override;
+                                                        DataType p_type,
+                                                        const std::shared_ptr<RenderPass> &render_pass) override;
 
         std::shared_ptr<Buffer> create_buffer(BufferType type, size_t size) override;
 
@@ -28,12 +29,15 @@ namespace Pathfinder {
 
         std::shared_ptr<CommandBuffer> create_command_buffer() override;
 
-        std::shared_ptr<RenderPipeline> create_render_pipeline(const std::string &vert_source,
-                                                               const std::string &frag_source,
-                                                               const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
-                                                               ColorBlendState blend_state) override;
+        std::shared_ptr<RenderPass> create_render_pass() override;
 
-        std::shared_ptr<ComputePipeline> create_compute_pipeline(const std::string &comp_source) override;
+        std::shared_ptr<RenderPipeline> create_render_pipeline(const std::vector<char> &vert_source,
+                                                               const std::vector<char> &frag_source,
+                                                               const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
+                                                               ColorBlendState blend_state,
+                                                               const std::shared_ptr<RenderPass> &render_pass) override;
+
+        std::shared_ptr<ComputePipeline> create_compute_pipeline(const std::vector<char> &comp_source) override;
     };
 }
 

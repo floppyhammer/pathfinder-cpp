@@ -10,13 +10,6 @@ namespace Pathfinder {
     class ComputePipelineGl : public ComputePipeline {
     public:
         explicit ComputePipelineGl(const std::vector<char> &comp_source) {
-            // We need to convert vector<char> to string first.
-            std::string comp_source_string(comp_source.begin(), comp_source.end());
-
-            program = std::make_shared<ComputeProgram>(comp_source_string);
-        }
-
-        explicit ComputePipelineGl(const std::string &comp_source) {
             program = std::make_shared<ComputeProgram>(comp_source);
         }
 

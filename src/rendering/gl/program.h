@@ -6,6 +6,7 @@
 #include "../../common/logger.h"
 #include "../../common/global_macros.h"
 
+#include <vector>
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -70,9 +71,8 @@ namespace Pathfinder {
 
     class RasterProgram : public Program {
     public:
-        /// Has to use string, as vector<char> won't work.
-        RasterProgram(const std::string &vertex_code,
-                      const std::string &fragment_code);
+        RasterProgram(const std::vector<char> &vertex_code,
+                      const std::vector<char> &fragment_code);
 
     private:
         void compile(const char *vertex_code, const char *fragment_code);
@@ -80,8 +80,7 @@ namespace Pathfinder {
 
     class ComputeProgram : public Program {
     public:
-        /// Has to use string, as vector<char> won't work.
-        explicit ComputeProgram(const std::string &compute_code);
+        explicit ComputeProgram(const std::vector<char> &compute_code);
 
     private:
         void compile(const char *compute_code);

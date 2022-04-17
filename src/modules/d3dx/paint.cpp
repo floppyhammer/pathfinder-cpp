@@ -73,16 +73,20 @@ namespace Pathfinder {
 
     RenderTarget Palette::push_render_target(const Vec2<int> &render_target_size) {
         auto device = Platform::get_singleton().device;
+
+        auto render_pass = device->create_render_pass();
         
         // Create a new framebuffer.
         auto framebuffer = device->create_framebuffer(
                 render_target_size.x,
                 render_target_size.y,
                 TextureFormat::RGBA8,
-                DataType::UNSIGNED_BYTE);
+                DataType::UNSIGNED_BYTE,
+                render_pass);
 
         RenderTarget render_target;
         render_target.id = render_targets.size();
+        render_target.render_pass = render_pass;
         render_target.framebuffer = framebuffer;
         render_target.size = {(uint32_t) render_target_size.x, (uint32_t) render_target_size.y};
 

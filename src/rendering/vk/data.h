@@ -4,6 +4,8 @@
 #include "../data.h"
 #include "../../common/global_macros.h"
 
+#ifdef PATHFINDER_USE_VULKAN
+
 namespace Pathfinder {
     VkFormat to_vk_texture_format(TextureFormat texture_format) {
         switch (texture_format) {
@@ -16,5 +18,7 @@ namespace Pathfinder {
         }
     }
 }
+
+#endif
 
 #endif //PATHFINDER_HAL_DATA_VK_H
