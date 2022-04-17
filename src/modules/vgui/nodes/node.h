@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 6/2/2021.
-//
-
 #ifndef PATHFINDER_NODE_H
 #define PATHFINDER_NODE_H
 
@@ -10,6 +6,11 @@ namespace Pathfinder {
         Node = 0,
         Control,
         TextureRect,
+
+        Container,
+        HBoxContainer,
+        VBoxContainer,
+
         Label,
         SubViewportContainer,
 

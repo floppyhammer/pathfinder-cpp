@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 4/14/2022.
-//
-
 #include "panel.h"
 
 #include "../../../common/math/basic.h"
