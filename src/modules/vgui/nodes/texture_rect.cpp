@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 6/7/2021.
-//
-
 #include "texture_rect.h"
 
 #include "../../../common/math/basic.h"
@@ -11,6 +7,8 @@
 
 namespace Pathfinder {
     TextureRect::TextureRect(float viewport_width, float viewport_height) {
+        type = NodeType::TextureRect;
+
         auto device = Platform::get_singleton().device;
 
         rect_size.x = viewport_width;
@@ -77,10 +75,14 @@ namespace Pathfinder {
 
             ColorBlendState blend_state = {true, BlendFactor::ONE, BlendFactor::ONE_MINUS_SRC_ALPHA};
 
-            pipeline = device->create_render_pipeline(vert_source,
-                                                      frag_source,
+            // FIXME
+            auto render_pass = device->create_render_pass();
+
+            pipeline = device->create_render_pipeline({vert_source.begin(), vert_source.end()},
+                                                      {frag_source.begin(), frag_source.end()},
                                                       attribute_descriptions,
-                                                      blend_state);
+                                                      blend_state,
+                                                      render_pass);
         }
 
         {

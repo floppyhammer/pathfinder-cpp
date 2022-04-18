@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 2/24/2022.
-//
-
 #ifndef PATHFINDER_DEMO_APP_H
 #define PATHFINDER_DEMO_APP_H
 
@@ -10,6 +6,8 @@
 #include "../../src/modules/vgui/nodes/label.h"
 #include "../../src/modules/vgui/nodes/texture_rect.h"
 #include "../../src/rendering/gl/device.h"
+#include "../../src/common/global_macros.h"
+#include "../../src/common/io.h"
 
 #include <chrono>
 

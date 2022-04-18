@@ -1,13 +1,25 @@
-#ifndef PATHFINDER_PLATFORM_H
-#define PATHFINDER_PLATFORM_H
+#ifndef PATHFINDER_HAL_PLATFORM_H
+#define PATHFINDER_HAL_PLATFORM_H
 
 #include "gl/device.h"
+#include "vk/device.h"
 
 namespace Pathfinder {
     class Platform {
     public:
-        Platform() {
-            device = std::make_shared<Pathfinder::DeviceGl>();
+        inline void init(DeviceType device_type) {
+            switch (device_type) {
+#ifdef PATHFINDER_USE_VULKAN
+                case DeviceType::Vulkan: {
+                    device = std::make_shared<Pathfinder::DeviceVk>();
+                }
+                    break;
+#endif
+                default: {
+                    device = std::make_shared<Pathfinder::DeviceGl>();
+                }
+                    break;
+            }
         }
 
         static Platform &get_singleton() {
@@ -19,4 +31,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_PLATFORM_H
+#endif //PATHFINDER_HAL_PLATFORM_H

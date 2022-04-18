@@ -53,6 +53,10 @@ namespace Pathfinder {
         return rect_pivot_offset;
     }
 
+    Vec2<float> Control::calculate_minimum_size() const {
+        return {};
+    }
+
     void Control::update() {
 
     }
@@ -80,5 +84,9 @@ namespace Pathfinder {
 
     StyleBox Control::get_style_box() const {
         return style_box;
+    }
+
+    Vec2<float> Control::get_minimum_size() const {
+        return minimum_size;
     }
 }

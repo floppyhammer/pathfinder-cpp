@@ -5,11 +5,11 @@
 
 namespace Pathfinder {
     struct StyleBox {
-        ColorU bg_color = ColorU(30, 30, 30, 255);
+        ColorU bg_color = ColorU(32, 32, 32, 255);
         bool draw_center = true;
 
-        ColorU border_color;
-        float border_width;
+        ColorU border_color = ColorU(67, 67, 67, 255);
+        float border_width = 2;
 
         float corner_radius = 8;
 

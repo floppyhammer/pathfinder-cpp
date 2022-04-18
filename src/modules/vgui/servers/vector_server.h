@@ -14,7 +14,7 @@ namespace Pathfinder {
             return singleton;
         }
 
-        void init(float p_canvas_width, float p_canvas_height, const std::vector<unsigned char> &area_lut_input);
+        void init(float p_canvas_width, float p_canvas_height, const std::vector<char> &area_lut_input);
 
         std::shared_ptr<Canvas> canvas;
     };

@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 7/19/2021.
-//
-
 #include "label.h"
 
 #include <string>
@@ -13,7 +9,7 @@ namespace Pathfinder {
 
         text = p_text;
 
-        is_dirty = true;
+        need_to_remeasure = true;
     }
 
     void Label::measure() {
@@ -112,16 +108,14 @@ namespace Pathfinder {
 
         if (text.empty()) return;
 
-        is_dirty = true;
+        need_to_remeasure = true;
     }
 
-    void Label::adjust_layout() {
+    void Label::consider_alignment() {
         Vec2<float> shift;
 
         switch (horizontal_alignment) {
-            case Alignment::Begin: {
-
-            }
+            case Alignment::Begin:
                 break;
             case Alignment::Center: {
                 shift.x = rect_size.x * 0.5f - layout_box.center().x;
@@ -147,12 +141,12 @@ namespace Pathfinder {
     void Label::update() {
         Control::update();
 
-        if (is_dirty) {
+        if (need_to_remeasure) {
             measure();
 
-            adjust_layout();
+            consider_alignment();
 
-            is_dirty = false;
+            need_to_remeasure = false;
         }
     }
 
@@ -162,7 +156,8 @@ namespace Pathfinder {
         stroke_width = p_stroke_width;
         stroke_color = p_stroke_color;
 
-        is_dirty = true;
+        // TODO: Don't remeasure here.
+        need_to_remeasure = true;
     }
 
     void Label::draw() {
@@ -211,7 +206,7 @@ namespace Pathfinder {
 
         horizontal_alignment = alignment;
 
-        adjust_layout();
+        consider_alignment();
     }
 
     void Label::set_vertical_alignment(Alignment alignment) {
@@ -219,6 +214,10 @@ namespace Pathfinder {
 
         vertical_alignment = alignment;
 
-        adjust_layout();
+        consider_alignment();
+    }
+
+    Vec2<float> Label::calculate_minimum_size() const {
+        return layout_box.size();
     }
 }

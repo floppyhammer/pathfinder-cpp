@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 8/3/2021.
-//
-
 #ifndef PATHFINDER_GLOBAL_MACROS_H
 #define PATHFINDER_GLOBAL_MACROS_H
 
@@ -27,7 +23,7 @@
 #ifdef PATHFINDER_USE_VULKAN
 #define GLFW_INCLUDE_VULKAN
 
-#include "GLFW/glfw3.h"
+#include <GLFW/glfw3.h>
 
 #else
 // OpenGL headers.

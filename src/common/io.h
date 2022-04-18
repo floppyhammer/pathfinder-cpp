@@ -18,7 +18,7 @@ namespace Pathfinder {
     struct ImageData {
         ~ImageData();
 
-        static std::shared_ptr<ImageData> from_memory(const std::vector<unsigned char> &bytes, bool flip_y);
+        static std::shared_ptr<ImageData> from_memory(const std::vector<char> &bytes, bool flip_y);
         static std::shared_ptr<ImageData> from_file(const char *file_path, bool flip_y);
 
         int32_t width, height, channel_count;

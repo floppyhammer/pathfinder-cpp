@@ -1,8 +1,7 @@
-#ifndef PATHFINDER_RENDER_PIPELINE_GL_H
-#define PATHFINDER_RENDER_PIPELINE_GL_H
+#ifndef PATHFINDER_HAL_RENDER_PIPELINE_GL_H
+#define PATHFINDER_HAL_RENDER_PIPELINE_GL_H
 
-#include "../vertex_input.h"
-#include "raster_program.h"
+#include "program.h"
 #include "../render_pipeline.h"
 
 #include <memory>
@@ -10,8 +9,8 @@
 namespace Pathfinder {
     class RenderPipelineGl : public RenderPipeline {
     public:
-        RenderPipelineGl(const std::string &vert_source,
-                         const std::string &frag_source,
+        RenderPipelineGl(const std::vector<char> &vert_source,
+                         const std::vector<char> &frag_source,
                          const std::vector<VertexInputAttributeDescription> &p_attribute_descriptions,
                          ColorBlendState p_blend_state) {
             program = std::make_shared<RasterProgram>(vert_source, frag_source);
@@ -54,4 +53,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_RENDER_PIPELINE_GL_H
+#endif //PATHFINDER_HAL_RENDER_PIPELINE_GL_H

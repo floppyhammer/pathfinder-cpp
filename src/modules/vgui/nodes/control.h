@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 7/20/2021.
-//
-
 #ifndef PATHFINDER_CONTROL_H
 #define PATHFINDER_CONTROL_H
 
@@ -45,6 +41,10 @@ namespace Pathfinder {
 
         StyleBox get_style_box() const;
 
+        virtual Vec2<float> calculate_minimum_size() const;
+
+        Vec2<float> get_minimum_size() const;
+
     protected:
         Vec2<float> rect_position = Vec2<float>(0);
 
@@ -55,6 +55,8 @@ namespace Pathfinder {
         float rect_rotation = 0;
 
         Vec2<float> rect_pivot_offset = Vec2<float>(0);
+
+        Vec2<float> minimum_size = Vec2<float>(0);
 
         StyleBox style_box;
 

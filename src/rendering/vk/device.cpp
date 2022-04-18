@@ -1,27 +1,32 @@
 #include "device.h"
 
+#include "buffer.h"
+#include "texture.h"
+#include "framebuffer.h"
+#include "render_pass.h"
+#include "render_pipeline.h"
+#include "data.h"
+
+#include <memory>
+
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    VkShaderModule DeviceVk::createShaderModule(const std::vector<char> &code) {
-        VkShaderModuleCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        createInfo.codeSize = code.size();
-        createInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
-
-        VkShaderModule shaderModule;
-        if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-            throw std::runtime_error("Failed to create shader module!");
-        }
-
-        return shaderModule;
+    DeviceVk::DeviceVk(VkDevice p_device, VkPhysicalDevice p_physical_device)
+            : device(p_device), physicalDevice(p_physical_device) {
     }
 
-    void DeviceVk::create_pipeline(std::vector<char> vertShaderCode,
-                                   std::vector<char> fragShaderCode,
-                                   std::vector<VertexInputAttributeDescription> pDescriptions) {
-        VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
-        VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
+    std::shared_ptr<RenderPipeline> DeviceVk::create_prender_ipeline(
+            const std::vector<char> &vert_shader_code,
+            const std::vector<char> &frag_shader_code,
+            const std::vector<VertexInputAttributeDescription> &p_descriptions,
+            ColorBlendState p_blend_state,
+            const std::shared_ptr<RenderPass> &render_pass) {
+        auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
+        auto render_pipeline_vk = std::make_shared<RenderPipelineVk>(device, p_descriptions, p_blend_state);
+
+        VkShaderModule vertShaderModule = createShaderModule(vert_shader_code);
+        VkShaderModule fragShaderModule = createShaderModule(frag_shader_code);
 
         // Specify shader stages.
         VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
@@ -45,20 +50,21 @@ namespace Pathfinder {
 
         int32_t lastBinding = -1;
         std::vector<VkVertexInputBindingDescription> bindingDescriptions;
-        for (auto &d : pDescriptions) {
-            if (d.binding == lastBinding) return;
+        for (auto &d: p_descriptions) {
+            if (d.binding == lastBinding) continue;
             lastBinding = d.binding;
 
             VkVertexInputBindingDescription bindingDescription{};
             bindingDescription.binding = d.binding;
             bindingDescription.stride = d.stride;
-            bindingDescription.inputRate = d.vertex_input_rate == VertexInputRate::VERTEX ? VK_VERTEX_INPUT_RATE_VERTEX : VK_VERTEX_INPUT_RATE_INSTANCE;
+            bindingDescription.inputRate = d.vertex_input_rate == VertexInputRate::VERTEX ? VK_VERTEX_INPUT_RATE_VERTEX
+                                                                                          : VK_VERTEX_INPUT_RATE_INSTANCE;
             bindingDescriptions.push_back(bindingDescription);
         }
 
         std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
         uint32_t location = 0;
-        for (auto &d : pDescriptions) {
+        for (auto &d: p_descriptions) {
             VkVertexInputAttributeDescription attributeDescription{};
             attributeDescription.binding = d.binding;
             attributeDescription.location = location++;
@@ -80,14 +86,14 @@ namespace Pathfinder {
         VkViewport viewport{};
         viewport.x = 0.0f;
         viewport.y = 0.0f;
-        viewport.width = (float) viewportExtent.width;
-        viewport.height = (float) viewportExtent.height;
+        viewport.width = (float) render_pass_vk->extent.x;
+        viewport.height = (float) render_pass_vk->extent.y;
         viewport.minDepth = 0.0f; // The depth range for the viewport.
         viewport.maxDepth = 1.0f;
 
         VkRect2D scissor{};
         scissor.offset = {0, 0};
-        scissor.extent = viewportExtent;
+        scissor.extent = {render_pass_vk->extent.x, render_pass_vk->extent.y};
 
         VkPipelineViewportStateCreateInfo viewportState{};
         viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -115,16 +121,17 @@ namespace Pathfinder {
         colorBlendAttachment.colorWriteMask =
                 VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
                 VK_COLOR_COMPONENT_A_BIT;
-        colorBlendAttachment.blendEnable = VK_FALSE;
+        colorBlendAttachment.blendEnable = VK_TRUE;
+        // FIXME
         // Need to set blend config if blend is enabled.
-//    {
-//        colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-//        colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-//        colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
-//        colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-//        colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-//        colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
-//    }
+        {
+            colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+            colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+            colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+            colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+            colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+            colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+        }
 
         VkPipelineColorBlendStateCreateInfo colorBlending{};
         colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -160,7 +167,7 @@ namespace Pathfinder {
         pipelineInfo.pMultisampleState = &multisampling;
         pipelineInfo.pColorBlendState = &colorBlending;
         pipelineInfo.layout = blitPipelineLayout;
-        pipelineInfo.renderPass = renderPass;
+        pipelineInfo.renderPass = render_pass_vk->id;
         pipelineInfo.subpass = 0;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
         pipelineInfo.pDepthStencilState = &depthStencil;
@@ -171,7 +178,7 @@ namespace Pathfinder {
                                       1,
                                       &pipelineInfo,
                                       nullptr,
-                                      &graphicsPipeline) != VK_SUCCESS) {
+                                      &render_pipeline_vk->id) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create graphics pipeline!");
         }
 
@@ -182,6 +189,421 @@ namespace Pathfinder {
 
     VkDevice DeviceVk::get_device() const {
         return device;
+    }
+
+    std::shared_ptr<Framebuffer> DeviceVk::create_framebuffer(uint32_t width, uint32_t height,
+                                                              TextureFormat format, DataType type,
+                                                              const std::shared_ptr<RenderPass> &render_pass) {
+        auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
+
+        auto framebuffer_vk = std::make_shared<FramebufferVk>(
+                width, height, format, type);
+
+        // Color and depth attachments.
+        {
+            // Color.
+            auto texture_vk = std::make_shared<TextureVk>(
+                    device, width, height, format, type);
+
+            framebuffer_vk->texture = texture_vk;
+
+            createVkImage(width,
+                          height,
+                          to_vk_texture_format(format),
+                          VK_IMAGE_TILING_OPTIMAL,
+                          VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
+                          VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+                          VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                          texture_vk->image,
+                          texture_vk->image_memory);
+
+            // Create image view.
+            texture_vk->image_view = createVkImageView(texture_vk->image,
+                                                       to_vk_texture_format(format),
+                                                       VK_IMAGE_ASPECT_COLOR_BIT);
+
+            // Create sampler.
+            createVkTextureSampler(texture_vk->sampler);
+
+            // Depth.
+            VkFormat depthFormat = findDepthFormat();
+            createVkImage(width, height,
+                          depthFormat,
+                          VK_IMAGE_TILING_OPTIMAL,
+                          VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+                          VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                          framebuffer_vk->depthImage,
+                          framebuffer_vk->depthImageMemory);
+            framebuffer_vk->depthImageView = createVkImageView(framebuffer_vk->depthImage,
+                                                               depthFormat,
+                                                               VK_IMAGE_ASPECT_DEPTH_BIT);
+        }
+
+        // Create framebuffer.
+        {
+            std::array<VkImageView, 2> attachments = {
+                    framebuffer_vk->texture->image_view,
+                    framebuffer_vk->depthImageView
+            };
+
+            VkFramebufferCreateInfo framebufferInfo{};
+            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            framebufferInfo.renderPass = render_pass_vk->id;
+            framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+            framebufferInfo.pAttachments = attachments.data();
+            framebufferInfo.width = width;
+            framebufferInfo.height = height;
+            framebufferInfo.layers = 1;
+
+            if (vkCreateFramebuffer(device,
+                                    &framebufferInfo,
+                                    nullptr,
+                                    &framebuffer_vk->framebuffer_id) != VK_SUCCESS) {
+                throw std::runtime_error("Failed to create framebuffer!");
+            }
+        }
+
+        // Fill a descriptor for later use in a descriptor set.
+        framebuffer_vk->descriptor.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        framebuffer_vk->descriptor.imageView = framebuffer_vk->texture->image_view;
+        framebuffer_vk->descriptor.sampler = framebuffer_vk->texture->sampler;
+
+        return framebuffer_vk;
+    }
+
+    std::shared_ptr<Buffer> DeviceVk::create_buffer(BufferType type, size_t size) {
+        auto buffer_vk = std::make_shared<BufferVk>(device, type, size);
+
+        switch (type) {
+            case BufferType::Uniform: {
+                createVkBuffer(size,
+                               VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                               VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                               buffer_vk->id,
+                               buffer_vk->device_memory);
+            }
+                break;
+            case BufferType::Vertex: {
+                createVkBuffer(size,
+                               VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                               VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                               buffer_vk->id,
+                               buffer_vk->device_memory);
+            }
+                break;
+            case BufferType::General:
+                break;
+        }
+
+        return buffer_vk;
+    }
+
+    std::shared_ptr<Texture> DeviceVk::create_texture(uint32_t width, uint32_t height,
+                                                      TextureFormat format, DataType type) {
+        auto texture_vk = std::make_shared<TextureVk>(
+                device, width, height, format, type);
+
+        createVkImage(width,
+                      height,
+                      to_vk_texture_format(format),
+                      VK_IMAGE_TILING_OPTIMAL,
+                      VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
+                      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+                      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                      texture_vk->image,
+                      texture_vk->image_memory);
+
+        // Create image view.
+        texture_vk->image_view = createVkImageView(texture_vk->image,
+                                                   to_vk_texture_format(format),
+                                                   VK_IMAGE_ASPECT_COLOR_BIT);
+
+        // Create sampler.
+        createVkTextureSampler(texture_vk->sampler);
+
+        return texture_vk;
+    }
+
+    std::shared_ptr<CommandBuffer> DeviceVk::create_command_buffer() {
+        return std::shared_ptr<CommandBuffer>();
+    }
+
+    std::shared_ptr<RenderPipeline>
+    DeviceVk::create_render_pipeline(const std::string &vert_source, const std::string &frag_source,
+                                     const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
+                                     ColorBlendState blend_state) {
+        return std::shared_ptr<RenderPipeline>();
+    }
+
+    std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(const std::string &comp_source) {
+        return std::shared_ptr<ComputePipeline>();
+    }
+
+    VkShaderModule DeviceVk::createShaderModule(const std::vector<char> &code) {
+        VkShaderModuleCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        createInfo.codeSize = code.size();
+        createInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
+
+        VkShaderModule shader_module;
+        if (vkCreateShaderModule(device, &createInfo, nullptr, &shader_module) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to create shader module!");
+        }
+
+        return shader_module;
+    }
+
+    void DeviceVk::createVkImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
+                                 VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage &image,
+                                 VkDeviceMemory &imageMemory) const {
+        VkImageCreateInfo imageInfo{};
+        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        imageInfo.imageType = VK_IMAGE_TYPE_2D;
+        imageInfo.extent.width = width;
+        imageInfo.extent.height = height;
+        imageInfo.extent.depth = 1;
+        imageInfo.mipLevels = 1;
+        imageInfo.arrayLayers = 1;
+        imageInfo.format = format;
+        imageInfo.tiling = tiling;
+        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageInfo.usage = usage;
+        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        if (vkCreateImage(device, &imageInfo, nullptr, &image) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to create image!");
+        }
+
+        // Allocating memory for an image.
+        // -------------------------------------
+        VkMemoryRequirements memRequirements;
+        // Returns the memory requirements for specified Vulkan object.
+        vkGetImageMemoryRequirements(device, image, &memRequirements);
+
+        VkMemoryAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memRequirements.size;
+        allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+
+        if (vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to allocate image memory!");
+        }
+
+        vkBindImageMemory(device, image, imageMemory, 0);
+        // -------------------------------------
+    }
+
+    VkImageView DeviceVk::createVkImageView(VkImage image,
+                                            VkFormat format,
+                                            VkImageAspectFlags aspectFlags) const {
+        VkImageViewCreateInfo viewInfo{};
+        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        viewInfo.image = image;
+        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        viewInfo.format = format;
+        viewInfo.subresourceRange.aspectMask = aspectFlags;
+        viewInfo.subresourceRange.baseMipLevel = 0;
+        viewInfo.subresourceRange.levelCount = 1;
+        viewInfo.subresourceRange.baseArrayLayer = 0;
+        viewInfo.subresourceRange.layerCount = 1;
+
+        VkImageView imageView;
+        if (vkCreateImageView(device, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to create texture image view!");
+        }
+
+        return imageView;
+    }
+
+    void DeviceVk::createVkTextureSampler(VkSampler &textureSampler) const {
+        VkSamplerCreateInfo samplerInfo{};
+        samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        samplerInfo.magFilter = VK_FILTER_LINEAR;
+        samplerInfo.minFilter = VK_FILTER_LINEAR;
+
+        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+
+        VkPhysicalDeviceProperties properties{};
+        vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+
+        samplerInfo.anisotropyEnable = VK_TRUE;
+        samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+
+        // The borderColor field specifies which color is returned when sampling beyond the image with clamp to border addressing mode.
+        samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+
+        samplerInfo.unnormalizedCoordinates = VK_FALSE;
+
+        samplerInfo.compareEnable = VK_FALSE;
+        samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+
+        // All of these fields apply to mipmapping.
+        samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        samplerInfo.mipLodBias = 0.0f;
+        samplerInfo.minLod = 0.0f;
+        samplerInfo.maxLod = 0.0f;
+
+        if (vkCreateSampler(device, &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to create texture sampler!");
+        }
+    }
+
+    void DeviceVk::createVkBuffer(VkDeviceSize size,
+                                  VkBufferUsageFlags usage,
+                                  VkMemoryPropertyFlags properties,
+                                  VkBuffer &buffer,
+                                  VkDeviceMemory &bufferMemory) {
+        // Structure specifying the parameters of a newly created buffer object.
+        VkBufferCreateInfo bufferInfo{};
+        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferInfo.size = size; // Size in bytes of the buffer to be created.
+        bufferInfo.usage = usage; // Specifying allowed usages of the buffer.
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // Specifying the sharing mode of the buffer when it will be accessed by multiple queue families.
+
+        // Allocate GPU buffer.
+        if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to create buffer!");
+        }
+
+        VkMemoryRequirements memRequirements;
+        vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
+
+        // Structure containing parameters of a memory allocation.
+        VkMemoryAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memRequirements.size;
+        allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits,
+                                                   properties); // Index identifying a memory type.
+
+        // Allocate CPU buffer memory.
+        if (vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to allocate buffer memory!");
+        }
+
+        // Bind GPU buffer and CPU buffer memory.
+        vkBindBufferMemory(device, buffer, bufferMemory, 0);
+    }
+
+    void DeviceVk::createVkRenderPass(VkFormat format, VkRenderPass &renderPass) {
+        // Color attachment.
+        // ----------------------------------------
+        VkAttachmentDescription colorAttachment{};
+        colorAttachment.format = format; // Specifying the format of the image view that will be used for the attachment.
+        colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT; // Specifying the number of samples of the image.
+        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Specifying how the contents of color and depth components of the attachment are treated at the beginning of the subpass where it is first used.
+        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // Specifying how the contents of color and depth components of the attachment are treated at the end of the subpass where it is last used.
+        colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // The layout the attachment image subresource will be in when a render pass instance begins.
+        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; // The layout the attachment image subresource will be transitioned to when a render pass instance ends.
+
+        VkAttachmentReference colorAttachmentRef{};
+        colorAttachmentRef.attachment = 0;
+        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // Specifying the layout the attachment uses during the subpass.
+        // ----------------------------------------
+
+        // Depth attachment.
+        // ----------------------------------------
+        VkAttachmentDescription depthAttachment{};
+        depthAttachment.format = findDepthFormat();
+        depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+        VkAttachmentReference depthAttachmentRef{};
+        depthAttachmentRef.attachment = 1;
+        depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        // ----------------------------------------
+
+        VkSubpassDescription subpass{};
+        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpass.colorAttachmentCount = 1;
+        subpass.pColorAttachments = &colorAttachmentRef;
+        subpass.pDepthStencilAttachment = &depthAttachmentRef;
+
+        // Use subpass dependencies for layout transitions.
+        // ----------------------------------------
+        std::array<VkSubpassDependency, 2> dependencies{};
+
+        dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+        dependencies[0].dstSubpass = 0;
+        dependencies[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dependencies[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+        dependencies[1].srcSubpass = 0;
+        dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+        dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+        // ----------------------------------------
+
+        std::array<VkAttachmentDescription, 2> attachments = {colorAttachment, depthAttachment};
+
+        // Create the actual render pass.
+        VkRenderPassCreateInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+        renderPassInfo.pAttachments = attachments.data();
+        renderPassInfo.subpassCount = 1;
+        renderPassInfo.pSubpasses = &subpass;
+        renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
+        renderPassInfo.pDependencies = dependencies.data();
+
+        if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to create render pass!");
+        }
+    }
+
+    uint32_t DeviceVk::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const {
+        VkPhysicalDeviceMemoryProperties memProperties;
+
+        // Reports memory information for the specified physical device.
+        vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+
+        for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+            if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+                return i;
+            }
+        }
+
+        throw std::runtime_error("Failed to find suitable memory type!");
+    }
+
+    VkFormat DeviceVk::findSupportedFormat(const std::vector<VkFormat> &candidates,
+                                           VkImageTiling tiling,
+                                           VkFormatFeatureFlags features) const {
+        for (VkFormat format: candidates) {
+            VkFormatProperties props;
+            vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &props);
+
+            if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
+                return format;
+            } else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
+                return format;
+            }
+        }
+
+        throw std::runtime_error("Failed to find supported format!");
+    }
+
+    VkFormat DeviceVk::findDepthFormat() const {
+        return findSupportedFormat(
+                {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
+                VK_IMAGE_TILING_OPTIMAL,
+                VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+        );
     }
 }
 

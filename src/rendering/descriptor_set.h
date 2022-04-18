@@ -1,16 +1,11 @@
-//
-// Created by floppyhammer on 4/9/2022.
-//
-
-#ifndef PATHFINDER_DESCRIPTOR_SET_H
-#define PATHFINDER_DESCRIPTOR_SET_H
+#ifndef PATHFINDER_HAL_DESCRIPTOR_SET_H
+#define PATHFINDER_HAL_DESCRIPTOR_SET_H
 
 #include "buffer.h"
 #include "texture.h"
 
 #include <cstdint>
 #include <unordered_map>
-#include <optional>
 
 namespace Pathfinder {
     enum class DescriptorType {
@@ -49,4 +44,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_DESCRIPTOR_SET_H
+#endif //PATHFINDER_HAL_DESCRIPTOR_SET_H

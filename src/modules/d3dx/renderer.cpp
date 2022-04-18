@@ -2,6 +2,7 @@
 
 #include "../../rendering/platform.h"
 #include "../../rendering/gl/command_buffer.h"
+#include "../../common/io.h"
 
 #include <umHalf.h>
 #include <array>
@@ -43,7 +44,7 @@ namespace Pathfinder {
         }
     }
 
-    void Renderer::set_up_area_lut(const std::vector<unsigned char> &area_lut_input) {
+    void Renderer::set_up_area_lut(const std::vector<char> &area_lut_input) {
         auto device = Platform::get_singleton().device;
 
         auto image_data = ImageData::from_memory(area_lut_input, false);

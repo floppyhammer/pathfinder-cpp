@@ -1,67 +1,11 @@
-//
-// Created by floppyhammer on 4/14/2022.
-//
+#ifndef PATHFINDER_HAL_DATA_GL_H
+#define PATHFINDER_HAL_DATA_GL_H
 
-#ifndef PATHFINDER_DATA_H
-#define PATHFINDER_DATA_H
-
+#include "../data.h"
 #include "../../common/global_macros.h"
 
 namespace Pathfinder {
-    // Everything above 16 MB is allocated exactly for general buffer.
-    const uint64_t MAX_BUFFER_SIZE_CLASS = 16 * 1024 * 1024;
-
-    enum class DataType {
-        // Integers.
-        BYTE = GL_BYTE, // 1 byte
-        UNSIGNED_BYTE = GL_UNSIGNED_BYTE, // 1 byte
-        SHORT = GL_SHORT, // 2 bytes
-        UNSIGNED_SHORT = GL_UNSIGNED_SHORT, // 2 bytes
-        INT = GL_INT, // 4 bytes
-        UNSIGNED_INT = GL_UNSIGNED_INT, // 4 bytes
-
-        // Floats.
-        FLOAT = GL_FLOAT, // 4 bytes
-        HALF_FLOAT = GL_HALF_FLOAT, // 2 bytes
-    };
-
-    /// Texture format in GPU memory.
-    enum class TextureFormat {
-        RGBA = GL_RGBA,
-        RGBA8 = GL_RGBA8,
-        RGBA16F = GL_RGBA16F,
-    };
-
-    /// Texture format in CPU memory.
-    enum class PixelDataFormat {
-        RED = GL_RED,
-        RGBA = GL_RGBA,
-    };
-
-    enum class ShaderType {
-        Vertex,
-        Fragment,
-        Compute,
-    };
-
-    enum class DeviceType {
-        GL3, // Or ES 3.0
-        GL4, // Or ES 3.1
-        Vulkan,
-    };
-
-    enum class BlendFactor {
-        ONE = 0,
-        ONE_MINUS_SRC_ALPHA = 1,
-    };
-
-    struct ColorBlendState {
-        bool blend_enable;
-        BlendFactor src_blend_factor;
-        BlendFactor dst_blend_factor;
-    };
-
-    inline GLenum to_gl_blend_factor(BlendFactor blend_factor) {
+    inline GLint to_gl_blend_factor(BlendFactor blend_factor) {
         switch (blend_factor) {
             case BlendFactor::ONE:
                 return GL_ONE;
@@ -69,6 +13,47 @@ namespace Pathfinder {
                 return GL_ONE_MINUS_SRC_ALPHA;
         }
     }
+
+    inline GLint to_gl_data_type(DataType data_type) {
+        switch (data_type) {
+            case DataType::BYTE:
+                return GL_BYTE;
+            case DataType::UNSIGNED_BYTE:
+                return GL_UNSIGNED_BYTE;
+            case DataType::SHORT:
+                return GL_SHORT;
+            case DataType::UNSIGNED_SHORT:
+                return GL_UNSIGNED_SHORT;
+            case DataType::INT:
+                return GL_INT;
+            case DataType::UNSIGNED_INT:
+                return GL_UNSIGNED_INT;
+            case DataType::FLOAT:
+                return GL_FLOAT;
+            case DataType::HALF_FLOAT:
+                return GL_HALF_FLOAT;
+        }
+    }
+
+    inline GLint to_gl_texture_format(TextureFormat texture_format) {
+        switch (texture_format) {
+            case TextureFormat::RGBA:
+                return GL_RGBA;
+            case TextureFormat::RGBA8:
+                return GL_RGBA8;
+            case TextureFormat::RGBA16F:
+                return GL_RGBA16F;
+        }
+    }
+
+    inline GLint to_gl_pixel_data_format(PixelDataFormat pixel_data_format) {
+        switch (pixel_data_format) {
+            case PixelDataFormat::RED:
+                return GL_RED;
+            case PixelDataFormat::RGBA:
+                return GL_RGBA;
+        }
+    }
 }
 
-#endif //PATHFINDER_DATA_H
+#endif //PATHFINDER_DATA_GL_H

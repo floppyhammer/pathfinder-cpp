@@ -120,7 +120,7 @@ namespace Pathfinder {
         scene.push_draw_path(path_y);
     }
 
-    Canvas::Canvas(float size_x, float size_y, const std::vector<unsigned char> &area_lut_input) {
+    Canvas::Canvas(float size_x, float size_y, const std::vector<char> &area_lut_input) {
         // Set up a scene.
         scene = std::make_shared<Scene>(0, Rect<float>(0, 0, size_x, size_y));
 

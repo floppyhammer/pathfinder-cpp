@@ -65,7 +65,7 @@ namespace Pathfinder {
 
     struct Canvas {
     public:
-        Canvas(float p_size_x, float p_size_y, const std::vector<unsigned char> &area_lut_input);
+        Canvas(float p_size_x, float p_size_y, const std::vector<char> &area_lut_input);
 
         Paint fill_paint() const;
 

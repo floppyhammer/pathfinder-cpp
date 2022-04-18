@@ -1,22 +1,22 @@
-//
-// Created by floppyhammer on 4/9/2022.
-//
-
 #include "command_buffer.h"
 
+#include "framebuffer.h"
+#include "render_pipeline.h"
+#include "compute_pipeline.h"
+#include "buffer.h"
 #include "validation.h"
 
 #include <cassert>
 
 namespace Pathfinder {
-    void CommandBuffer::begin_render_pass(const std::shared_ptr<Framebuffer> &framebuffer,
-                                          bool clear,
-                                          ColorF clear_color) {
+    void CommandBufferGl::begin_render_pass(const std::shared_ptr<Framebuffer> &framebuffer,
+                                            bool clear,
+                                            ColorF clear_color) {
         Command cmd;
         cmd.type = CommandType::BeginRenderPass;
 
         auto &args = cmd.args.begin_render_pass;
-        args.framebuffer_id = framebuffer->get_framebuffer_id();
+        args.framebuffer = framebuffer.get();
         args.extent = {framebuffer->get_width(), framebuffer->get_height()};
         args.clear = clear;
         args.clear_color = clear_color;
@@ -28,7 +28,7 @@ namespace Pathfinder {
 
     }
 
-    void CommandBuffer::bind_render_pipeline(const std::shared_ptr<RenderPipeline> &pipeline) {
+    void CommandBufferGl::bind_render_pipeline(const std::shared_ptr<RenderPipeline> &pipeline) {
         Command cmd;
         cmd.type = CommandType::BindRenderPipeline;
         auto &args = cmd.args.bind_render_pipeline;
@@ -37,7 +37,7 @@ namespace Pathfinder {
         commands.push(cmd);
     }
 
-    void CommandBuffer::bind_compute_pipeline(const std::shared_ptr<ComputePipeline> &pipeline) {
+    void CommandBufferGl::bind_compute_pipeline(const std::shared_ptr<ComputePipeline> &pipeline) {
         Command cmd;
         cmd.type = CommandType::BindComputePipeline;
         auto &args = cmd.args.bind_compute_pipeline;
@@ -46,7 +46,7 @@ namespace Pathfinder {
         commands.push(cmd);
     }
 
-    void CommandBuffer::bind_vertex_buffers(std::vector<std::shared_ptr<Buffer>> vertex_buffers) {
+    void CommandBufferGl::bind_vertex_buffers(std::vector<std::shared_ptr<Buffer>> vertex_buffers) {
         Command cmd;
         cmd.type = CommandType::BindVertexBuffers;
         auto &args = cmd.args.bind_vertex_buffers;
@@ -60,7 +60,7 @@ namespace Pathfinder {
         commands.push(cmd);
     }
 
-    void CommandBuffer::bind_descriptor_set(const std::shared_ptr<DescriptorSet> &descriptor_set) {
+    void CommandBufferGl::bind_descriptor_set(const std::shared_ptr<DescriptorSet> &descriptor_set) {
         Command cmd;
         cmd.type = CommandType::BindDescriptorSet;
 
@@ -70,7 +70,7 @@ namespace Pathfinder {
         commands.push(cmd);
     }
 
-    void CommandBuffer::draw(uint32_t first_vertex, uint32_t vertex_count) {
+    void CommandBufferGl::draw(uint32_t first_vertex, uint32_t vertex_count) {
         Command cmd;
         cmd.type = CommandType::Draw;
 
@@ -81,7 +81,7 @@ namespace Pathfinder {
         commands.push(cmd);
     }
 
-    void CommandBuffer::draw_instanced(uint32_t vertex_count, uint32_t instance_count) {
+    void CommandBufferGl::draw_instanced(uint32_t vertex_count, uint32_t instance_count) {
         Command cmd;
         cmd.type = CommandType::DrawInstanced;
 
@@ -92,9 +92,17 @@ namespace Pathfinder {
         commands.push(cmd);
     }
 
-    void CommandBuffer::dispatch(uint32_t group_size_x,
-                                 uint32_t group_size_y,
-                                 uint32_t group_size_z) {
+    void CommandBufferGl::end_render_pass() {
+
+    }
+
+    void CommandBufferGl::begin_compute_pass() {
+
+    }
+
+    void CommandBufferGl::dispatch(uint32_t group_size_x,
+                                   uint32_t group_size_y,
+                                   uint32_t group_size_z) {
         if (group_size_x == 0 || group_size_y == 0 || group_size_z == 0) {
             Logger::error("Compute group size cannot be zero!", "ComputeProgram");
             return;
@@ -111,12 +119,12 @@ namespace Pathfinder {
         commands.push(cmd);
     }
 
-    void CommandBuffer::end_compute_pass() {
+    void CommandBufferGl::end_compute_pass() {
 
     }
 
-    void CommandBuffer::upload_to_buffer(const std::shared_ptr<Buffer> &buffer, uint32_t offset, uint32_t data_size,
-                                         void *data) {
+    void CommandBufferGl::upload_to_buffer(const std::shared_ptr<Buffer> &buffer, uint32_t offset, uint32_t data_size,
+                                           void *data) {
         if (data_size == 0 || data == nullptr) {
             Logger::error("Tried to upload invalid data to buffer!");
         }
@@ -133,8 +141,8 @@ namespace Pathfinder {
         commands.push(cmd);
     }
 
-    void CommandBuffer::upload_to_texture(const std::shared_ptr<Texture> &texture, Rect<uint32_t> p_region,
-                                          const void *data) {
+    void CommandBufferGl::upload_to_texture(const std::shared_ptr<Texture> &texture, Rect<uint32_t> p_region,
+                                            const void *data) {
         // Invalid region represents the whole texture.
         auto region = p_region.is_valid() ? p_region : Rect<uint32_t>(0, 0, texture->get_width(),
                                                                       texture->get_height());
@@ -153,8 +161,10 @@ namespace Pathfinder {
         commands.push(cmd);
     }
 
-    void
-    CommandBuffer::read_buffer(const std::shared_ptr<Buffer> &buffer, uint32_t offset, uint32_t data_size, void *data) {
+    void CommandBufferGl::read_buffer(const std::shared_ptr<Buffer> &buffer,
+                                      uint32_t offset,
+                                      uint32_t data_size,
+                                      void *data) {
         switch (buffer->type) {
             case BufferType::Vertex:
             case BufferType::Uniform: {
@@ -177,7 +187,7 @@ namespace Pathfinder {
         }
     }
 
-    void CommandBuffer::submit() {
+    void CommandBufferGl::submit() {
         while (!commands.empty()) {
             auto &cmd = commands.front();
 
@@ -185,7 +195,9 @@ namespace Pathfinder {
                 case CommandType::BeginRenderPass: {
                     auto &args = cmd.args.begin_render_pass;
 
-                    glBindFramebuffer(GL_FRAMEBUFFER, args.framebuffer_id);
+                    auto framebuffer_gl = dynamic_cast<FramebufferGl *>(args.framebuffer);
+
+                    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_gl->get_framebuffer_id());
 
                     if (args.clear) {
                         glClearColor(args.clear_color.r, args.clear_color.g, args.clear_color.b,
@@ -260,7 +272,7 @@ namespace Pathfinder {
                             case DataType::UNSIGNED_INT: {
                                 glVertexAttribIPointer(location,
                                                        attrib.size,
-                                                       static_cast<GLenum>(attrib.type),
+                                                       to_gl_data_type(attrib.type),
                                                        attrib.stride,
                                                        (void *) attrib.offset);
                             }
@@ -269,7 +281,7 @@ namespace Pathfinder {
                             case DataType::FLOAT: {
                                 glVertexAttribPointer(location,
                                                       attrib.size,
-                                                      static_cast<GLenum>(attrib.type),
+                                                      to_gl_data_type(attrib.type),
                                                       GL_FALSE,
                                                       attrib.stride,
                                                       (void *) attrib.offset);
@@ -318,13 +330,13 @@ namespace Pathfinder {
                             }
                                 break;
                             case DescriptorType::Texture: {
-                                auto texture = descriptor.texture;
+                                auto texture_gl = static_cast<TextureGl *>(descriptor.texture.get());
 
                                 if (!binding_name.empty()) {
                                     glUniform1i(glGetUniformLocation(program_id, binding_name.c_str()), binding_point);
                                 }
                                 glActiveTexture(GL_TEXTURE0 + binding_point);
-                                glBindTexture(GL_TEXTURE_2D, texture->get_texture_id());
+                                glBindTexture(GL_TEXTURE_2D, texture_gl->get_texture_id());
                             }
                                 break;
 #ifdef PATHFINDER_USE_D3D11
@@ -335,9 +347,9 @@ namespace Pathfinder {
                                 }
                                     break;
                                 case DescriptorType::Image: {
-                                    auto texture = descriptor.texture;
+                                    auto texture_gl = static_cast<TextureGl *>(descriptor.texture.get());
 
-                                    glBindImageTexture(binding_point, texture->get_texture_id(), 0, GL_FALSE, 0,
+                                    glBindImageTexture(binding_point, texture_gl->get_texture_id(), 0, GL_FALSE, 0,
                                                        GL_READ_WRITE, GL_RGBA8);
                                 }
                                     break;
@@ -463,11 +475,14 @@ namespace Pathfinder {
                 case CommandType::UploadToTexture: {
                     auto &args = cmd.args.upload_to_texture;
 
-                    glBindTexture(GL_TEXTURE_2D, args.texture->get_texture_id());
+                    auto texture_gl = static_cast<TextureGl *>(args.texture);
+
+                    glBindTexture(GL_TEXTURE_2D, texture_gl->get_texture_id());
                     glTexSubImage2D(GL_TEXTURE_2D, 0,
                                     args.offset_x, args.offset_y, args.width, args.height,
-                                    static_cast<GLint>(PixelDataFormat::RGBA),
-                                    static_cast<GLenum>(args.texture->get_pixel_type()), args.data);
+                                    to_gl_pixel_data_format(PixelDataFormat::RGBA),
+                                    to_gl_data_type(args.texture->get_pixel_type()),
+                                    args.data);
                     glBindTexture(GL_TEXTURE_2D, 0);
 
                     check_error("UploadToTexture");

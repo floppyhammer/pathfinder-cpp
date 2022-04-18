@@ -1,13 +1,10 @@
-//
-// Created by floppyhammer on 8/26/2021.
-//
-
 #include "renderer.h"
 
 #include "gpu_data.h"
 #include "../d3dx/data/data.h"
 #include "../d3d9/data/draw_tile_batch.h"
 #include "../../common/math/basic.h"
+#include "../../common/io.h"
 #include "../../rendering/platform.h"
 #include "../../rendering/gl/command_buffer.h"
 #include "../../common/logger.h"
@@ -137,39 +134,47 @@ namespace Pathfinder {
         auto device = Platform::get_singleton().device;
 
 #ifdef PATHFINDER_SHADERS_EMBEDDED
-        const std::string dice_source =
+        const std::string dice_string =
 #include "../src/shaders/minified/minified_dice.comp"
         ;
-        const std::string bound_source =
+        const std::string bound_string =
 #include "../src/shaders/minified/minified_bound.comp"
         ;
-        const std::string bin_source =
+        const std::string bin_string =
 #include "../src/shaders/minified/minified_bin.comp"
         ;
-        const std::string propagate_source =
+        const std::string propagate_string =
 #include "../src/shaders/minified/minified_propagate.comp"
         ;
-        const std::string sort_source =
+        const std::string sort_string =
 #include "../src/shaders/minified/minified_sort.comp"
         ;
-        const std::string fill_source =
+        const std::string fill_string =
 #include "../src/shaders/minified/minified_fill.comp"
         ;
-        const std::string tile_source_0 =
+        const std::string tile_string_0 =
 #include "../src/shaders/minified/minified_tile.comp.0"
         ;
-        const std::string tile_source_1 =
+        const std::string tile_string_1 =
 #include "../src/shaders/minified/minified_tile.comp.1"
         ;
-        const std::string tile_source = tile_source_0 + tile_source_1;
+        const std::string tile_string = tile_string_0 + tile_string_1;
+
+        const std::vector<char> dice_source = {dice_string.begin(), dice_string.end()};
+        const std::vector<char> bound_source = {bound_string.begin(), bound_string.end()};
+        const std::vector<char> bin_source = {bin_string.begin(), bin_string.end()};
+        const std::vector<char> propagate_source = {propagate_string.begin(), propagate_string.end()};
+        const std::vector<char> fill_source = {fill_string.begin(), fill_string.end()};
+        const std::vector<char> sort_source = {sort_string.begin(), sort_string.end()};
+        const std::vector<char> tile_source = {tile_string.begin(), tile_string.end()};
 #else
-        const auto bound_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d11/bound.comp");
-        const auto dice_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d11/dice.comp");
-        const auto bin_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d11/bin.comp");
-        const auto propagate_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d11/propagate.comp");
-        const auto sort_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d11/sort.comp");
-        const auto fill_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d11/fill.comp");
-        const auto tile_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d11/tile.comp");
+        const auto dice_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/dice.comp");
+        const auto bound_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/bound.comp");
+        const auto bin_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/bin.comp");
+        const auto propagate_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/propagate.comp");
+        const auto fill_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/fill.comp");
+        const auto sort_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/sort.comp");
+        const auto tile_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/tile.comp");
 #endif
 
         dice_pipeline = device->create_compute_pipeline(dice_source); // 1
@@ -403,7 +408,7 @@ namespace Pathfinder {
 
         cmd_buffer->bind_descriptor_set(tile_descriptor_set);
 
-        cmd_buffer->dispatch(framebuffer_tile_size0.x, framebuffer_tile_size0.y);
+        cmd_buffer->dispatch(framebuffer_tile_size0.x, framebuffer_tile_size0.y, 1);
 
         cmd_buffer->end_compute_pass();
 
@@ -659,7 +664,7 @@ namespace Pathfinder {
 
         cmd_buffer->bind_descriptor_set(dice_descriptor_set);
 
-        cmd_buffer->dispatch((batch_segment_count + DICE_WORKGROUP_SIZE - 1) / DICE_WORKGROUP_SIZE);
+        cmd_buffer->dispatch((batch_segment_count + DICE_WORKGROUP_SIZE - 1) / DICE_WORKGROUP_SIZE, 1, 1);
 
         cmd_buffer->end_compute_pass();
 
@@ -731,7 +736,7 @@ namespace Pathfinder {
 
         cmd_buffer->bind_descriptor_set(bound_descriptor_set);
 
-        cmd_buffer->dispatch((tile_count + BOUND_WORKGROUP_SIZE - 1) / BOUND_WORKGROUP_SIZE);
+        cmd_buffer->dispatch((tile_count + BOUND_WORKGROUP_SIZE - 1) / BOUND_WORKGROUP_SIZE, 1, 1);
 
         cmd_buffer->end_compute_pass();
 
@@ -795,7 +800,7 @@ namespace Pathfinder {
 
         cmd_buffer->bind_descriptor_set(bin_descriptor_set);
 
-        cmd_buffer->dispatch((microlines_storage.count + BIN_WORKGROUP_SIZE - 1) / BIN_WORKGROUP_SIZE);
+        cmd_buffer->dispatch((microlines_storage.count + BIN_WORKGROUP_SIZE - 1) / BIN_WORKGROUP_SIZE , 1, 1);
 
         cmd_buffer->end_compute_pass();
 
@@ -891,7 +896,7 @@ namespace Pathfinder {
 
         cmd_buffer->bind_descriptor_set(propagate_descriptor_set);
 
-        cmd_buffer->dispatch((column_count + PROPAGATE_WORKGROUP_SIZE - 1) / PROPAGATE_WORKGROUP_SIZE);
+        cmd_buffer->dispatch((column_count + PROPAGATE_WORKGROUP_SIZE - 1) / PROPAGATE_WORKGROUP_SIZE, 1, 1);
 
         cmd_buffer->end_compute_pass();
 
@@ -929,7 +934,7 @@ namespace Pathfinder {
         auto alpha_tile_range = propagate_tiles_info.alpha_tile_range;
 
         // This setup is a workaround for the annoying 64K limit of compute invocation in OpenGL.
-        auto local_alpha_tile_count = alpha_tile_range.end - alpha_tile_range.start;
+        uint32_t local_alpha_tile_count = alpha_tile_range.end - alpha_tile_range.start;
 
         auto one_shot_cmd_buffer = device->create_command_buffer();
 
@@ -961,8 +966,9 @@ namespace Pathfinder {
 
         cmd_buffer->bind_descriptor_set(fill_descriptor_set);
 
-        cmd_buffer->dispatch(std::min(local_alpha_tile_count, (unsigned long long) 1 << 15),
-                             ((local_alpha_tile_count + (1 << 15) - 1) >> 15));
+        cmd_buffer->dispatch(std::min(local_alpha_tile_count, 1u << 15u),
+                             (local_alpha_tile_count + (1 << 15) - 1) >> 15,
+                             1);
 
         cmd_buffer->end_compute_pass();
 
@@ -1001,7 +1007,7 @@ namespace Pathfinder {
 
         cmd_buffer->bind_descriptor_set(sort_descriptor_set);
 
-        cmd_buffer->dispatch((tile_count + SORT_WORKGROUP_SIZE - 1) / SORT_WORKGROUP_SIZE);
+        cmd_buffer->dispatch((tile_count + SORT_WORKGROUP_SIZE - 1) / SORT_WORKGROUP_SIZE, 1, 1);
 
         cmd_buffer->end_compute_pass();
 

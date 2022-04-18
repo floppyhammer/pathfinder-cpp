@@ -113,12 +113,12 @@ namespace Pathfinder {
 
             int overlay_index_l = -1;
             if (overlay && overlay->contents.pattern) {
-                overlay_index_l = overlay->contents.pattern->source.render_target.framebuffer->get_texture_id();
+                overlay_index_l = overlay->contents.pattern->source.render_target.framebuffer->get_unique_id();
             }
 
             int overlay_index_r = -1;
             if (rhs.overlay && rhs.overlay->contents.pattern) {
-                overlay_index_r = rhs.overlay->contents.pattern->source.render_target.framebuffer->get_texture_id();
+                overlay_index_r = rhs.overlay->contents.pattern->source.render_target.framebuffer->get_unique_id();
             }
 
             if (base_color_index_l < base_color_index_r) {

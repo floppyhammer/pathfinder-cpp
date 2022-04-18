@@ -8,12 +8,11 @@
 #include "object_builder.h"
 #include "../d3dx/renderer.h"
 #include "../../common/global_macros.h"
-#include "../../rendering/gl/raster_program.h"
-#include "../../rendering/gl/framebuffer.h"
-#include "../../rendering/gl/texture.h"
-
+#include "../../rendering/framebuffer.h"
+#include "../../rendering/texture.h"
+#include "../../rendering/render_pass.h"
 #include "../../rendering/render_pipeline.h"
-#include "../../rendering/gl/descriptor_set.h"
+#include "../../rendering/descriptor_set.h"
 
 #include <vector>
 
@@ -54,6 +53,8 @@ namespace Pathfinder {
 
         /// Where to draw the mask texture.
         std::shared_ptr<Framebuffer> mask_framebuffer;
+
+        std::shared_ptr<RenderPass> mask_render_pass, dest_render_pass;
 
         void upload_and_draw_tiles(const std::vector<DrawTileBatch>& tile_batches,
                                    const std::vector<TextureMetadataEntry>& metadata);

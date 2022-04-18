@@ -1,15 +1,12 @@
-//
-// Created by floppyhammer on 8/26/2021.
-//
-
-#ifndef PATHFINDER_PROGRAM_H
-#define PATHFINDER_PROGRAM_H
+#ifndef PATHFINDER_HAL_PROGRAM_H
+#define PATHFINDER_HAL_PROGRAM_H
 
 #include "../../common/math/mat2x2.h"
 #include "../../common/math/mat4x4.h"
 #include "../../common/logger.h"
 #include "../../common/global_macros.h"
 
+#include <vector>
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -24,7 +21,7 @@ namespace Pathfinder {
         [[nodiscard]] unsigned int get_id() const;
 
         // Utility uniform functions.
-        // ------------------------------------------------------------------------
+        // ------------------------------------------------------
         void set_bool(const std::string &name, bool value) const;
 
         void set_int(const std::string &name, int value) const;
@@ -42,7 +39,7 @@ namespace Pathfinder {
         void set_mat2(const std::string &name, const Mat2x2<float> &mat) const;
 
         void set_mat4(const std::string &name, const Mat4x4<float> &mat) const;
-        // ------------------------------------------------------------------------
+        // ------------------------------------------------------
 
     protected:
         /// Program ID.
@@ -71,6 +68,23 @@ namespace Pathfinder {
             }
         }
     };
+
+    class RasterProgram : public Program {
+    public:
+        RasterProgram(const std::vector<char> &vertex_code,
+                      const std::vector<char> &fragment_code);
+
+    private:
+        void compile(const char *vertex_code, const char *fragment_code);
+    };
+
+    class ComputeProgram : public Program {
+    public:
+        explicit ComputeProgram(const std::vector<char> &compute_code);
+
+    private:
+        void compile(const char *compute_code);
+    };
 }
 
-#endif //PATHFINDER_PROGRAM_H
+#endif //PATHFINDER_HAL_PROGRAM_H

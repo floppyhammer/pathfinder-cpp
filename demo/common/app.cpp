@@ -1,10 +1,5 @@
-//
-// Created by floppyhammer on 2/24/2022.
-//
-
 #include "app.h"
 
-#include "../../src/common/global_macros.h"
 #include "../../src/common/logger.h"
 #include "../../src/modules/vgui/servers/vector_server.h"
 #include "../../src/rendering/platform.h"
@@ -17,14 +12,16 @@ App::App(int window_width,
     // Set logger level.
     Pathfinder::Logger::set_level(Pathfinder::Logger::Level::DEBUG);
 
+    Pathfinder::Platform::get_singleton().init(Pathfinder::DeviceType::GL4);
+
     Pathfinder::VectorServer::get_singleton().init(window_width,
                                                    window_height,
-                                                   reinterpret_cast<std::vector<unsigned char> &>(area_lut_input));
+                                                   area_lut_input);
 
     // Set up a canvas.
     canvas = std::make_shared<Pathfinder::Canvas>(window_width,
                                                   window_height,
-                                                  reinterpret_cast<std::vector<unsigned char> &>(area_lut_input));
+                                                  area_lut_input);
     canvas->load_svg(p_svg_input);
 
     // Set up a text label.
@@ -35,7 +32,7 @@ App::App(int window_width,
     label->set_horizontal_alignment(Pathfinder::Alignment::Center);
 
     // Create a screen viewport.
-    screen_framebuffer = std::make_shared<Pathfinder::Framebuffer>(window_width, window_height);
+    screen_framebuffer = std::make_shared<Pathfinder::FramebufferGl>(window_width, window_height);
 
     // Set viewport texture to a texture rect.
     texture_rect0 = std::make_shared<Pathfinder::TextureRect>(window_width, window_height);
@@ -45,8 +42,6 @@ App::App(int window_width,
     start_time = std::chrono::steady_clock::now();
     last_time = start_time;
     last_time_updated_fps = start_time;
-
-    Pathfinder::Platform::get_singleton();
 }
 
 void App::loop() {
@@ -96,7 +91,7 @@ void App::loop() {
 
     cmd_buffer->begin_render_pass(screen_framebuffer,
                                   true,
-                                  Pathfinder::ColorF(0.3, 0.3, 0.3, 1.0));
+                                  Pathfinder::ColorF(0.2, 0.2, 0.2, 1.0));
 
     // Draw canvas to screen.
     texture_rect0->set_texture(canvas->get_dest_texture());
