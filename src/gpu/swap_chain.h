@@ -10,9 +10,6 @@ namespace Pathfinder {
         Vec2<uint32_t> extent;
 
         virtual std::shared_ptr<Framebuffer> get_framebuffer(uint32_t image_index) = 0;
-
-    protected:
-        std::shared_ptr<Framebuffer> framebuffer;
     };
 }
 

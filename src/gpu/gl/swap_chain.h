@@ -10,11 +10,14 @@ namespace Pathfinder {
     public:
         SwapChainGl(uint32_t p_width, uint32_t p_height) {
             framebuffer = std::make_shared<FramebufferGl>(p_width, p_height);
-        };
+        }
 
         inline std::shared_ptr<Framebuffer> get_framebuffer(uint32_t image_index) override {
             return framebuffer;
         }
+
+    private:
+        std::shared_ptr<Framebuffer> framebuffer;
     };
 }
 
