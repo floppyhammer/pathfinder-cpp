@@ -9,8 +9,8 @@
 #include "../../common/math/vec2.h"
 #include "../../common/math/transform2.h"
 #include "../../common/color.h"
-#include "../../rendering/framebuffer.h"
-#include "../../rendering/render_pass.h"
+#include "../../gpu/framebuffer.h"
+#include "../../gpu/render_pass.h"
 
 #include <cstdint>
 #include <utility>

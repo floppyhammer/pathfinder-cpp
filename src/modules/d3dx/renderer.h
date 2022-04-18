@@ -6,8 +6,8 @@
 #define PATHFINDER_RENDERER_H
 
 #include "data/data.h"
-#include "../../rendering/gl/buffer.h"
-#include "../../rendering/gl/framebuffer.h"
+#include "../../gpu/gl/buffer.h"
+#include "../../gpu/gl/framebuffer.h"
 
 #include <cstdint>
 

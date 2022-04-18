@@ -1,7 +1,7 @@
 #include "renderer.h"
 
-#include "../../rendering/platform.h"
-#include "../../rendering/gl/command_buffer.h"
+#include "../../gpu/platform.h"
+#include "../../gpu/gl/command_buffer.h"
 #include "../../common/io.h"
 
 #include <umHalf.h>

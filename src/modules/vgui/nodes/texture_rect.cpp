@@ -3,7 +3,7 @@
 #include "../../../common/math/basic.h"
 #include "../../../common/math/mat4x4.h"
 #include "../../../common/global_macros.h"
-#include "../../../rendering/platform.h"
+#include "../../../gpu/platform.h"
 
 namespace Pathfinder {
     TextureRect::TextureRect(float viewport_width, float viewport_height) {

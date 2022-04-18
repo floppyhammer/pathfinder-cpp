@@ -8,11 +8,11 @@
 #include "object_builder.h"
 #include "../d3dx/renderer.h"
 #include "../../common/global_macros.h"
-#include "../../rendering/framebuffer.h"
-#include "../../rendering/texture.h"
-#include "../../rendering/render_pass.h"
-#include "../../rendering/render_pipeline.h"
-#include "../../rendering/descriptor_set.h"
+#include "../../gpu/framebuffer.h"
+#include "../../gpu/texture.h"
+#include "../../gpu/render_pass.h"
+#include "../../gpu/render_pipeline.h"
+#include "../../gpu/descriptor_set.h"
 
 #include <vector>
 

@@ -8,7 +8,7 @@
 #include "paint.h"
 #include "data/shape.h"
 #include "data/data.h"
-#include "../../rendering/gl/framebuffer.h"
+#include "../../gpu/gl/framebuffer.h"
 
 #include <vector>
 #include <limits>

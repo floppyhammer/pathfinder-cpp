@@ -4,7 +4,7 @@
 
 #include "paint.h"
 
-#include "../../rendering/platform.h"
+#include "../../gpu/platform.h"
 
 #include <stdexcept>
 

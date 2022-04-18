@@ -4,15 +4,15 @@
 
 #include "renderer.h"
 
-#include "../../rendering/gl/device.h"
+#include "../../gpu/gl/device.h"
 #include "../../common/timestamp.h"
 #include "../../common/math/basic.h"
 #include "../../common/global_macros.h"
 #include "../../common/math/vec3.h"
 #include "../../common/math/mat4x4.h"
 #include "../../common/io.h"
-#include "../../rendering/gl/command_buffer.h"
-#include "../../rendering/platform.h"
+#include "../../gpu/gl/command_buffer.h"
+#include "../../gpu/platform.h"
 
 #include <array>
 

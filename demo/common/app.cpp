@@ -2,7 +2,7 @@
 
 #include "../../src/common/logger.h"
 #include "../../src/modules/vgui/servers/vector_server.h"
-#include "../../src/rendering/platform.h"
+#include "../../src/gpu/platform.h"
 
 App::App(int window_width,
          int window_height,
