@@ -1,6 +1,7 @@
 #ifndef PATHFINDER_GPU_DEVICE_GL_H
 #define PATHFINDER_GPU_DEVICE_GL_H
 
+#include "swap_chain.h"
 #include "buffer.h"
 #include "texture.h"
 #include "command_buffer.h"
@@ -14,6 +15,8 @@
 namespace Pathfinder {
     class DeviceGl : public Device {
     public:
+        std::shared_ptr<SwapChain> create_swap_chain(uint32_t p_width, uint32_t p_height) override;
+
         std::shared_ptr<Framebuffer> create_framebuffer(uint32_t p_width,
                                                         uint32_t p_height,
                                                         TextureFormat p_format,

@@ -113,20 +113,20 @@ namespace Pathfinder {
     }
 
     void TextureRect::draw(const std::shared_ptr<Pathfinder::CommandBuffer> &cmd_buffer,
-                           const std::shared_ptr<Framebuffer> &render_target) {
+                           const Vec2<uint32_t> &framebuffer_size) {
         auto device = Platform::get_singleton().device;
 
         // Get MVP matrix.
         // -------------------------------------------------
         // The actual application order of these matrices is reverse.
         auto model_mat = Mat4x4<float>(1.0f);
-        model_mat = model_mat.translate(Vec3<float>(rect_position.x / render_target->get_width() * 2.0f,
-                                                    rect_position.y / render_target->get_height() * 2.0f,
+        model_mat = model_mat.translate(Vec3<float>(rect_position.x / framebuffer_size.x * 2.0f,
+                                                    rect_position.y / framebuffer_size.y * 2.0f,
                                                     0.0f));
         model_mat = model_mat.translate(Vec3<float>(-1.0, -1.0, 0.0f));
         model_mat = model_mat.scale(Vec3<float>(rect_scale.x, rect_scale.y, 1.0f));
-        model_mat = model_mat.scale(Vec3<float>(rect_size.x / render_target->get_width() * 2.0f,
-                                                rect_size.y / render_target->get_height() * 2.0f,
+        model_mat = model_mat.scale(Vec3<float>(rect_size.x / framebuffer_size.x * 2.0f,
+                                                rect_size.y / framebuffer_size.y * 2.0f,
                                                 1.0f));
         //model_mat = model_mat.rotate(deg2rad(rect_rotation), Vec3<float>(0.0f, 0.0f, 1.0f));
 

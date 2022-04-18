@@ -3,11 +3,11 @@
 #include <cassert>
 
 namespace Pathfinder {
-    FramebufferGl::FramebufferGl(int p_width, int p_height) : Framebuffer(p_width, p_height) {
-        // Do nothing.
+    FramebufferGl::FramebufferGl(uint32_t p_width, uint32_t p_height) : Framebuffer(p_width, p_height) {
+        framebuffer_id = 0;
     }
 
-    FramebufferGl::FramebufferGl(int p_width, int p_height, TextureFormat p_format, DataType p_type)
+    FramebufferGl::FramebufferGl(uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type)
             : Framebuffer(p_width, p_height) {
         // Create a color texture.
         texture = std::make_shared<TextureGl>(p_width, p_height, p_format, p_type);

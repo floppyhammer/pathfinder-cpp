@@ -9,6 +9,11 @@
 #include "../../common/logger.h"
 
 namespace Pathfinder {
+    std::shared_ptr<SwapChain> DeviceGl::create_swap_chain(uint32_t p_width, uint32_t p_height) {
+        auto swap_chain_gl = std::make_shared<SwapChainGl>(p_width, p_height);
+        return swap_chain_gl;
+    }
+
     std::shared_ptr<Framebuffer> DeviceGl::create_framebuffer(uint32_t p_width, uint32_t p_height,
                                                               TextureFormat p_format, DataType p_type,
                                                               const std::shared_ptr<RenderPass> &render_pass) {

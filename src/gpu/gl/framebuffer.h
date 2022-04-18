@@ -10,10 +10,10 @@ namespace Pathfinder {
     class FramebufferGl : public Framebuffer {
     public:
         /// To screen viewport.
-        FramebufferGl(int p_width, int p_height);
+        FramebufferGl(uint32_t p_width, uint32_t p_height);
 
         /// To texture.
-        FramebufferGl(int p_width, int p_height, TextureFormat p_format, DataType p_type);
+        FramebufferGl(uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type);
 
         ~FramebufferGl();
 
@@ -24,7 +24,7 @@ namespace Pathfinder {
         uint32_t get_unique_id() override;
 
     private:
-        uint32_t framebuffer_id = 0;
+        uint32_t framebuffer_id;
 
         // Only valid when drawing to a texture.
         std::shared_ptr<TextureGl> texture;

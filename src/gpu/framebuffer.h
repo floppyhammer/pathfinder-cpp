@@ -9,11 +9,11 @@ namespace Pathfinder {
     class Framebuffer {
     public:
         /// To screen viewport.
-        Framebuffer(int p_width, int p_height)
+        Framebuffer(uint32_t p_width, uint32_t p_height)
                 : width(p_width), height(p_height) {}
 
         /// To texture.
-        Framebuffer(int p_width, int p_height, TextureFormat p_format, DataType p_type)
+        Framebuffer(uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type)
                 : width(p_width), height(p_height) {}
 
         virtual std::shared_ptr<Texture> get_texture() = 0;

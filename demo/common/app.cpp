@@ -13,6 +13,7 @@ App::App(int window_width,
     Pathfinder::Logger::set_level(Pathfinder::Logger::Level::DEBUG);
 
     Pathfinder::Platform::get_singleton().init(Pathfinder::DeviceType::GL4);
+    Pathfinder::Platform::get_singleton().recreate_swap_chain(window_width, window_height);
 
     Pathfinder::VectorServer::get_singleton().init(window_width,
                                                    window_height,
@@ -30,9 +31,6 @@ App::App(int window_width,
     label->set_style(64, Pathfinder::ColorU::white(), 0, Pathfinder::ColorU::red());
     label->set_font(std::make_shared<Pathfinder::Font>(font_input));
     label->set_horizontal_alignment(Pathfinder::Alignment::Center);
-
-    // Create a screen viewport.
-    screen_framebuffer = std::make_shared<Pathfinder::FramebufferGl>(window_width, window_height);
 
     // Set viewport texture to a texture rect.
     texture_rect0 = std::make_shared<Pathfinder::TextureRect>(window_width, window_height);
@@ -89,17 +87,18 @@ void App::loop() {
 
     auto cmd_buffer = Pathfinder::Platform::get_singleton().device->create_command_buffer();
 
-    cmd_buffer->begin_render_pass(screen_framebuffer,
+    auto framebuffer = Pathfinder::Platform::get_singleton().swap_chain->get_framebuffer(0);
+    cmd_buffer->begin_render_pass(framebuffer,
                                   true,
                                   Pathfinder::ColorF(0.2, 0.2, 0.2, 1.0));
 
     // Draw canvas to screen.
     texture_rect0->set_texture(canvas->get_dest_texture());
-    texture_rect0->draw(cmd_buffer, screen_framebuffer);
+    texture_rect0->draw(cmd_buffer, framebuffer->get_size());
 
     // Draw label to screen.
     texture_rect1->set_texture(Pathfinder::VectorServer::get_singleton().canvas->get_dest_texture());
-    texture_rect1->draw(cmd_buffer, screen_framebuffer);
+    texture_rect1->draw(cmd_buffer, framebuffer->get_size());
 
     cmd_buffer->end_render_pass();
 

@@ -23,7 +23,8 @@ namespace Pathfinder {
 
         [[nodiscard]] std::shared_ptr<Texture> get_texture() const;
 
-        void draw(const std::shared_ptr<Pathfinder::CommandBuffer>& cmd_buffer, const std::shared_ptr<Framebuffer>& render_target);
+        void draw(const std::shared_ptr<Pathfinder::CommandBuffer>& cmd_buffer,
+                  const Vec2<uint32_t> &framebuffer_size);
 
     private:
         std::shared_ptr<Texture> texture;

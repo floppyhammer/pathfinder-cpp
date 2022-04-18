@@ -16,17 +16,21 @@ namespace Pathfinder {
             : device(p_device), physicalDevice(p_physical_device) {
     }
 
-    std::shared_ptr<RenderPipeline> DeviceVk::create_prender_ipeline(
-            const std::vector<char> &vert_shader_code,
-            const std::vector<char> &frag_shader_code,
-            const std::vector<VertexInputAttributeDescription> &p_descriptions,
-            ColorBlendState p_blend_state,
+    VkDevice DeviceVk::get_device() const {
+        return device;
+    }
+
+    std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
+            const std::vector<char> &vert_source,
+            const std::vector<char> &frag_source,
+            const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
+            ColorBlendState blend_state,
             const std::shared_ptr<RenderPass> &render_pass) {
         auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
-        auto render_pipeline_vk = std::make_shared<RenderPipelineVk>(device, p_descriptions, p_blend_state);
+        auto render_pipeline_vk = std::make_shared<RenderPipelineVk>(device, attribute_descriptions, blend_state);
 
-        VkShaderModule vertShaderModule = createShaderModule(vert_shader_code);
-        VkShaderModule fragShaderModule = createShaderModule(frag_shader_code);
+        VkShaderModule vertShaderModule = createShaderModule(vert_source);
+        VkShaderModule fragShaderModule = createShaderModule(frag_source);
 
         // Specify shader stages.
         VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
@@ -50,7 +54,7 @@ namespace Pathfinder {
 
         int32_t lastBinding = -1;
         std::vector<VkVertexInputBindingDescription> bindingDescriptions;
-        for (auto &d: p_descriptions) {
+        for (auto &d: attribute_descriptions) {
             if (d.binding == lastBinding) continue;
             lastBinding = d.binding;
 
@@ -64,7 +68,7 @@ namespace Pathfinder {
 
         std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
         uint32_t location = 0;
-        for (auto &d: p_descriptions) {
+        for (auto &d: attribute_descriptions) {
             VkVertexInputAttributeDescription attributeDescription{};
             attributeDescription.binding = d.binding;
             attributeDescription.location = location++;
@@ -187,8 +191,7 @@ namespace Pathfinder {
         vkDestroyShaderModule(device, vertShaderModule, nullptr);
     }
 
-    VkDevice DeviceVk::get_device() const {
-        return device;
+    std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(const std::vector<char> &comp_shader_code) {
     }
 
     std::shared_ptr<Framebuffer> DeviceVk::create_framebuffer(uint32_t width, uint32_t height,
