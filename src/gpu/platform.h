@@ -11,6 +11,8 @@ namespace Pathfinder {
             switch (device_type) {
 #ifdef PATHFINDER_USE_VULKAN
                 case DeviceType::Vulkan: {
+
+
                     device = std::make_shared<Pathfinder::DeviceVk>(vk_device, vk_physical_device);
                 }
                     break;
