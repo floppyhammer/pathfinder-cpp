@@ -32,6 +32,7 @@ namespace Pathfinder {
     enum class ShaderType {
         Vertex,
         Fragment,
+        VertexFragment,
         Compute,
     };
 

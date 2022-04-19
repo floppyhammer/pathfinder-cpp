@@ -1,5 +1,5 @@
-#ifndef PATHFINDER_GPU_DEVICE_VK_H
-#define PATHFINDER_GPU_DEVICE_VK_H
+#ifndef PATHFINDER_GPU_DRIVER_VK_H
+#define PATHFINDER_GPU_DRIVER_VK_H
 
 #include "../driver.h"
 #include "../vertex_input.h"
@@ -13,6 +13,10 @@ namespace Pathfinder {
         friend class PlatformVk;
     public:
         DriverVk(VkDevice device, VkPhysicalDevice physicalDevice);
+
+        std::shared_ptr<SwapChain> create_swap_chain(uint32_t p_width, uint32_t p_height) override;
+
+        std::shared_ptr<RenderPass> create_render_pass() override;
 
         std::shared_ptr<Framebuffer> create_framebuffer(uint32_t p_width,
                                                         uint32_t p_height,
@@ -33,9 +37,11 @@ namespace Pathfinder {
                                                                const std::vector<char> &frag_source,
                                                                const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
                                                                ColorBlendState blend_state,
+                                                               const std::shared_ptr<DescriptorSet> &descriptor_set,
                                                                const std::shared_ptr<RenderPass> &render_pass) override;
 
-        std::shared_ptr<ComputePipeline> create_compute_pipeline(const std::vector<char> &comp_source) override;
+        std::shared_ptr<ComputePipeline> create_compute_pipeline(const std::vector<char> &comp_source,
+                                                                 const std::shared_ptr<DescriptorSet> &descriptor_set) override;
 
         VkDevice get_device() const;
 
@@ -73,4 +79,4 @@ namespace Pathfinder {
 
 #endif
 
-#endif //PATHFINDER_GPU_DEVICE_VK_H
+#endif //PATHFINDER_GPU_DRIVER_VK_H

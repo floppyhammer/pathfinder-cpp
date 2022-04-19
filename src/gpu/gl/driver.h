@@ -38,9 +38,11 @@ namespace Pathfinder {
                                                                const std::vector<char> &frag_source,
                                                                const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
                                                                ColorBlendState blend_state,
+                                                               const std::shared_ptr<DescriptorSet> &descriptor_set,
                                                                const std::shared_ptr<RenderPass> &render_pass) override;
 
-        std::shared_ptr<ComputePipeline> create_compute_pipeline(const std::vector<char> &comp_source) override;
+        std::shared_ptr<ComputePipeline> create_compute_pipeline(const std::vector<char> &comp_source,
+                                                                 const std::shared_ptr<DescriptorSet> &descriptor_set) override;
     };
 }
 

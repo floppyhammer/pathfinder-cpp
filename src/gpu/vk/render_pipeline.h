@@ -9,6 +9,7 @@
 
 namespace Pathfinder {
     class RenderPipelineVk : public RenderPipeline {
+        friend class DriverVk;
     public:
         RenderPipelineVk(VkDevice p_device,
                          const std::vector<VertexInputAttributeDescription> &p_attribute_descriptions,
@@ -35,13 +36,15 @@ namespace Pathfinder {
     private:
         VkPipeline id;
 
+        VkDescriptorSetLayout descriptor_set_layout;
+
+        VkPipelineLayout layout;
+
         std::vector<VertexInputAttributeDescription> attribute_descriptions;
 
         ColorBlendState blend_state{};
 
         VkDevice device;
-
-        friend class DeviceVk;
     };
 }
 

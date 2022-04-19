@@ -48,10 +48,9 @@ namespace Pathfinder {
         // Create a logical device.
         createLogicalDevice();
 
-        auto device_vk = std::make_shared<DeviceVk>();
-        device_vk->device = device;
+        auto driver_vk = std::make_shared<DriverVk>(device, physicalDevice);
 
-        device = device_vk;
+        driver = driver_vk;
     }
 
     void PlatformVk::initWindow() {

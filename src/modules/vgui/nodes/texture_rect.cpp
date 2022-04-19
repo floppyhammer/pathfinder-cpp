@@ -76,21 +76,23 @@ namespace Pathfinder {
             // FIXME
             auto render_pass = driver->create_render_pass();
 
+            {
+                descriptor_set = std::make_shared<DescriptorSet>();
+
+                descriptor_set->add_or_update_descriptor({
+                                                                 DescriptorType::UniformBuffer,
+                                                                 ShaderType::Vertex,
+                                                                 0,
+                                                                 "bUniform",
+                                                                 uniform_buffer});
+            }
+
             pipeline = driver->create_render_pipeline({vert_source.begin(), vert_source.end()},
                                                       {frag_source.begin(), frag_source.end()},
                                                       attribute_descriptions,
                                                       blend_state,
+                                                      descriptor_set,
                                                       render_pass);
-        }
-
-        {
-            descriptor_set = std::make_shared<DescriptorSet>();
-
-            descriptor_set->add_or_update_descriptor({
-                                                             DescriptorType::UniformBuffer,
-                                                             0,
-                                                             "bUniform",
-                                                             uniform_buffer});
         }
     }
 
@@ -99,6 +101,7 @@ namespace Pathfinder {
 
         Descriptor descriptor;
         descriptor.type = DescriptorType::Texture;
+        descriptor.stage = ShaderType::Fragment;
         descriptor.binding = 0;
         descriptor.binding_name = "uTexture";
         descriptor.texture = texture;

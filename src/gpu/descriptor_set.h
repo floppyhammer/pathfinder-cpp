@@ -19,7 +19,9 @@ namespace Pathfinder {
     struct Descriptor {
         DescriptorType type;
 
-        uint32_t binding;
+        ShaderType stage;
+
+        uint32_t binding{};
         std::string binding_name; // For compatibility with lower versions of OpenGL.
 
         // Only one is valid.
@@ -35,7 +37,7 @@ namespace Pathfinder {
             descriptors[(uint32_t) descriptor.type + descriptor.binding] = descriptor;
         }
 
-        inline std::unordered_map<uint32_t, Descriptor> &get_descriptors() {
+        inline const std::unordered_map<uint32_t, Descriptor> &get_descriptors() const {
             return descriptors;
         }
 

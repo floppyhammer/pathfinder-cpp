@@ -20,14 +20,69 @@ namespace Pathfinder {
         return device;
     }
 
+    std::shared_ptr<SwapChain> DriverVk::create_swap_chain(uint32_t p_width, uint32_t p_height) {
+        return std::shared_ptr<SwapChain>();
+    }
+
+    std::shared_ptr<RenderPass> DriverVk::create_render_pass() {
+        return std::shared_ptr<RenderPass>();
+    }
+
     std::shared_ptr<RenderPipeline> DriverVk::create_render_pipeline(
             const std::vector<char> &vert_source,
             const std::vector<char> &frag_source,
             const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
             ColorBlendState blend_state,
+            const std::shared_ptr<DescriptorSet> &descriptor_set,
             const std::shared_ptr<RenderPass> &render_pass) {
         auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
         auto render_pipeline_vk = std::make_shared<RenderPipelineVk>(device, attribute_descriptions, blend_state);
+
+        // Create descriptor set layout.
+        {
+            std::vector<VkDescriptorSetLayoutBinding> bindings;
+
+            int32_t last_binding = -1;
+            for (auto &pair : descriptor_set->get_descriptors()) {
+                auto &d = pair.second;
+                if (d.binding == last_binding) continue;
+                last_binding = d.binding;
+
+                VkDescriptorSetLayoutBinding binding;
+                binding.binding = d.binding;
+                binding.descriptorCount = 1;
+                binding.descriptorType = to_vk_descriptor_type(d.type);
+                binding.pImmutableSamplers = nullptr;
+                binding.stageFlags = to_vk_shader_stage(d.stage);
+            }
+
+            VkDescriptorSetLayoutCreateInfo layoutInfo{};
+            layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            layoutInfo.bindingCount = bindings.size();
+            layoutInfo.pBindings = bindings.data();
+
+            if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr,
+                                            &render_pipeline_vk->descriptor_set_layout) != VK_SUCCESS) {
+                throw std::runtime_error("Failed to create descriptor set layout!");
+            }
+        }
+
+        // Create pipeline layout.
+        {
+            VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+            pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+            pipelineLayoutInfo.setLayoutCount = 1;
+            pipelineLayoutInfo.pSetLayouts = &render_pipeline_vk->descriptor_set_layout;
+            pipelineLayoutInfo.pushConstantRangeCount = 0;
+
+            // Create pipeline layout.
+            if (vkCreatePipelineLayout(device,
+                                       &pipelineLayoutInfo,
+                                       nullptr,
+                                       &render_pipeline_vk->layout) != VK_SUCCESS) {
+                throw std::runtime_error("Failed to create pipeline layout!");
+            }
+        }
 
         VkShaderModule vertShaderModule = createShaderModule(vert_source);
         VkShaderModule fragShaderModule = createShaderModule(frag_source);
@@ -170,7 +225,7 @@ namespace Pathfinder {
         pipelineInfo.pRasterizationState = &rasterizer;
         pipelineInfo.pMultisampleState = &multisampling;
         pipelineInfo.pColorBlendState = &colorBlending;
-        pipelineInfo.layout = blitPipelineLayout;
+        pipelineInfo.layout = render_pipeline_vk->layout;
         pipelineInfo.renderPass = render_pass_vk->id;
         pipelineInfo.subpass = 0;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
@@ -189,9 +244,12 @@ namespace Pathfinder {
         // Clean up shader modules.
         vkDestroyShaderModule(device, fragShaderModule, nullptr);
         vkDestroyShaderModule(device, vertShaderModule, nullptr);
+
+        return render_pipeline_vk;
     }
 
-    std::shared_ptr<ComputePipeline> DriverVk::create_compute_pipeline(const std::vector<char> &comp_shader_code) {
+    std::shared_ptr<ComputePipeline> DriverVk::create_compute_pipeline(const std::vector<char> &comp_shader_code,
+                                                                       const std::shared_ptr<DescriptorSet> &descriptor_set) {
     }
 
     std::shared_ptr<Framebuffer> DriverVk::create_framebuffer(uint32_t width, uint32_t height,
@@ -329,17 +387,6 @@ namespace Pathfinder {
 
     std::shared_ptr<CommandBuffer> DriverVk::create_command_buffer() {
         return std::shared_ptr<CommandBuffer>();
-    }
-
-    std::shared_ptr<RenderPipeline>
-    DriverVk::create_render_pipeline(const std::string &vert_source, const std::string &frag_source,
-                                     const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
-                                     ColorBlendState blend_state) {
-        return std::shared_ptr<RenderPipeline>();
-    }
-
-    std::shared_ptr<ComputePipeline> DriverVk::create_compute_pipeline(const std::string &comp_source) {
-        return std::shared_ptr<ComputePipeline>();
     }
 
     VkShaderModule DriverVk::createShaderModule(const std::vector<char> &code) {

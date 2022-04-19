@@ -121,29 +121,32 @@ namespace Pathfinder {
 
             ColorBlendState blend_state = {true, BlendFactor::ONE, BlendFactor::ONE};
 
-            fill_pipeline = driver->create_render_pipeline(fill_vert_source,
-                                                           fill_frag_source,
-                                                           attribute_descriptions,
-                                                           blend_state,
-                                                           mask_render_pass);
-
             // Set descriptor set.
             {
                 fill_descriptor_set = std::make_shared<DescriptorSet>();
 
                 fill_descriptor_set->add_or_update_descriptor({
                     DescriptorType::UniformBuffer,
+                    ShaderType::Vertex,
                     0,
                     "bFixedSizes",
                     fixed_sizes_ub,
                     nullptr});
                 fill_descriptor_set->add_or_update_descriptor({
                     DescriptorType::Texture,
+                    ShaderType::Fragment,
                     0,
                     "uAreaLUT",
                     nullptr,
                     area_lut_texture});
             }
+
+            fill_pipeline = driver->create_render_pipeline(fill_vert_source,
+                                                           fill_frag_source,
+                                                           attribute_descriptions,
+                                                           blend_state,
+                                                           fill_descriptor_set,
+                                                           mask_render_pass);
         }
 
         // Tile pipeline.
@@ -220,12 +223,6 @@ namespace Pathfinder {
 
             ColorBlendState blend_state = {true, BlendFactor::ONE, BlendFactor::ONE_MINUS_SRC_ALPHA};
 
-            tile_pipeline = driver->create_render_pipeline(tile_vert_source,
-                                                           tile_frag_source,
-                                                           attribute_descriptions,
-                                                           blend_state,
-                                                           dest_render_pass);
-
             // Create uniform buffers.
             tile_transform_ub = driver->create_buffer(BufferType::Uniform, 16 * sizeof(float));
             tile_varying_sizes_ub = driver->create_buffer(BufferType::Uniform, 8 * sizeof(float));
@@ -239,6 +236,7 @@ namespace Pathfinder {
                 {
                     Descriptor descriptor;
                     descriptor.type = DescriptorType::UniformBuffer;
+                    descriptor.stage = ShaderType::Vertex,
                     descriptor.binding = 0;
                     descriptor.binding_name = "bTransform";
                     descriptor.buffer = tile_transform_ub;
@@ -249,6 +247,7 @@ namespace Pathfinder {
                 {
                     Descriptor descriptor;
                     descriptor.type = DescriptorType::UniformBuffer;
+                    descriptor.stage = ShaderType::VertexFragment,
                     descriptor.binding = 1;
                     descriptor.binding_name = "bVaryingSizes";
                     descriptor.buffer = tile_varying_sizes_ub;
@@ -259,6 +258,7 @@ namespace Pathfinder {
                 {
                     Descriptor descriptor;
                     descriptor.type = DescriptorType::UniformBuffer;
+                    descriptor.stage = ShaderType::VertexFragment,
                     descriptor.binding = 2;
                     descriptor.binding_name = "bFixedSizes";
                     descriptor.buffer = fixed_sizes_ub;
@@ -271,6 +271,7 @@ namespace Pathfinder {
                 {
                     Descriptor descriptor;
                     descriptor.type = DescriptorType::Texture;
+                    descriptor.stage = ShaderType::Vertex,
                     descriptor.binding = 1;
                     descriptor.binding_name = "uTextureMetadata";
                     descriptor.texture = metadata_texture;
@@ -281,6 +282,7 @@ namespace Pathfinder {
                 {
                     Descriptor descriptor;
                     descriptor.type = DescriptorType::Texture;
+                    descriptor.stage = ShaderType::Fragment,
                     descriptor.binding = 3;
                     descriptor.binding_name = "uMaskTexture0";
                     descriptor.texture = mask_framebuffer->get_texture();
@@ -288,6 +290,13 @@ namespace Pathfinder {
                     tile_descriptor_set->add_or_update_descriptor(descriptor);
                 }
             }
+
+            tile_pipeline = driver->create_render_pipeline(tile_vert_source,
+                                                           tile_frag_source,
+                                                           attribute_descriptions,
+                                                           blend_state,
+                                                           tile_descriptor_set,
+                                                           dest_render_pass);
         }
     }
 
@@ -424,11 +433,11 @@ namespace Pathfinder {
 
         // Update descriptor set.
         {
-            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, 0, "uDestTexture", nullptr, nullptr});
-            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, 2, "uZBuffer", nullptr, z_buffer_texture});
+            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Fragment, 0, "uDestTexture", nullptr, nullptr});
+            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Vertex, 2, "uZBuffer", nullptr, z_buffer_texture});
 
             if (color_target.framebuffer != nullptr) {
-                tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, 4, "uColorTexture0", nullptr, color_target.framebuffer->get_texture()});
+                tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Fragment, 4, "uColorTexture0", nullptr, color_target.framebuffer->get_texture()});
             }
         }
 
