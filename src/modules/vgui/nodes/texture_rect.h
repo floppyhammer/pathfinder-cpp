@@ -17,13 +17,14 @@
 namespace Pathfinder {
     class TextureRect : public Control {
     public:
-        TextureRect(float viewport_width, float viewport_height);
+        TextureRect(const std::shared_ptr<Driver> &driver, float viewport_width, float viewport_height);
 
         void set_texture(std::shared_ptr<Texture> p_texture);
 
         [[nodiscard]] std::shared_ptr<Texture> get_texture() const;
 
-        void draw(const std::shared_ptr<Pathfinder::CommandBuffer>& cmd_buffer,
+        void draw(const std::shared_ptr<Driver> &driver,
+                  const std::shared_ptr<Pathfinder::CommandBuffer>& cmd_buffer,
                   const Vec2<uint32_t> &framebuffer_size);
 
     private:

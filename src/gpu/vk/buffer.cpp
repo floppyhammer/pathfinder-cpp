@@ -1,6 +1,6 @@
 #include "buffer.h"
 
-#include "device.h"
+#include "driver.h"
 
 #include <stdexcept>
 

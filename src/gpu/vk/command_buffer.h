@@ -9,6 +9,7 @@
 
 namespace Pathfinder {
     class CommandBufferVk : public CommandBuffer {
+        friend class DriverVk;
     public:
         void begin_render_pass(const std::shared_ptr<Framebuffer> &framebuffer,
                                bool clear,

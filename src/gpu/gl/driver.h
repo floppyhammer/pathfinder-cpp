@@ -1,11 +1,11 @@
-#ifndef PATHFINDER_GPU_DEVICE_GL_H
-#define PATHFINDER_GPU_DEVICE_GL_H
+#ifndef PATHFINDER_GPU_DRIVER_GL_H
+#define PATHFINDER_GPU_DRIVER_GL_H
 
 #include "swap_chain.h"
 #include "buffer.h"
 #include "texture.h"
 #include "command_buffer.h"
-#include "../device.h"
+#include "../driver.h"
 #include "../../common/math/basic.h"
 #include "../../common/global_macros.h"
 #include "../../common/logger.h"
@@ -13,7 +13,7 @@
 #include <vector>
 
 namespace Pathfinder {
-    class DeviceGl : public Device {
+    class DriverGl : public Driver {
     public:
         std::shared_ptr<SwapChain> create_swap_chain(uint32_t p_width, uint32_t p_height) override;
 
@@ -44,4 +44,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_GPU_DEVICE_GL_H
+#endif //PATHFINDER_GPU_DRIVER_GL_H

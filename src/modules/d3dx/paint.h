@@ -13,6 +13,7 @@
 #include "../../common/math/vec2.h"
 #include "../../common/math/rect.h"
 #include "../../common/math/transform2.h"
+#include "../../gpu/driver.h"
 
 #include <map>
 #include <utility>
@@ -231,7 +232,7 @@ namespace Pathfinder {
 
         Paint get_paint(uint32_t paint_id) const;
 
-        RenderTarget push_render_target(const Vec2<int> &render_target_size);
+        RenderTarget push_render_target(const std::shared_ptr<Driver>& p_driver, const Vec2<int> &render_target_size);
 
         std::shared_ptr<Framebuffer> get_render_target(uint32_t render_target_id) const;
 

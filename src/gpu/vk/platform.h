@@ -2,6 +2,7 @@
 #define PATHFINDER_GPU_PLATFORM_VK_H
 
 #include "../../common/global_macros.h"
+#include "../platform.h"
 
 #include <vector>
 #include <iostream>
@@ -41,16 +42,14 @@ namespace Pathfinder {
         std::vector<VkPresentModeKHR> presentModes;
     };
 
-    class PlatformVk {
+    class PlatformVk : public Platform {
     public:
-        PlatformVk();
-
-        static PlatformVk &getSingleton() {
+        static PlatformVk &get_singleton() {
             static PlatformVk singleton;
             return singleton;
         }
 
-        GLFWwindow *window;
+        void init(uint32_t p_width, uint32_t p_height);
 
         VkSurfaceKHR surface;
 
@@ -61,6 +60,11 @@ namespace Pathfinder {
         VkDevice device{};
 
         bool framebufferResized = false;
+
+        /// Process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly.
+        void handle_inputs();
+
+        void swap_buffers_and_poll_events() const;
 
         static void framebufferResizeCallback(GLFWwindow *window, int width, int height) {
             auto platform = reinterpret_cast<PlatformVk *>(glfwGetWindowUserPointer(window));

@@ -1,4 +1,4 @@
-#include "device.h"
+#include "driver.h"
 
 #include "render_pipeline.h"
 #include "compute_pipeline.h"
@@ -9,12 +9,12 @@
 #include "../../common/logger.h"
 
 namespace Pathfinder {
-    std::shared_ptr<SwapChain> DeviceGl::create_swap_chain(uint32_t p_width, uint32_t p_height) {
+    std::shared_ptr<SwapChain> DriverGl::create_swap_chain(uint32_t p_width, uint32_t p_height) {
         auto swap_chain_gl = std::make_shared<SwapChainGl>(p_width, p_height);
         return swap_chain_gl;
     }
 
-    std::shared_ptr<Framebuffer> DeviceGl::create_framebuffer(uint32_t p_width, uint32_t p_height,
+    std::shared_ptr<Framebuffer> DriverGl::create_framebuffer(uint32_t p_width, uint32_t p_height,
                                                               TextureFormat p_format, DataType p_type,
                                                               const std::shared_ptr<RenderPass> &render_pass) {
         auto framebuffer_gl = std::make_shared<FramebufferGl>(p_width, p_height, p_format, p_type);
@@ -23,14 +23,14 @@ namespace Pathfinder {
         return framebuffer_gl;
     }
 
-    std::shared_ptr<Buffer> DeviceGl::create_buffer(BufferType type, size_t size) {
+    std::shared_ptr<Buffer> DriverGl::create_buffer(BufferType type, size_t size) {
         auto buffer = std::make_shared<BufferGl>(type, size);
 
         check_error("create_buffer");
         return buffer;
     }
 
-    std::shared_ptr<Texture> DeviceGl::create_texture(uint32_t p_width,
+    std::shared_ptr<Texture> DriverGl::create_texture(uint32_t p_width,
                                                       uint32_t p_height,
                                                       TextureFormat p_format,
                                                       DataType p_type) {
@@ -40,21 +40,21 @@ namespace Pathfinder {
         return texture_gl;
     }
 
-    std::shared_ptr<CommandBuffer> DeviceGl::create_command_buffer() {
+    std::shared_ptr<CommandBuffer> DriverGl::create_command_buffer() {
         auto command_buffer_gl = std::make_shared<CommandBufferGl>();
 
         check_error("create_command_buffer");
         return command_buffer_gl;
     }
 
-    std::shared_ptr<RenderPass> DeviceGl::create_render_pass() {
+    std::shared_ptr<RenderPass> DriverGl::create_render_pass() {
         auto render_pass_gl = std::make_shared<RenderPassGl>();
 
         check_error("create_render_pass");
         return render_pass_gl;
     }
 
-    std::shared_ptr<RenderPipeline> DeviceGl::create_render_pipeline(const std::vector<char> &vert_source,
+    std::shared_ptr<RenderPipeline> DriverGl::create_render_pipeline(const std::vector<char> &vert_source,
                                                                      const std::vector<char> &frag_source,
                                                                      const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
                                                                      ColorBlendState blend_state,
@@ -68,7 +68,7 @@ namespace Pathfinder {
         return pipeline_gl;
     }
 
-    std::shared_ptr<ComputePipeline> DeviceGl::create_compute_pipeline(const std::vector<char> &comp_source) {
+    std::shared_ptr<ComputePipeline> DriverGl::create_compute_pipeline(const std::vector<char> &comp_source) {
         auto pipeline_gl = std::make_shared<ComputePipelineGl>(comp_source);
 
         check_error("create_compute_pipeline");

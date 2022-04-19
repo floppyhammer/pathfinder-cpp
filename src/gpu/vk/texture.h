@@ -10,6 +10,7 @@
 
 namespace Pathfinder {
     class TextureVk : public Texture {
+        friend class DriverVk;
     public:
         TextureVk(VkDevice p_device, uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type);
 
@@ -36,8 +37,6 @@ namespace Pathfinder {
 
         /// For releasing resources in destructor.
         VkDevice device;
-
-        friend class DeviceVk;
     };
 }
 

@@ -1,4 +1,4 @@
-#include "platform_gl.h"
+#include "platform.h"
 
 #include "../../common/logger.h"
 
@@ -11,7 +11,7 @@ namespace Pathfinder {
         // Get a GLFW window.
         initWindow(p_width, p_height);
 
-        device = std::make_shared<Pathfinder::DeviceGl>();
+        driver = std::make_shared<Pathfinder::DriverGl>();
     }
 
     void PlatformGl::initWindow(uint32_t p_width, uint32_t p_height) {
@@ -32,15 +32,15 @@ namespace Pathfinder {
 #endif
 
         // GLFW: window creation.
-        glfw_window = glfwCreateWindow(p_width, p_height, "Pathfinder Demo (GL)", nullptr, nullptr);
+        window = glfwCreateWindow(p_width, p_height, "Pathfinder Demo (GL)", nullptr, nullptr);
 
-        if (glfw_window == nullptr) {
+        if (window == nullptr) {
             Logger::error("Failed to create GLFW window!", "GLFW");
             glfwTerminate();
             return;
         }
 
-        glfwMakeContextCurrent(glfw_window);
+        glfwMakeContextCurrent(window);
         //glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
         // GLAD: load all OpenGL function pointers.
@@ -59,13 +59,9 @@ namespace Pathfinder {
         Logger::info(string_stream.str(), "OpenGL");
     }
 
-    GLFWwindow *PlatformGl::get_glfw_window() const {
-        return glfw_window;
-    }
-
     void PlatformGl::handle_inputs() {
-        if (glfwGetKey(glfw_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-            glfwSetWindowShouldClose(glfw_window, true);
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+            glfwSetWindowShouldClose(window, true);
 //        // GLFW input callbacks.
 //        {
 //            // A lambda function that doesn't capture anything can be implicitly converted to a regular function pointer.
@@ -94,7 +90,7 @@ namespace Pathfinder {
 
     void PlatformGl::swap_buffers_and_poll_events() const {
         // GLFW: swap buffers and poll IO events (keys pressed/released, mouse moved etc.).
-        glfwSwapBuffers(glfw_window);
+        glfwSwapBuffers(window);
         glfwPollEvents();
     }
 

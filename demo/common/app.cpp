@@ -2,9 +2,10 @@
 
 #include "../../src/common/logger.h"
 #include "../../src/modules/vgui/servers/vector_server.h"
-#include "../../src/gpu/platform.h"
+#include "../../src/gpu/gl/platform.h"
 
-App::App(int window_width,
+App::App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
+         int window_width,
          int window_height,
          std::vector<char> &area_lut_input,
          std::vector<char> &font_input,
@@ -12,15 +13,16 @@ App::App(int window_width,
     // Set logger level.
     Pathfinder::Logger::set_level(Pathfinder::Logger::Level::DEBUG);
 
-    Pathfinder::Platform::get_singleton().init(Pathfinder::DeviceType::GL4);
-    Pathfinder::Platform::get_singleton().recreate_swap_chain(window_width, window_height);
+    driver = p_driver;
 
-    Pathfinder::VectorServer::get_singleton().init(window_width,
+    Pathfinder::VectorServer::get_singleton().init(driver,
+                                                   window_width,
                                                    window_height,
                                                    area_lut_input);
 
     // Set up a canvas.
-    canvas = std::make_shared<Pathfinder::Canvas>(window_width,
+    canvas = std::make_shared<Pathfinder::Canvas>(driver,
+                                                  window_width,
                                                   window_height,
                                                   area_lut_input);
     canvas->load_svg(p_svg_input);
@@ -37,8 +39,8 @@ App::App(int window_width,
     button->set_rect_position(400, 0);
 
     // Set viewport texture to a texture rect.
-    texture_rect0 = std::make_shared<Pathfinder::TextureRect>(window_width, window_height);
-    texture_rect1 = std::make_shared<Pathfinder::TextureRect>(window_width, window_height);
+    texture_rect0 = std::make_shared<Pathfinder::TextureRect>(driver, window_width, window_height);
+    texture_rect1 = std::make_shared<Pathfinder::TextureRect>(driver, window_width, window_height);
 
     // Timers.
     start_time = std::chrono::steady_clock::now();
@@ -46,7 +48,7 @@ App::App(int window_width,
     last_time_updated_fps = start_time;
 }
 
-void App::loop() {
+void App::loop(const std::shared_ptr<Pathfinder::SwapChain> &swap_chain) {
     // Timing.
     // ----------------------------------------
     auto current_time = std::chrono::steady_clock::now();
@@ -96,20 +98,20 @@ void App::loop() {
     // Server process.
     Pathfinder::VectorServer::get_singleton().canvas->draw();
 
-    auto cmd_buffer = Pathfinder::Platform::get_singleton().device->create_command_buffer();
+    auto cmd_buffer = driver->create_command_buffer();
 
-    auto framebuffer = Pathfinder::Platform::get_singleton().swap_chain->get_framebuffer(0);
+    auto framebuffer = swap_chain->get_framebuffer(0);
     cmd_buffer->begin_render_pass(framebuffer,
                                   true,
                                   Pathfinder::ColorF(0.2, 0.2, 0.2, 1.0));
 
     // Draw canvas to screen.
     texture_rect0->set_texture(canvas->get_dest_texture());
-    texture_rect0->draw(cmd_buffer, framebuffer->get_size());
+    texture_rect0->draw(driver, cmd_buffer, framebuffer->get_size());
 
     // Draw label to screen.
     texture_rect1->set_texture(Pathfinder::VectorServer::get_singleton().canvas->get_dest_texture());
-    texture_rect1->draw(cmd_buffer, framebuffer->get_size());
+    texture_rect1->draw(driver, cmd_buffer, framebuffer->get_size());
 
     cmd_buffer->end_render_pass();
 

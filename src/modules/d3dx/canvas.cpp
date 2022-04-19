@@ -38,7 +38,8 @@ namespace Pathfinder {
      * @param current_state Canvas state.
      * @param outline_bounds Original shape bounds.
      */
-    ShadowBlurRenderTargetInfo push_shadow_blur_render_targets(Scene &scene,
+    ShadowBlurRenderTargetInfo push_shadow_blur_render_targets(const std::shared_ptr<Driver>& driver,
+                                                               Scene &scene,
                                                                State &current_state,
                                                                Rect<float> outline_bounds) {
         ShadowBlurRenderTargetInfo shadow_blur_info;
@@ -52,8 +53,8 @@ namespace Pathfinder {
         // Bounds expansion caused by blurring.
         auto bounds = outline_bounds.dilate(sigma * 3.f).round_out().to_i32();
 
-        shadow_blur_info.id_y = scene.push_render_target(bounds.size());
-        shadow_blur_info.id_x = scene.push_render_target(bounds.size());
+        shadow_blur_info.id_y = scene.push_render_target(driver, bounds.size());
+        shadow_blur_info.id_x = scene.push_render_target(driver, bounds.size());
 
         shadow_blur_info.sigma = sigma;
         shadow_blur_info.bounds = bounds;
@@ -120,7 +121,9 @@ namespace Pathfinder {
         scene.push_draw_path(path_y);
     }
 
-    Canvas::Canvas(float size_x, float size_y, const std::vector<char> &area_lut_input) {
+    Canvas::Canvas(const std::shared_ptr<Driver>& p_driver, float size_x, float size_y, const std::vector<char> &area_lut_input) {
+        driver = p_driver;
+
         // Set up a scene.
         scene = std::make_shared<Scene>(0, Rect<float>(0, 0, size_x, size_y));
 
@@ -129,9 +132,9 @@ namespace Pathfinder {
 
         // Set up a renderer.
 #ifndef PATHFINDER_USE_D3D11
-        renderer = std::make_shared<RendererD3D9>(size_x, size_y);
+        renderer = std::make_shared<RendererD3D9>(p_driver, size_x, size_y);
 #else
-        renderer = std::make_shared<RendererD3D11>(size_x, size_y);
+        renderer = std::make_shared<RendererD3D11>(p_driver, size_x, size_y);
 #endif
 
         renderer->set_up_area_lut(area_lut_input);
@@ -161,7 +164,7 @@ namespace Pathfinder {
             // Set shadow offset.
             shadow_shape.transform(Transform2::from_translation(current_state.shadow_offset));
 
-            auto shadow_blur_info = push_shadow_blur_render_targets(*scene, current_state, shadow_shape.bounds);
+            auto shadow_blur_info = push_shadow_blur_render_targets(driver, *scene, current_state, shadow_shape.bounds);
 
             shadow_shape.transform(Transform2::from_translation(-shadow_blur_info.bounds.origin().to_f32()));
 

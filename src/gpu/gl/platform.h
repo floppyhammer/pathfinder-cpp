@@ -9,9 +9,6 @@
 #include <optional>
 
 namespace Pathfinder {
-    /// How many frames should be processed concurrently.
-    const int MAX_FRAMES_IN_FLIGHT = 2;
-
     class PlatformGl : public Platform {
     public:
         static PlatformGl &get_singleton() {
@@ -20,8 +17,6 @@ namespace Pathfinder {
         }
 
         void init(uint32_t p_width, uint32_t p_height);
-
-        GLFWwindow *get_glfw_window() const;
 
         /// Process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly.
         void handle_inputs();
@@ -39,8 +34,6 @@ namespace Pathfinder {
         void cleanup();
 
     private:
-        GLFWwindow *glfw_window{};
-
         void initWindow(uint32_t p_width, uint32_t p_height);
     };
 }

@@ -11,6 +11,7 @@
 
 namespace Pathfinder {
     class BufferVk : public Buffer {
+        friend class DriverVk;
     public:
         BufferVk(VkDevice p_device, BufferType p_type, size_t p_size);
 
@@ -21,8 +22,6 @@ namespace Pathfinder {
         VkDeviceMemory device_memory{};
 
         VkDevice device;
-
-        friend class DeviceVk;
     };
 }
 

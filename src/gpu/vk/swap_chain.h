@@ -8,7 +8,7 @@
 
 namespace Pathfinder {
     class SwapChainVk : public SwapChain {
-        friend class DeviceVk;
+        friend class DriverVk;
     public:
         SwapChainVk(uint32_t p_width, uint32_t p_height) {
         }

@@ -6,7 +6,7 @@
 
 namespace Pathfinder {
     class SwapChainGl : public SwapChain {
-        friend class DeviceGl;
+        friend class DriverGl;
     public:
         SwapChainGl(uint32_t p_width, uint32_t p_height) {
             framebuffer = std::make_shared<FramebufferGl>(p_width, p_height);

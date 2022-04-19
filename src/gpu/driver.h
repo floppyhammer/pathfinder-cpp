@@ -1,5 +1,5 @@
-#ifndef PATHFINDER_GPU_DEVICE_H
-#define PATHFINDER_GPU_DEVICE_H
+#ifndef PATHFINDER_GPU_DRIVER_H
+#define PATHFINDER_GPU_DRIVER_H
 
 #include "swap_chain.h"
 #include "render_pass.h"
@@ -10,7 +10,7 @@
 #include "compute_pipeline.h"
 
 namespace Pathfinder {
-    class Device {
+    class Driver {
     public:
         virtual std::shared_ptr<SwapChain> create_swap_chain(uint32_t p_width, uint32_t p_height) = 0;
 
@@ -41,4 +41,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_GPU_DEVICE_H
+#endif //PATHFINDER_GPU_DRIVER_H

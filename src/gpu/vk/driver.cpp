@@ -1,4 +1,4 @@
-#include "device.h"
+#include "driver.h"
 
 #include "buffer.h"
 #include "texture.h"
@@ -12,15 +12,15 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    DeviceVk::DeviceVk(VkDevice p_device, VkPhysicalDevice p_physical_device)
+    DriverVk::DriverVk(VkDevice p_device, VkPhysicalDevice p_physical_device)
             : device(p_device), physicalDevice(p_physical_device) {
     }
 
-    VkDevice DeviceVk::get_device() const {
+    VkDevice DriverVk::get_device() const {
         return device;
     }
 
-    std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
+    std::shared_ptr<RenderPipeline> DriverVk::create_render_pipeline(
             const std::vector<char> &vert_source,
             const std::vector<char> &frag_source,
             const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
@@ -191,10 +191,10 @@ namespace Pathfinder {
         vkDestroyShaderModule(device, vertShaderModule, nullptr);
     }
 
-    std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(const std::vector<char> &comp_shader_code) {
+    std::shared_ptr<ComputePipeline> DriverVk::create_compute_pipeline(const std::vector<char> &comp_shader_code) {
     }
 
-    std::shared_ptr<Framebuffer> DeviceVk::create_framebuffer(uint32_t width, uint32_t height,
+    std::shared_ptr<Framebuffer> DriverVk::create_framebuffer(uint32_t width, uint32_t height,
                                                               TextureFormat format, DataType type,
                                                               const std::shared_ptr<RenderPass> &render_pass) {
         auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
@@ -274,7 +274,7 @@ namespace Pathfinder {
         return framebuffer_vk;
     }
 
-    std::shared_ptr<Buffer> DeviceVk::create_buffer(BufferType type, size_t size) {
+    std::shared_ptr<Buffer> DriverVk::create_buffer(BufferType type, size_t size) {
         auto buffer_vk = std::make_shared<BufferVk>(device, type, size);
 
         switch (type) {
@@ -301,7 +301,7 @@ namespace Pathfinder {
         return buffer_vk;
     }
 
-    std::shared_ptr<Texture> DeviceVk::create_texture(uint32_t width, uint32_t height,
+    std::shared_ptr<Texture> DriverVk::create_texture(uint32_t width, uint32_t height,
                                                       TextureFormat format, DataType type) {
         auto texture_vk = std::make_shared<TextureVk>(
                 device, width, height, format, type);
@@ -327,22 +327,22 @@ namespace Pathfinder {
         return texture_vk;
     }
 
-    std::shared_ptr<CommandBuffer> DeviceVk::create_command_buffer() {
+    std::shared_ptr<CommandBuffer> DriverVk::create_command_buffer() {
         return std::shared_ptr<CommandBuffer>();
     }
 
     std::shared_ptr<RenderPipeline>
-    DeviceVk::create_render_pipeline(const std::string &vert_source, const std::string &frag_source,
+    DriverVk::create_render_pipeline(const std::string &vert_source, const std::string &frag_source,
                                      const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
                                      ColorBlendState blend_state) {
         return std::shared_ptr<RenderPipeline>();
     }
 
-    std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(const std::string &comp_source) {
+    std::shared_ptr<ComputePipeline> DriverVk::create_compute_pipeline(const std::string &comp_source) {
         return std::shared_ptr<ComputePipeline>();
     }
 
-    VkShaderModule DeviceVk::createShaderModule(const std::vector<char> &code) {
+    VkShaderModule DriverVk::createShaderModule(const std::vector<char> &code) {
         VkShaderModuleCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         createInfo.codeSize = code.size();
@@ -356,7 +356,7 @@ namespace Pathfinder {
         return shader_module;
     }
 
-    void DeviceVk::createVkImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
+    void DriverVk::createVkImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
                                  VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage &image,
                                  VkDeviceMemory &imageMemory) const {
         VkImageCreateInfo imageInfo{};
@@ -397,7 +397,7 @@ namespace Pathfinder {
         // -------------------------------------
     }
 
-    VkImageView DeviceVk::createVkImageView(VkImage image,
+    VkImageView DriverVk::createVkImageView(VkImage image,
                                             VkFormat format,
                                             VkImageAspectFlags aspectFlags) const {
         VkImageViewCreateInfo viewInfo{};
@@ -419,7 +419,7 @@ namespace Pathfinder {
         return imageView;
     }
 
-    void DeviceVk::createVkTextureSampler(VkSampler &textureSampler) const {
+    void DriverVk::createVkTextureSampler(VkSampler &textureSampler) const {
         VkSamplerCreateInfo samplerInfo{};
         samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
         samplerInfo.magFilter = VK_FILTER_LINEAR;
@@ -454,7 +454,7 @@ namespace Pathfinder {
         }
     }
 
-    void DeviceVk::createVkBuffer(VkDeviceSize size,
+    void DriverVk::createVkBuffer(VkDeviceSize size,
                                   VkBufferUsageFlags usage,
                                   VkMemoryPropertyFlags properties,
                                   VkBuffer &buffer,
@@ -490,7 +490,7 @@ namespace Pathfinder {
         vkBindBufferMemory(device, buffer, bufferMemory, 0);
     }
 
-    void DeviceVk::createVkRenderPass(VkFormat format, VkRenderPass &renderPass) {
+    void DriverVk::createVkRenderPass(VkFormat format, VkRenderPass &renderPass) {
         // Color attachment.
         // ----------------------------------------
         VkAttachmentDescription colorAttachment{};
@@ -569,7 +569,7 @@ namespace Pathfinder {
         }
     }
 
-    uint32_t DeviceVk::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const {
+    uint32_t DriverVk::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const {
         VkPhysicalDeviceMemoryProperties memProperties;
 
         // Reports memory information for the specified physical device.
@@ -584,7 +584,7 @@ namespace Pathfinder {
         throw std::runtime_error("Failed to find suitable memory type!");
     }
 
-    VkFormat DeviceVk::findSupportedFormat(const std::vector<VkFormat> &candidates,
+    VkFormat DriverVk::findSupportedFormat(const std::vector<VkFormat> &candidates,
                                            VkImageTiling tiling,
                                            VkFormatFeatureFlags features) const {
         for (VkFormat format: candidates) {
@@ -601,7 +601,7 @@ namespace Pathfinder {
         throw std::runtime_error("Failed to find supported format!");
     }
 
-    VkFormat DeviceVk::findDepthFormat() const {
+    VkFormat DriverVk::findDepthFormat() const {
         return findSupportedFormat(
                 {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
                 VK_IMAGE_TILING_OPTIMAL,

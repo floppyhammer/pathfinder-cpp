@@ -1,4 +1,6 @@
-#include "platform_vk.h"
+#include "platform.h"
+
+#include "driver.h"
 
 #include <stdexcept>
 #include <set>
@@ -28,7 +30,7 @@ namespace Pathfinder {
         }
     }
 
-    PlatformVk::PlatformVk() {
+    void PlatformVk::init(uint32_t p_width, uint32_t p_height) {
         // Get a GLFW window.
         initWindow();
 
@@ -45,6 +47,11 @@ namespace Pathfinder {
 
         // Create a logical device.
         createLogicalDevice();
+
+        auto device_vk = std::make_shared<DeviceVk>();
+        device_vk->device = device;
+
+        device = device_vk;
     }
 
     void PlatformVk::initWindow() {
@@ -379,7 +386,7 @@ namespace Pathfinder {
                                              VkFormatFeatureFlags features) const {
         for (VkFormat format: candidates) {
             VkFormatProperties props;
-            vkGetPhysicalDeviceFormatProperties(PlatformVk::getSingleton().physicalDevice, format, &props);
+            vkGetPhysicalDeviceFormatProperties(PlatformVk::get_singleton().physicalDevice, format, &props);
 
             if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
                 return format;
@@ -412,6 +419,14 @@ namespace Pathfinder {
         glfwDestroyWindow(window);
 
         glfwTerminate();
+    }
+
+    void PlatformVk::handle_inputs() {
+
+    }
+
+    void PlatformVk::swap_buffers_and_poll_events() const {
+
     }
 }
 

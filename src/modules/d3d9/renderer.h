@@ -27,7 +27,7 @@ namespace Pathfinder {
         /// Tiles to draw.
         std::vector<DrawTileBatch> pending_tile_batches;
 
-        RendererD3D9(uint32_t canvas_width, uint32_t canvas_height);
+        RendererD3D9(const std::shared_ptr<Driver>& p_driver, uint32_t canvas_width, uint32_t canvas_height);
 
         void set_up_pipelines();
 

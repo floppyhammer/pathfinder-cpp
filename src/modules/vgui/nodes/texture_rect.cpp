@@ -6,10 +6,8 @@
 #include "../../../gpu/platform.h"
 
 namespace Pathfinder {
-    TextureRect::TextureRect(float viewport_width, float viewport_height) {
+    TextureRect::TextureRect(const std::shared_ptr<Driver> &driver, float viewport_width, float viewport_height) {
         type = NodeType::TextureRect;
-
-        auto device = Platform::get_singleton().device;
 
         rect_size.x = viewport_width;
         rect_size.y = viewport_height;
@@ -28,10 +26,10 @@ namespace Pathfinder {
                 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0
         };
 
-        vertex_buffer = device->create_buffer(BufferType::Vertex, sizeof(vertices));
-        uniform_buffer = device->create_buffer(BufferType::Uniform, 16 * sizeof(float));
+        vertex_buffer = driver->create_buffer(BufferType::Vertex, sizeof(vertices));
+        uniform_buffer = driver->create_buffer(BufferType::Uniform, 16 * sizeof(float));
 
-        auto cmd_buffer = device->create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer();
         cmd_buffer->upload_to_buffer(vertex_buffer,
                                      0,
                                      sizeof(vertices),
@@ -76,9 +74,9 @@ namespace Pathfinder {
             ColorBlendState blend_state = {true, BlendFactor::ONE, BlendFactor::ONE_MINUS_SRC_ALPHA};
 
             // FIXME
-            auto render_pass = device->create_render_pass();
+            auto render_pass = driver->create_render_pass();
 
-            pipeline = device->create_render_pipeline({vert_source.begin(), vert_source.end()},
+            pipeline = driver->create_render_pipeline({vert_source.begin(), vert_source.end()},
                                                       {frag_source.begin(), frag_source.end()},
                                                       attribute_descriptions,
                                                       blend_state,
@@ -112,10 +110,9 @@ namespace Pathfinder {
         return texture;
     }
 
-    void TextureRect::draw(const std::shared_ptr<Pathfinder::CommandBuffer> &cmd_buffer,
+    void TextureRect::draw(const std::shared_ptr<Driver> &driver,
+                           const std::shared_ptr<Pathfinder::CommandBuffer> &cmd_buffer,
                            const Vec2<uint32_t> &framebuffer_size) {
-        auto device = Platform::get_singleton().device;
-
         // Get MVP matrix.
         // -------------------------------------------------
         // The actual application order of these matrices is reverse.
@@ -133,7 +130,7 @@ namespace Pathfinder {
         auto mvp_mat = model_mat;
         // -------------------------------------------------
 
-        auto one_shot_cmd_buffer =device->create_command_buffer();
+        auto one_shot_cmd_buffer = driver->create_command_buffer();
         one_shot_cmd_buffer->upload_to_buffer(uniform_buffer, 0, 16 * sizeof(float), &mvp_mat);
         one_shot_cmd_buffer->submit();
 

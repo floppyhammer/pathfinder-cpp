@@ -1,7 +1,5 @@
 #include "program.h"
 
-#include "device.h"
-
 namespace Pathfinder {
     void Program::use() const {
         glUseProgram(id);

@@ -5,6 +5,7 @@
 #ifndef PATHFINDER_CANVAS_H
 #define PATHFINDER_CANVAS_H
 
+#include "../../gpu/driver.h"
 #include "../d3d9/scene_builder.h"
 #include "../d3d9/renderer.h"
 #include "../d3d11/scene_builder.h"
@@ -65,7 +66,7 @@ namespace Pathfinder {
 
     struct Canvas {
     public:
-        Canvas(float p_size_x, float p_size_y, const std::vector<char> &area_lut_input);
+        Canvas(const std::shared_ptr<Driver>& p_driver, float p_size_x, float p_size_y, const std::vector<char> &area_lut_input);
 
         Paint fill_paint() const;
 
@@ -135,6 +136,8 @@ namespace Pathfinder {
         void load_svg(const std::string& input);
 
     private:
+        std::shared_ptr<Driver> driver;
+
         State current_state;
         std::vector<State> saved_states;
 

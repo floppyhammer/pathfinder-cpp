@@ -10,6 +10,7 @@
 
 namespace Pathfinder {
     class FramebufferVk : public Framebuffer {
+        friend class DriverVk;
     public:
         /// To screen viewport.
         FramebufferVk(int p_width, int p_height);
@@ -36,8 +37,6 @@ namespace Pathfinder {
         VkImage depthImage;
         VkDeviceMemory depthImageMemory;
         VkImageView depthImageView;
-
-        friend class DeviceVk;
     };
 }
 

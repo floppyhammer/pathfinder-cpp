@@ -50,7 +50,7 @@ namespace Pathfinder {
         uint32_t point_indices_capacity = 0;
 
         /// Upload segments to buffer.
-        void upload(SegmentsD3D11 &segments);
+        void upload(const std::shared_ptr<Pathfinder::Driver> &driver, SegmentsD3D11 &segments);
     };
 
     struct SceneBuffers {
@@ -60,7 +60,8 @@ namespace Pathfinder {
         ~SceneBuffers();
 
         /// Upload draw and clip segments to buffers.
-        void upload(SegmentsD3D11 &draw_segments,
+        void upload(const std::shared_ptr<Pathfinder::Driver> &driver,
+                    SegmentsD3D11 &draw_segments,
                     SegmentsD3D11 &clip_segments);
     };
 
@@ -75,7 +76,7 @@ namespace Pathfinder {
 
     class RendererD3D11 : public Renderer {
     public:
-        explicit RendererD3D11(uint32_t canvas_width, uint32_t canvas_height);
+        explicit RendererD3D11(const std::shared_ptr<Pathfinder::Driver> &driver, uint32_t canvas_width, uint32_t canvas_height);
 
         void set_up_pipelines();
 

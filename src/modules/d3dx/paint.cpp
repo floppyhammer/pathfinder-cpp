@@ -71,13 +71,11 @@ namespace Pathfinder {
         return paints[paint_id];
     }
 
-    RenderTarget Palette::push_render_target(const Vec2<int> &render_target_size) {
-        auto device = Platform::get_singleton().device;
-
-        auto render_pass = device->create_render_pass();
+    RenderTarget Palette::push_render_target(const std::shared_ptr<Driver>& driver, const Vec2<int> &render_target_size) {
+        auto render_pass = driver->create_render_pass();
         
         // Create a new framebuffer.
-        auto framebuffer = device->create_framebuffer(
+        auto framebuffer = driver->create_framebuffer(
                 render_target_size.x,
                 render_target_size.y,
                 TextureFormat::RGBA8,

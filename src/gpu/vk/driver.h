@@ -1,7 +1,7 @@
 #ifndef PATHFINDER_GPU_DEVICE_VK_H
 #define PATHFINDER_GPU_DEVICE_VK_H
 
-#include "../device.h"
+#include "../driver.h"
 #include "../vertex_input.h"
 #include "../../common/io.h"
 #include "../../common/global_macros.h"
@@ -9,9 +9,10 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    class DeviceVk : public Device {
+    class DriverVk : public Driver {
+        friend class PlatformVk;
     public:
-        DeviceVk(VkDevice device, VkPhysicalDevice physicalDevice);
+        DriverVk(VkDevice device, VkPhysicalDevice physicalDevice);
 
         std::shared_ptr<Framebuffer> create_framebuffer(uint32_t p_width,
                                                         uint32_t p_height,
