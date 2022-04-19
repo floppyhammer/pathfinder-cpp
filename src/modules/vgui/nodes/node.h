@@ -7,6 +7,7 @@ namespace Pathfinder {
         Control,
         TextureRect,
         Label,
+        Button,
 
         Container,
         HBoxContainer,

@@ -28,6 +28,33 @@ int main() {
     // Create a window.
     Window window(1920, 1080);
 
+    InputServer::get_singleton();
+
+    // GLFW input callbacks.
+    {
+        // A lambda function that doesn't capture anything can be implicitly converted to a regular function pointer.
+        auto cursor_position_callback = [](GLFWwindow *window, double x_pos, double y_pos) {
+            Pathfinder::InputEvent input_event{};
+            input_event.type = Pathfinder::InputEventType::MouseMotion;
+            input_event.args.mouse_motion.position = {(float) x_pos, (float) y_pos};
+            InputServer::get_singleton().input_queue.push_back(input_event);
+            InputServer::get_singleton().cursor_position = {(float) x_pos, (float) y_pos};
+            Pathfinder::Logger::verbose("Cursor movement", "InputEvent");
+        };
+        glfwSetCursorPosCallback(window.get_glfw_window(), cursor_position_callback);
+
+        auto cursor_button_callback = [](GLFWwindow *window, int button, int action, int mods) {
+            Pathfinder::InputEvent input_event{};
+            input_event.type = Pathfinder::InputEventType::MouseButton;
+            input_event.args.mouse_button.button = button;
+            input_event.args.mouse_button.pressed = action == GLFW_PRESS;
+            input_event.args.mouse_button.position = InputServer::get_singleton().cursor_position;
+            InputServer::get_singleton().input_queue.push_back(input_event);
+            Pathfinder::Logger::verbose("Cursor button", "InputEvent");
+        };
+        glfwSetMouseButtonCallback(window.get_glfw_window(), cursor_button_callback);
+    }
+
     auto area_lut_input = load_file_as_bytes(PATHFINDER_ASSET_DIR"area-lut.png");
     auto font_input = load_file_as_bytes(PATHFINDER_ASSET_DIR"OpenSans-Regular.ttf");
     auto svg_input = load_file_as_string(PATHFINDER_ASSET_DIR"tiger.svg");

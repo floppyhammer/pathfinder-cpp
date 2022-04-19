@@ -93,6 +93,8 @@ namespace Pathfinder {
         // Layout
         Alignment horizontal_alignment = Alignment::Begin;
         Alignment vertical_alignment = Alignment::Begin;
+
+        StyleBox theme_background;
     };
 }
 

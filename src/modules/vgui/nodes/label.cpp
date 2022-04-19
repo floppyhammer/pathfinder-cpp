@@ -163,7 +163,20 @@ namespace Pathfinder {
     void Label::draw() {
         auto canvas = VectorServer::get_singleton().canvas;
 
-        Control::draw();
+        {
+            // Rebuild & draw the style box.
+            auto style_box_shape = Shape();
+            style_box_shape.add_rect(Rect<float>(Vec2<float>(), rect_size), theme_background.corner_radius);
+
+            canvas->set_fill_paint(Paint::from_color(theme_background.bg_color));
+            canvas->fill_shape(style_box_shape, FillRule::Winding);
+
+            if (theme_background.border_width > 0) {
+                canvas->set_stroke_paint(Paint::from_color(theme_background.border_color));
+                canvas->set_line_width(theme_background.border_width);
+                canvas->stroke_shape(style_box_shape);
+            }
+        }
 
         // Add stroke.
         for (Glyph &g: glyphs) {

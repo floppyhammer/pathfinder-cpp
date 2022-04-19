@@ -32,6 +32,10 @@ App::App(int window_width,
     label->set_font(std::make_shared<Pathfinder::Font>(font_input));
     label->set_horizontal_alignment(Pathfinder::Alignment::Center);
 
+    button = std::make_shared<Pathfinder::Button>();
+    button->set_rect_size(128, 64);
+    button->set_rect_position(400, 0);
+
     // Set viewport texture to a texture rect.
     texture_rect0 = std::make_shared<Pathfinder::TextureRect>(window_width, window_height);
     texture_rect1 = std::make_shared<Pathfinder::TextureRect>(window_width, window_height);
@@ -71,6 +75,12 @@ void App::loop() {
     // Server process.
     Pathfinder::VectorServer::get_singleton().canvas->clear();
 
+    // Input.
+    {
+        auto queue = Pathfinder::InputServer::get_singleton().input_queue;
+        button->input(queue);
+    }
+
     // Update.
     {
         label->update();
@@ -80,6 +90,7 @@ void App::loop() {
     {
         canvas->draw();
         label->draw();
+        button->draw();
     }
 
     // Server process.
@@ -103,4 +114,6 @@ void App::loop() {
     cmd_buffer->end_render_pass();
 
     cmd_buffer->submit();
+
+    Pathfinder::InputServer::get_singleton().clear_queue();
 }

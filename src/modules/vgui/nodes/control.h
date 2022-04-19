@@ -3,6 +3,7 @@
 
 #include "node.h"
 #include "../servers/vector_server.h"
+#include "../servers/input_server.h"
 #include "../resources/style_box.h"
 #include "../../../common/math/vec2.h"
 #include "../../d3dx/canvas.h"
@@ -35,12 +36,6 @@ namespace Pathfinder {
 
         Vec2<float> get_rect_pivot_offset() const;
 
-        void handle_input_events();
-
-        void set_style_box(const StyleBox &p_style_box);
-
-        StyleBox get_style_box() const;
-
         virtual Vec2<float> calculate_minimum_size() const;
 
         Vec2<float> get_minimum_size() const;
@@ -58,9 +53,9 @@ namespace Pathfinder {
 
         Vec2<float> minimum_size = Vec2<float>(0);
 
-        StyleBox style_box;
-
     public:
+        virtual void input(std::vector<InputEvent> &input_queue);
+
         virtual void update();
 
         virtual void draw();

@@ -4,11 +4,12 @@
 #include "../../src/gpu/gl/framebuffer.h"
 #include "../../src/modules/d3dx/canvas.h"
 #include "../../src/modules/vgui/nodes/label.h"
+#include "../../src/modules/vgui/nodes/button.h"
 #include "../../src/modules/vgui/nodes/texture_rect.h"
+#include "../../src/modules/vgui/servers/input_server.h"
 #include "../../src/gpu/gl/device.h"
 #include "../../src/common/global_macros.h"
 #include "../../src/common/io.h"
-
 #include <chrono>
 
 class App {
@@ -25,6 +26,7 @@ private:
     std::shared_ptr<Pathfinder::Canvas> canvas;
     std::shared_ptr<Pathfinder::Label> label;
     std::shared_ptr<Pathfinder::TextureRect> texture_rect0, texture_rect1;
+    std::shared_ptr<Pathfinder::Button> button;
 
     std::chrono::time_point<std::chrono::steady_clock> start_time;
     std::chrono::time_point<std::chrono::steady_clock> last_time;
