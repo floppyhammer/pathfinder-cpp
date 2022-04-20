@@ -85,7 +85,7 @@ namespace Pathfinder {
                                          segments.indices.size() * sizeof(SegmentIndicesD3D11),
                                          segments.indices.data());
 
-            cmd_buffer->submit();
+            cmd_buffer->submit(driver);
         }
     }
 
@@ -374,7 +374,7 @@ namespace Pathfinder {
             auto one_shot_cmd_buffer = driver->create_command_buffer();
             one_shot_cmd_buffer->upload_to_buffer(tile_ub0, 0, 8 * sizeof(float), ubo_data0.data());
             one_shot_cmd_buffer->upload_to_buffer(tile_ub1, 0, 5 * sizeof(int32_t), ubo_data1.data());
-            one_shot_cmd_buffer->submit();
+            one_shot_cmd_buffer->submit(driver);
         }
 
         // Update descriptor set.
@@ -406,7 +406,7 @@ namespace Pathfinder {
 
         cmd_buffer->end_compute_pass();
 
-        cmd_buffer->submit();
+        cmd_buffer->submit(driver);
     }
 
     Vec2<uint32_t> RendererD3D11::tile_size() const {
@@ -449,7 +449,7 @@ namespace Pathfinder {
                                      0,
                                      propagate_metadata.size() * sizeof(PropagateMetadataD3D11),
                                      propagate_metadata.data());
-        one_shot_cmd_buffer->submit();
+        one_shot_cmd_buffer->submit(driver);
 
         auto backdrops_storage_id = driver->create_buffer(BufferType::General,
                                                           backdrops.size() * sizeof(BackdropInfoD3D11));
@@ -464,7 +464,7 @@ namespace Pathfinder {
                                      0,
                                      backdrops.size() * sizeof(BackdropInfoD3D11),
                                      backdrops.data());
-        one_shot_cmd_buffer->submit();
+        one_shot_cmd_buffer->submit(driver);
     }
 
     void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
@@ -620,7 +620,7 @@ namespace Pathfinder {
             one_shot_cmd_buffer->upload_to_buffer(dice_ub1, 0, 3 * sizeof(int32_t), ubo_data1.data());
         }
 
-        one_shot_cmd_buffer->submit();
+        one_shot_cmd_buffer->submit(driver);
 
         // Bind storage buffers.
         {
@@ -648,7 +648,7 @@ namespace Pathfinder {
 
         cmd_buffer->end_compute_pass();
 
-        cmd_buffer->submit();
+        cmd_buffer->submit(driver);
 
         // Read indirect draw params back to CPU memory.
         one_shot_cmd_buffer = driver->create_command_buffer();
@@ -656,7 +656,7 @@ namespace Pathfinder {
                                          0,
                                          8 * sizeof(uint32_t),
                                          indirect_compute_params);
-        one_shot_cmd_buffer->submit();
+        one_shot_cmd_buffer->submit(driver);
 
         // Free some general buffers which are no longer useful.
         //driver->free_general_buffer(dice_metadata_buffer_id);
@@ -696,7 +696,7 @@ namespace Pathfinder {
                                            static_cast<int32_t>(tile_count)};
         one_shot_cmd_buffer->upload_to_buffer(bound_ub, 0, 2 * sizeof(int32_t), ubo_data.data());
 
-        one_shot_cmd_buffer->submit();
+        one_shot_cmd_buffer->submit(driver);
 
         // Bind storage buffers.
         {
@@ -718,7 +718,7 @@ namespace Pathfinder {
 
         cmd_buffer->end_compute_pass();
 
-        cmd_buffer->submit();
+        cmd_buffer->submit(driver);
 
         //driver->free_general_buffer(path_info_buffer_id);
     }
@@ -748,7 +748,7 @@ namespace Pathfinder {
         std::array<int32_t, 2> ubo_data = {(int32_t) microlines_storage.count, (int32_t) allocated_fill_count};
         one_shot_cmd_buffer->upload_to_buffer(bin_ub, 0, 2 * sizeof(int32_t), ubo_data.data());
 
-        one_shot_cmd_buffer->submit();
+        one_shot_cmd_buffer->submit(driver);
 
         // Bind storage buffers.
         {
@@ -780,14 +780,14 @@ namespace Pathfinder {
 
         cmd_buffer->end_compute_pass();
 
-        cmd_buffer->submit();
+        cmd_buffer->submit(driver);
 
         one_shot_cmd_buffer = driver->create_command_buffer();
         one_shot_cmd_buffer->read_buffer(z_buffer_id,
                                          0,
                                          8 * sizeof(uint32_t),
                                          indirect_draw_params);
-        one_shot_cmd_buffer->submit();
+        one_shot_cmd_buffer->submit(driver);
 
         // How many fills we need.
         auto needed_fill_count = indirect_draw_params[FILL_INDIRECT_DRAW_PARAMS_INSTANCE_COUNT_INDEX];
@@ -838,7 +838,7 @@ namespace Pathfinder {
                                            (int32_t) alpha_tile_count};
         one_shot_cmd_buffer->upload_to_buffer(propagate_ub, 0, 4 * sizeof(int32_t), ubo_data.data());
 
-        one_shot_cmd_buffer->submit();
+        one_shot_cmd_buffer->submit(driver);
 
         // Bind storage buffers.
         {
@@ -874,7 +874,7 @@ namespace Pathfinder {
 
         cmd_buffer->end_compute_pass();
 
-        cmd_buffer->submit();
+        cmd_buffer->submit(driver);
 
         one_shot_cmd_buffer = driver->create_command_buffer();
 
@@ -884,7 +884,7 @@ namespace Pathfinder {
                                          8 * sizeof(uint32_t),
                                          fill_indirect_draw_params);
 
-        one_shot_cmd_buffer->submit();
+        one_shot_cmd_buffer->submit(driver);
 
         auto batch_alpha_tile_count = fill_indirect_draw_params[FILL_INDIRECT_DRAW_PARAMS_ALPHA_TILE_COUNT_INDEX];
 
@@ -916,7 +916,7 @@ namespace Pathfinder {
                                            static_cast<int32_t>(alpha_tile_range.end)};
         one_shot_cmd_buffer->upload_to_buffer(fill_ub, 0, 2 * sizeof(int32_t), ubo_data.data());
 
-        one_shot_cmd_buffer->submit();
+        one_shot_cmd_buffer->submit(driver);
 
         // Update descriptor set.
         {
@@ -944,7 +944,7 @@ namespace Pathfinder {
 
         cmd_buffer->end_compute_pass();
 
-        cmd_buffer->submit();
+        cmd_buffer->submit(driver);
     }
 
     void RendererD3D11::sort_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
@@ -957,7 +957,7 @@ namespace Pathfinder {
         // Update uniform buffers.
         one_shot_cmd_buffer->upload_to_buffer(sort_ub, 0, sizeof(int32_t), &tile_count);
 
-        one_shot_cmd_buffer->submit();
+        one_shot_cmd_buffer->submit(driver);
 
         // Update descriptor set.
         {
@@ -981,7 +981,7 @@ namespace Pathfinder {
 
         cmd_buffer->end_compute_pass();
 
-        cmd_buffer->submit();
+        cmd_buffer->submit(driver);
     }
 }
 

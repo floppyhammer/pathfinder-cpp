@@ -47,6 +47,12 @@ namespace Pathfinder {
 
         uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
 
+        void createVkBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
+                            VkMemoryPropertyFlags properties, VkBuffer &buffer,
+                            VkDeviceMemory &bufferMemory);
+
+        void copyDataToMemory(const void *src, VkDeviceMemory bufferMemory, size_t dataSize) const;
+
     private:
         /// The graphics card that we'll end up selecting will be stored in a VkPhysicalDevice handle.
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -63,10 +69,6 @@ namespace Pathfinder {
 
         void createVkTextureSampler(VkSampler &textureSampler) const;
 
-        void createVkBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
-                            VkMemoryPropertyFlags properties, VkBuffer &buffer,
-                            VkDeviceMemory &bufferMemory);
-
         void createVkRenderPass(VkFormat format, VkRenderPass &renderPass);
 
         VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates,
@@ -74,6 +76,7 @@ namespace Pathfinder {
                                      VkFormatFeatureFlags features) const;
 
         VkFormat findDepthFormat() const;
+
     };
 }
 

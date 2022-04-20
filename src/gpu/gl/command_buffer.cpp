@@ -187,7 +187,7 @@ namespace Pathfinder {
         }
     }
 
-    void CommandBufferGl::submit() {
+    void CommandBufferGl::submit(const std::shared_ptr<Driver> &p_driver) {
         while (!commands.empty()) {
             auto &cmd = commands.front();
 

@@ -1,6 +1,8 @@
 #include "command_buffer.h"
 
 #include "buffer.h"
+#include "driver.h"
+#include "../../common/logger.h"
 
 #include <cassert>
 
@@ -185,7 +187,9 @@ namespace Pathfinder {
         }
     }
 
-    void CommandBufferVk::submit() {
+    void CommandBufferVk::submit(const std::shared_ptr<Driver> &p_driver) {
+        auto driver = dynamic_cast<DriverVk *>(p_driver.get());
+
         while (!commands.empty()) {
             auto &cmd = commands.front();
 
@@ -253,40 +257,67 @@ namespace Pathfinder {
                     auto &args = cmd.args.upload_to_texture;
 
                     // In bytes. 4 bytes per pixel.
-                    VkDeviceSize imageSize = tex_width * tex_height * 4;
+                    VkDeviceSize imageSize = args.width * args.height * 4;
 
                     // Temporary buffer and CPU memory.
                     VkBuffer stagingBuffer;
                     VkDeviceMemory stagingBufferMemory;
 
-                    RS::getSingleton().createBuffer(imageSize,
-                                                    VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                                    stagingBuffer,
-                                                    stagingBufferMemory);
+                    driver->createVkBuffer(imageSize,
+                                           VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                           VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                           VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                           stagingBuffer,
+                                           stagingBufferMemory);
 
                     // Copy the pixel values that we got from the image loading library to the buffer.
-                    RS::getSingleton().copyDataToMemory(pixels, stagingBufferMemory, imageSize);
+                    driver->copyDataToMemory(args.data, stagingBufferMemory, imageSize);
 
                     // Transition the texture image to VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
-                    RS::getSingleton().transitionImageLayout(image,
-                                                             VK_FORMAT_R8G8B8A8_SRGB,
-                                                             VK_IMAGE_LAYOUT_UNDEFINED,
-                                                             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+                    driver->transitionImageLayout(image,
+                                                  VK_FORMAT_R8G8B8A8_SRGB,
+                                                  VK_IMAGE_LAYOUT_UNDEFINED,
+                                                  VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
                     // Execute the buffer to image copy operation.
-                    RS::getSingleton().copyBufferToImage(stagingBuffer, image, static_cast<uint32_t>(width),
-                                                         static_cast<uint32_t>(height));
+                    {
+                        // Structure specifying a buffer image copy operation.
+                        VkBufferImageCopy region{};
+                        region.bufferOffset = 0; // Offset in bytes from the start of the buffer object where the image data is copied from or to.
+                        region.bufferRowLength = 0; // Specify in texels a subregion of a larger two- or three-dimensional image in buffer memory, and control the addressing calculations.
+                        region.bufferImageHeight = 0;
+
+                        // A VkImageSubresourceLayers used to specify the specific image subresources of the image used for the source or destination image data.
+                        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                        region.imageSubresource.mipLevel = 0;
+                        region.imageSubresource.baseArrayLayer = 0;
+                        region.imageSubresource.layerCount = 1;
+
+                        region.imageOffset = {0, 0,
+                                              0}; // Selects the initial x, y, z offsets in texels of the sub-region of the source or destination image data.
+                        region.imageExtent = {width, height,
+                                              1}; // Size in texels of the image to copy in width, height and depth.
+
+                        // Copy data from a buffer into an image.
+                        vkCmdCopyBufferToImage(
+                                commandBuffer,
+                                buffer,
+                                image,
+                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                1,
+                                &region
+                        );
+                    }
 
                     // To be able to start sampling from the texture image in the shader, we need one last transition to prepare it for shader access.
-                    RS::getSingleton().transitionImageLayout(image,
-                                                             VK_FORMAT_R8G8B8A8_SRGB,
-                                                             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                                             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                    driver->transitionImageLayout(image,
+                                                  VK_FORMAT_R8G8B8A8_SRGB,
+                                                  VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                                  VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
                     // Clean up staging stuff.
-                    vkDestroyBuffer(Device::getSingleton().device, stagingBuffer, nullptr);
-                    vkFreeMemory(Device::getSingleton().device, stagingBufferMemory, nullptr);
+                    vkDestroyBuffer(driver->get_device(), stagingBuffer, nullptr);
+                    vkFreeMemory(driver->get_device(), stagingBufferMemory, nullptr);
                 }
                     break;
                 case CommandType::Max:

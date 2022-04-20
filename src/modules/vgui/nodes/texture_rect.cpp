@@ -34,7 +34,7 @@ namespace Pathfinder {
                                      0,
                                      sizeof(vertices),
                                      (void *) vertices);
-        cmd_buffer->submit();
+        cmd_buffer->submit(driver);
 
         // Pipeline.
         {
@@ -135,7 +135,7 @@ namespace Pathfinder {
 
         auto one_shot_cmd_buffer = driver->create_command_buffer();
         one_shot_cmd_buffer->upload_to_buffer(uniform_buffer, 0, 16 * sizeof(float), &mvp_mat);
-        one_shot_cmd_buffer->submit();
+        one_shot_cmd_buffer->submit(driver);
 
         cmd_buffer->bind_render_pipeline(pipeline);
 

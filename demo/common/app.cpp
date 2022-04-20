@@ -115,7 +115,7 @@ void App::loop(const std::shared_ptr<Pathfinder::SwapChain> &swap_chain) {
 
     cmd_buffer->end_render_pass();
 
-    cmd_buffer->submit();
+    cmd_buffer->submit(driver);
 
     Pathfinder::InputServer::get_singleton().clear_queue();
 }

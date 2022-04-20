@@ -37,7 +37,7 @@ namespace Pathfinder {
 
         auto cmd_buffer = driver->create_command_buffer();
         cmd_buffer->upload_to_texture(z_buffer_texture, {}, z_buffer_map.data.data());
-        cmd_buffer->submit();
+        cmd_buffer->submit(driver);
 
         return z_buffer_texture;
     }
@@ -65,7 +65,7 @@ namespace Pathfinder {
 
         auto cmd_buffer = driver->create_command_buffer();
         cmd_buffer->upload_to_buffer(quad_vertex_buffer, 0, 12 * sizeof(uint16_t), QUAD_VERTEX_POSITIONS);
-        cmd_buffer->submit();
+        cmd_buffer->submit(driver);
     }
 
     void RendererD3D9::set_up_pipelines() {
@@ -328,7 +328,7 @@ namespace Pathfinder {
                                      0,
                                      byte_size,
                                      (void *) fills.data());
-        cmd_buffer->submit();
+        cmd_buffer->submit(driver);
     }
 
     void RendererD3D9::upload_tiles(const std::vector<TileObjectPrimitive> &tiles) {
@@ -343,7 +343,7 @@ namespace Pathfinder {
                                      0,
                                      byte_size,
                                      (void *) tiles.data());
-        cmd_buffer->submit();
+        cmd_buffer->submit(driver);
     }
 
     void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatch> &tile_batches,
@@ -385,7 +385,7 @@ namespace Pathfinder {
 
         cmd_buffer->end_render_pass();
 
-        cmd_buffer->submit();
+        cmd_buffer->submit(driver);
     }
 
     void RendererD3D9::draw_tiles(uint32_t tiles_count,
@@ -428,7 +428,7 @@ namespace Pathfinder {
             auto one_shot_cmd_buffer = driver->create_command_buffer();
             one_shot_cmd_buffer->upload_to_buffer(tile_transform_ub, 0, 16 * sizeof(float), &mvp_mat);
             one_shot_cmd_buffer->upload_to_buffer(tile_varying_sizes_ub, 0, 6 * sizeof(float), ubo_data.data());
-            one_shot_cmd_buffer->submit();
+            one_shot_cmd_buffer->submit(driver);
         }
 
         // Update descriptor set.
@@ -451,7 +451,7 @@ namespace Pathfinder {
 
         cmd_buffer->end_render_pass();
 
-        cmd_buffer->submit();
+        cmd_buffer->submit(driver);
     }
 
     std::shared_ptr<Texture> RendererD3D9::get_dest_texture() {

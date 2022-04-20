@@ -55,7 +55,7 @@ namespace Pathfinder {
 
         // Submit
 
-        void submit() override;
+        void submit(const std::shared_ptr<Driver> &p_driver) override;
     };
 }
 

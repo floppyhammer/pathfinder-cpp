@@ -41,7 +41,7 @@ namespace Pathfinder {
 
             auto cmd_buffer = driver->create_command_buffer();
             cmd_buffer->upload_to_buffer(fixed_sizes_ub, 0, 6 * sizeof(float), fixed_sizes_ubo_data.data());
-            cmd_buffer->submit();
+            cmd_buffer->submit(driver);
         }
     }
 
@@ -54,7 +54,7 @@ namespace Pathfinder {
 
         auto cmd_buffer = driver->create_command_buffer();
         cmd_buffer->upload_to_texture(area_lut_texture, {}, image_data->data);
-        cmd_buffer->submit();
+        cmd_buffer->submit(driver);
     }
 
     struct FilterParams {
@@ -199,6 +199,6 @@ namespace Pathfinder {
 
         auto cmd_buffer = driver->create_command_buffer();
         cmd_buffer->upload_to_texture(metadata_texture, region_rect, texels.data());
-        cmd_buffer->submit();
+        cmd_buffer->submit(driver);
     }
 }

@@ -14,6 +14,8 @@
 #include <memory>
 
 namespace Pathfinder {
+    class Driver;
+
     enum class CommandType {
         // Render pass.
         BeginRenderPass = 0,
@@ -162,7 +164,7 @@ namespace Pathfinder {
 
         // SUBMIT
 
-        virtual void submit() = 0;
+        virtual void submit(const std::shared_ptr<Driver> &p_driver) = 0;
 
     protected:
         std::queue<Command> commands;
