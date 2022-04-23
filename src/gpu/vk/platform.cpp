@@ -48,7 +48,7 @@ namespace Pathfinder {
         // Create a logical device.
         createLogicalDevice();
 
-        auto driver_vk = std::make_shared<DriverVk>(device, physicalDevice);
+        auto driver_vk = std::make_shared<DriverVk>(device, physicalDevice, graphicsQueue);
 
         driver = driver_vk;
     }
@@ -327,6 +327,19 @@ namespace Pathfinder {
         return qfIndices;
     }
 
+    void PlatformVk::createCommandPool() {
+        QueueFamilyIndices qfIndices = findQueueFamilies(physicalDevice);
+
+        VkCommandPoolCreateInfo poolInfo{};
+        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        poolInfo.queueFamilyIndex = qfIndices.graphicsFamily.value();
+        poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // So we can reset command buffers.
+
+        if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to create command pool!");
+        }
+    }
+
     void PlatformVk::createLogicalDevice() {
         QueueFamilyIndices qfIndices = findQueueFamilies(physicalDevice);
 
@@ -406,6 +419,8 @@ namespace Pathfinder {
     }
 
     void PlatformVk::cleanup() {
+        vkDestroyCommandPool(device, commandPool, nullptr);
+
         vkDestroyDevice(device, nullptr);
 
         if (enableValidationLayers) {

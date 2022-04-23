@@ -24,7 +24,7 @@ namespace Pathfinder {
                 descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 
                 VkDescriptorBufferInfo bufferInfo{};
-                bufferInfo.buffer = descriptor.buffer->id;
+                //bufferInfo.buffer = descriptor.buffer->id;
                 bufferInfo.offset = 0;
                 bufferInfo.range = sizeof(descriptor.buffer->size);
 
@@ -34,8 +34,8 @@ namespace Pathfinder {
 
                 VkDescriptorImageInfo imageInfo{};
                 imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                imageInfo.imageView = descriptor.texture;
-                imageInfo.sampler = sampler;
+               // imageInfo.imageView = descriptor.texture;
+                //imageInfo.sampler = sampler;
 
                 descriptor_write.pImageInfo = &imageInfo;
             }
@@ -44,11 +44,11 @@ namespace Pathfinder {
         }
 
         // Update the contents of a descriptor set object.
-        vkUpdateDescriptorSets(device,
-                               static_cast<uint32_t>(descriptor_writes.size()),
-                               descriptor_writes.data(),
-                               0,
-                               nullptr);
+//        vkUpdateDescriptorSets(device,
+//                               static_cast<uint32_t>(descriptor_writes.size()),
+//                               descriptor_writes.data(),
+//                               0,
+//                               nullptr);
     }
 
     VkDescriptorSet &DescriptorSetVk::get_vk_descriptor_set() {

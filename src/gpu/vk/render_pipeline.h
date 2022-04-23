@@ -37,6 +37,10 @@ namespace Pathfinder {
             return id;
         }
 
+        inline VkPipelineLayout get_layout() const {
+            return layout;
+        }
+
     private:
         VkPipeline id;
 

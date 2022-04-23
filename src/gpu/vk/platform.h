@@ -3,6 +3,8 @@
 
 #include "../../common/global_macros.h"
 #include "../platform.h"
+#include "driver.h"
+
 
 #include <vector>
 #include <iostream>
@@ -127,9 +129,6 @@ namespace Pathfinder {
 
         QueueFamilyIndices findQueueFamilies(VkPhysicalDevice pPhysicalDevice) const;
 
-        VkQueue graphicsQueue;
-        VkQueue presentQueue;
-
         SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice pPhysicalDevice) const;
 
         [[nodiscard]] VkFormat findDepthFormat() const;
@@ -145,6 +144,11 @@ namespace Pathfinder {
         VkDebugUtilsMessengerEXT debugMessenger;
 
         static const bool enableValidationLayers = true;
+
+        VkQueue graphicsQueue;
+        VkQueue presentQueue;
+
+        VkCommandPool commandPool;
 
     private:
         void initWindow();
@@ -169,6 +173,8 @@ namespace Pathfinder {
         void createLogicalDevice();
 
         void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
+
+        void createCommandPool();
     };
 }
 

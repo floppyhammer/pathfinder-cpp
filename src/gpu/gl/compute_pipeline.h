@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#ifndef PATHFINDER_USE_VULKAN
+
 namespace Pathfinder {
     class ComputePipelineGl : public ComputePipeline {
     public:
@@ -21,5 +23,7 @@ namespace Pathfinder {
         std::shared_ptr<ComputeProgram> program;
     };
 }
+
+#endif
 
 #endif //PATHFINDER_GPU_COMPUTE_PIPELINE_GL_H

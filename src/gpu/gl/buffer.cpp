@@ -3,6 +3,8 @@
 #include "../../common/math/basic.h"
 #include "../../common/logger.h"
 
+#ifndef PATHFINDER_USE_VULKAN
+
 namespace Pathfinder {
     BufferGl::BufferGl(BufferType p_type, size_t p_size) : Buffer(p_type, p_size) {
         if (size == 0) {
@@ -39,3 +41,5 @@ namespace Pathfinder {
         }
     }
 }
+
+#endif

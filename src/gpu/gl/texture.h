@@ -9,6 +9,8 @@
 
 #include "stb_image.h"
 
+#ifndef PATHFINDER_USE_VULKAN
+
 namespace Pathfinder {
     /// Use Texture via smart pointers as its de-constructor will release its GL resources.
     class TextureGl : public Texture {
@@ -23,5 +25,7 @@ namespace Pathfinder {
         uint32_t texture_id = 0;
     };
 }
+
+#endif
 
 #endif //PATHFINDER_GPU_TEXTURE_GL_H

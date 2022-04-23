@@ -8,6 +8,8 @@
 
 #include "../../common/logger.h"
 
+#ifndef PATHFINDER_USE_VULKAN
+
 namespace Pathfinder {
     std::shared_ptr<SwapChain> DriverGl::create_swap_chain(uint32_t p_width, uint32_t p_height) {
         auto swap_chain_gl = std::make_shared<SwapChainGl>(p_width, p_height);
@@ -77,3 +79,5 @@ namespace Pathfinder {
         return pipeline_gl;
     }
 }
+
+#endif

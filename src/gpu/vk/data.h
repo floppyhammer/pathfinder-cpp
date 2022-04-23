@@ -15,6 +15,8 @@ namespace Pathfinder {
                 return VK_FORMAT_R8G8B8A8_SRGB;
             case TextureFormat::RGBA16F:
                 return VK_FORMAT_R16G16B16A16_SFLOAT;
+            default:
+                abort();
         }
     }
 
@@ -26,6 +28,8 @@ namespace Pathfinder {
                 return VK_SHADER_STAGE_FRAGMENT_BIT;
             case ShaderType::Compute:
                 return VK_SHADER_STAGE_COMPUTE_BIT;
+            default:
+                abort();
         }
     }
 
@@ -39,7 +43,7 @@ namespace Pathfinder {
                 return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             case DescriptorType::Image:
                 return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-            case DescriptorType::Max:
+            default:
                 abort();
         }
     }

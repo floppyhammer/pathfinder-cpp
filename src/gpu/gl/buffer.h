@@ -6,6 +6,8 @@
 
 #include <cstdint>
 
+#ifndef PATHFINDER_USE_VULKAN
+
 namespace Pathfinder {
     class BufferGl : public Buffer {
     public:
@@ -18,5 +20,7 @@ namespace Pathfinder {
         uint32_t id;
     };
 }
+
+#endif
 
 #endif //PATHFINDER_GPU_BUFFER_GL_H

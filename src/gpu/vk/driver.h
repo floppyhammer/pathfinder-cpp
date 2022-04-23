@@ -11,9 +11,8 @@
 namespace Pathfinder {
     class DriverVk : public Driver {
         friend class PlatformVk;
-
     public:
-        DriverVk(VkDevice device, VkPhysicalDevice physicalDevice);
+        DriverVk(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue graphicsQueue);
 
         std::shared_ptr<SwapChain> create_swap_chain(uint32_t p_width, uint32_t p_height) override;
 
@@ -46,6 +45,8 @@ namespace Pathfinder {
 
         VkDevice get_device() const;
 
+        VkQueue get_queue() const;
+
         uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
 
         void createVkBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
@@ -65,6 +66,8 @@ namespace Pathfinder {
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 
         VkDevice device{};
+
+        VkQueue graphicsQueue;
 
         VkShaderModule createShaderModule(const std::vector<char> &code);
 

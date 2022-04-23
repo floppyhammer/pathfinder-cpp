@@ -2,6 +2,8 @@
 
 #include <cassert>
 
+#ifndef PATHFINDER_USE_VULKAN
+
 namespace Pathfinder {
     FramebufferGl::FramebufferGl(uint32_t p_width, uint32_t p_height) : Framebuffer(p_width, p_height) {
         framebuffer_id = 0;
@@ -40,3 +42,5 @@ namespace Pathfinder {
         return framebuffer_id;
     }
 }
+
+#endif

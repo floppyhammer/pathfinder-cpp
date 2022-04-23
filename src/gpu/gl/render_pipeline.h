@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#ifndef PATHFINDER_USE_VULKAN
+
 namespace Pathfinder {
     class RenderPipelineGl : public RenderPipeline {
     public:
@@ -52,5 +54,7 @@ namespace Pathfinder {
         ColorBlendState blend_state{};
     };
 }
+
+#endif
 
 #endif //PATHFINDER_GPU_RENDER_PIPELINE_GL_H

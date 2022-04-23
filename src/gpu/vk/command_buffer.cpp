@@ -259,14 +259,15 @@ namespace Pathfinder {
                 case CommandType::BindDescriptorSet: {
                     auto &args = cmd.args.bind_descriptor_set;
                     auto descriptor_set_vk = static_cast<DescriptorSetVk *>(args.descriptor_set);
+                    auto render_pipeline_vk = static_cast<RenderPipelineVk *>(render_pipeline);
 
                     // Bind uniform buffers and samplers.
                     vkCmdBindDescriptorSets(vk_command_buffer,
                                             VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                            blitPipelineLayout,
+                                            render_pipeline_vk->get_layout(),
                                             0,
                                             1,
-                                            descriptor_set_vk->get_vk_descriptor_set(),
+                                            &descriptor_set_vk->get_vk_descriptor_set(),
                                             0,
                                             nullptr);
                 }
@@ -397,12 +398,12 @@ namespace Pathfinder {
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &vk_command_buffer;
 
-        vkQueueSubmit(Platform::getSingleton().graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-        vkQueueWaitIdle(Platform::getSingleton().graphicsQueue);
+        vkQueueSubmit(driver->get_queue(), 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(driver->get_queue());
         // ----------------------------------------
 
         // Free the command buffer.
-        vkFreeCommandBuffers(driver->get_device(), commandPool, 1, &vk_command_buffer);
+        //vkFreeCommandBuffers(driver->get_device(), commandPool, 1, &vk_command_buffer);
     }
 }
 

@@ -12,6 +12,8 @@
 
 #include <vector>
 
+#ifndef PATHFINDER_USE_VULKAN
+
 namespace Pathfinder {
     class DriverGl : public Driver {
     public:
@@ -45,5 +47,7 @@ namespace Pathfinder {
                                                                  const std::shared_ptr<DescriptorSet> &descriptor_set) override;
     };
 }
+
+#endif
 
 #endif //PATHFINDER_GPU_DRIVER_GL_H

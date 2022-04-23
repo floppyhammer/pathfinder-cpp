@@ -4,6 +4,8 @@
 #include "../data.h"
 #include "../../common/global_macros.h"
 
+#ifndef PATHFINDER_USE_VULKAN
+
 namespace Pathfinder {
     inline GLint to_gl_blend_factor(BlendFactor blend_factor) {
         switch (blend_factor) {
@@ -55,5 +57,7 @@ namespace Pathfinder {
         }
     }
 }
+
+#endif
 
 #endif //PATHFINDER_DATA_GL_H

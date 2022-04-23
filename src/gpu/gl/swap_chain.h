@@ -4,6 +4,8 @@
 #include "../swap_chain.h"
 #include "framebuffer.h"
 
+#ifndef PATHFINDER_USE_VULKAN
+
 namespace Pathfinder {
     class SwapChainGl : public SwapChain {
         friend class DriverGl;
@@ -20,5 +22,7 @@ namespace Pathfinder {
         std::shared_ptr<Framebuffer> framebuffer;
     };
 }
+
+#endif
 
 #endif //PATHFINDER_GPU_SWAP_CHAIN_GL_H

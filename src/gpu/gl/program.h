@@ -12,6 +12,8 @@
 #include <sstream>
 #include <iostream>
 
+#ifndef PATHFINDER_USE_VULKAN
+
 namespace Pathfinder {
     class Program {
     public:
@@ -86,5 +88,7 @@ namespace Pathfinder {
         void compile(const char *compute_code);
     };
 }
+
+#endif
 
 #endif //PATHFINDER_GPU_PROGRAM_H

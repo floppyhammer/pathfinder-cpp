@@ -2,6 +2,8 @@
 
 #include "../../common/global_macros.h"
 
+#ifndef PATHFINDER_USE_VULKAN
+
 namespace Pathfinder {
     TextureGl::TextureGl(uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type)
             : Texture(p_width, p_height, p_format, p_type) {
@@ -42,3 +44,5 @@ namespace Pathfinder {
         return texture_id;
     }
 }
+
+#endif

@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#ifndef PATHFINDER_USE_VULKAN
+
 namespace Pathfinder {
     class FramebufferGl : public Framebuffer {
     public:
@@ -30,5 +32,7 @@ namespace Pathfinder {
         std::shared_ptr<TextureGl> texture;
     };
 }
+
+#endif
 
 #endif //PATHFINDER_GPU_FRAMEBUFFER_GL_H

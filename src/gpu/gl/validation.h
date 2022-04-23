@@ -7,6 +7,8 @@
 #include <iostream>
 #include <sstream>
 
+#ifndef PATHFINDER_USE_VULKAN
+
 namespace Pathfinder {
     inline void check_error(const char *flag) {
 #ifdef PATHFINDER_DEBUG
@@ -29,5 +31,7 @@ namespace Pathfinder {
 #endif
     }
 }
+
+#endif
 
 #endif //PATHFINDER_GPU_VALIDATION_H

@@ -8,6 +8,8 @@
 #include <iostream>
 #include <optional>
 
+#ifndef PATHFINDER_USE_VULKAN
+
 namespace Pathfinder {
     class PlatformGl : public Platform {
     public:
@@ -37,5 +39,7 @@ namespace Pathfinder {
         void initWindow(uint32_t p_width, uint32_t p_height);
     };
 }
+
+#endif
 
 #endif //PATHFINDER_GPU_PLATFORM_GL_H

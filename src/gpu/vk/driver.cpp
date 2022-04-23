@@ -12,12 +12,16 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    DriverVk::DriverVk(VkDevice p_device, VkPhysicalDevice p_physical_device)
-            : device(p_device), physicalDevice(p_physical_device) {
+    DriverVk::DriverVk(VkDevice p_device, VkPhysicalDevice p_physical_device, VkQueue p_graphics_queue)
+            : device(p_device), physicalDevice(p_physical_device), graphicsQueue(p_graphics_queue) {
     }
 
     VkDevice DriverVk::get_device() const {
         return device;
+    }
+
+    VkQueue DriverVk::get_queue() const {
+        return graphicsQueue;
     }
 
     std::shared_ptr<SwapChain> DriverVk::create_swap_chain(uint32_t p_width, uint32_t p_height) {
@@ -250,6 +254,7 @@ namespace Pathfinder {
 
     std::shared_ptr<ComputePipeline> DriverVk::create_compute_pipeline(const std::vector<char> &comp_shader_code,
                                                                        const std::shared_ptr<DescriptorSet> &descriptor_set) {
+        return std::make_shared<ComputePipeline>();
     }
 
     std::shared_ptr<Framebuffer> DriverVk::create_framebuffer(uint32_t width, uint32_t height,

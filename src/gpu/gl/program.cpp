@@ -1,5 +1,7 @@
 #include "program.h"
 
+#ifndef PATHFINDER_USE_VULKAN
+
 namespace Pathfinder {
     void Program::use() const {
         glUseProgram(id);
@@ -109,3 +111,5 @@ namespace Pathfinder {
 #endif
     }
 }
+
+#endif

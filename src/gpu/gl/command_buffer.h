@@ -7,6 +7,8 @@
 #include <queue>
 #include <memory>
 
+#ifndef PATHFINDER_USE_VULKAN
+
 namespace Pathfinder {
     class CommandBufferGl : public CommandBuffer {
     public:
@@ -57,5 +59,7 @@ namespace Pathfinder {
         void submit(const std::shared_ptr<Driver> &p_driver) override;
     };
 }
+
+#endif
 
 #endif //PATHFINDER_GPU_COMMAND_BUFFER_GL_H

@@ -8,6 +8,8 @@
 
 #include <cassert>
 
+#ifndef PATHFINDER_USE_VULKAN
+
 namespace Pathfinder {
     void CommandBufferGl::begin_render_pass(const std::shared_ptr<Framebuffer> &framebuffer,
                                             bool clear,
@@ -496,3 +498,5 @@ namespace Pathfinder {
         }
     }
 }
+
+#endif
