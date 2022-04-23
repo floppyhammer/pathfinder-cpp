@@ -1,5 +1,7 @@
 #version 300 es
-//#version 330
+//#version 300 es (For GLES)
+//#version 330 (For GL)
+//#version 310 es (For Vulkan)
 
 // pathfinder/shaders/tile.vs.glsl
 //
@@ -15,21 +17,38 @@
 precision highp sampler2D;
 #endif
 
+#ifdef VULKAN
+layout(binding = 0) uniform sampler2D uTextureMetadata; // RGBA16F
+layout(binding = 1) uniform sampler2D uZBuffer;
+#else
 uniform sampler2D uTextureMetadata; // RGBA16F
 uniform sampler2D uZBuffer;
+#endif
 
-layout (std140) uniform bTransform {
+#ifdef VULKAN
+layout(binding = 2) uniform bTransform {
+#else
+layout(std140) uniform bTransform {
+#endif
     mat4 uTransform; // Will vary.
 };
 
+#ifdef VULKAN
+layout(binding = 3) uniform bVaryingSizes {
+#else
 layout (std140) uniform bVaryingSizes {
+#endif
     vec2 uZBufferSize; // Will vary.
     vec2 uColorTextureSize0; // Will vary.
     vec2 uFramebufferSize; // Will vary.
     vec2 pad0;
 };
 
+#ifdef VULKAN
+layout(binding = 4) uniform bFixedSizes {
+#else
 layout (std140) uniform bFixedSizes {
+#endif
     vec2 uMaskTextureSize0; // Fixed as (4096, 1024). Not used here.
     vec2 uTileSize; // Fixed as (16, 16).
     vec2 uTextureMetadataSize; // Fixed as (1280, 512).
@@ -43,6 +62,18 @@ layout(location=3) in ivec2 aCtrlBackdrop;
 layout(location=4) in int aPathIndex;
 layout(location=5) in uint aMetadataIndex;
 
+#ifdef VULKAN
+layout(location=0) out vec3 vMaskTexCoord0;
+layout(location=1) out vec2 vColorTexCoord0;
+layout(location=2) out vec4 vBaseColor;
+layout(location=3) out float vTileCtrl;
+layout(location=4) out vec4 vFilterParams0;
+layout(location=5) out vec4 vFilterParams1;
+layout(location=6) out vec4 vFilterParams2;
+layout(location=7) out vec4 vFilterParams3;
+layout(location=8) out vec4 vFilterParams4;
+layout(location=9) out float vCtrl;
+#else
 out vec3 vMaskTexCoord0;
 out vec2 vColorTexCoord0;
 out vec4 vBaseColor;
@@ -53,6 +84,7 @@ out vec4 vFilterParams2;
 out vec4 vFilterParams3;
 out vec4 vFilterParams4;
 out float vCtrl;
+#endif
 
 /// Fetch data from the metadata texture.
 vec4 fetchUnscaled(sampler2D srcTexture, vec2 scale, vec2 originCoord, int entry) {

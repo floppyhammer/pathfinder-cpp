@@ -1,5 +1,7 @@
 #version 300 es
-//#version 330
+//#version 300 es (For GLES)
+//#version 330 (For GL)
+//#version 310 es (For Vulkan)
 
 // pathfinder/shaders/fill.fs.glsl
 //
@@ -17,12 +19,19 @@ precision highp sampler2D;
 #endif
 
 // Pre-prepared texture "area-lut.png" of size (256, 256).
+#ifdef VULKAN
+layout(binding = 0) uniform sampler2D uAreaLUT;
+
+layout(location = 0) in vec2 vFrom;
+layout(location = 1) in vec2 vTo;
+layout(location = 0) out vec4 oFragColor;
+#else
 uniform sampler2D uAreaLUT;
 
 in vec2 vFrom;
 in vec2 vTo;
-
 out vec4 oFragColor;
+#endif
 
 /// Understanding this process is quite hard as we need to understand the areaLUT texture first.
 /// But I guess areaLUT is mostly used for anti-aliasing.
@@ -38,8 +47,8 @@ vec4 computeCoverage(vec2 from, vec2 to, sampler2D areaLUT) {
     float t = offset / (right.x - left.x);
 
     // Compute position and derivative to form a line approximation.
-    float y = mix(left.y, right.y, t); // Scanline hit position y calculated from t.
-    float d = (right.y - left.y) / (right.x - left.x); // Derivative of the line segment.
+    float y = mix(left.y, right.y, t);// Scanline hit position y calculated from t.
+    float d = (right.y - left.y) / (right.x - left.x);// Derivative of the line segment.
 
     // Look up area under that line, and scale horizontally to the window size.
     float dX = window.x - window.y;

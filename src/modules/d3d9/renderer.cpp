@@ -71,6 +71,10 @@ namespace Pathfinder {
     void RendererD3D9::set_up_pipelines() {
         // Fill pipeline.
         {
+#ifdef PATHFINDER_USE_VULKAN
+            const auto fill_vert_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/fill_vert.spv");
+            const auto fill_frag_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/fill_frag.spv");
+#else
 #ifdef PATHFINDER_SHADERS_EMBEDDED
             const std::string fill_vert_string =
 #include "../src/shaders/minified/minified_fill.vert"
@@ -85,6 +89,7 @@ namespace Pathfinder {
 #else
             const auto fill_vert_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/fill.vert");
             const auto fill_frag_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/fill.frag");
+#endif
 #endif
 
             // Set vertex attributes.
@@ -151,6 +156,10 @@ namespace Pathfinder {
 
         // Tile pipeline.
         {
+#ifdef PATHFINDER_USE_VULKAN
+            const auto tile_vert_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/tile_vert.spv");
+            const auto tile_frag_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/tile_frag.spv");
+#else
 #ifdef PATHFINDER_SHADERS_EMBEDDED
             const std::string tile_vert_string =
 #include "../src/shaders/minified/minified_tile.vert"
@@ -170,6 +179,7 @@ namespace Pathfinder {
 #else
             const auto tile_vert_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/tile.vert");
             const auto tile_frag_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/tile.frag");
+#endif
 #endif
 
             // Set vertex attributes.
