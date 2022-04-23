@@ -2,6 +2,11 @@
 
 #include "buffer.h"
 #include "driver.h"
+#include "texture.h"
+#include "render_pass.h"
+#include "framebuffer.h"
+#include "render_pipeline.h"
+#include "descriptor_set.h"
 #include "../../common/logger.h"
 
 #include <cassert>
@@ -190,57 +195,108 @@ namespace Pathfinder {
     void CommandBufferVk::submit(const std::shared_ptr<Driver> &p_driver) {
         auto driver = dynamic_cast<DriverVk *>(p_driver.get());
 
+        // Begin recording.
+        VkCommandBufferBeginInfo beginInfo{};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        if (vkBeginCommandBuffer(vk_command_buffer, &beginInfo) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to begin recording command buffer!");
+        }
+
         while (!commands.empty()) {
             auto &cmd = commands.front();
 
             switch (cmd.type) {
                 case CommandType::BeginRenderPass: {
+                    auto &args = cmd.args.begin_render_pass;
+                    auto render_pass_vk = static_cast<RenderPassVk *>(args.render_pass);
+                    auto framebuffer_vk = static_cast<FramebufferVk *>(args.framebuffer);
 
+                    VkRenderPassBeginInfo renderPassInfo{};
+                    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+                    renderPassInfo.renderPass = render_pass_vk->get_render_pass();
+                    renderPassInfo.framebuffer = framebuffer_vk->get_framebuffer_id(); // Set target framebuffer.
+                    renderPassInfo.renderArea.offset = {0, 0};
+                    renderPassInfo.renderArea.extent = VkExtent2D{args.extent.x, args.extent.y}; // Has to be larger than the area we're going to draw.
+
+                    // Clear color.
+                    std::array<VkClearValue, 1> clearValues{};
+                    clearValues[0].color = {{0.02f, 0.02f, 0.02f, 1.0f}};
+
+                    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+                    renderPassInfo.pClearValues = clearValues.data();
+
+                    vkCmdBeginRenderPass(vk_command_buffer,
+                                         &renderPassInfo,
+                                         VK_SUBPASS_CONTENTS_INLINE);
                 }
                     break;
                 case CommandType::BindRenderPipeline: {
+                    auto &args = cmd.args.bind_render_pipeline;
+                    auto pipeline_vk = static_cast<RenderPipelineVk *>(args.pipeline);
 
+                    vkCmdBindPipeline(vk_command_buffer,
+                                      VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                      pipeline_vk->get_pipeline());
                 }
                     break;
                 case CommandType::BindVertexBuffers: {
+                    auto &args = cmd.args.bind_vertex_buffers;
+                    std::vector<VkBuffer> vertex_buffers(args.buffer_count);
+                    for (uint32_t i = 0; i < args.buffer_count; i++) {
+                        auto buffer_vk = static_cast<BufferVk *>(args.buffers[i]);
+                        vertex_buffers.push_back(buffer_vk->get_vk_buffer());
+                    }
 
+                    // Bind vertex and index buffers.
+                    VkDeviceSize offsets[] = {0};
+                    vkCmdBindVertexBuffers(vk_command_buffer,
+                                           0,
+                                           1,
+                                           vertex_buffers.data(),
+                                           offsets);
                 }
                     break;
                 case CommandType::BindDescriptorSet: {
                     auto &args = cmd.args.bind_descriptor_set;
+                    auto descriptor_set_vk = static_cast<DescriptorSetVk *>(args.descriptor_set);
 
+                    // Bind uniform buffers and samplers.
+                    vkCmdBindDescriptorSets(vk_command_buffer,
+                                            VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                            blitPipelineLayout,
+                                            0,
+                                            1,
+                                            descriptor_set_vk->get_vk_descriptor_set(),
+                                            0,
+                                            nullptr);
                 }
                     break;
                 case CommandType::Draw: {
                     auto &args = cmd.args.draw;
-
+                    vkCmdDraw(vk_command_buffer, args.vertex_count, 1, 0, 0);
                 }
                     break;
                 case CommandType::DrawInstanced: {
                     auto &args = cmd.args.draw_instanced;
-
+                    vkCmdDraw(vk_command_buffer, args.vertex_count, args.instance_count, 0, 0);
                 }
                     break;
                 case CommandType::EndRenderPass: {
-
+                    vkCmdEndRenderPass(vk_command_buffer);
                 }
                     break;
                 case CommandType::BeginComputePass: {
-
                 }
                     break;
                 case CommandType::BindComputePipeline: {
                     auto &args = cmd.args.bind_compute_pipeline;
-
                 }
                     break;
                 case CommandType::Dispatch: {
                     auto &args = cmd.args.dispatch;
-
                 }
                     break;
                 case CommandType::EndComputePass: {
-
                 }
                     break;
                 case CommandType::UploadToBuffer: {
@@ -255,6 +311,8 @@ namespace Pathfinder {
                     break;
                 case CommandType::UploadToTexture: {
                     auto &args = cmd.args.upload_to_texture;
+
+                    auto texture_vk = static_cast<TextureVk *>(args.texture);
 
                     // In bytes. 4 bytes per pixel.
                     VkDeviceSize imageSize = args.width * args.height * 4;
@@ -274,7 +332,8 @@ namespace Pathfinder {
                     driver->copyDataToMemory(args.data, stagingBufferMemory, imageSize);
 
                     // Transition the texture image to VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
-                    driver->transitionImageLayout(image,
+                    driver->transitionImageLayout(vk_command_buffer,
+                                                  texture_vk->get_image(),
                                                   VK_FORMAT_R8G8B8A8_SRGB,
                                                   VK_IMAGE_LAYOUT_UNDEFINED,
                                                   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -292,25 +351,24 @@ namespace Pathfinder {
                         region.imageSubresource.mipLevel = 0;
                         region.imageSubresource.baseArrayLayer = 0;
                         region.imageSubresource.layerCount = 1;
-
-                        region.imageOffset = {0, 0,
-                                              0}; // Selects the initial x, y, z offsets in texels of the sub-region of the source or destination image data.
-                        region.imageExtent = {width, height,
-                                              1}; // Size in texels of the image to copy in width, height and depth.
+                        // Selects the initial x, y, z offsets in texels of the sub-region of the source or destination image data.
+                        region.imageOffset = {0, 0, 0};
+                        // Size in texels of the image to copy in width, height and depth.
+                        region.imageExtent = {texture_vk->get_width(), texture_vk->get_height(), 1};
 
                         // Copy data from a buffer into an image.
-                        vkCmdCopyBufferToImage(
-                                commandBuffer,
-                                buffer,
-                                image,
-                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                1,
-                                &region
+                        vkCmdCopyBufferToImage(vk_command_buffer,
+                                               stagingBuffer,
+                                               texture_vk->get_image(),
+                                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                               1,
+                                               &region
                         );
                     }
 
                     // To be able to start sampling from the texture image in the shader, we need one last transition to prepare it for shader access.
-                    driver->transitionImageLayout(image,
+                    driver->transitionImageLayout(vk_command_buffer,
+                                                  texture_vk->get_image(),
                                                   VK_FORMAT_R8G8B8A8_SRGB,
                                                   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                                   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -326,6 +384,25 @@ namespace Pathfinder {
 
             commands.pop();
         }
+
+        // End recording the command buffer.
+        if (vkEndCommandBuffer(vk_command_buffer) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to record command buffer!");
+        }
+
+        // Submit the command buffer to the graphics queue.
+        // ----------------------------------------
+        VkSubmitInfo submitInfo{};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &vk_command_buffer;
+
+        vkQueueSubmit(Platform::getSingleton().graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(Platform::getSingleton().graphicsQueue);
+        // ----------------------------------------
+
+        // Free the command buffer.
+        vkFreeCommandBuffers(driver->get_device(), commandPool, 1, &vk_command_buffer);
     }
 }
 

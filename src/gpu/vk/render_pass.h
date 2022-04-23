@@ -8,6 +8,11 @@
 namespace Pathfinder {
     class RenderPassVk : public RenderPass {
         friend class DriverVk;
+    public:
+        ineline VkRenderPass get_render_pass() {
+            return id;
+        }
+
     private:
         VkRenderPass id;
     };

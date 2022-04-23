@@ -5,6 +5,7 @@
 #include "compute_pipeline.h"
 #include "framebuffer.h"
 #include "buffer.h"
+#include "render_pass.h"
 #include "descriptor_set.h"
 #include "../common/color.h"
 #include "../common/math/rect.h"
@@ -49,6 +50,7 @@ namespace Pathfinder {
         union Args {
             struct {
                 Framebuffer *framebuffer;
+                RenderPass *render_pass;
                 Vec2<uint32_t> extent;
                 bool clear;
                 ColorF clear_color;

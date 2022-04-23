@@ -33,6 +33,10 @@ namespace Pathfinder {
             return blend_state;
         }
 
+        inline VkPipeline get_pipeline() const {
+            return id;
+        }
+
     private:
         VkPipeline id;
 

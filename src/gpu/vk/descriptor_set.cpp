@@ -50,6 +50,10 @@ namespace Pathfinder {
                                0,
                                nullptr);
     }
+
+    VkDescriptorSet &DescriptorSetVk::get_vk_descriptor_set() {
+        return descriptor_set;
+    }
 }
 
 #endif

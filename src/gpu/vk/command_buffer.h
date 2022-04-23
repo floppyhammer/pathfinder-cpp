@@ -7,6 +7,8 @@
 #include <queue>
 #include <memory>
 
+#ifdef PATHFINDER_USE_VULKAN
+
 namespace Pathfinder {
     class CommandBufferVk : public CommandBuffer {
         friend class DriverVk;
@@ -56,7 +58,12 @@ namespace Pathfinder {
         // Submit
 
         void submit(const std::shared_ptr<Driver> &p_driver) override;
+
+    private:
+        VkCommandBuffer vk_command_buffer;
     };
 }
+
+#endif
 
 #endif //PATHFINDER_GPU_COMMAND_BUFFER_VK_H

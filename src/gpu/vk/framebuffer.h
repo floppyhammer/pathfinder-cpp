@@ -20,7 +20,7 @@ namespace Pathfinder {
 
         ~FramebufferVk();
 
-        uint32_t get_framebuffer_id() const;
+        VkFramebuffer get_framebuffer_id() const;
 
         std::shared_ptr<Texture> get_texture() override;
 

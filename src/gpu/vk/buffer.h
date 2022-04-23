@@ -17,6 +17,10 @@ namespace Pathfinder {
 
         ~BufferVk();
 
+        inline VkBuffer get_vk_buffer() {
+            return id;
+        }
+
     private:
         VkBuffer id{};
         VkDeviceMemory device_memory{};

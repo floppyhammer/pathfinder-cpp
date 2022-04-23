@@ -29,7 +29,7 @@ namespace Pathfinder {
         glDeleteFramebuffers(1, &framebuffer_id);
     }
 
-    uint32_t FramebufferVk::get_framebuffer_id() const {
+    VkFramebuffer FramebufferVk::get_framebuffer_id() const {
         return framebuffer_id;
     }
 
@@ -39,7 +39,7 @@ namespace Pathfinder {
     }
 
     uint32_t FramebufferVk::get_unique_id() {
-        return framebuffer_id;
+        return reinterpret_cast<uint32_t>(&framebuffer_id);;
     }
 }
 

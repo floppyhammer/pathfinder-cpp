@@ -43,7 +43,7 @@ namespace Pathfinder {
             std::vector<VkDescriptorSetLayoutBinding> bindings;
 
             int32_t last_binding = -1;
-            for (auto &pair : descriptor_set->get_descriptors()) {
+            for (auto &pair: descriptor_set->get_descriptors()) {
                 auto &d = pair.second;
                 if (d.binding == last_binding) continue;
                 last_binding = d.binding;
@@ -656,10 +656,9 @@ namespace Pathfinder {
         );
     }
 
-    void DriverVk::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout,
-                                             VkImageLayout newLayout) const {
-        VkCommandBuffer commandBuffer = beginSingleTimeCommands();
-
+    void DriverVk::transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkFormat format,
+                                         VkImageLayout oldLayout,
+                                         VkImageLayout newLayout) const {
         VkImageMemoryBarrier barrier{};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
         barrier.oldLayout = oldLayout;
@@ -681,11 +680,11 @@ namespace Pathfinder {
         VkPipelineStageFlags destinationStage;
 
         if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
-            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-
-            if (hasStencilComponent(format)) {
-                barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-            }
+//            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+//
+//            if (hasStencilComponent(format)) {
+//                barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+//            }
         } else {
             barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         }
@@ -724,13 +723,11 @@ namespace Pathfinder {
                 1, &barrier
         );
         // -----------------------------
-
-        endSingleTimeCommands(commandBuffer);
     }
 
-    void DriverVk::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) const {
-        VkCommandBuffer commandBuffer = beginSingleTimeCommands();
-
+    void DriverVk::copyBufferToImage(VkCommandBuffer commandBuffer, VkBuffer buffer, VkImage image,
+                                     uint32_t width,
+                                     uint32_t height) const {
         // Structure specifying a buffer image copy operation.
         VkBufferImageCopy region{};
         region.bufferOffset = 0; // Offset in bytes from the start of the buffer object where the image data is copied from or to.
@@ -743,7 +740,8 @@ namespace Pathfinder {
         region.imageSubresource.baseArrayLayer = 0;
         region.imageSubresource.layerCount = 1;
 
-        region.imageOffset = {0, 0, 0}; // Selects the initial x, y, z offsets in texels of the sub-region of the source or destination image data.
+        region.imageOffset = {0, 0,
+                              0}; // Selects the initial x, y, z offsets in texels of the sub-region of the source or destination image data.
         region.imageExtent = {width, height, 1}; // Size in texels of the image to copy in width, height and depth.
 
         // Copy data from a buffer into an image.
@@ -755,8 +753,6 @@ namespace Pathfinder {
                 1,
                 &region
         );
-
-        endSingleTimeCommands(commandBuffer);
     }
 
     void DriverVk::copyDataToMemory(const void *src, VkDeviceMemory bufferMemory, size_t dataSize) const {

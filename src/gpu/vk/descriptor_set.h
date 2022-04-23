@@ -14,6 +14,8 @@ namespace Pathfinder {
     public:
         void update_vk_descriptor_set();
 
+        VkDescriptorSet &get_vk_descriptor_set();
+
     private:
         VkDescriptorSet descriptor_set;
     };
