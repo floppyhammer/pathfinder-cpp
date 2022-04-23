@@ -29,7 +29,7 @@ namespace Pathfinder {
 
         virtual std::shared_ptr<CommandBuffer> create_command_buffer() = 0;
 
-        virtual std::shared_ptr<RenderPass> create_render_pass() = 0;
+        virtual std::shared_ptr<RenderPass> create_render_pass(TextureFormat format) = 0;
 
         virtual std::shared_ptr<RenderPipeline> create_render_pipeline(const std::vector<char> &vert_source,
                                                                        const std::vector<char> &frag_source,

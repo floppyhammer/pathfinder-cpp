@@ -198,6 +198,7 @@ namespace Pathfinder {
         // Begin recording.
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         if (vkBeginCommandBuffer(vk_command_buffer, &beginInfo) != VK_SUCCESS) {
             throw std::runtime_error("Failed to begin recording command buffer!");
         }
@@ -403,7 +404,7 @@ namespace Pathfinder {
         // ----------------------------------------
 
         // Free the command buffer.
-        //vkFreeCommandBuffers(driver->get_device(), commandPool, 1, &vk_command_buffer);
+        vkFreeCommandBuffers(driver->get_device(), driver->get_command_pool(), 1, &vk_command_buffer);
     }
 }
 

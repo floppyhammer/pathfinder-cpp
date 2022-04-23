@@ -44,9 +44,9 @@ namespace Pathfinder {
 
     RendererD3D9::RendererD3D9(const std::shared_ptr<Driver>& p_driver, uint32_t canvas_width, uint32_t canvas_height)
             : Renderer(p_driver) {
-        mask_render_pass = driver->create_render_pass();
+        mask_render_pass = driver->create_render_pass(TextureFormat::RGBA16F);
 
-        dest_render_pass = driver->create_render_pass();
+        dest_render_pass = driver->create_render_pass(TextureFormat::RGBA8);
 
         mask_framebuffer = driver->create_framebuffer(MASK_FRAMEBUFFER_WIDTH,
                                                       MASK_FRAMEBUFFER_HEIGHT,

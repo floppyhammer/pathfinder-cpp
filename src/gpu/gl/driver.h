@@ -34,7 +34,7 @@ namespace Pathfinder {
 
         std::shared_ptr<CommandBuffer> create_command_buffer() override;
 
-        std::shared_ptr<RenderPass> create_render_pass() override;
+        std::shared_ptr<RenderPass> create_render_pass(TextureFormat format) override;
 
         std::shared_ptr<RenderPipeline> create_render_pipeline(const std::vector<char> &vert_source,
                                                                const std::vector<char> &frag_source,

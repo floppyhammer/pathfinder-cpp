@@ -74,7 +74,7 @@ namespace Pathfinder {
             ColorBlendState blend_state = {true, BlendFactor::ONE, BlendFactor::ONE_MINUS_SRC_ALPHA};
 
             // FIXME
-            auto render_pass = driver->create_render_pass();
+            auto render_pass = driver->create_render_pass(TextureFormat::RGBA8);
 
             {
                 descriptor_set = std::make_shared<DescriptorSet>();

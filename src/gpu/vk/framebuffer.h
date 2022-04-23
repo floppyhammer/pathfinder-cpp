@@ -33,10 +33,6 @@ namespace Pathfinder {
 
         // Only valid when drawing to a texture.
         std::shared_ptr<TextureVk> texture;
-
-        VkImage depthImage;
-        VkDeviceMemory depthImageMemory;
-        VkImageView depthImageView;
     };
 }
 

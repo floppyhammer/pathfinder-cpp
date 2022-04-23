@@ -49,7 +49,7 @@ namespace Pathfinder {
         return command_buffer_gl;
     }
 
-    std::shared_ptr<RenderPass> DriverGl::create_render_pass() {
+    std::shared_ptr<RenderPass> DriverGl::create_render_pass(TextureFormat format) {
         auto render_pass_gl = std::make_shared<RenderPassGl>();
 
         check_error("create_render_pass");
