@@ -102,7 +102,7 @@ namespace Pathfinder {
         Descriptor descriptor;
         descriptor.type = DescriptorType::Texture;
         descriptor.stage = ShaderType::Fragment;
-        descriptor.binding = 0;
+        descriptor.binding = 1;
         descriptor.binding_name = "uTexture";
         descriptor.texture = texture;
 

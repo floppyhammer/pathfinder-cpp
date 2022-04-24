@@ -34,6 +34,7 @@ namespace Pathfinder {
         Fragment,
         VertexFragment,
         Compute,
+        Max,
     };
 
     enum class DeviceType {

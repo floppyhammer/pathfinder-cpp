@@ -10,7 +10,7 @@ precision highp float;
 
 #define FILL_INDIRECT_DRAW_PARAMS_SIZE      8
 
-layout (std140) uniform bUniform {
+layout (std140, binding = 3) uniform bUniform {
     int uTileCount;
     int pad0;
     int pad1;

@@ -19,13 +19,13 @@ precision highp float;
 
 layout(local_size_x = 64) in;
 
-layout (std140) uniform bUniform0 {
+layout(std140, binding = 5) uniform bUniform0 {
     mat2 uTransform;
     vec2 uTranslation;
     vec2 pad0;
 };
 
-layout (std140) uniform bUniform1 {
+layout(std140, binding = 6) uniform bUniform1 {
     int uPathCount;
     int uLastBatchSegmentIndex;
     int uMaxMicrolineCount;

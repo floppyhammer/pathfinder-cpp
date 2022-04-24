@@ -10,16 +10,16 @@
 namespace Pathfinder {
     enum class DescriptorType {
         UniformBuffer = 0,
-        Texture = 20,
-        GeneralBuffer = 40,
-        Image = 60,
-        Max = 80,
+        Texture,
+        GeneralBuffer,
+        Image,
+        Max,
     };
 
     struct Descriptor {
         DescriptorType type;
 
-        ShaderType stage;
+        ShaderType stage = ShaderType::Max;
 
         uint32_t binding{};
         std::string binding_name; // For compatibility with lower versions of OpenGL.
@@ -34,7 +34,7 @@ namespace Pathfinder {
         inline void add_or_update_descriptor(const Descriptor &descriptor) {
             if (descriptor.buffer == nullptr && descriptor.texture == nullptr) return;
 
-            descriptors[(uint32_t) descriptor.type + descriptor.binding] = descriptor;
+            descriptors[descriptor.binding] = descriptor;
         }
 
         inline const std::unordered_map<uint32_t, Descriptor> &get_descriptors() const {
