@@ -14,11 +14,16 @@ namespace Pathfinder {
             framebuffer = std::make_shared<FramebufferGl>(p_width, p_height);
         }
 
+        std::shared_ptr<RenderPass> get_render_pass() override {
+            return render_pass;
+        };
+
         inline std::shared_ptr<Framebuffer> get_framebuffer(uint32_t image_index) override {
             return framebuffer;
         }
 
     private:
+        std::shared_ptr<RenderPass> render_pass;
         std::shared_ptr<Framebuffer> framebuffer;
     };
 }

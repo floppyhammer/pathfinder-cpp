@@ -11,13 +11,15 @@
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    void CommandBufferGl::begin_render_pass(const std::shared_ptr<Framebuffer> &framebuffer,
+    void CommandBufferGl::begin_render_pass(const std::shared_ptr<RenderPass> &render_pass,
+                                            const std::shared_ptr<Framebuffer> &framebuffer,
                                             bool clear,
                                             ColorF clear_color) {
         Command cmd;
         cmd.type = CommandType::BeginRenderPass;
 
         auto &args = cmd.args.begin_render_pass;
+        args.render_pass = render_pass.get();
         args.framebuffer = framebuffer.get();
         args.extent = {framebuffer->get_width(), framebuffer->get_height()};
         args.clear = clear;

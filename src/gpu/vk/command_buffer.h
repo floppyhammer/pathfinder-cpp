@@ -12,8 +12,10 @@
 namespace Pathfinder {
     class CommandBufferVk : public CommandBuffer {
         friend class DriverVk;
+
     public:
-        void begin_render_pass(const std::shared_ptr<Framebuffer> &framebuffer,
+        void begin_render_pass(const std::shared_ptr<RenderPass> &render_pass,
+                               const std::shared_ptr<Framebuffer> &framebuffer,
                                bool clear,
                                ColorF clear_color) override;
 
@@ -49,11 +51,14 @@ namespace Pathfinder {
          * @param data_size Size of the data we are uploading, not the size of the buffer.
          * @param data
          */
-        void upload_to_buffer(const std::shared_ptr<Buffer> &buffer, uint32_t offset, uint32_t data_size, void *data) override;
+        void upload_to_buffer(const std::shared_ptr<Buffer> &buffer, uint32_t offset, uint32_t data_size,
+                              void *data) override;
 
-        void upload_to_texture(const std::shared_ptr<Texture> &texture, Rect <uint32_t> region, const void *data) override;
+        void
+        upload_to_texture(const std::shared_ptr<Texture> &texture, Rect<uint32_t> region, const void *data) override;
 
-        void read_buffer(const std::shared_ptr<Buffer> &buffer, uint32_t offset, uint32_t data_size, void *data) override;
+        void
+        read_buffer(const std::shared_ptr<Buffer> &buffer, uint32_t offset, uint32_t data_size, void *data) override;
 
         // Submit
 

@@ -13,11 +13,16 @@ namespace Pathfinder {
         SwapChainVk(uint32_t p_width, uint32_t p_height) {
         }
 
+        std::shared_ptr<RenderPass> get_render_pass() override {
+            return render_pass;
+        };
+
         inline std::shared_ptr<Framebuffer> get_framebuffer(uint32_t image_index) override {
             return framebuffers[image_index];
         }
 
     private:
+        std::shared_ptr<RenderPass> render_pass;
         std::vector<std::shared_ptr<Framebuffer>> framebuffers;
     };
 }

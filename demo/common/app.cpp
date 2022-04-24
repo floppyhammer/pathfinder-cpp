@@ -101,19 +101,24 @@ void App::loop(const std::shared_ptr<Pathfinder::SwapChain> &swap_chain) {
     auto cmd_buffer = driver->create_command_buffer();
 
     auto framebuffer = swap_chain->get_framebuffer(0);
-    cmd_buffer->begin_render_pass(framebuffer,
-                                  true,
-                                  Pathfinder::ColorF(0.2, 0.2, 0.2, 1.0));
 
-    // Draw canvas to screen.
-    texture_rect0->set_texture(canvas->get_dest_texture());
-    texture_rect0->draw(driver, cmd_buffer, framebuffer->get_size());
+    // Swap chain render pass.
+    {
+        cmd_buffer->begin_render_pass(swap_chain->get_render_pass(),
+                                      framebuffer,
+                                      true,
+                                      Pathfinder::ColorF(0.2, 0.2, 0.2, 1.0));
 
-    // Draw label to screen.
-    texture_rect1->set_texture(Pathfinder::VectorServer::get_singleton().canvas->get_dest_texture());
-    texture_rect1->draw(driver, cmd_buffer, framebuffer->get_size());
+        // Draw canvas to screen.
+        texture_rect0->set_texture(canvas->get_dest_texture());
+        texture_rect0->draw(driver, cmd_buffer, framebuffer->get_size());
 
-    cmd_buffer->end_render_pass();
+        // Draw label to screen.
+        texture_rect1->set_texture(Pathfinder::VectorServer::get_singleton().canvas->get_dest_texture());
+        texture_rect1->draw(driver, cmd_buffer, framebuffer->get_size());
+
+        cmd_buffer->end_render_pass();
+    }
 
     cmd_buffer->submit(driver);
 

@@ -12,7 +12,8 @@
 namespace Pathfinder {
     class CommandBufferGl : public CommandBuffer {
     public:
-        void begin_render_pass(const std::shared_ptr<Framebuffer> &framebuffer,
+        void begin_render_pass(const std::shared_ptr<RenderPass> &render_pass,
+                               const std::shared_ptr<Framebuffer> &framebuffer,
                                bool clear,
                                ColorF clear_color) override;
 

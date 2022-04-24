@@ -14,15 +14,16 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    void CommandBufferVk::begin_render_pass(const std::shared_ptr<Framebuffer> &framebuffer,
+    void CommandBufferVk::begin_render_pass(const std::shared_ptr<RenderPass> &render_pass,
+                                            const std::shared_ptr<Framebuffer> &framebuffer,
                                             bool clear,
                                             ColorF clear_color) {
         Command cmd;
         cmd.type = CommandType::BeginRenderPass;
 
         auto &args = cmd.args.begin_render_pass;
+        args.render_pass = render_pass.get();
         args.framebuffer = framebuffer.get();
-        args.extent = {framebuffer->get_width(), framebuffer->get_height()};
         args.clear = clear;
         args.clear_color = clear_color;
 
@@ -217,7 +218,8 @@ namespace Pathfinder {
                     renderPassInfo.renderPass = render_pass_vk->get_render_pass();
                     renderPassInfo.framebuffer = framebuffer_vk->get_framebuffer_id(); // Set target framebuffer.
                     renderPassInfo.renderArea.offset = {0, 0};
-                    renderPassInfo.renderArea.extent = VkExtent2D{args.extent.x, args.extent.y}; // Has to be larger than the area we're going to draw.
+                    renderPassInfo.renderArea.extent = VkExtent2D{args.extent.x,
+                                                                  args.extent.y}; // Has to be larger than the area we're going to draw.
 
                     // Clear color.
                     std::array<VkClearValue, 1> clearValues{};

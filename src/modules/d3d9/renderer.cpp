@@ -389,9 +389,10 @@ namespace Pathfinder {
 
         auto cmd_buffer = driver->create_command_buffer();
 
-        cmd_buffer->begin_render_pass(mask_framebuffer,
-                                     true,
-                                     ColorF());
+        cmd_buffer->begin_render_pass(mask_render_pass,
+                                      mask_framebuffer,
+                                      true,
+                                      ColorF());
 
         cmd_buffer->bind_render_pipeline(fill_pipeline);
 
@@ -419,15 +420,17 @@ namespace Pathfinder {
 
         // If no specific RenderTarget is given.
         if (render_target.framebuffer == nullptr) {
-            cmd_buffer->begin_render_pass(dest_framebuffer,
-                                         need_to_clear_dest,
-                                         ColorF());
+            cmd_buffer->begin_render_pass(dest_render_pass,
+                                          dest_framebuffer,
+                                          need_to_clear_dest,
+                                          ColorF());
             render_target_size = {(float) dest_framebuffer->get_width(), (float) dest_framebuffer->get_height()};
             need_to_clear_dest = false;
         } else { // Otherwise, we need to render to that render target.
-            cmd_buffer->begin_render_pass(render_target.framebuffer,
-                                         true,
-                                         ColorF());
+            cmd_buffer->begin_render_pass(dest_render_pass,
+                                          render_target.framebuffer,
+                                          true,
+                                          ColorF());
             render_target_size = {(float) render_target.framebuffer->get_width(), (float) render_target.framebuffer->get_height()};
         }
 

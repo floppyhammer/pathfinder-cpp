@@ -13,6 +13,9 @@
 namespace Pathfinder {
     std::shared_ptr<SwapChain> DriverGl::create_swap_chain(uint32_t p_width, uint32_t p_height) {
         auto swap_chain_gl = std::make_shared<SwapChainGl>(p_width, p_height);
+        auto render_pass_gl = std::make_shared<RenderPassGl>();
+        swap_chain_gl->render_pass = render_pass_gl;
+
         return swap_chain_gl;
     }
 
