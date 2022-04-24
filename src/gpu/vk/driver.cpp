@@ -47,11 +47,8 @@ namespace Pathfinder {
         {
             std::vector<VkDescriptorSetLayoutBinding> bindings;
 
-            int32_t last_binding = -1;
             for (auto &pair: descriptor_set->get_descriptors()) {
                 auto &d = pair.second;
-                if (d.binding == last_binding) continue;
-                last_binding = d.binding;
 
                 VkDescriptorSetLayoutBinding binding;
                 binding.binding = d.binding;
@@ -59,6 +56,8 @@ namespace Pathfinder {
                 binding.descriptorType = to_vk_descriptor_type(d.type);
                 binding.pImmutableSamplers = nullptr;
                 binding.stageFlags = to_vk_shader_stage(d.stage);
+
+                bindings.push_back(binding);
             }
 
             VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -132,8 +131,10 @@ namespace Pathfinder {
             VkVertexInputAttributeDescription attributeDescription{};
             attributeDescription.binding = d.binding;
             attributeDescription.location = location++;
-            attributeDescription.format = VK_FORMAT_R32G32B32_SFLOAT; // FIXME
+            attributeDescription.format = to_vk_format(d.type, d.size);
             attributeDescription.offset = d.offset;
+
+            attributeDescriptions.push_back(attributeDescription);
         }
 
         vertexInputInfo.vertexBindingDescriptionCount = bindingDescriptions.size();
@@ -211,7 +212,7 @@ namespace Pathfinder {
         VkPipelineDepthStencilStateCreateInfo depthStencil{};
         depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
         depthStencil.depthTestEnable = VK_TRUE;
-        depthStencil.depthWriteEnable = VK_TRUE;
+        depthStencil.depthWriteEnable = VK_FALSE;
         depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
         depthStencil.depthBoundsTestEnable = VK_FALSE;
         depthStencil.minDepthBounds = 0.0f; // Optional

@@ -32,7 +32,8 @@ namespace Pathfinder {
     class DescriptorSet {
     public:
         inline void add_or_update_descriptor(const Descriptor &descriptor) {
-            if (descriptor.buffer == nullptr && descriptor.texture == nullptr) return;
+            // We might use set as set layout.
+            //if (descriptor.buffer == nullptr && descriptor.texture == nullptr) return;
 
             descriptors[descriptor.binding] = descriptor;
         }

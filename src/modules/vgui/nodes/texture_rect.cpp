@@ -38,12 +38,17 @@ namespace Pathfinder {
 
         // Pipeline.
         {
+#ifdef PATHFINDER_USE_VULKAN
+            const auto vert_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"blit_vert.spv");
+            const auto frag_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"blit_frag.spv");
+#else
             const std::string vert_source =
 #include "../src/shaders/blit.vert"
         ;
             const std::string frag_source =
 #include "../src/shaders/blit.frag"
         ;
+#endif
 
             std::vector<VertexInputAttributeDescription> attribute_descriptions;
             attribute_descriptions.reserve(3);
@@ -75,6 +80,7 @@ namespace Pathfinder {
 
             // FIXME
             auto render_pass = driver->create_render_pass(TextureFormat::RGBA8);
+            render_pass->extent = {(uint32_t) viewport_width, (uint32_t) viewport_height};
 
             {
                 descriptor_set = std::make_shared<DescriptorSet>();
@@ -84,7 +90,13 @@ namespace Pathfinder {
                                                                  ShaderType::Vertex,
                                                                  0,
                                                                  "bUniform",
-                                                                 uniform_buffer});
+                                                                 uniform_buffer, nullptr});
+                descriptor_set->add_or_update_descriptor({
+                                                                 DescriptorType::Texture,
+                                                                 ShaderType::Fragment,
+                                                                 1,
+                                                                 "uTexture",
+                                                                 nullptr, nullptr});
             }
 
             pipeline = driver->create_render_pipeline({vert_source.begin(), vert_source.end()},

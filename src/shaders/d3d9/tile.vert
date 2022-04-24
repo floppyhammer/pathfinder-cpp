@@ -36,7 +36,7 @@ layout(std140) uniform bTransform {
 #ifdef VULKAN
 layout(binding = 3) uniform bVaryingSizes {
 #else
-layout (std140) uniform bVaryingSizes {
+layout(std140) uniform bVaryingSizes {
 #endif
     vec2 uZBufferSize; // Will vary.
     vec2 uColorTextureSize0; // Will vary.
@@ -47,7 +47,7 @@ layout (std140) uniform bVaryingSizes {
 #ifdef VULKAN
 layout(binding = 4) uniform bFixedSizes {
 #else
-layout (std140) uniform bFixedSizes {
+layout(std140) uniform bFixedSizes {
 #endif
     vec2 uMaskTextureSize0; // Fixed as (4096, 1024). Not used here.
     vec2 uTileSize; // Fixed as (16, 16).

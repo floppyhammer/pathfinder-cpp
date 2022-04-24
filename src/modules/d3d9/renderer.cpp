@@ -45,8 +45,10 @@ namespace Pathfinder {
     RendererD3D9::RendererD3D9(const std::shared_ptr<Driver>& p_driver, uint32_t canvas_width, uint32_t canvas_height)
             : Renderer(p_driver) {
         mask_render_pass = driver->create_render_pass(TextureFormat::RGBA16F);
+        mask_render_pass->extent = {MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_WIDTH};
 
         dest_render_pass = driver->create_render_pass(TextureFormat::RGBA8);
+        dest_render_pass->extent = {canvas_width, canvas_width};
 
         mask_framebuffer = driver->create_framebuffer(MASK_FRAMEBUFFER_WIDTH,
                                                       MASK_FRAMEBUFFER_HEIGHT,
@@ -191,7 +193,7 @@ namespace Pathfinder {
                 attribute_descriptions.push_back({0,
                                                  2,
                                                  DataType::UNSIGNED_SHORT,
-                                                 0,
+                                                 2 * sizeof(uint16_t),
                                                  0,
                                                  VertexInputRate::VERTEX});
 
@@ -299,6 +301,12 @@ namespace Pathfinder {
 
                     tile_descriptor_set->add_or_update_descriptor(descriptor);
                 }
+
+                // Placeholders.
+                tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Fragment, 7, "uDestTexture", nullptr, nullptr});
+                tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Fragment, 8, "uGammaLUT", nullptr, nullptr});
+                tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Vertex, 1, "uZBuffer", nullptr, nullptr});
+                tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Fragment, 5, "uColorTexture0", nullptr, nullptr});
             }
 
             tile_pipeline = driver->create_render_pipeline(tile_vert_source,
@@ -446,6 +454,7 @@ namespace Pathfinder {
             tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Fragment, 7, "uDestTexture", nullptr, z_buffer_texture});
             tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Vertex, 1, "uZBuffer", nullptr, z_buffer_texture});
             tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Fragment, 5, "uColorTexture0", nullptr, color_target.framebuffer != nullptr ? color_target.framebuffer->get_texture() : z_buffer_texture});
+            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Fragment, 8, "uGammaLUT", nullptr, z_buffer_texture});
         }
 
         cmd_buffer->bind_render_pipeline(tile_pipeline);
