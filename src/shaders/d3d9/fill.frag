@@ -1,4 +1,4 @@
-#version 300 es
+#version 310 es
 //#version 300 es (For GLES)
 //#version 330 (For GL)
 //#version 310 es (For Vulkan)
@@ -20,7 +20,7 @@ precision highp sampler2D;
 
 // Pre-prepared texture "area-lut.png" of size (256, 256).
 #ifdef VULKAN
-layout(binding = 0) uniform sampler2D uAreaLUT;
+layout(binding = 1) uniform sampler2D uAreaLUT;
 
 layout(location = 0) in vec2 vFrom;
 layout(location = 1) in vec2 vTo;
