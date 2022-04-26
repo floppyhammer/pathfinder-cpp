@@ -5,7 +5,6 @@
 #include "../platform.h"
 #include "driver.h"
 
-
 #include <vector>
 #include <iostream>
 #include <optional>

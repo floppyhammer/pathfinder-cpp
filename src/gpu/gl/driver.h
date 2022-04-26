@@ -36,6 +36,8 @@ namespace Pathfinder {
 
         std::shared_ptr<RenderPass> create_render_pass(TextureFormat format) override;
 
+        std::shared_ptr<DescriptorSet> create_descriptor_set() override;
+
         std::shared_ptr<RenderPipeline> create_render_pipeline(const std::vector<char> &vert_source,
                                                                const std::vector<char> &frag_source,
                                                                const std::vector<VertexInputAttributeDescription> &attribute_descriptions,

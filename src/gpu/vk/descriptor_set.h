@@ -12,12 +12,18 @@
 namespace Pathfinder {
     class DescriptorSetVk : public DescriptorSet {
     public:
-        void update_vk_descriptor_set();
+        ~DescriptorSetVk();
+
+        void update_vk_descriptor_set(VkDevice p_device, VkDescriptorSetLayout descriptor_set_layout);
 
         VkDescriptorSet &get_vk_descriptor_set();
 
     private:
+        VkDescriptorPool descriptor_pool;
         VkDescriptorSet descriptor_set;
+
+        bool descriptor_set_allocated = false;
+        VkDevice device;
     };
 }
 

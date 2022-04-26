@@ -27,7 +27,7 @@ namespace Pathfinder {
             case ShaderType::Fragment:
                 return VK_SHADER_STAGE_FRAGMENT_BIT;
             case ShaderType::VertexFragment:
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+                return static_cast<VkShaderStageFlagBits>(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
             case ShaderType::Compute:
                 return VK_SHADER_STAGE_COMPUTE_BIT;
             default:

@@ -6,6 +6,7 @@
 #include "render_pass.h"
 #include "command_buffer.h"
 #include "render_pipeline.h"
+#include "descriptor_set.h"
 #include "data.h"
 
 #include <memory>
@@ -31,6 +32,10 @@ namespace Pathfinder {
 
     std::shared_ptr<SwapChain> DriverVk::create_swap_chain(uint32_t p_width, uint32_t p_height) {
         return std::shared_ptr<SwapChain>();
+    }
+
+    std::shared_ptr<DescriptorSet> DriverVk::create_descriptor_set() {
+        return std::make_shared<DescriptorSetVk>();
     }
 
     std::shared_ptr<RenderPipeline> DriverVk::create_render_pipeline(
@@ -785,6 +790,15 @@ namespace Pathfinder {
                 1, &barrier
         );
         // -----------------------------
+    }
+
+    void DriverVk::copyVkBuffer(VkCommandBuffer commandBuffer, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) const {
+        // Send copy command.
+        VkBufferCopy copyRegion{};
+        copyRegion.srcOffset = 0;
+        copyRegion.dstOffset = 0; // Optional
+        copyRegion.size = size;
+        vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
     }
 
     void DriverVk::copyBufferToImage(VkCommandBuffer commandBuffer, VkBuffer buffer, VkImage image,

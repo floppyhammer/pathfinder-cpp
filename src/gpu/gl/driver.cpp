@@ -74,6 +74,10 @@ namespace Pathfinder {
         return pipeline_gl;
     }
 
+    std::shared_ptr<DescriptorSet> DriverGl::create_descriptor_set() {
+        return std::make_shared<DescriptorSet>();
+    }
+
     std::shared_ptr<ComputePipeline> DriverGl::create_compute_pipeline(const std::vector<char> &comp_source,
                                                                        const std::shared_ptr<DescriptorSet> &descriptor_set) {
         auto pipeline_gl = std::make_shared<ComputePipelineGl>(comp_source);

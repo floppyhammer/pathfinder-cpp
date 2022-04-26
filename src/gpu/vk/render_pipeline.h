@@ -41,6 +41,10 @@ namespace Pathfinder {
             return layout;
         }
 
+        inline VkDescriptorSetLayout get_descriptor_set_layout() const {
+            return descriptor_set_layout;
+        }
+
     private:
         VkPipeline id;
 

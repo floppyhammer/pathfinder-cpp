@@ -15,10 +15,10 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
 
     driver = p_driver;
 
-    Pathfinder::VectorServer::get_singleton().init(driver,
-                                                   window_width,
-                                                   window_height,
-                                                   area_lut_input);
+//    Pathfinder::VectorServer::get_singleton().init(driver,
+//                                                   window_width,
+//                                                   window_height,
+//                                                   area_lut_input);
 
     // Set up a canvas.
     canvas = std::make_shared<Pathfinder::Canvas>(driver,
@@ -75,7 +75,7 @@ void App::loop(const std::shared_ptr<Pathfinder::SwapChain> &swap_chain) {
     // ----------------------------------------
 
     // Server process.
-    Pathfinder::VectorServer::get_singleton().canvas->clear();
+    //Pathfinder::VectorServer::get_singleton().canvas->clear();
 
     // Input.
     {
@@ -85,18 +85,18 @@ void App::loop(const std::shared_ptr<Pathfinder::SwapChain> &swap_chain) {
 
     // Update.
     {
-        label->update();
+        //label->update();
     }
 
     // Draw.
     {
         canvas->draw();
-        label->draw();
-        button->draw();
+        //label->draw();
+        //button->draw();
     }
 
     // Server process.
-    Pathfinder::VectorServer::get_singleton().canvas->draw();
+    //Pathfinder::VectorServer::get_singleton().canvas->draw();
 
     auto cmd_buffer = driver->create_command_buffer();
 
@@ -114,8 +114,8 @@ void App::loop(const std::shared_ptr<Pathfinder::SwapChain> &swap_chain) {
         texture_rect0->draw(driver, cmd_buffer, framebuffer->get_size());
 
         // Draw label to screen.
-        texture_rect1->set_texture(Pathfinder::VectorServer::get_singleton().canvas->get_dest_texture());
-        texture_rect1->draw(driver, cmd_buffer, framebuffer->get_size());
+        //texture_rect1->set_texture(Pathfinder::VectorServer::get_singleton().canvas->get_dest_texture());
+        //texture_rect1->draw(driver, cmd_buffer, framebuffer->get_size());
 
         cmd_buffer->end_render_pass();
     }

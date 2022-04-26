@@ -33,6 +33,8 @@ namespace Pathfinder {
 
         std::shared_ptr<CommandBuffer> create_command_buffer() override;
 
+        std::shared_ptr<DescriptorSet> create_descriptor_set() override;
+
         std::shared_ptr<RenderPipeline> create_render_pipeline(const std::vector<char> &vert_source,
                                                                const std::vector<char> &frag_source,
                                                                const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
@@ -62,6 +64,8 @@ namespace Pathfinder {
                                    VkFormat format,
                                    VkImageLayout oldLayout,
                                    VkImageLayout newLayout) const;
+
+        void copyVkBuffer(VkCommandBuffer commandBuffer, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) const;
 
     private:
         /// The graphics card that we'll end up selecting will be stored in a VkPhysicalDevice handle.

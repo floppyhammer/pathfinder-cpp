@@ -10,6 +10,7 @@
 #include "../../common/logger.h"
 
 #include <cassert>
+#include <functional>
 
 #ifdef PATHFINDER_USE_VULKAN
 
@@ -204,6 +205,8 @@ namespace Pathfinder {
             throw std::runtime_error("Failed to begin recording command buffer!");
         }
 
+        std::vector<std::function<void ()>> callbacks;
+
         while (!commands.empty()) {
             auto &cmd = commands.front();
 
@@ -237,6 +240,8 @@ namespace Pathfinder {
                     auto &args = cmd.args.bind_render_pipeline;
                     auto pipeline_vk = static_cast<RenderPipelineVk *>(args.pipeline);
 
+                    render_pipeline = pipeline_vk;
+
                     vkCmdBindPipeline(vk_command_buffer,
                                       VK_PIPELINE_BIND_POINT_GRAPHICS,
                                       pipeline_vk->get_pipeline());
@@ -244,25 +249,28 @@ namespace Pathfinder {
                     break;
                 case CommandType::BindVertexBuffers: {
                     auto &args = cmd.args.bind_vertex_buffers;
-                    std::vector<VkBuffer> vertex_buffers(args.buffer_count);
+                    std::vector<VkBuffer> vertex_buffers;
+                    std::vector<VkDeviceSize> offsets;
                     for (uint32_t i = 0; i < args.buffer_count; i++) {
                         auto buffer_vk = static_cast<BufferVk *>(args.buffers[i]);
                         vertex_buffers.push_back(buffer_vk->get_vk_buffer());
+                        offsets.push_back(0);
                     }
 
                     // Bind vertex and index buffers.
-                    VkDeviceSize offsets[] = {0};
                     vkCmdBindVertexBuffers(vk_command_buffer,
                                            0,
-                                           1,
+                                           args.buffer_count,
                                            vertex_buffers.data(),
-                                           offsets);
+                                           offsets.data()); // Data offset of each buffer.
                 }
                     break;
                 case CommandType::BindDescriptorSet: {
                     auto &args = cmd.args.bind_descriptor_set;
                     auto descriptor_set_vk = static_cast<DescriptorSetVk *>(args.descriptor_set);
                     auto render_pipeline_vk = static_cast<RenderPipelineVk *>(render_pipeline);
+
+                    descriptor_set_vk->update_vk_descriptor_set(driver->get_device(), render_pipeline_vk->get_descriptor_set_layout());
 
                     // Bind uniform buffers and samplers.
                     vkCmdBindDescriptorSets(vk_command_buffer,
@@ -287,6 +295,8 @@ namespace Pathfinder {
                     break;
                 case CommandType::EndRenderPass: {
                     vkCmdEndRenderPass(vk_command_buffer);
+
+                    render_pipeline = nullptr;
                 }
                     break;
                 case CommandType::BeginComputePass: {
@@ -301,11 +311,37 @@ namespace Pathfinder {
                 }
                     break;
                 case CommandType::EndComputePass: {
+                    compute_pipeline = nullptr;
                 }
                     break;
                 case CommandType::UploadToBuffer: {
                     auto &args = cmd.args.upload_to_buffer;
+                    auto buffer_vk = static_cast<BufferVk *>(args.buffer);
 
+                    // Create a host visible buffer and copy data to it by memory mapping.
+                    // ---------------------------------
+                    VkBuffer stagingBuffer;
+                    VkDeviceMemory stagingBufferMemory;
+
+                    driver->createVkBuffer(args.data_size,
+                                           VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                           VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                           stagingBuffer,
+                                           stagingBufferMemory);
+
+                    driver->copyDataToMemory(args.data,
+                                             stagingBufferMemory,
+                                             args.data_size);
+                    // ---------------------------------
+
+                    driver->copyVkBuffer(vk_command_buffer, stagingBuffer, buffer_vk->get_vk_buffer(), args.data_size);
+
+                    // Callback to clean up staging resources.
+                    auto callback = [driver, stagingBuffer, stagingBufferMemory] {
+                        vkDestroyBuffer(driver->get_device(), stagingBuffer, nullptr);
+                        vkFreeMemory(driver->get_device(), stagingBufferMemory, nullptr);
+                    };
+                    callbacks.push_back(callback);
                 }
                     break;
                 case CommandType::ReadBuffer: {
@@ -377,9 +413,12 @@ namespace Pathfinder {
                                                   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                                   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-                    // Clean up staging stuff.
-                    vkDestroyBuffer(driver->get_device(), stagingBuffer, nullptr);
-                    vkFreeMemory(driver->get_device(), stagingBufferMemory, nullptr);
+                    // Callback to clean up staging resources.
+                    auto callback = [driver, stagingBuffer, stagingBufferMemory] {
+                        vkDestroyBuffer(driver->get_device(), stagingBuffer, nullptr);
+                        vkFreeMemory(driver->get_device(), stagingBufferMemory, nullptr);
+                    };
+                    callbacks.push_back(callback);
                 }
                     break;
                 case CommandType::Max:
@@ -404,6 +443,10 @@ namespace Pathfinder {
         vkQueueSubmit(driver->get_queue(), 1, &submitInfo, VK_NULL_HANDLE);
         vkQueueWaitIdle(driver->get_queue());
         // ----------------------------------------
+
+        for (auto &callback: callbacks) {
+            callback();
+        }
 
         // Free the command buffer.
         vkFreeCommandBuffers(driver->get_device(), driver->get_command_pool(), 1, &vk_command_buffer);

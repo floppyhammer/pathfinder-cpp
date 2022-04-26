@@ -130,7 +130,7 @@ namespace Pathfinder {
 
             // Set descriptor set.
             {
-                fill_descriptor_set = std::make_shared<DescriptorSet>();
+                fill_descriptor_set = driver->create_descriptor_set();
 
                 fill_descriptor_set->add_or_update_descriptor({
                     DescriptorType::UniformBuffer,
@@ -241,7 +241,7 @@ namespace Pathfinder {
 
             // Set descriptor set.
             {
-                tile_descriptor_set = std::make_shared<DescriptorSet>();
+                tile_descriptor_set = driver->create_descriptor_set();
 
                 // Uniform buffers.
 
