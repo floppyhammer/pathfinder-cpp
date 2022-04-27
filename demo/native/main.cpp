@@ -1,6 +1,7 @@
 #include "../common/app.h"
 #include "../src/gpu/gl/platform.h"
 #include "../src/gpu/vk/platform.h"
+#include "../src/gpu/vk/swap_chain.h"
 
 using namespace Pathfinder;
 
@@ -19,7 +20,8 @@ int main() {
     auto driver = platform->create_driver();
 
     // Create swap chain.
-    auto swap_chain = driver->create_swap_chain(WINDOW_WIDTH, WINDOW_HEIGHT);
+    //auto swap_chain = driver->create_swap_chain(WINDOW_WIDTH, WINDOW_HEIGHT, platform);
+    auto swap_chain = std::make_shared<SwapChainVk>(WINDOW_WIDTH, WINDOW_HEIGHT, platform, driver);
 
     // Start input server.
     InputServer::get_singleton();

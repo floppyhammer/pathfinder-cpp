@@ -5,8 +5,8 @@
 #include "../../src/gpu/gl/platform.h"
 
 App::App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
-         int window_width,
-         int window_height,
+         uint32_t window_width,
+         uint32_t window_height,
          std::vector<char> &area_lut_input,
          std::vector<char> &font_input,
          const std::string &p_svg_input) {

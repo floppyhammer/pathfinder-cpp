@@ -20,6 +20,19 @@ namespace Pathfinder {
         }
     }
 
+    TextureFormat vk_to_texture_format(VkFormat texture_format) {
+        switch (texture_format) {
+            case VK_FORMAT_R8G8B8_SRGB:
+                return TextureFormat::RGBA;
+            case VK_FORMAT_R8G8B8A8_SRGB:
+                return TextureFormat::RGBA8;
+            case VK_FORMAT_R16G16B16A16_SFLOAT:
+                return TextureFormat::RGBA16F;
+            default:
+                abort();
+        }
+    }
+
     VkShaderStageFlagBits to_vk_shader_stage(ShaderType shader_type) {
         switch (shader_type) {
             case ShaderType::Vertex:

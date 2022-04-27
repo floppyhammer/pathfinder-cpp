@@ -12,27 +12,24 @@ namespace Pathfinder {
     class FramebufferVk : public Framebuffer {
         friend class DriverVk;
     public:
-        /// To screen viewport.
-        FramebufferVk(int p_width, int p_height);
+        FramebufferVk(VkDevice device, VkRenderPass render_pass, std::shared_ptr<Texture> texture,
+                      uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type);
 
-        /// To texture.
-        FramebufferVk(int p_width, int p_height, TextureFormat p_format, DataType p_type);
+        /// Swap chain framebuffer.
+        FramebufferVk(VkDevice device, VkRenderPass render_pass, VkImageView image_view, VkSampler sampler);
 
         ~FramebufferVk();
 
-        VkFramebuffer get_framebuffer_id() const;
-
-        std::shared_ptr<Texture> get_texture() override;
-
         uint32_t get_unique_id() override;
 
+        VkFramebuffer get_vk_framebuffer() const;
+
     private:
-        VkFramebuffer framebuffer_id;
+        VkFramebuffer vk_framebuffer;
 
         VkDescriptorImageInfo descriptor;
 
-        // Only valid when drawing to a texture.
-        std::shared_ptr<TextureVk> texture;
+        VkDevice vk_device;
     };
 }
 

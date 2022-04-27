@@ -29,7 +29,7 @@ namespace Pathfinder {
         /// CPU memory.
         VkDeviceMemory image_memory{};
 
-        /// Thin wrapper.
+        /// Thin wrapper over image.
         VkImageView image_view{};
 
         /// How image should be filtered.

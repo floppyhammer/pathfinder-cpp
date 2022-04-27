@@ -218,8 +218,8 @@ namespace Pathfinder {
 
                     VkRenderPassBeginInfo renderPassInfo{};
                     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-                    renderPassInfo.renderPass = render_pass_vk->get_render_pass();
-                    renderPassInfo.framebuffer = framebuffer_vk->get_framebuffer_id(); // Set target framebuffer.
+                    renderPassInfo.renderPass = render_pass_vk->get_vk_render_pass();
+                    renderPassInfo.framebuffer = framebuffer_vk->get_vk_framebuffer(); // Set target framebuffer.
                     renderPassInfo.renderArea.offset = {0, 0};
                     renderPassInfo.renderArea.extent = VkExtent2D{args.extent.x,
                                                                   args.extent.y}; // Has to be larger than the area we're going to draw.
@@ -440,8 +440,8 @@ namespace Pathfinder {
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &vk_command_buffer;
 
-        vkQueueSubmit(driver->get_queue(), 1, &submitInfo, VK_NULL_HANDLE);
-        vkQueueWaitIdle(driver->get_queue());
+        vkQueueSubmit(driver->get_graphics_queue(), 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(driver->get_graphics_queue());
         // ----------------------------------------
 
         for (auto &callback: callbacks) {
