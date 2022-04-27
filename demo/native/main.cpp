@@ -1,6 +1,7 @@
 #include "../common/app.h"
 #include "../src/gpu/gl/platform.h"
 #include "../src/gpu/vk/platform.h"
+#include "../src/gpu/vk/swap_chain.h"
 
 using namespace Pathfinder;
 
@@ -15,11 +16,11 @@ int main() {
     auto platform = PlatformGl::create(WINDOW_WIDTH, WINDOW_HEIGHT);
 #endif
 
-    // Create driver.
+    // Create driver via platform.
     auto driver = platform->create_driver();
 
-    // Create swap chain.
-    auto swap_chain = driver->create_swap_chain(WINDOW_WIDTH, WINDOW_HEIGHT);
+    // Create swap chain via platform.
+    auto swap_chain = platform->create_swap_chain(WINDOW_WIDTH, WINDOW_HEIGHT);
 
     // Start input server.
     InputServer::get_singleton();

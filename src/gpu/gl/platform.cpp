@@ -74,6 +74,12 @@ namespace Pathfinder {
         auto driver = std::make_shared<Pathfinder::DriverGl>();
         return driver;
     }
+
+    std::shared_ptr<SwapChain> PlatformGl::create_swap_chain(uint32_t p_width, uint32_t p_height) {
+        auto swap_chain_gl = std::make_shared<SwapChainGl>(p_width, p_height);
+
+        return swap_chain_gl;
+    }
 }
 
 #endif

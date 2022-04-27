@@ -5,6 +5,8 @@
 #include "../vertex_input.h"
 #include "../../common/io.h"
 #include "../../common/global_macros.h"
+#include "render_pass.h"
+
 
 #ifdef PATHFINDER_USE_VULKAN
 
@@ -16,7 +18,7 @@ namespace Pathfinder {
         DriverVk(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue graphicsQueue, VkQueue presentQueue,
                  VkCommandPool commandPool);
 
-        std::shared_ptr<SwapChain> create_swap_chain(uint32_t p_width, uint32_t p_height) override;
+        std::shared_ptr<SwapChain> create_swap_chain(uint32_t p_width, uint32_t p_height) override {return nullptr;};
 
         std::shared_ptr<RenderPass> create_render_pass(TextureFormat format) override;
 

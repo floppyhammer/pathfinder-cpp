@@ -9,7 +9,12 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    SwapChainVk::SwapChainVk(uint32_t p_width, uint32_t p_height) {
+    SwapChainVk::SwapChainVk(uint32_t p_width, uint32_t p_height,
+                             const std::shared_ptr<Platform> &p_platform,
+                             const std::shared_ptr<Driver> &p_driver) {
+        platform = dynamic_cast<PlatformVk *>(p_platform.get());
+        driver = dynamic_cast<DriverVk *>(p_driver.get());
+
         // Swap chain related resources.
         initSwapChain();
 
@@ -24,8 +29,6 @@ namespace Pathfinder {
         createImageViews();
 
         createRenderPass();
-
-        createDepthResources();
 
         createFramebuffers();
 
@@ -56,11 +59,6 @@ namespace Pathfinder {
         auto commandPool = driver->get_command_pool();
         // Command buffers contain swap chain related info, so we also need to free them here.
 //        RenderServer::getSingleton().cleanupSwapChainRelatedResources();
-
-        // Framebuffers.
-        for (auto framebuffer: swapChainFramebuffers) {
-            vkDestroyFramebuffer(device, framebuffer, nullptr);
-        }
 
         // Only command buffers are freed but not the pool.
         vkFreeCommandBuffers(device,
@@ -136,16 +134,16 @@ namespace Pathfinder {
 
         createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-        // Create a swapchain.
+        // Create a swap chain.
         if (vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create swap chain!");
         }
 
-        // Get the number of presentable images for swapchain.
+        // Get the number of presentable images for swap chain.
         vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
         swapChainImages.resize(imageCount);
 
-        // Obtain the array of presentable images associated with a swapchain.
+        // Obtain the array of presentable images associated with a swap chain.
         vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages.data());
 
         swapChainImageFormat = surfaceFormat.format;
@@ -163,77 +161,21 @@ namespace Pathfinder {
     }
 
     void SwapChainVk::createRenderPass() {
-        auto device = driver->get_device();
-
-        // Color attachment.
-        // ----------------------------------------
-        VkAttachmentDescription colorAttachment{};
-        colorAttachment.format = swapChainImageFormat; // Specifying the format of the image view that will be used for the attachment.
-        colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT; // Specifying the number of samples of the image.
-        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Specifying how the contents of color and depth components of the attachment are treated at the beginning of the subpass where it is first used.
-        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // Specifying how the contents of color and depth components of the attachment are treated at the end of the subpass where it is last used.
-        colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // The layout the attachment image subresource will be in when a render pass instance begins.
-        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // The layout the attachment image subresource will be transitioned to when a render pass instance ends.
-
-        VkAttachmentReference colorAttachmentRef{};
-        colorAttachmentRef.attachment = 0;
-        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // Specifying the layout the attachment uses during the subpass.
-        // ----------------------------------------
-
-        VkSubpassDescription subpass{};
-        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        subpass.colorAttachmentCount = 1;
-        subpass.pColorAttachments = &colorAttachmentRef;
-
-        VkSubpassDependency dependency{};
-        dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-        dependency.dstSubpass = 0;
-        dependency.srcStageMask =
-                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-        dependency.srcAccessMask = 0;
-        dependency.dstStageMask =
-                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-        dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-        VkRenderPassCreateInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassInfo.attachmentCount = 1;
-        renderPassInfo.pAttachments = &colorAttachment;
-        renderPassInfo.subpassCount = 1;
-        renderPassInfo.pSubpasses = &subpass;
-        renderPassInfo.dependencyCount = 1;
-        renderPassInfo.pDependencies = &dependency;
-
-        if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
-            throw std::runtime_error("Failed to create render pass!");
-        }
+        render_pass = driver->create_render_pass(vk_to_texture_format(swapChainImageFormat));
     }
 
     void SwapChainVk::createFramebuffers() {
         auto device = driver->get_device();
 
-        swapChainFramebuffers.resize(swapChainImageViews.size());
+        framebuffers.clear();
 
-        for (size_t i = 0; i < swapChainImageViews.size(); i++) {
-            std::array<VkImageView, 1> attachments = {
-                    swapChainImageViews[i],
-            };
+        for (size_t i = 0; i < swapChainImages.size(); i++) {
+            auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
 
-            VkFramebufferCreateInfo framebufferInfo{};
-            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            framebufferInfo.renderPass = renderPass;
-            framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-            framebufferInfo.pAttachments = attachments.data();
-            framebufferInfo.width = swapChainExtent.width;
-            framebufferInfo.height = swapChainExtent.height;
-            framebufferInfo.layers = 1;
+            auto framebuffer_vk = std::make_shared<FramebufferVk>(
+                    device, render_pass_vk, vk_image, width, height, format, type);
 
-            if (vkCreateFramebuffer(device, &framebufferInfo, nullptr,
-                                    &swapChainFramebuffers[i]) != VK_SUCCESS) {
-                throw std::runtime_error("Failed to create framebuffer!");
-            }
+            framebuffers.push_back(framebuffer_vk);
         }
     }
 
@@ -292,7 +234,7 @@ namespace Pathfinder {
         auto device = driver->get_device();
         auto commandPool = driver->get_command_pool();
 
-        commandBuffers.resize(swapChainFramebuffers.size());
+        commandBuffers.resize(framebuffers.size());
 
         // Allocate command buffers.
         VkCommandBufferAllocateInfo allocInfo{};
@@ -362,8 +304,7 @@ namespace Pathfinder {
         VkResult result = vkQueuePresentKHR(presentQueue, &presentInfo);
         // -------------------------------------
 
-        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR ||
-            platform->framebufferResized) {
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || platform->framebufferResized) {
             platform->framebufferResized = false;
             recreateSwapChain();
         } else if (result != VK_SUCCESS) {

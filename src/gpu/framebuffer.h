@@ -4,8 +4,12 @@
 #include "texture.h"
 
 #include <memory>
+#include <cassert>
 
 namespace Pathfinder {
+    /**
+     * Creation of a framebuffer is render pass dependent.
+     */
     class Framebuffer {
     public:
         /// To screen viewport.
@@ -16,7 +20,10 @@ namespace Pathfinder {
         Framebuffer(uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type)
                 : width(p_width), height(p_height) {}
 
-        virtual std::shared_ptr<Texture> get_texture() = 0;
+        inline std::shared_ptr<Texture> get_texture() {
+            assert(texture != nullptr && "No valid texture set to framebuffer!");
+            return texture;
+        }
 
         virtual uint32_t get_unique_id() = 0;
 
@@ -34,6 +41,8 @@ namespace Pathfinder {
 
     protected:
         uint32_t width, height;
+
+        std::shared_ptr<Texture> texture;
     };
 }
 

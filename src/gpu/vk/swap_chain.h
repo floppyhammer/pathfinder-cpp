@@ -12,12 +12,15 @@
 namespace Pathfinder {
     class SwapChainVk : public SwapChain {
         friend class DriverVk;
+
     public:
-        SwapChainVk(uint32_t p_width, uint32_t p_height);
+        SwapChainVk(uint32_t p_width, uint32_t p_height,
+                    const std::shared_ptr<Platform> &p_platform,
+                    const std::shared_ptr<Driver> &p_driver);
 
         std::shared_ptr<RenderPass> get_render_pass() override {
             return render_pass;
-        };
+        }
 
         inline std::shared_ptr<Framebuffer> get_framebuffer(uint32_t image_index) override {
             return framebuffers[image_index];
@@ -27,14 +30,14 @@ namespace Pathfinder {
         std::shared_ptr<RenderPass> render_pass;
         std::vector<std::shared_ptr<Framebuffer>> framebuffers;
 
-        std::shared_ptr<PlatformVk> platform;
-        std::shared_ptr<DriverVk> driver;
+        PlatformVk *platform;
+        DriverVk *driver;
 
         void initSwapChain();
 
         VkSwapchainKHR swapChain;
 
-        /// VkImage defines which VkMemory is used and a format of the texel.
+        /// Swap chain images are allocated differently than normal images.
         /// Number of images doesn't necessarily equal to MAX_FRAMES_IN_FLIGHT (One is expected, the other is what we actually get considering device capacity).
         std::vector<VkImage> swapChainImages;
 
@@ -48,7 +51,7 @@ namespace Pathfinder {
         /// VkFramebuffer + VkRenderPass defines the render target.
         /// Render pass defines which attachment will be written with colors.
         /// VkFramebuffer defines which VkImageView is to be which attachment.
-        std::vector<VkFramebuffer> swapChainFramebuffers;
+//        std::vector<VkFramebuffer> swapChainFramebuffers;
 
         VkRenderPass renderPass;
 
@@ -87,8 +90,6 @@ namespace Pathfinder {
 
         void createImageViews();
 
-        void createDepthResources();
-
         /**
          * We need to tell Vulkan about the framebuffer attachments that
          * will be used while rendering. We need to specify how many
@@ -110,7 +111,7 @@ namespace Pathfinder {
 
         void createSyncObjects();
 
-        bool acquireSwapChainImage(uint32_t& imageIndex);
+        bool acquireSwapChainImage(uint32_t &imageIndex);
 
         /**
          * Set up command queues.
@@ -118,7 +119,7 @@ namespace Pathfinder {
          */
         void createCommandBuffers();
 
-        void flush(uint32_t imageIndex);
+        void flush(uint32_t imageIndex) override;
 
         void cleanup();
     };

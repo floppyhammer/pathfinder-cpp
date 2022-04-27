@@ -14,25 +14,30 @@ namespace Pathfinder {
         friend class DriverVk;
 
     public:
+        // Render pass
+
         void begin_render_pass(const std::shared_ptr<RenderPass> &render_pass,
                                const std::shared_ptr<Framebuffer> &framebuffer,
                                bool clear,
                                ColorF clear_color) override;
 
-        // Bind pipeline.
+        /// Bind pipeline.
         void bind_render_pipeline(const std::shared_ptr<RenderPipeline> &pipeline) override;
 
         void bind_vertex_buffers(std::vector<std::shared_ptr<Buffer>> vertex_buffers) override;
 
-        // Bind uniform buffers and samplers.
+        /// Bind uniform buffers and samplers.
         void bind_descriptor_set(const std::shared_ptr<DescriptorSet> &descriptor_set) override;
 
-        // Draw call.
+        /// Draw call.
         void draw(uint32_t first_vertex, uint32_t vertex_count) override;
 
+        /// Instanced draw call.
         void draw_instanced(uint32_t vertex_count, uint32_t instance_count) override;
 
         void end_render_pass() override;
+
+        // Compute pass
 
         void begin_compute_pass() override;
 
@@ -54,11 +59,14 @@ namespace Pathfinder {
         void upload_to_buffer(const std::shared_ptr<Buffer> &buffer, uint32_t offset, uint32_t data_size,
                               void *data) override;
 
-        void
-        upload_to_texture(const std::shared_ptr<Texture> &texture, Rect<uint32_t> region, const void *data) override;
+        void upload_to_texture(const std::shared_ptr<Texture> &texture,
+                               Rect<uint32_t> region,
+                               const void *data) override;
 
-        void
-        read_buffer(const std::shared_ptr<Buffer> &buffer, uint32_t offset, uint32_t data_size, void *data) override;
+        void read_buffer(const std::shared_ptr<Buffer> &buffer,
+                         uint32_t offset,
+                         uint32_t data_size,
+                         void *data) override;
 
         // Submit
 

@@ -9,6 +9,8 @@ namespace Pathfinder {
     public:
         virtual std::shared_ptr<Driver> create_driver() = 0;
 
+        virtual std::shared_ptr<SwapChain> create_swap_chain(uint32_t p_width, uint32_t p_height) = 0;
+
         inline GLFWwindow *get_glfw_window() const {
             return window;
         }

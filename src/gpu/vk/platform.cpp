@@ -400,7 +400,7 @@ namespace Pathfinder {
                                              VkFormatFeatureFlags features) const {
         for (VkFormat format: candidates) {
             VkFormatProperties props;
-            vkGetPhysicalDeviceFormatProperties(PlatformVk::get_singleton().physicalDevice, format, &props);
+            vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &props);
 
             if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
                 return format;

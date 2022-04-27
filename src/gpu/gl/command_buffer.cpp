@@ -201,7 +201,7 @@ namespace Pathfinder {
 
                     auto framebuffer_gl = dynamic_cast<FramebufferGl *>(args.framebuffer);
 
-                    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_gl->get_framebuffer_id());
+                    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_gl->get_gl_framebuffer());
 
                     if (args.clear) {
                         glClearColor(args.clear_color.r, args.clear_color.g, args.clear_color.b,

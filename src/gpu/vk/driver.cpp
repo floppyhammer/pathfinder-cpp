@@ -7,6 +7,7 @@
 #include "command_buffer.h"
 #include "render_pipeline.h"
 #include "descriptor_set.h"
+#include "swap_chain.h"
 #include "data.h"
 
 #include <memory>
@@ -17,7 +18,7 @@ namespace Pathfinder {
     DriverVk::DriverVk(VkDevice p_device, VkPhysicalDevice p_physical_device, VkQueue p_graphics_queue,
                        VkQueue p_present_queue, VkCommandPool p_command_pool)
             : device(p_device), physicalDevice(p_physical_device), graphicsQueue(p_graphics_queue),
-            presentQueue(p_present_queue), commandPool(p_command_pool) {
+              presentQueue(p_present_queue), commandPool(p_command_pool) {
     }
 
     VkDevice DriverVk::get_device() const {
@@ -36,9 +37,10 @@ namespace Pathfinder {
         return commandPool;
     }
 
-    std::shared_ptr<SwapChain> DriverVk::create_swap_chain(uint32_t p_width, uint32_t p_height) {
-        return std::shared_ptr<SwapChain>();
-    }
+//    std::shared_ptr<SwapChain> DriverVk::create_swap_chain(uint32_t p_width, uint32_t p_height) {
+//        auto swap_chain_vk = std::make_shared<SwapChainVk>(p_width, p_width, );
+//        return swap_chain_vk;
+//    }
 
     std::shared_ptr<DescriptorSet> DriverVk::create_descriptor_set() {
         return std::make_shared<DescriptorSetVk>();
@@ -243,7 +245,7 @@ namespace Pathfinder {
         pipelineInfo.pMultisampleState = &multisampling;
         pipelineInfo.pColorBlendState = &colorBlending;
         pipelineInfo.layout = render_pipeline_vk->layout;
-        pipelineInfo.renderPass = render_pass_vk->id;
+        pipelineInfo.renderPass = render_pass_vk->vk_render_pass;
         pipelineInfo.subpass = 0;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
         pipelineInfo.pDepthStencilState = &depthStencil;
@@ -271,57 +273,7 @@ namespace Pathfinder {
     }
 
     std::shared_ptr<RenderPass> DriverVk::create_render_pass(TextureFormat format) {
-        auto render_pass_vk = std::make_shared<RenderPassVk>();
-
-        // Color attachment.
-        // ----------------------------------------
-        VkAttachmentDescription colorAttachment{};
-        colorAttachment.format = to_vk_texture_format(format); // Specifying the format of the image view that will be used for the attachment.
-        colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT; // Specifying the number of samples of the image.
-        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Specifying how the contents of color and depth components of the attachment are treated at the beginning of the subpass where it is first used.
-        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // Specifying how the contents of color and depth components of the attachment are treated at the end of the subpass where it is last used.
-        colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // The layout the attachment image subresource will be in when a render pass instance begins.
-        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; // The layout the attachment image subresource will be transitioned to when a render pass instance ends.
-
-        VkAttachmentReference colorAttachmentRef{};
-        colorAttachmentRef.attachment = 0;
-        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // Specifying the layout the attachment uses during the subpass.
-        // ----------------------------------------
-
-        VkSubpassDescription subpass{};
-        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        subpass.colorAttachmentCount = 1;
-        subpass.pColorAttachments = &colorAttachmentRef;
-
-        // Use subpass dependencies for layout transitions.
-        // ----------------------------------------
-        std::array<VkSubpassDependency, 1> dependencies{};
-
-        dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-        dependencies[0].dstSubpass = 0;
-        dependencies[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        dependencies[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-        dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-        std::array<VkAttachmentDescription, 1> attachments = {colorAttachment};
-
-        // Create the actual render pass.
-        VkRenderPassCreateInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-        renderPassInfo.pAttachments = attachments.data();
-        renderPassInfo.subpassCount = 1;
-        renderPassInfo.pSubpasses = &subpass;
-        renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
-        renderPassInfo.pDependencies = dependencies.data();
-
-        if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &render_pass_vk->id) != VK_SUCCESS) {
-            throw std::runtime_error("Failed to create render pass!");
-        }
+        auto render_pass_vk = std::make_shared<RenderPassVk>(device, format);
 
         return render_pass_vk;
     }
@@ -331,61 +283,11 @@ namespace Pathfinder {
                                                               const std::shared_ptr<RenderPass> &render_pass) {
         auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
 
+        auto texture = create_texture(width, height, format, type);
+
         auto framebuffer_vk = std::make_shared<FramebufferVk>(
+                device, render_pass_vk->vk_render_pass, texture,
                 width, height, format, type);
-
-        // Color attachment.
-        {
-            // Color texture.
-            auto texture_vk = std::make_shared<TextureVk>(
-                    device, width, height, format, type);
-
-            framebuffer_vk->texture = texture_vk;
-
-            createVkImage(width,
-                          height,
-                          to_vk_texture_format(format),
-                          VK_IMAGE_TILING_OPTIMAL,
-                          VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
-                          VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-                          VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                          texture_vk->image,
-                          texture_vk->image_memory);
-
-            // Create image view.
-            texture_vk->image_view = createVkImageView(texture_vk->image,
-                                                       to_vk_texture_format(format),
-                                                       VK_IMAGE_ASPECT_COLOR_BIT);
-
-            // Create sampler.
-            createVkTextureSampler(texture_vk->sampler);
-        }
-
-        // Create framebuffer.
-        {
-            std::array<VkImageView, 1> attachments = {framebuffer_vk->texture->image_view};
-
-            VkFramebufferCreateInfo framebufferInfo{};
-            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            framebufferInfo.renderPass = render_pass_vk->id;
-            framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-            framebufferInfo.pAttachments = attachments.data();
-            framebufferInfo.width = width;
-            framebufferInfo.height = height;
-            framebufferInfo.layers = 1;
-
-            if (vkCreateFramebuffer(device,
-                                    &framebufferInfo,
-                                    nullptr,
-                                    &framebuffer_vk->framebuffer_id) != VK_SUCCESS) {
-                throw std::runtime_error("Failed to create framebuffer!");
-            }
-        }
-
-        // Fill a descriptor for later use in a descriptor set.
-        framebuffer_vk->descriptor.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        framebuffer_vk->descriptor.imageView = framebuffer_vk->texture->image_view;
-        framebuffer_vk->descriptor.sampler = framebuffer_vk->texture->sampler;
 
         return framebuffer_vk;
     }
@@ -398,16 +300,16 @@ namespace Pathfinder {
                 createVkBuffer(size,
                                VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                               buffer_vk->id,
-                               buffer_vk->device_memory);
+                               buffer_vk->vk_buffer,
+                               buffer_vk->vk_device_memory);
             }
                 break;
             case BufferType::Vertex: {
                 createVkBuffer(size,
                                VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
                                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                               buffer_vk->id,
-                               buffer_vk->device_memory);
+                               buffer_vk->vk_buffer,
+                               buffer_vk->vk_device_memory);
             }
                 break;
             case BufferType::General:
@@ -798,7 +700,8 @@ namespace Pathfinder {
         // -----------------------------
     }
 
-    void DriverVk::copyVkBuffer(VkCommandBuffer commandBuffer, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) const {
+    void DriverVk::copyVkBuffer(VkCommandBuffer commandBuffer, VkBuffer srcBuffer, VkBuffer dstBuffer,
+                                VkDeviceSize size) const {
         // Send copy command.
         VkBufferCopy copyRegion{};
         copyRegion.srcOffset = 0;

@@ -22,6 +22,8 @@ namespace Pathfinder {
             return framebuffer;
         }
 
+        void flush(uint32_t imageIndex) override {};
+
     private:
         std::shared_ptr<RenderPass> render_pass;
         std::shared_ptr<Framebuffer> framebuffer;
