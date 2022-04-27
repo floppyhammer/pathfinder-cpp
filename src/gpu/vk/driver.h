@@ -11,8 +11,10 @@
 namespace Pathfinder {
     class DriverVk : public Driver {
         friend class PlatformVk;
+        friend class SwapChainVk;
     public:
-        DriverVk(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue graphicsQueue, VkCommandPool commandPool);
+        DriverVk(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue graphicsQueue, VkQueue presentQueue,
+                 VkCommandPool commandPool);
 
         std::shared_ptr<SwapChain> create_swap_chain(uint32_t p_width, uint32_t p_height) override;
 
@@ -45,9 +47,12 @@ namespace Pathfinder {
         std::shared_ptr<ComputePipeline> create_compute_pipeline(const std::vector<char> &comp_source,
                                                                  const std::shared_ptr<DescriptorSet> &descriptor_set) override;
 
+    public:
         VkDevice get_device() const;
 
-        VkQueue get_queue() const;
+        VkQueue get_graphics_queue() const;
+
+        VkQueue get_present_queue() const;
 
         VkCommandPool get_command_pool() const;
 
@@ -73,7 +78,7 @@ namespace Pathfinder {
 
         VkDevice device{};
 
-        VkQueue graphicsQueue;
+        VkQueue graphicsQueue, presentQueue;
 
         VkCommandPool commandPool;
 
@@ -100,7 +105,6 @@ namespace Pathfinder {
                                VkImage image,
                                uint32_t width,
                                uint32_t height) const;
-
     };
 }
 

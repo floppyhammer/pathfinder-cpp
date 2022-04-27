@@ -12,9 +12,6 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    const uint32_t WIDTH = 1280;
-    const uint32_t HEIGHT = 720;
-
     /// How many frames should be processed concurrently.
     const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -45,12 +42,15 @@ namespace Pathfinder {
 
     class PlatformVk : public Platform {
     public:
-        static PlatformVk &get_singleton() {
-            static PlatformVk singleton;
-            return singleton;
+        static std::shared_ptr<Platform> create(uint32_t p_width, uint32_t p_height) {
+            auto platform_vk = std::make_shared<PlatformVk>();
+            platform_vk->init(p_width, p_height);
+            return platform_vk;
         }
 
-        void init(uint32_t p_width, uint32_t p_height);
+        void init(uint32_t window_width, uint32_t window_height);
+
+        std::shared_ptr<Driver> create_driver() override;
 
         VkSurfaceKHR surface;
 
@@ -61,9 +61,6 @@ namespace Pathfinder {
         VkDevice device{};
 
         bool framebufferResized = false;
-
-        /// Process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly.
-        void handle_inputs();
 
         void swap_buffers_and_poll_events() const;
 
@@ -150,7 +147,7 @@ namespace Pathfinder {
         VkCommandPool commandPool;
 
     private:
-        void initWindow();
+        void initWindow(uint32_t window_width, uint32_t window_height);
 
         void setupDebugMessenger();
 

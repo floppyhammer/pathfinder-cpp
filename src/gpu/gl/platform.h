@@ -13,17 +13,17 @@
 namespace Pathfinder {
     class PlatformGl : public Platform {
     public:
-        static PlatformGl &get_singleton() {
-            static PlatformGl singleton;
-            return singleton;
+        static std::shared_ptr<Platform> create(uint32_t p_width, uint32_t p_height) {
+            auto platform_gl = std::make_shared<PlatformGl>();
+            platform_gl->init(p_width, p_height);
+            return platform_gl;
         }
 
         void init(uint32_t p_width, uint32_t p_height);
 
-        /// Process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly.
-        void handle_inputs();
+        std::shared_ptr<Driver> create_driver() override;
 
-        void swap_buffers_and_poll_events() const;
+        void swap_buffers_and_poll_events() const override;
 
         bool framebufferResized = false;
 
@@ -33,7 +33,7 @@ namespace Pathfinder {
             platform->framebufferResized = true;
         }
 
-        void cleanup();
+        void cleanup() override;
 
     private:
         void initWindow(uint32_t p_width, uint32_t p_height);

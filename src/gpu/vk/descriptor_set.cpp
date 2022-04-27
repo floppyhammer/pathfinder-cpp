@@ -37,12 +37,11 @@ namespace Pathfinder {
                 throw std::runtime_error("Failed to create descriptor pool!");
             }
 
-            std::vector<VkDescriptorSetLayout> layouts(1, descriptor_set_layout);
             VkDescriptorSetAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
             allocInfo.descriptorPool = descriptor_pool;
             allocInfo.descriptorSetCount = 1;
-            allocInfo.pSetLayouts = layouts.data();
+            allocInfo.pSetLayouts = &descriptor_set_layout;
 
             if (vkAllocateDescriptorSets(device, &allocInfo, &descriptor_set) != VK_SUCCESS) {
                 throw std::runtime_error("Failed to allocate descriptor sets!");
@@ -51,12 +50,13 @@ namespace Pathfinder {
             descriptor_set_allocated = true;
         }
 
-        std::vector<VkWriteDescriptorSet> descriptor_writes{};
+        std::vector<VkWriteDescriptorSet> descriptor_writes;
 
         for (auto &pair: descriptors) {
             auto &descriptor = pair.second;
 
-            VkWriteDescriptorSet descriptor_write;
+            // Must initialize it with {}.
+            VkWriteDescriptorSet descriptor_write{};
 
             descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             descriptor_write.dstSet = descriptor_set;
@@ -70,7 +70,7 @@ namespace Pathfinder {
                 VkDescriptorBufferInfo bufferInfo{};
                 bufferInfo.buffer = buffer_vk->get_vk_buffer();
                 bufferInfo.offset = 0;
-                bufferInfo.range = sizeof(descriptor.buffer->size);
+                bufferInfo.range = descriptor.buffer->size;
 
                 descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
                 descriptor_write.pBufferInfo = &bufferInfo;
@@ -84,6 +84,8 @@ namespace Pathfinder {
 
                 descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                 descriptor_write.pImageInfo = &imageInfo;
+            } else {
+                abort();
             }
 
             descriptor_writes.push_back(descriptor_write);
@@ -91,7 +93,7 @@ namespace Pathfinder {
 
         // Update the contents of a descriptor set object.
         vkUpdateDescriptorSets(device,
-                               static_cast<uint32_t>(descriptor_writes.size()),
+                               descriptor_writes.size(),
                                descriptor_writes.data(),
                                0,
                                nullptr);

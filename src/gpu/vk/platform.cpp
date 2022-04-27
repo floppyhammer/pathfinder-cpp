@@ -30,9 +30,9 @@ namespace Pathfinder {
         }
     }
 
-    void PlatformVk::init(uint32_t p_width, uint32_t p_height) {
+    void PlatformVk::init(uint32_t window_width, uint32_t window_height) {
         // Get a GLFW window.
-        initWindow();
+        initWindow(window_width, window_height);
 
         // Initialize the Vulkan library by creating an instance.
         createInstance();
@@ -49,10 +49,10 @@ namespace Pathfinder {
         createLogicalDevice();
 
         createCommandPool();
+    }
 
-        auto driver_vk = std::make_shared<DriverVk>(device, physicalDevice, graphicsQueue, commandPool);
-
-        driver = driver_vk;
+    std::shared_ptr<Driver> PlatformVk::create_driver() {
+        return std::make_shared<DriverVk>(device, physicalDevice, graphicsQueue, presentQueue, commandPool);
     }
 
     void PlatformVk::createCommandPool() {
@@ -68,7 +68,7 @@ namespace Pathfinder {
         }
     }
 
-    void PlatformVk::initWindow() {
+    void PlatformVk::initWindow(uint32_t p_width, uint32_t p_height) {
         // Initializes the GLFW library.
         glfwInit();
 
@@ -91,12 +91,12 @@ namespace Pathfinder {
         float dpi_scale_x, dpi_scale_y;
         glfwGetMonitorContentScale(monitors[0], &dpi_scale_x, &dpi_scale_y);
 
-        window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
+        window = glfwCreateWindow(p_width, p_height, "Vulkan", nullptr, nullptr);
 
         // Center window.
         glfwSetWindowPos(window,
-                         monitor_x + (videoMode->width - WIDTH) / 2,
-                         monitor_y + (videoMode->height - HEIGHT) / 2);
+                         monitor_x + (videoMode->width - p_width) / 2,
+                         monitor_y + (videoMode->height - p_height) / 2);
 
         // Show window.
         glfwShowWindow(window);
@@ -435,10 +435,6 @@ namespace Pathfinder {
         glfwDestroyWindow(window);
 
         glfwTerminate();
-    }
-
-    void PlatformVk::handle_inputs() {
-
     }
 
     void PlatformVk::swap_buffers_and_poll_events() const {

@@ -14,16 +14,22 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    DriverVk::DriverVk(VkDevice p_device, VkPhysicalDevice p_physical_device, VkQueue p_graphics_queue, VkCommandPool p_command_pool)
-            : device(p_device), physicalDevice(p_physical_device), graphicsQueue(p_graphics_queue), commandPool(p_command_pool) {
+    DriverVk::DriverVk(VkDevice p_device, VkPhysicalDevice p_physical_device, VkQueue p_graphics_queue,
+                       VkQueue p_present_queue, VkCommandPool p_command_pool)
+            : device(p_device), physicalDevice(p_physical_device), graphicsQueue(p_graphics_queue),
+            presentQueue(p_present_queue), commandPool(p_command_pool) {
     }
 
     VkDevice DriverVk::get_device() const {
         return device;
     }
 
-    VkQueue DriverVk::get_queue() const {
+    VkQueue DriverVk::get_graphics_queue() const {
         return graphicsQueue;
+    }
+
+    VkQueue DriverVk::get_present_queue() const {
+        return presentQueue;
     }
 
     VkCommandPool DriverVk::get_command_pool() const {
