@@ -1,6 +1,7 @@
 #include "platform.h"
 
 #include "driver.h"
+#include "swap_chain.h"
 
 #include <stdexcept>
 #include <set>
@@ -421,6 +422,9 @@ namespace Pathfinder {
     }
 
     void PlatformVk::cleanup() {
+        // Wait on the host for the completion of outstanding queue operations for all queues on a given logical device.
+        vkDeviceWaitIdle(device);
+
         vkDestroyCommandPool(device, commandPool, nullptr);
 
         vkDestroyDevice(device, nullptr);
@@ -437,8 +441,10 @@ namespace Pathfinder {
         glfwTerminate();
     }
 
-    void PlatformVk::swap_buffers_and_poll_events() const {
-
+    std::shared_ptr<SwapChain> PlatformVk::create_swap_chain(const std::shared_ptr<Driver>& driver, uint32_t p_width, uint32_t p_height) {
+        auto driver_vk = static_cast<DriverVk *>(driver.get());
+        auto swap_chain_vk = std::make_shared<SwapChainVk>(p_width, p_height, this, driver_vk);
+        return swap_chain_vk;
     }
 }
 

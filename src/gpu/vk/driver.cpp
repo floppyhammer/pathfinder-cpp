@@ -51,10 +51,14 @@ namespace Pathfinder {
             const std::vector<char> &frag_source,
             const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
             ColorBlendState blend_state,
+            Vec2<uint32_t> viewport_size,
             const std::shared_ptr<DescriptorSet> &descriptor_set,
             const std::shared_ptr<RenderPass> &render_pass) {
         auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
-        auto render_pipeline_vk = std::make_shared<RenderPipelineVk>(device, attribute_descriptions, blend_state);
+        auto render_pipeline_vk = std::make_shared<RenderPipelineVk>(
+                device,
+                attribute_descriptions,
+                blend_state);
 
         // Create descriptor set layout.
         {
@@ -164,14 +168,14 @@ namespace Pathfinder {
         VkViewport viewport{};
         viewport.x = 0.0f;
         viewport.y = 0.0f;
-        viewport.width = (float) render_pass_vk->extent.x;
-        viewport.height = (float) render_pass_vk->extent.y;
+        viewport.width = (float) viewport_size.x;
+        viewport.height = (float) viewport_size.y;
         viewport.minDepth = 0.0f; // The depth range for the viewport.
         viewport.maxDepth = 1.0f;
 
         VkRect2D scissor{};
         scissor.offset = {0, 0};
-        scissor.extent = {render_pass_vk->extent.x, render_pass_vk->extent.y};
+        scissor.extent = {viewport_size.x, viewport_size.y};
 
         VkPipelineViewportStateCreateInfo viewportState{};
         viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -345,7 +349,7 @@ namespace Pathfinder {
         return texture_vk;
     }
 
-    std::shared_ptr<CommandBuffer> DriverVk::create_command_buffer() {
+    std::shared_ptr<CommandBuffer> DriverVk::create_command_buffer(bool one_time) {
         // Allocate a command buffer.
         // ----------------------------------------
         VkCommandBufferAllocateInfo allocInfo{};
@@ -360,6 +364,7 @@ namespace Pathfinder {
 
         auto command_buffer_vk = std::make_shared<CommandBufferVk>();
         command_buffer_vk->vk_command_buffer = commandBuffer;
+        command_buffer_vk->one_time = one_time;
 
         return command_buffer_vk;
     }

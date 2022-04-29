@@ -19,7 +19,7 @@ namespace Pathfinder {
         // Set color texture.
         texture = std::move(p_texture);
 
-        auto texture_vk = static_cast<TextureVk *>(p_texture.get());
+        auto texture_vk = static_cast<TextureVk *>(texture.get());
 
         std::array<VkImageView, 1> attachments = {texture_vk->get_image_view()};
 
@@ -46,8 +46,7 @@ namespace Pathfinder {
                                  VkRenderPass render_pass,
                                  uint32_t p_width,
                                  uint32_t p_height,
-                                 VkImageView image_view,
-                                 VkSampler sampler)
+                                 VkImageView image_view)
             : Framebuffer(p_width, p_height) {
         vk_device = device;
 
@@ -65,13 +64,7 @@ namespace Pathfinder {
         if (vkCreateFramebuffer(vk_device, &framebufferInfo, nullptr, &vk_framebuffer) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create framebuffer!");
         }
-
-        // Fill a descriptor for later use in a descriptor set.
-        descriptor.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        descriptor.imageView = image_view;
-        descriptor.sampler = sampler;
     }
-
 
     FramebufferVk::~FramebufferVk() {
         vkDestroyFramebuffer(vk_device, vk_framebuffer, nullptr);

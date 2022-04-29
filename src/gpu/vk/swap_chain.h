@@ -14,17 +14,22 @@ namespace Pathfinder {
         friend class DriverVk;
 
     public:
-        SwapChainVk(uint32_t p_width, uint32_t p_height,
-                    const std::shared_ptr<Platform> &p_platform,
-                    const std::shared_ptr<Driver> &p_driver);
+        SwapChainVk(uint32_t p_width,
+                    uint32_t p_height,
+                    PlatformVk *p_platform,
+                    DriverVk *p_driver);
 
         std::shared_ptr<RenderPass> get_render_pass() override {
             return render_pass;
         }
 
         inline std::shared_ptr<Framebuffer> get_framebuffer(uint32_t image_index) override {
-            return framebuffers[image_index];
+            return framebuffers[currentImage];
         }
+
+        std::shared_ptr<CommandBuffer> get_command_buffer() override;
+
+        bool acquire_image(uint32_t &image_index);
 
     private:
         std::shared_ptr<RenderPass> render_pass;
@@ -45,7 +50,7 @@ namespace Pathfinder {
         std::vector<VkImageView> swapChainImageViews;
 
         /// Store the format and extent we've chosen for the swap chain images.
-        VkFormat swapChainImageFormat;
+        VkFormat swapChainImageFormat; // Default is VK_FORMAT_B8G8R8A8_SRGB.
         VkExtent2D swapChainExtent;
 
         /// VkFramebuffer + VkRenderPass defines the render target.

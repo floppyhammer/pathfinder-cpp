@@ -22,7 +22,7 @@ namespace Pathfinder {
             return framebuffer;
         }
 
-        void flush(uint32_t imageIndex) override {};
+        void flush(uint32_t imageIndex) override {glfwSwapBuffers()};
 
     private:
         std::shared_ptr<RenderPass> render_pass;

@@ -6,7 +6,10 @@
 #include "../../../gpu/platform.h"
 
 namespace Pathfinder {
-    TextureRect::TextureRect(const std::shared_ptr<Driver> &driver, float viewport_width, float viewport_height) {
+    TextureRect::TextureRect(const std::shared_ptr<Driver> &driver,
+                             const std::shared_ptr<RenderPass> &render_pass,
+                             uint32_t viewport_width,
+                             uint32_t viewport_height) {
         type = NodeType::TextureRect;
 
         rect_size.x = viewport_width;
@@ -29,7 +32,7 @@ namespace Pathfinder {
         vertex_buffer = driver->create_buffer(BufferType::Vertex, sizeof(vertices));
         uniform_buffer = driver->create_buffer(BufferType::Uniform, 16 * sizeof(float));
 
-        auto cmd_buffer = driver->create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer(true);
         cmd_buffer->upload_to_buffer(vertex_buffer,
                                      0,
                                      sizeof(vertices),
@@ -78,10 +81,6 @@ namespace Pathfinder {
 
             ColorBlendState blend_state = {true, BlendFactor::ONE, BlendFactor::ONE_MINUS_SRC_ALPHA};
 
-            // FIXME
-            auto render_pass = driver->create_render_pass(TextureFormat::RGBA8);
-            render_pass->extent = {(uint32_t) viewport_width, (uint32_t) viewport_height};
-
             {
                 descriptor_set = std::make_shared<DescriptorSet>();
 
@@ -103,6 +102,7 @@ namespace Pathfinder {
                                                       {frag_source.begin(), frag_source.end()},
                                                       attribute_descriptions,
                                                       blend_state,
+                                                      {viewport_width, viewport_height},
                                                       descriptor_set,
                                                       render_pass);
         }
@@ -145,9 +145,9 @@ namespace Pathfinder {
         auto mvp_mat = model_mat;
         // -------------------------------------------------
 
-        auto one_shot_cmd_buffer = driver->create_command_buffer();
-        one_shot_cmd_buffer->upload_to_buffer(uniform_buffer, 0, 16 * sizeof(float), &mvp_mat);
-        one_shot_cmd_buffer->submit(driver);
+        auto one_time_cmd_buffer = driver->create_command_buffer(true);
+        one_time_cmd_buffer->upload_to_buffer(uniform_buffer, 0, 16 * sizeof(float), &mvp_mat);
+        one_time_cmd_buffer->submit(driver);
 
         cmd_buffer->bind_render_pipeline(pipeline);
 

@@ -12,7 +12,7 @@
 namespace Pathfinder {
     class CommandBufferVk : public CommandBuffer {
         friend class DriverVk;
-
+        friend class SwapChainVk;
     public:
         // Render pass
 

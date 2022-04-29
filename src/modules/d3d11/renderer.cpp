@@ -375,10 +375,10 @@ namespace Pathfinder {
                                                 (int32_t) framebuffer_tile_size0.y, // uFramebufferTileSize
                                                 clear_op}; // uLoadAction
 
-            auto one_shot_cmd_buffer = driver->create_command_buffer();
-            one_shot_cmd_buffer->upload_to_buffer(tile_ub0, 0, 8 * sizeof(float), ubo_data0.data());
-            one_shot_cmd_buffer->upload_to_buffer(tile_ub1, 0, 5 * sizeof(int32_t), ubo_data1.data());
-            one_shot_cmd_buffer->submit(driver);
+            auto cmd_buffer = driver->create_command_buffer();
+            cmd_buffer->upload_to_buffer(tile_ub0, 0, 8 * sizeof(float), ubo_data0.data());
+            cmd_buffer->upload_to_buffer(tile_ub1, 0, 5 * sizeof(int32_t), ubo_data1.data());
+            cmd_buffer->submit(driver);
         }
 
         // Update descriptor set.
@@ -443,12 +443,12 @@ namespace Pathfinder {
                 driver->create_buffer(BufferType::General,
                                       propagate_metadata.size() * sizeof(PropagateMetadataD3D11));
 
-        auto one_shot_cmd_buffer = driver->create_command_buffer();
-        one_shot_cmd_buffer->upload_to_buffer(propagate_metadata_storage_id,
+        auto cmd_buffer = driver->create_command_buffer();
+        cmd_buffer->upload_to_buffer(propagate_metadata_storage_id,
                                      0,
                                      propagate_metadata.size() * sizeof(PropagateMetadataD3D11),
                                      propagate_metadata.data());
-        one_shot_cmd_buffer->submit(driver);
+        cmd_buffer->submit(driver);
 
         auto backdrops_storage_id = driver->create_buffer(BufferType::General,
                                                           backdrops.size() * sizeof(BackdropInfoD3D11));
@@ -458,12 +458,12 @@ namespace Pathfinder {
 
     void RendererD3D11::upload_initial_backdrops(const std::shared_ptr<Buffer> &backdrops_buffer_id,
                                                  std::vector<BackdropInfoD3D11> &backdrops) {
-        auto one_shot_cmd_buffer = driver->create_command_buffer();
-        one_shot_cmd_buffer->upload_to_buffer(backdrops_buffer_id,
+        auto cmd_buffer = driver->create_command_buffer();
+        cmd_buffer->upload_to_buffer(backdrops_buffer_id,
                                      0,
                                      backdrops.size() * sizeof(BackdropInfoD3D11),
                                      backdrops.data());
-        one_shot_cmd_buffer->submit(driver);
+        cmd_buffer->submit(driver);
     }
 
     void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
@@ -591,15 +591,15 @@ namespace Pathfinder {
         // Upload dice indirect draw params, which are also used for output.
         uint32_t indirect_compute_params[8] = {0, 0, 0, 0, point_indices_count, 0, 0, 0};
 
-        auto one_shot_cmd_buffer = driver->create_command_buffer();
-        one_shot_cmd_buffer->upload_to_buffer(
+        auto cmd_buffer = driver->create_command_buffer();
+        cmd_buffer->upload_to_buffer(
                 indirect_draw_params_buffer_id,
                 0,
                 8 * sizeof(uint32_t),
                 indirect_compute_params);
 
         // Upload dice metadata.
-        one_shot_cmd_buffer->upload_to_buffer(
+        cmd_buffer->upload_to_buffer(
                 dice_metadata_buffer_id,
                 0,
                 dice_metadata.size() * sizeof(DiceMetadataD3D11),
@@ -611,15 +611,15 @@ namespace Pathfinder {
             std::array<float, 10> ubo_data0 = {transform.matrix.v[0], transform.matrix.v[1], 0, 0,
                                                transform.matrix.v[2], transform.matrix.v[3], 0, 0,
                                                transform.vector.x, transform.vector.y};
-            one_shot_cmd_buffer->upload_to_buffer(dice_ub0, 0, 10 * sizeof(float), ubo_data0.data());
+            cmd_buffer->upload_to_buffer(dice_ub0, 0, 10 * sizeof(float), ubo_data0.data());
 
             std::array<int32_t, 3> ubo_data1 = {static_cast<int32_t>(dice_metadata.size()),
                                                 static_cast<int32_t>(batch_segment_count),
                                                 static_cast<int32_t>(allocated_microline_count)};
-            one_shot_cmd_buffer->upload_to_buffer(dice_ub1, 0, 3 * sizeof(int32_t), ubo_data1.data());
+            cmd_buffer->upload_to_buffer(dice_ub1, 0, 3 * sizeof(int32_t), ubo_data1.data());
         }
 
-        one_shot_cmd_buffer->submit(driver);
+        cmd_buffer->submit(driver);
 
         // Bind storage buffers.
         {
@@ -650,12 +650,12 @@ namespace Pathfinder {
         cmd_buffer->submit(driver);
 
         // Read indirect draw params back to CPU memory.
-        one_shot_cmd_buffer = driver->create_command_buffer();
-        one_shot_cmd_buffer->read_buffer(indirect_draw_params_buffer_id,
+        cmd_buffer = driver->create_command_buffer();
+        cmd_buffer->read_buffer(indirect_draw_params_buffer_id,
                                          0,
                                          8 * sizeof(uint32_t),
                                          indirect_compute_params);
-        one_shot_cmd_buffer->submit(driver);
+        cmd_buffer->submit(driver);
 
         // Free some general buffers which are no longer useful.
         //driver->free_general_buffer(dice_metadata_buffer_id);
@@ -680,12 +680,12 @@ namespace Pathfinder {
     void RendererD3D11::bound(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
                               uint32_t tile_count,
                               std::vector<TilePathInfoD3D11> &tile_path_info) {
-        auto one_shot_cmd_buffer = driver->create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer();
 
         // This is a staging buffer, which will be freed in the end of this function.
         auto path_info_buffer_id = driver->create_buffer(BufferType::General,
                                                          tile_path_info.size() * sizeof(TilePathInfoD3D11));
-        one_shot_cmd_buffer->upload_to_buffer(path_info_buffer_id,
+        cmd_buffer->upload_to_buffer(path_info_buffer_id,
                                               0,
                                               tile_path_info.size() * sizeof(TilePathInfoD3D11),
                                               tile_path_info.data());
@@ -693,9 +693,9 @@ namespace Pathfinder {
         // Update uniform buffers.
         std::array<int32_t, 2> ubo_data = {static_cast<int32_t>(tile_path_info.size()),
                                            static_cast<int32_t>(tile_count)};
-        one_shot_cmd_buffer->upload_to_buffer(bound_ub, 0, 2 * sizeof(int32_t), ubo_data.data());
+        cmd_buffer->upload_to_buffer(bound_ub, 0, 2 * sizeof(int32_t), ubo_data.data());
 
-        one_shot_cmd_buffer->submit(driver);
+        cmd_buffer->submit(driver);
 
         // Bind storage buffers.
         {
@@ -727,7 +727,7 @@ namespace Pathfinder {
             PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids,
             const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
             const std::shared_ptr<Buffer> &z_buffer_id) {
-        auto one_shot_cmd_buffer = driver->create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer();
 
         // What will be the output of this function.
         auto fill_vertex_buffer_id = driver->create_buffer(BufferType::General,
@@ -738,16 +738,16 @@ namespace Pathfinder {
         // some drivers (#373).
         uint32_t indirect_draw_params[8] = {6, 0, 0, 0, 0, microlines_storage.count, 0, 0};
 
-        one_shot_cmd_buffer->upload_to_buffer(z_buffer_id,
+        cmd_buffer->upload_to_buffer(z_buffer_id,
                                               0,
                                               8 * sizeof(uint32_t),
                                               indirect_draw_params);
 
         // Update uniform buffers.
         std::array<int32_t, 2> ubo_data = {(int32_t) microlines_storage.count, (int32_t) allocated_fill_count};
-        one_shot_cmd_buffer->upload_to_buffer(bin_ub, 0, 2 * sizeof(int32_t), ubo_data.data());
+        cmd_buffer->upload_to_buffer(bin_ub, 0, 2 * sizeof(int32_t), ubo_data.data());
 
-        one_shot_cmd_buffer->submit(driver);
+        cmd_buffer->submit(driver);
 
         // Bind storage buffers.
         {
@@ -781,12 +781,12 @@ namespace Pathfinder {
 
         cmd_buffer->submit(driver);
 
-        one_shot_cmd_buffer = driver->create_command_buffer();
-        one_shot_cmd_buffer->read_buffer(z_buffer_id,
+        cmd_buffer = driver->create_command_buffer();
+        cmd_buffer->read_buffer(z_buffer_id,
                                          0,
                                          8 * sizeof(uint32_t),
                                          indirect_draw_params);
-        one_shot_cmd_buffer->submit(driver);
+        cmd_buffer->submit(driver);
 
         // How many fills we need.
         auto needed_fill_count = indirect_draw_params[FILL_INDIRECT_DRAW_PARAMS_INSTANCE_COUNT_INDEX];
@@ -811,20 +811,20 @@ namespace Pathfinder {
             const std::shared_ptr<Buffer> &first_tile_map_buffer_id,
             const std::shared_ptr<Buffer> &alpha_tiles_buffer_id,
             PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids) {
-        auto one_shot_cmd_buffer = driver->create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer();
 
         // TODO(pcwalton): Zero out the Z-buffer on GPU?
         auto z_buffer_size = tile_size();
         auto tile_area = z_buffer_size.area();
         auto z_buffer_data = std::vector<int32_t>(tile_area, 0);
-        one_shot_cmd_buffer->upload_to_buffer(z_buffer_id,
+        cmd_buffer->upload_to_buffer(z_buffer_id,
                                               0,
                                               tile_area * sizeof(int32_t),
                                               z_buffer_data.data());
 
         // TODO(pcwalton): Initialize the first tiles buffer on GPU?
         auto first_tile_map = std::vector<FirstTileD3D11>(tile_area, FirstTileD3D11());
-        one_shot_cmd_buffer->upload_to_buffer(first_tile_map_buffer_id,
+        cmd_buffer->upload_to_buffer(first_tile_map_buffer_id,
                                               0,
                                               tile_area * sizeof(FirstTileD3D11),
                                               first_tile_map.data());
@@ -835,9 +835,9 @@ namespace Pathfinder {
                                            (int32_t) framebuffer_tile_size0.y,
                                            (int32_t) column_count,
                                            (int32_t) alpha_tile_count};
-        one_shot_cmd_buffer->upload_to_buffer(propagate_ub, 0, 4 * sizeof(int32_t), ubo_data.data());
+        cmd_buffer->upload_to_buffer(propagate_ub, 0, 4 * sizeof(int32_t), ubo_data.data());
 
-        one_shot_cmd_buffer->submit(driver);
+        cmd_buffer->submit(driver);
 
         // Bind storage buffers.
         {
@@ -875,15 +875,15 @@ namespace Pathfinder {
 
         cmd_buffer->submit(driver);
 
-        one_shot_cmd_buffer = driver->create_command_buffer();
+        cmd_buffer = driver->create_command_buffer();
 
         uint32_t fill_indirect_draw_params[8];
-        one_shot_cmd_buffer->read_buffer(z_buffer_id,
+        cmd_buffer->read_buffer(z_buffer_id,
                                          0,
                                          8 * sizeof(uint32_t),
                                          fill_indirect_draw_params);
 
-        one_shot_cmd_buffer->submit(driver);
+        cmd_buffer->submit(driver);
 
         auto batch_alpha_tile_count = fill_indirect_draw_params[FILL_INDIRECT_DRAW_PARAMS_ALPHA_TILE_COUNT_INDEX];
 
@@ -907,15 +907,15 @@ namespace Pathfinder {
         // This setup is a workaround for the annoying 64K limit of compute invocation in OpenGL.
         uint32_t local_alpha_tile_count = alpha_tile_range.end - alpha_tile_range.start;
 
-        auto one_shot_cmd_buffer = driver->create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer();
 
         // Update uniform buffers.
         auto framebuffer_tile_size0 = framebuffer_tile_size();
         std::array<int32_t, 2> ubo_data = {static_cast<int32_t>(alpha_tile_range.start),
                                            static_cast<int32_t>(alpha_tile_range.end)};
-        one_shot_cmd_buffer->upload_to_buffer(fill_ub, 0, 2 * sizeof(int32_t), ubo_data.data());
+        cmd_buffer->upload_to_buffer(fill_ub, 0, 2 * sizeof(int32_t), ubo_data.data());
 
-        one_shot_cmd_buffer->submit(driver);
+        cmd_buffer->submit(driver);
 
         // Update descriptor set.
         {
@@ -950,12 +950,12 @@ namespace Pathfinder {
                                    const std::shared_ptr<Buffer> &z_buffer_id) {
         auto tile_count = framebuffer_tile_size().area();
 
-        auto one_shot_cmd_buffer = driver->create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer();
 
         // Update uniform buffers.
-        one_shot_cmd_buffer->upload_to_buffer(sort_ub, 0, sizeof(int32_t), &tile_count);
+        cmd_buffer->upload_to_buffer(sort_ub, 0, sizeof(int32_t), &tile_count);
 
-        one_shot_cmd_buffer->submit(driver);
+        cmd_buffer->submit(driver);
 
         // Update descriptor set.
         {

@@ -1,6 +1,8 @@
 #ifndef PATHFINDER_GPU_DATA_H
 #define PATHFINDER_GPU_DATA_H
 
+#include <cstdint>
+
 namespace Pathfinder {
     enum class DataType {
         // Integers.
@@ -20,6 +22,7 @@ namespace Pathfinder {
     enum class TextureFormat {
         RGBA,
         RGBA8,
+        BGRA8,
         RGBA16F,
     };
 
@@ -53,6 +56,27 @@ namespace Pathfinder {
         BlendFactor src_blend_factor;
         BlendFactor dst_blend_factor;
     };
+
+    enum class DescriptorType {
+        UniformBuffer = 0,
+        Texture,
+        GeneralBuffer,
+        Image,
+        Max,
+    };
+
+    inline uint32_t get_pixel_size(TextureFormat format) {
+        switch (format) {
+            case TextureFormat::RGBA:
+            case TextureFormat::RGBA8:
+            case TextureFormat::BGRA8: {
+                return 4;
+            }
+            case TextureFormat::RGBA16F: {
+                return 8;
+            }
+        }
+    }
 }
 
 #endif //PATHFINDER_GPU_DATA_H

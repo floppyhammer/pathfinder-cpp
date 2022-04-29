@@ -29,7 +29,7 @@ namespace Pathfinder {
 
         RendererD3D9(const std::shared_ptr<Driver>& p_driver, uint32_t canvas_width, uint32_t canvas_height);
 
-        void set_up_pipelines();
+        void set_up_pipelines(uint32_t canvas_width, uint32_t canvas_height);
 
         void draw(const SceneBuilderD3D9& scene_builder);
 

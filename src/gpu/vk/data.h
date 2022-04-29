@@ -4,15 +4,19 @@
 #include "../data.h"
 #include "../../common/global_macros.h"
 
+#include <array>
+
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    VkFormat to_vk_texture_format(TextureFormat texture_format) {
+    inline VkFormat to_vk_texture_format(TextureFormat texture_format) {
         switch (texture_format) {
             case TextureFormat::RGBA:
                 return VK_FORMAT_R8G8B8_SRGB;
             case TextureFormat::RGBA8:
                 return VK_FORMAT_R8G8B8A8_SRGB;
+            case TextureFormat::BGRA8:
+                return VK_FORMAT_B8G8R8A8_SRGB;
             case TextureFormat::RGBA16F:
                 return VK_FORMAT_R16G16B16A16_SFLOAT;
             default:
@@ -20,12 +24,14 @@ namespace Pathfinder {
         }
     }
 
-    TextureFormat vk_to_texture_format(VkFormat texture_format) {
+    inline TextureFormat vk_to_texture_format(VkFormat texture_format) {
         switch (texture_format) {
             case VK_FORMAT_R8G8B8_SRGB:
                 return TextureFormat::RGBA;
             case VK_FORMAT_R8G8B8A8_SRGB:
                 return TextureFormat::RGBA8;
+            case VK_FORMAT_B8G8R8A8_SRGB:
+                return TextureFormat::BGRA8;
             case VK_FORMAT_R16G16B16A16_SFLOAT:
                 return TextureFormat::RGBA16F;
             default:
@@ -33,7 +39,7 @@ namespace Pathfinder {
         }
     }
 
-    VkShaderStageFlagBits to_vk_shader_stage(ShaderType shader_type) {
+    inline VkShaderStageFlagBits to_vk_shader_stage(ShaderType shader_type) {
         switch (shader_type) {
             case ShaderType::Vertex:
                 return VK_SHADER_STAGE_VERTEX_BIT;
@@ -48,7 +54,7 @@ namespace Pathfinder {
         }
     }
 
-    VkDescriptorType to_vk_descriptor_type(DescriptorType descriptor_type) {
+    inline VkDescriptorType to_vk_descriptor_type(DescriptorType descriptor_type) {
         switch (descriptor_type) {
             case DescriptorType::UniformBuffer:
                 return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -63,19 +69,7 @@ namespace Pathfinder {
         }
     }
 
-//    // Integers.
-//    BYTE, // 1 byte
-//    UNSIGNED_BYTE, // 1 byte
-//    SHORT, // 2 bytes
-//    UNSIGNED_SHORT, // 2 bytes
-//    INT, // 4 bytes
-//    UNSIGNED_INT, // 4 bytes
-//
-//    // Floats.
-//    FLOAT, // 4 bytes
-//    HALF_FLOAT, // 2 bytes
-//
-    std::array<VkFormat, 32> vk_formats = {
+    inline std::array<VkFormat, 32> vk_formats = {
             VK_FORMAT_R8_SINT, VK_FORMAT_R8G8_SINT, VK_FORMAT_R8G8B8_SINT, VK_FORMAT_R8G8B8A8_SINT,
             VK_FORMAT_R8_UINT, VK_FORMAT_R8G8_UINT, VK_FORMAT_R8G8B8_UINT, VK_FORMAT_R8G8B8A8_UINT,
             VK_FORMAT_R16_SINT, VK_FORMAT_R16G16_SINT, VK_FORMAT_R16G16B16_SINT, VK_FORMAT_R16G16B16A16_SINT,
@@ -86,7 +80,7 @@ namespace Pathfinder {
             VK_FORMAT_R16_SFLOAT, VK_FORMAT_R16G16_SFLOAT, VK_FORMAT_R16G16B16_SFLOAT, VK_FORMAT_R16G16B16A16_SFLOAT,
     };
 
-    VkFormat to_vk_format(DataType type, uint32_t count) {
+    inline VkFormat to_vk_format(DataType type, uint32_t count) {
         switch (type) {
             case DataType::BYTE:
                 return vk_formats[count - 1];

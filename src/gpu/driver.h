@@ -27,7 +27,7 @@ namespace Pathfinder {
                                                         TextureFormat p_format,
                                                         DataType p_type) = 0;
 
-        virtual std::shared_ptr<CommandBuffer> create_command_buffer() = 0;
+        virtual std::shared_ptr<CommandBuffer> create_command_buffer(bool one_time) = 0;
 
         virtual std::shared_ptr<DescriptorSet> create_descriptor_set() = 0;
 
@@ -37,6 +37,7 @@ namespace Pathfinder {
                                                                        const std::vector<char> &frag_source,
                                                                        const std::vector<VertexInputAttributeDescription> &p_attribute_descriptions,
                                                                        ColorBlendState p_blend_state,
+                                                                       Vec2<uint32_t> viewport_size,
                                                                        const std::shared_ptr<DescriptorSet> &descriptor_set,
                                                                        const std::shared_ptr<RenderPass> &render_pass) = 0;
 

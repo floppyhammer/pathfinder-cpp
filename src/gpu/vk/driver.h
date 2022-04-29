@@ -35,7 +35,7 @@ namespace Pathfinder {
                                                 TextureFormat format,
                                                 DataType type) override;
 
-        std::shared_ptr<CommandBuffer> create_command_buffer() override;
+        std::shared_ptr<CommandBuffer> create_command_buffer(bool one_time) override;
 
         std::shared_ptr<DescriptorSet> create_descriptor_set() override;
 
@@ -43,6 +43,7 @@ namespace Pathfinder {
                                                                const std::vector<char> &frag_source,
                                                                const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
                                                                ColorBlendState blend_state,
+                                                               Vec2<uint32_t> viewport_size,
                                                                const std::shared_ptr<DescriptorSet> &descriptor_set,
                                                                const std::shared_ptr<RenderPass> &render_pass) override;
 

@@ -20,7 +20,7 @@ int main() {
     auto driver = platform->create_driver();
 
     // Create swap chain via platform.
-    auto swap_chain = platform->create_swap_chain(WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto swap_chain = platform->create_swap_chain(driver, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     // Start input server.
     InputServer::get_singleton();
@@ -30,15 +30,19 @@ int main() {
     auto font_input = load_file_as_bytes(PATHFINDER_ASSET_DIR"OpenSans-Regular.ttf");
     auto svg_input = load_file_as_string(PATHFINDER_ASSET_DIR"tiger.svg");
 
-    App app(driver, WINDOW_WIDTH, WINDOW_HEIGHT, area_lut_input, font_input, svg_input);
+    App app(driver, swap_chain, WINDOW_WIDTH, WINDOW_HEIGHT, area_lut_input, font_input, svg_input);
 
     // Main loop.
     while (!glfwWindowShouldClose(platform->get_glfw_window())) {
-        platform->handle_inputs();
+        platform->poll_events();
+
+        // Acquire next image.
+        uint32_t image_index;
+        if (!swap_chain->acquire_image(image_index)) continue;
 
         app.loop(swap_chain);
 
-        platform->swap_buffers_and_poll_events();
+        swap_chain->flush(image_index);
     }
 
     platform->cleanup();

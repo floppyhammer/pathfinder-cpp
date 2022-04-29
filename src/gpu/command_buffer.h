@@ -172,6 +172,8 @@ namespace Pathfinder {
     protected:
         std::queue<Command> commands;
 
+        bool one_time = false;
+
         RenderPipeline *render_pipeline{};
         ComputePipeline *compute_pipeline{};
     };

@@ -25,7 +25,7 @@ namespace Pathfinder {
 
         std::shared_ptr<SwapChain> create_swap_chain(uint32_t p_width, uint32_t p_height) override;
 
-        void swap_buffers_and_poll_events() const override;
+        void poll_events() const override;
 
         bool framebufferResized = false;
 

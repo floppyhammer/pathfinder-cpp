@@ -21,8 +21,7 @@ namespace Pathfinder {
                       VkRenderPass render_pass,
                       uint32_t p_width,
                       uint32_t p_height,
-                      VkImageView image_view,
-                      VkSampler sampler);
+                      VkImageView image_view);
 
         ~FramebufferVk();
 

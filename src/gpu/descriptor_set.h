@@ -1,6 +1,7 @@
 #ifndef PATHFINDER_GPU_DESCRIPTOR_SET_H
 #define PATHFINDER_GPU_DESCRIPTOR_SET_H
 
+#include "data.h"
 #include "buffer.h"
 #include "texture.h"
 
@@ -8,14 +9,6 @@
 #include <unordered_map>
 
 namespace Pathfinder {
-    enum class DescriptorType {
-        UniformBuffer = 0,
-        Texture,
-        GeneralBuffer,
-        Image,
-        Max,
-    };
-
     struct Descriptor {
         DescriptorType type;
 

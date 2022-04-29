@@ -1,6 +1,7 @@
 #include "swap_chain.h"
 
 #include "platform.h"
+#include "command_buffer.h"
 
 #include <cstdint>
 #include <memory>
@@ -9,16 +10,27 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    SwapChainVk::SwapChainVk(uint32_t p_width, uint32_t p_height,
-                             const std::shared_ptr<Platform> &p_platform,
-                             const std::shared_ptr<Driver> &p_driver) {
-        platform = dynamic_cast<PlatformVk *>(p_platform.get());
-        driver = dynamic_cast<DriverVk *>(p_driver.get());
+    SwapChainVk::SwapChainVk(uint32_t p_width,
+                             uint32_t p_height,
+                             PlatformVk *p_platform,
+                             DriverVk *p_driver) : SwapChain(p_width, p_height) {
+        platform = p_platform;
+        driver = p_driver;
 
         // Swap chain related resources.
         initSwapChain();
 
         createSyncObjects();
+    }
+
+    std::shared_ptr<CommandBuffer> SwapChainVk::get_command_buffer() {
+        auto command_buffer_vk = std::make_shared<CommandBufferVk>();
+        command_buffer_vk->vk_command_buffer = commandBuffers[current_image];
+        return command_buffer_vk;
+    }
+
+    bool SwapChainVk::acquire_image(uint32_t &image_index) {
+        return acquireSwapChainImage(current_image);
     }
 
     void SwapChainVk::initSwapChain() {
@@ -167,13 +179,18 @@ namespace Pathfinder {
     void SwapChainVk::createFramebuffers() {
         auto device = driver->get_device();
 
+        // FIXME: Swap chain framebuffers should not clean up its image.
         framebuffers.clear();
 
         for (size_t i = 0; i < swapChainImages.size(); i++) {
             auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
 
             auto framebuffer_vk = std::make_shared<FramebufferVk>(
-                    device, render_pass_vk, vk_image, width, height, format, type);
+                    device,
+                    render_pass_vk->get_vk_render_pass(),
+                    extent.x,
+                    extent.y,
+                    swapChainImageViews[i]);
 
             framebuffers.push_back(framebuffer_vk);
         }
@@ -252,6 +269,8 @@ namespace Pathfinder {
         auto device = driver->get_device();
         auto graphicsQueue = driver->get_graphics_queue();
         auto presentQueue = driver->get_present_queue();
+
+        imageIndex = currentImage;
 
         if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
             vkWaitForFences(device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);

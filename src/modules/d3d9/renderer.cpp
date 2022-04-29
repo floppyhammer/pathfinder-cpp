@@ -35,7 +35,7 @@ namespace Pathfinder {
                 TextureFormat::RGBA8,
                 DataType::UNSIGNED_BYTE);
 
-        auto cmd_buffer = driver->create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer(true);
         cmd_buffer->upload_to_texture(z_buffer_texture, {}, z_buffer_map.data.data());
         cmd_buffer->submit(driver);
 
@@ -45,10 +45,8 @@ namespace Pathfinder {
     RendererD3D9::RendererD3D9(const std::shared_ptr<Driver>& p_driver, uint32_t canvas_width, uint32_t canvas_height)
             : Renderer(p_driver) {
         mask_render_pass = driver->create_render_pass(TextureFormat::RGBA16F);
-        mask_render_pass->extent = {MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_WIDTH};
 
         dest_render_pass = driver->create_render_pass(TextureFormat::RGBA8);
-        dest_render_pass->extent = {canvas_width, canvas_width};
 
         mask_framebuffer = driver->create_framebuffer(MASK_FRAMEBUFFER_WIDTH,
                                                       MASK_FRAMEBUFFER_HEIGHT,
@@ -65,12 +63,12 @@ namespace Pathfinder {
         // Quad vertex buffer. Shared by fills and tiles drawing.
         quad_vertex_buffer = driver->create_buffer(BufferType::Vertex, 12 * sizeof(uint16_t));
 
-        auto cmd_buffer = driver->create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer(true);
         cmd_buffer->upload_to_buffer(quad_vertex_buffer, 0, 12 * sizeof(uint16_t), QUAD_VERTEX_POSITIONS);
         cmd_buffer->submit(driver);
     }
 
-    void RendererD3D9::set_up_pipelines() {
+    void RendererD3D9::set_up_pipelines(uint32_t canvas_width, uint32_t canvas_height) {
         // Fill pipeline.
         {
 #ifdef PATHFINDER_USE_VULKAN
@@ -152,6 +150,7 @@ namespace Pathfinder {
                                                            fill_frag_source,
                                                            attribute_descriptions,
                                                            blend_state,
+                                                           {MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_WIDTH},
                                                            fill_descriptor_set,
                                                            mask_render_pass);
         }
@@ -313,6 +312,7 @@ namespace Pathfinder {
                                                            tile_frag_source,
                                                            attribute_descriptions,
                                                            blend_state,
+                                                           {canvas_width, canvas_width},
                                                            tile_descriptor_set,
                                                            dest_render_pass);
         }
@@ -341,7 +341,7 @@ namespace Pathfinder {
             fill_vertex_buffer = driver->create_buffer(BufferType::Vertex, byte_size);
         }
 
-        auto cmd_buffer = driver->create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer(true);
         cmd_buffer->upload_to_buffer(fill_vertex_buffer,
                                      0,
                                      byte_size,
@@ -356,7 +356,7 @@ namespace Pathfinder {
             tile_vertex_buffer = driver->create_buffer(BufferType::Vertex, byte_size);
         }
 
-        auto cmd_buffer = driver->create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer(true);
         cmd_buffer->upload_to_buffer(tile_vertex_buffer,
                                      0,
                                      byte_size,
@@ -387,7 +387,7 @@ namespace Pathfinder {
         // No fills to draw or no valid mask viewport.
         if (fills_count == 0 || mask_framebuffer == nullptr) return;
 
-        auto cmd_buffer = driver->create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer(true);
 
         cmd_buffer->begin_render_pass(mask_render_pass,
                                       mask_framebuffer,
@@ -414,7 +414,7 @@ namespace Pathfinder {
         // No tiles to draw.
         if (tiles_count == 0) return;
 
-        auto cmd_buffer = driver->create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer(true);
 
         Vec2<float> render_target_size;
 
@@ -446,10 +446,10 @@ namespace Pathfinder {
                                              (float) color_target.size.x, (float) color_target.size.y,
                                              render_target_size.x, render_target_size.y};
 
-            auto one_shot_cmd_buffer = driver->create_command_buffer();
-            one_shot_cmd_buffer->upload_to_buffer(tile_transform_ub, 0, 16 * sizeof(float), &mvp_mat);
-            one_shot_cmd_buffer->upload_to_buffer(tile_varying_sizes_ub, 0, 6 * sizeof(float), ubo_data.data());
-            one_shot_cmd_buffer->submit(driver);
+            auto cmd_buffer = driver->create_command_buffer(true);
+            cmd_buffer->upload_to_buffer(tile_transform_ub, 0, 16 * sizeof(float), &mvp_mat);
+            cmd_buffer->upload_to_buffer(tile_varying_sizes_ub, 0, 6 * sizeof(float), ubo_data.data());
+            cmd_buffer->submit(driver);
         }
 
         // Update descriptor set.

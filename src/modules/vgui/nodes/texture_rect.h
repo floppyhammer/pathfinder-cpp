@@ -17,7 +17,10 @@
 namespace Pathfinder {
     class TextureRect : public Control {
     public:
-        TextureRect(const std::shared_ptr<Driver> &driver, float viewport_width, float viewport_height);
+        TextureRect(const std::shared_ptr<Driver> &driver,
+                    const std::shared_ptr<RenderPass> &render_pass,
+                    uint32_t viewport_width,
+                    uint32_t viewport_height);
 
         void set_texture(std::shared_ptr<Texture> p_texture);
 

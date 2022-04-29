@@ -6,8 +6,6 @@
 
 namespace Pathfinder {
     class RenderPass {
-    public:
-        Vec2<uint32_t> extent;
     };
 }
 

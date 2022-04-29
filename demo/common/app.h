@@ -16,6 +16,7 @@
 class App {
 public:
     App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
+        const std::shared_ptr<Pathfinder::SwapChain> &swap_chain,
         uint32_t window_width,
         uint32_t window_height,
         std::vector<char> &area_lut_input,

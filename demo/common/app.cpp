@@ -5,6 +5,7 @@
 #include "../../src/gpu/gl/platform.h"
 
 App::App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
+         const std::shared_ptr<Pathfinder::SwapChain> &swap_chain,
          uint32_t window_width,
          uint32_t window_height,
          std::vector<char> &area_lut_input,
@@ -39,8 +40,8 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
     button->set_rect_position(400, 0);
 
     // Set viewport texture to a texture rect.
-    texture_rect0 = std::make_shared<Pathfinder::TextureRect>(driver, window_width, window_height);
-    texture_rect1 = std::make_shared<Pathfinder::TextureRect>(driver, window_width, window_height);
+    texture_rect0 = std::make_shared<Pathfinder::TextureRect>(driver, swap_chain->get_render_pass(), window_width, window_height);
+    texture_rect1 = std::make_shared<Pathfinder::TextureRect>(driver, swap_chain->get_render_pass(), window_width, window_height);
 
     // Timers.
     start_time = std::chrono::steady_clock::now();
@@ -98,7 +99,7 @@ void App::loop(const std::shared_ptr<Pathfinder::SwapChain> &swap_chain) {
     // Server process.
     //Pathfinder::VectorServer::get_singleton().canvas->draw();
 
-    auto cmd_buffer = driver->create_command_buffer();
+    auto cmd_buffer = swap_chain->get_command_buffer();
 
     auto framebuffer = swap_chain->get_framebuffer(0);
 
@@ -111,7 +112,7 @@ void App::loop(const std::shared_ptr<Pathfinder::SwapChain> &swap_chain) {
 
         // Draw canvas to screen.
         texture_rect0->set_texture(canvas->get_dest_texture());
-        texture_rect0->draw(driver, cmd_buffer, framebuffer->get_size());
+        //texture_rect0->draw(driver, cmd_buffer, framebuffer->get_size());
 
         // Draw label to screen.
         //texture_rect1->set_texture(Pathfinder::VectorServer::get_singleton().canvas->get_dest_texture());

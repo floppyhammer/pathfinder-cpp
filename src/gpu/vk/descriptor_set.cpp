@@ -104,8 +104,10 @@ namespace Pathfinder {
     }
 
     DescriptorSetVk::~DescriptorSetVk() {
-        // When we destroy the pool, the sets inside are destroyed as well.
-        vkDestroyDescriptorPool(device, descriptor_pool, nullptr);
+        if (descriptor_set_allocated) {
+            // When we destroy the pool, the sets inside are destroyed as well.
+            vkDestroyDescriptorPool(device, descriptor_pool, nullptr);
+        }
     }
 }
 

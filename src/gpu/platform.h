@@ -9,14 +9,16 @@ namespace Pathfinder {
     public:
         virtual std::shared_ptr<Driver> create_driver() = 0;
 
-        virtual std::shared_ptr<SwapChain> create_swap_chain(uint32_t p_width, uint32_t p_height) = 0;
+        virtual std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Driver>& driver, uint32_t p_width, uint32_t p_height) = 0;
 
         inline GLFWwindow *get_glfw_window() const {
             return window;
         }
 
         /// Process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly.
-        inline void handle_inputs() {
+        inline void poll_events() {
+            glfwPollEvents();
+
             if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
                 glfwSetWindowShouldClose(window, true);
 //        // GLFW input callbacks.
@@ -44,8 +46,6 @@ namespace Pathfinder {
 //            glfwSetMouseButtonCallback(platform.get_glfw_window(), cursor_button_callback);
 //        }
         }
-
-        virtual void swap_buffers_and_poll_events() const = 0;
 
         virtual void cleanup() = 0;
 

@@ -139,7 +139,7 @@ namespace Pathfinder {
 
         renderer->set_up_area_lut(area_lut_input);
 
-        renderer->set_up_pipelines();
+        renderer->set_up_pipelines(size_x, size_y);
     }
 
     void Canvas::push_shape(Shape p_shape,

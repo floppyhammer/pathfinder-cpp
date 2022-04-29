@@ -39,7 +39,7 @@ namespace Pathfinder {
                                                          TEXTURE_METADATA_TEXTURE_WIDTH,
                                                          TEXTURE_METADATA_TEXTURE_HEIGHT};
 
-            auto cmd_buffer = driver->create_command_buffer();
+            auto cmd_buffer = driver->create_command_buffer(true);
             cmd_buffer->upload_to_buffer(fixed_sizes_ub, 0, 6 * sizeof(float), fixed_sizes_ubo_data.data());
             cmd_buffer->submit(driver);
         }
@@ -52,7 +52,7 @@ namespace Pathfinder {
                                                   TextureFormat::RGBA8,
                                                   DataType::UNSIGNED_BYTE);
 
-        auto cmd_buffer = driver->create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer(true);
         cmd_buffer->upload_to_texture(area_lut_texture, {}, image_data->data);
         cmd_buffer->submit(driver);
     }
@@ -197,7 +197,7 @@ namespace Pathfinder {
         auto height = texels.size() / (4 * TEXTURE_METADATA_TEXTURE_WIDTH);
         auto region_rect = Rect<uint32_t>(0, 0, width, height);
 
-        auto cmd_buffer = driver->create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer(true);
         cmd_buffer->upload_to_texture(metadata_texture, region_rect, texels.data());
         cmd_buffer->submit(driver);
     }
