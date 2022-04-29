@@ -43,7 +43,7 @@ namespace Pathfinder {
 //    }
 
     std::shared_ptr<DescriptorSet> DriverVk::create_descriptor_set() {
-        return std::make_shared<DescriptorSetVk>();
+        return std::shared_ptr<DescriptorSetVk>(new DescriptorSetVk);
     }
 
     std::shared_ptr<RenderPipeline> DriverVk::create_render_pipeline(

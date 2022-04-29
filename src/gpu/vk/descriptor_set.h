@@ -11,6 +11,7 @@
 
 namespace Pathfinder {
     class DescriptorSetVk : public DescriptorSet {
+        friend class DriverVk;
     public:
         ~DescriptorSetVk();
 
@@ -19,12 +20,14 @@ namespace Pathfinder {
         VkDescriptorSet &get_vk_descriptor_set();
 
     private:
-        VkDescriptorPool descriptor_pool;
-        VkDescriptorSet descriptor_set;
+        DescriptorSetVk() = default;
+
+        VkDescriptorPool descriptor_pool{};
+        VkDescriptorSet descriptor_set{};
 
         bool descriptor_set_allocated = false;
 
-        VkDevice device;
+        VkDevice device{};
     };
 }
 

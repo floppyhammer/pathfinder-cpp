@@ -63,7 +63,7 @@ layout(location=0) out vec4 oFragColor;
 uniform sampler2D uColorTexture0; // Pattern image.
 uniform sampler2D uMaskTexture0;
 uniform sampler2D uDestTexture;
-uniform sampler2D uGammaLUT;
+uniform sampler2D uGammaLUT; // For text.
 
 in vec3 vMaskTexCoord0;
 in vec2 vColorTexCoord0;
@@ -240,8 +240,7 @@ vec4 filterText(vec2 colorTexCoord, sampler2D colorTexture, sampler2D gammaLUT,
     }
 
     // Apply gamma correction if necessary.
-    if (gammaCorrectionEnabled)
-    alpha = filterTextGammaCorrect(bgColor, alpha, gammaLUT);
+    if (gammaCorrectionEnabled) alpha = filterTextGammaCorrect(bgColor, alpha, gammaLUT);
 
     // Finish.
     return vec4(mix(bgColor, fgColor, alpha), 1.0);
