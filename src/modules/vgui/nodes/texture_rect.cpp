@@ -82,7 +82,7 @@ namespace Pathfinder {
             ColorBlendState blend_state = {true, BlendFactor::ONE, BlendFactor::ONE_MINUS_SRC_ALPHA};
 
             {
-                descriptor_set = std::make_shared<DescriptorSet>();
+                descriptor_set = driver->create_descriptor_set();
 
                 descriptor_set->add_or_update_descriptor({
                                                                  DescriptorType::UniformBuffer,

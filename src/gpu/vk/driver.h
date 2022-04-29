@@ -18,9 +18,7 @@ namespace Pathfinder {
         DriverVk(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue graphicsQueue, VkQueue presentQueue,
                  VkCommandPool commandPool);
 
-        std::shared_ptr<SwapChain> create_swap_chain(uint32_t p_width, uint32_t p_height) override {return nullptr;};
-
-        std::shared_ptr<RenderPass> create_render_pass(TextureFormat format) override;
+        std::shared_ptr<RenderPass> create_render_pass(TextureFormat format, ImageLayout final_layout) override;
 
         std::shared_ptr<Framebuffer> create_framebuffer(uint32_t p_width,
                                                         uint32_t p_height,

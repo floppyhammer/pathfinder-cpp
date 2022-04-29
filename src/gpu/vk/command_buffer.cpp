@@ -227,8 +227,8 @@ namespace Pathfinder {
                     renderPassInfo.renderPass = render_pass_vk->get_vk_render_pass();
                     renderPassInfo.framebuffer = framebuffer_vk->get_vk_framebuffer(); // Set target framebuffer.
                     renderPassInfo.renderArea.offset = {0, 0};
-                    renderPassInfo.renderArea.extent = VkExtent2D{args.extent.x,
-                                                                  args.extent.y}; // Has to be larger than the area we're going to draw.
+                    // Has to be larger than the area we're going to draw.
+                    renderPassInfo.renderArea.extent = VkExtent2D{args.extent.x, args.extent.y};
 
                     // Clear color.
                     std::array<VkClearValue, 1> clearValues{};
@@ -367,13 +367,13 @@ namespace Pathfinder {
 
                     // Image region size in bytes.
                     auto pixel_size = get_pixel_size(texture_vk->get_format()); // Bytes of one pixel.
-                    VkDeviceSize imageSize = args.width * args.height * pixel_size;
+                    VkDeviceSize dataSize = args.width * args.height * pixel_size;
 
                     // Temporary buffer and CPU memory.
                     VkBuffer stagingBuffer;
                     VkDeviceMemory stagingBufferMemory;
 
-                    driver->createVkBuffer(imageSize,
+                    driver->createVkBuffer(dataSize,
                                            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                                            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -381,12 +381,12 @@ namespace Pathfinder {
                                            stagingBufferMemory);
 
                     // Copy the pixel values that we got from the image loading library to the buffer.
-                    driver->copyDataToMemory(args.data, stagingBufferMemory, imageSize);
+                    driver->copyDataToMemory(args.data, stagingBufferMemory, dataSize);
 
                     // Transition the texture image to VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
                     driver->transitionImageLayout(vk_command_buffer,
                                                   texture_vk->get_image(),
-                                                  VK_FORMAT_R8G8B8A8_SRGB,
+                                                  to_vk_texture_format(texture_vk->get_format()),
                                                   VK_IMAGE_LAYOUT_UNDEFINED,
                                                   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
@@ -394,20 +394,28 @@ namespace Pathfinder {
                     {
                         // Structure specifying a buffer image copy operation.
                         VkBufferImageCopy region{};
-                        region.bufferOffset = 0; // Offset in bytes from the start of the buffer object where the image data is copied from or to.
-                        region.bufferRowLength = 0; // Specify in texels a subregion of a larger two- or three-dimensional image in buffer memory, and control the addressing calculations.
-                        region.bufferImageHeight = 0;
 
-                        // A VkImageSubresourceLayers used to specify the specific image subresources of the image used for the source or destination image data.
-                        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                        region.imageSubresource.mipLevel = 0;
-                        region.imageSubresource.baseArrayLayer = 0;
-                        region.imageSubresource.layerCount = 1;
-                        // Selects the initial x, y, z offsets in texels of the sub-region of the source or destination image data.
-                        region.imageOffset = {static_cast<int32_t>(args.offset_x), static_cast<int32_t>(args.offset_y),
-                                              0};
-                        // Size in texels of the image to copy in width, height and depth.
-                        region.imageExtent = {args.width, args.height, 1};
+                        // Specify which part of the buffer is going to be copied.
+                        {
+                            region.bufferOffset = 0; // Byte offset in the buffer at which the pixel values start.
+                            region.bufferRowLength = 0; // Specify how the pixels are laid out in memory.
+                            region.bufferImageHeight = 0; // This too.
+                        }
+
+                        // Specify which part of the image we want to copy the pixels.
+                        {
+                            // A VkImageSubresourceLayers used to specify the specific image subresources of the image used for the source or destination image data.
+                            region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                            region.imageSubresource.mipLevel = 0;
+                            region.imageSubresource.baseArrayLayer = 0;
+                            region.imageSubresource.layerCount = 1;
+                            // Selects the initial x, y, z offsets in texels of the sub-region of the source or destination image data.
+                            region.imageOffset = {static_cast<int32_t>(args.offset_x),
+                                                  static_cast<int32_t>(args.offset_y),
+                                                  0};
+                            // Size in texels of the image to copy in width, height and depth.
+                            region.imageExtent = {args.width, args.height, 1};
+                        }
 
                         // Copy data from a buffer into an image.
                         vkCmdCopyBufferToImage(vk_command_buffer,
@@ -422,7 +430,7 @@ namespace Pathfinder {
                     // To be able to start sampling from the texture image in the shader, we need one last transition to prepare it for shader access.
                     driver->transitionImageLayout(vk_command_buffer,
                                                   texture_vk->get_image(),
-                                                  VK_FORMAT_R8G8B8A8_SRGB,
+                                                  to_vk_texture_format(texture_vk->get_format()),
                                                   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                                   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 

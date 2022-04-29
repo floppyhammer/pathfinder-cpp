@@ -23,6 +23,7 @@ namespace Pathfinder {
         VkDescriptorSet descriptor_set;
 
         bool descriptor_set_allocated = false;
+
         VkDevice device;
     };
 }

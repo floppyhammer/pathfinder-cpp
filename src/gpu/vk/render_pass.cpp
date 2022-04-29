@@ -3,7 +3,7 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    Pathfinder::RenderPassVk::RenderPassVk(VkDevice device, TextureFormat texture_format) {
+    Pathfinder::RenderPassVk::RenderPassVk(VkDevice device, TextureFormat texture_format, ImageLayout final_layout) {
         vk_device = device;
 
         // Color attachment.
@@ -16,7 +16,7 @@ namespace Pathfinder {
         colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // The layout the attachment image subresource will be in when a render pass instance begins.
-        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // The layout the attachment image subresource will be transitioned to when a render pass instance ends.
+        colorAttachment.finalLayout = to_vk_layout(final_layout); // The layout the attachment image subresource will be transitioned to when a render pass instance ends.
 
         VkAttachmentReference colorAttachmentRef{};
         colorAttachmentRef.attachment = 0;

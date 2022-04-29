@@ -32,7 +32,7 @@ namespace Pathfinder {
         auto z_buffer_texture = driver->create_texture(
                 z_buffer_map.rect.width(),
                 z_buffer_map.rect.height(),
-                TextureFormat::RGBA8,
+                TextureFormat::RGBA8_UNORM,
                 DataType::UNSIGNED_BYTE);
 
         auto cmd_buffer = driver->create_command_buffer(true);
@@ -44,9 +44,9 @@ namespace Pathfinder {
 
     RendererD3D9::RendererD3D9(const std::shared_ptr<Driver>& p_driver, uint32_t canvas_width, uint32_t canvas_height)
             : Renderer(p_driver) {
-        mask_render_pass = driver->create_render_pass(TextureFormat::RGBA16F);
+        mask_render_pass = driver->create_render_pass(TextureFormat::RGBA16F, ImageLayout::SHADER_READ_ONLY);
 
-        dest_render_pass = driver->create_render_pass(TextureFormat::RGBA8);
+        dest_render_pass = driver->create_render_pass(TextureFormat::RGBA8_UNORM, ImageLayout::SHADER_READ_ONLY);
 
         mask_framebuffer = driver->create_framebuffer(MASK_FRAMEBUFFER_WIDTH,
                                                       MASK_FRAMEBUFFER_HEIGHT,
@@ -56,7 +56,7 @@ namespace Pathfinder {
 
         dest_framebuffer = driver->create_framebuffer(canvas_width,
                                                       canvas_height,
-                                                      TextureFormat::RGBA8,
+                                                      TextureFormat::RGBA8_UNORM,
                                                       DataType::UNSIGNED_BYTE,
                                                       dest_render_pass);
 
@@ -405,6 +405,8 @@ namespace Pathfinder {
         cmd_buffer->end_render_pass();
 
         cmd_buffer->submit(driver);
+
+        // TODO: Transition image layout here.
     }
 
     void RendererD3D9::draw_tiles(uint32_t tiles_count,

@@ -70,7 +70,7 @@ namespace Pathfinder {
                 VkDescriptorBufferInfo bufferInfo{};
                 bufferInfo.buffer = buffer_vk->get_vk_buffer();
                 bufferInfo.offset = 0;
-                bufferInfo.range = descriptor.buffer->size;
+                bufferInfo.range = buffer_vk->size;
 
                 descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
                 descriptor_write.pBufferInfo = &bufferInfo;
@@ -88,15 +88,21 @@ namespace Pathfinder {
                 abort();
             }
 
-            descriptor_writes.push_back(descriptor_write);
+//            descriptor_writes.push_back(descriptor_write);
+            vkUpdateDescriptorSets(device,
+                                   1,
+                                   &descriptor_write,
+                                   0,
+                                   nullptr);
         }
 
-        // Update the contents of a descriptor set object.
-        vkUpdateDescriptorSets(device,
-                               descriptor_writes.size(),
-                               descriptor_writes.data(),
-                               0,
-                               nullptr);
+        // This doesn't work due to using of pBufferInfo and pImageInfo pointers.
+//        // Update the contents of a descriptor set object.
+//        vkUpdateDescriptorSets(device,
+//                               descriptor_writes.size(),
+//                               descriptor_writes.data(),
+//                               0,
+//                               nullptr);
     }
 
     VkDescriptorSet &DescriptorSetVk::get_vk_descriptor_set() {

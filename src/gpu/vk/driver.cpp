@@ -190,7 +190,7 @@ namespace Pathfinder {
         rasterizer.rasterizerDiscardEnable = VK_FALSE;
         rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
         rasterizer.lineWidth = 1.0f;
-        rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+        rasterizer.cullMode = VK_CULL_MODE_NONE;
         rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
         rasterizer.depthBiasEnable = VK_FALSE;
 
@@ -225,18 +225,6 @@ namespace Pathfinder {
         colorBlending.blendConstants[2] = 0.0f;
         colorBlending.blendConstants[3] = 0.0f;
 
-        VkPipelineDepthStencilStateCreateInfo depthStencil{};
-        depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-        depthStencil.depthTestEnable = VK_TRUE;
-        depthStencil.depthWriteEnable = VK_FALSE;
-        depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
-        depthStencil.depthBoundsTestEnable = VK_FALSE;
-        depthStencil.minDepthBounds = 0.0f; // Optional
-        depthStencil.maxDepthBounds = 1.0f; // Optional
-        depthStencil.stencilTestEnable = VK_FALSE;
-        depthStencil.front = {}; // Optional
-        depthStencil.back = {}; // Optional
-
         VkGraphicsPipelineCreateInfo pipelineInfo{};
         pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
         pipelineInfo.stageCount = 2;
@@ -251,7 +239,6 @@ namespace Pathfinder {
         pipelineInfo.renderPass = render_pass_vk->vk_render_pass;
         pipelineInfo.subpass = 0;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-        pipelineInfo.pDepthStencilState = &depthStencil;
 
         // Create pipeline.
         if (vkCreateGraphicsPipelines(device,
@@ -275,8 +262,8 @@ namespace Pathfinder {
         return std::make_shared<ComputePipeline>();
     }
 
-    std::shared_ptr<RenderPass> DriverVk::create_render_pass(TextureFormat format) {
-        auto render_pass_vk = std::make_shared<RenderPassVk>(device, format);
+    std::shared_ptr<RenderPass> DriverVk::create_render_pass(TextureFormat format, ImageLayout final_layout) {
+        auto render_pass_vk = std::make_shared<RenderPassVk>(device, format, final_layout);
 
         return render_pass_vk;
     }

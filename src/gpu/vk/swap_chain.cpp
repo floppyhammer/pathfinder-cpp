@@ -173,7 +173,7 @@ namespace Pathfinder {
     }
 
     void SwapChainVk::createRenderPass() {
-        render_pass = driver->create_render_pass(vk_to_texture_format(swapChainImageFormat));
+        render_pass = driver->create_render_pass(vk_to_texture_format(swapChainImageFormat), ImageLayout::PRESENT_SRC);
     }
 
     void SwapChainVk::createFramebuffers() {

@@ -20,10 +20,17 @@ namespace Pathfinder {
 
     /// Texture format in GPU memory.
     enum class TextureFormat {
-        RGBA,
-        RGBA8,
-        BGRA8,
+        RGBA8_UNORM,
+        RGBA8_SRGB,
+        BGRA8_SRGB,
         RGBA16F,
+    };
+
+    enum class ImageLayout {
+        PRESENT_SRC,
+        SHADER_READ_ONLY,
+        TRANSFER_SRC,
+        TRANSFER_DST,
     };
 
     /// Texture format in CPU memory.
@@ -67,9 +74,8 @@ namespace Pathfinder {
 
     inline uint32_t get_pixel_size(TextureFormat format) {
         switch (format) {
-            case TextureFormat::RGBA:
-            case TextureFormat::RGBA8:
-            case TextureFormat::BGRA8: {
+            case TextureFormat::RGBA8_UNORM:
+            case TextureFormat::BGRA8_SRGB: {
                 return 4;
             }
             case TextureFormat::RGBA16F: {
