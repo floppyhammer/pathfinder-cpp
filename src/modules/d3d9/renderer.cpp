@@ -150,7 +150,7 @@ namespace Pathfinder {
                                                            fill_frag_source,
                                                            attribute_descriptions,
                                                            blend_state,
-                                                           {MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_WIDTH},
+                                                           {MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT},
                                                            fill_descriptor_set,
                                                            mask_render_pass);
         }
@@ -312,7 +312,7 @@ namespace Pathfinder {
                                                            tile_frag_source,
                                                            attribute_descriptions,
                                                            blend_state,
-                                                           {canvas_width, canvas_width},
+                                                           {canvas_width, canvas_height},
                                                            tile_descriptor_set,
                                                            dest_render_pass);
         }

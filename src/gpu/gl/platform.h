@@ -23,9 +23,7 @@ namespace Pathfinder {
 
         std::shared_ptr<Driver> create_driver() override;
 
-        std::shared_ptr<SwapChain> create_swap_chain(uint32_t p_width, uint32_t p_height) override;
-
-        void poll_events() const override;
+        std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Driver>& driver, uint32_t p_width, uint32_t p_height) override;
 
         bool framebufferResized = false;
 

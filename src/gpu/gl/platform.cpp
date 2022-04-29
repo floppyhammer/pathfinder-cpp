@@ -59,12 +59,6 @@ namespace Pathfinder {
         Logger::info(string_stream.str(), "OpenGL");
     }
 
-    void PlatformGl::swap_buffers_and_poll_events() const {
-        // GLFW: swap buffers and poll IO events (keys pressed/released, mouse moved etc.).
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
-
     void PlatformGl::cleanup() {
         // GLFW: terminate, clearing all previously allocated resources (including windows).
         glfwTerminate();
@@ -75,9 +69,8 @@ namespace Pathfinder {
         return driver;
     }
 
-    std::shared_ptr<SwapChain> PlatformGl::create_swap_chain(uint32_t p_width, uint32_t p_height) {
-        auto swap_chain_gl = std::make_shared<SwapChainGl>(p_width, p_height);
-
+    std::shared_ptr<SwapChain> PlatformGl::create_swap_chain(const std::shared_ptr<Driver>& driver, uint32_t p_width, uint32_t p_height) {
+        auto swap_chain_gl = std::make_shared<SwapChainGl>(p_width, p_height, window);
         return swap_chain_gl;
     }
 }

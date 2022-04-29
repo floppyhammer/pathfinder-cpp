@@ -112,7 +112,7 @@ void App::loop(const std::shared_ptr<Pathfinder::SwapChain> &swap_chain) {
 
         // Draw canvas to screen.
         texture_rect0->set_texture(canvas->get_dest_texture());
-        //texture_rect0->draw(driver, cmd_buffer, framebuffer->get_size());
+        texture_rect0->draw(driver, cmd_buffer, framebuffer->get_size());
 
         // Draw label to screen.
         //texture_rect1->set_texture(Pathfinder::VectorServer::get_singleton().canvas->get_dest_texture());

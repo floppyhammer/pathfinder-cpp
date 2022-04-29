@@ -27,6 +27,7 @@ namespace Pathfinder {
         args.framebuffer = framebuffer.get();
         args.clear = clear;
         args.clear_color = clear_color;
+        args.extent = framebuffer->get_size();
 
         commands.push(cmd);
     }

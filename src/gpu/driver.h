@@ -12,8 +12,6 @@
 namespace Pathfinder {
     class Driver {
     public:
-        virtual std::shared_ptr<SwapChain> create_swap_chain(uint32_t p_width, uint32_t p_height) = 0;
-
         virtual std::shared_ptr<Framebuffer> create_framebuffer(uint32_t p_width,
                                                                 uint32_t p_height,
                                                                 TextureFormat p_format,

@@ -102,6 +102,15 @@ namespace Pathfinder {
                 abort();
         }
     }
+
+    inline VkBlendFactor to_vk_blend_factor(BlendFactor factor) {
+        switch (factor) {
+            case BlendFactor::ONE:
+                return VK_BLEND_FACTOR_ONE;
+            case BlendFactor::ONE_MINUS_SRC_ALPHA:
+                return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        }
+    }
 }
 
 #endif

@@ -142,7 +142,7 @@ namespace Pathfinder {
 
         virtual void end_compute_pass() = 0;
 
-        // DATA TRANSFER
+        // COPY PASS
 
         /**
          * Upload to buffer.
