@@ -37,11 +37,6 @@ namespace Pathfinder {
         return commandPool;
     }
 
-//    std::shared_ptr<SwapChain> DriverVk::create_swap_chain(uint32_t p_width, uint32_t p_height) {
-//        auto swap_chain_vk = std::make_shared<SwapChainVk>(p_width, p_width, );
-//        return swap_chain_vk;
-//    }
-
     std::shared_ptr<DescriptorSet> DriverVk::create_descriptor_set() {
         return std::shared_ptr<DescriptorSetVk>(new DescriptorSetVk);
     }
@@ -446,8 +441,8 @@ namespace Pathfinder {
         VkPhysicalDeviceProperties properties{};
         vkGetPhysicalDeviceProperties(physicalDevice, &properties);
 
-        samplerInfo.anisotropyEnable = VK_TRUE;
-        samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+        // Has to be disabled to prevent artifacts.
+        samplerInfo.anisotropyEnable = VK_FALSE;
 
         // The borderColor field specifies which color is returned when sampling beyond the image with clamp to border addressing mode.
         samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
