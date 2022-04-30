@@ -440,8 +440,8 @@ namespace Pathfinder {
         {
             // MVP.
             auto model_mat = Mat4x4<float>(1.f);
-            model_mat = model_mat.translate(Vec3<float>(-1.f, 1.f, 0.f));
-            model_mat = model_mat.scale(Vec3<float>(2.f / render_target_size.x, -2.f / render_target_size.y, 1.f));
+            model_mat = model_mat.translate(Vec3<float>(-1.f, -1.f, 0.f)); // Move to top-left.
+            model_mat = model_mat.scale(Vec3<float>(2.f / render_target_size.x, 2.f / render_target_size.y, 1.f));
             auto mvp_mat = model_mat;
 
             std::array<float, 6> ubo_data = {(float) z_buffer_texture->get_width(), (float) z_buffer_texture->get_height(),

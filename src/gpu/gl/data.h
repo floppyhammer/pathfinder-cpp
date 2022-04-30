@@ -39,12 +39,14 @@ namespace Pathfinder {
 
     inline GLint to_gl_texture_format(TextureFormat texture_format) {
         switch (texture_format) {
-            case TextureFormat::RGBA:
-                return GL_RGBA;
-            case TextureFormat::RGBA8:
+            case TextureFormat::RGBA8_UNORM:
                 return GL_RGBA8;
+            case TextureFormat::RGBA8_SRGB:
+                return GL_SRGB8;
             case TextureFormat::RGBA16F:
                 return GL_RGBA16F;
+            default:
+                return GL_RGBA8;
         }
     }
 
@@ -60,4 +62,4 @@ namespace Pathfinder {
 
 #endif
 
-#endif //PATHFINDER_DATA_GL_H
+#endif //PATHFINDER_GPU_DATA_GL_H

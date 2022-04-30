@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 2021/11/15.
-//
-
 #include "canvas.h"
 
 #include "stroke.h"
@@ -12,6 +8,7 @@
 #include "../../common/logger.h"
 
 #define NANOSVG_IMPLEMENTATION
+
 #include <nanosvg.h>
 
 #include <utility>
@@ -38,7 +35,7 @@ namespace Pathfinder {
      * @param current_state Canvas state.
      * @param outline_bounds Original shape bounds.
      */
-    ShadowBlurRenderTargetInfo push_shadow_blur_render_targets(const std::shared_ptr<Driver>& driver,
+    ShadowBlurRenderTargetInfo push_shadow_blur_render_targets(const std::shared_ptr<Driver> &driver,
                                                                Scene &scene,
                                                                State &current_state,
                                                                Rect<float> outline_bounds) {
@@ -121,7 +118,8 @@ namespace Pathfinder {
         scene.push_draw_path(path_y);
     }
 
-    Canvas::Canvas(const std::shared_ptr<Driver>& p_driver, float size_x, float size_y, const std::vector<char> &area_lut_input) {
+    Canvas::Canvas(const std::shared_ptr<Driver> &p_driver, float size_x, float size_y,
+                   const std::vector<char> &area_lut_input) {
         driver = p_driver;
 
         // Set up a scene.
@@ -311,8 +309,8 @@ namespace Pathfinder {
         return current_state.shadow_offset;
     }
 
-    void Canvas::set_shadow_offset(const Vec2<float> &p_shadow_offset) {
-        current_state.shadow_offset = p_shadow_offset;
+    void Canvas::set_shadow_offset(float p_shadow_offset_x, float p_shadow_offset_y) {
+        current_state.shadow_offset = {p_shadow_offset_x, p_shadow_offset_y};
     }
 
     std::vector<float> Canvas::line_dash() const {
@@ -399,7 +397,7 @@ namespace Pathfinder {
         }
     }
 
-    void Canvas::load_svg(const std::string& input) {
+    void Canvas::load_svg(const std::string &input) {
         Timestamp timestamp;
 
         // Load the SVG image via NanoSVG.
@@ -407,7 +405,7 @@ namespace Pathfinder {
 
         // Make a copy as nsvgParse() will empty the string.
         auto input_copy = input;
-        char* string_c = const_cast<char *>(input_copy.c_str());
+        char *string_c = const_cast<char *>(input_copy.c_str());
         image = nsvgParse(string_c, "px", 96);
 
         // Check if image loading is successful.
@@ -450,7 +448,8 @@ namespace Pathfinder {
 
             // Set dash.
             set_line_dash_offset(nsvg_shape->strokeDashOffset);
-            set_line_dash(std::vector<float>(nsvg_shape->strokeDashArray, nsvg_shape->strokeDashArray + nsvg_shape->strokeDashCount));
+            set_line_dash(std::vector<float>(nsvg_shape->strokeDashArray,
+                                             nsvg_shape->strokeDashArray + nsvg_shape->strokeDashCount));
 
             // Add fill.
             set_fill_paint(Paint::from_color(ColorU(nsvg_shape->fill.color)));

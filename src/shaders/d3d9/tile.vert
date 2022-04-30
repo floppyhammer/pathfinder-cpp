@@ -148,9 +148,6 @@ void main() {
     // Get the UV coordinates of the tile Z value.
     vec2 zUV = ((tileOrigin + vec2(0.5)) / uZBufferSize) * 255.0;
 
-    // TODO: Make this clearer.
-    zUV.y = 1.0f - zUV.y;
-
     // Sample Z value from the Z buffer texture.
     ivec4 zValue = ivec4(texture(uZBuffer, zUV));
 
