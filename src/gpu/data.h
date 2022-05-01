@@ -72,6 +72,23 @@ namespace Pathfinder {
         Max,
     };
 
+    enum class BufferUsage {
+        HOST_VISIBLE_AND_COHERENT,
+        DEVICE_LOCAL,
+    };
+
+    enum class BufferType {
+        Vertex,
+        Uniform,
+        General,
+    };
+
+    enum class GeneralBufferUsage {
+        Read,
+        Write,
+        ReadWrite,
+    };
+
     inline uint32_t get_pixel_size(TextureFormat format) {
         switch (format) {
             case TextureFormat::RGBA8_UNORM:

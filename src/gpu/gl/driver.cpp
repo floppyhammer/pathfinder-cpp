@@ -20,8 +20,8 @@ namespace Pathfinder {
         return framebuffer_gl;
     }
 
-    std::shared_ptr<Buffer> DriverGl::create_buffer(BufferType type, size_t size) {
-        auto buffer = std::make_shared<BufferGl>(type, size);
+    std::shared_ptr<Buffer> DriverGl::create_buffer(BufferType type, size_t size, BufferUsage usage) {
+        auto buffer = std::make_shared<BufferGl>(type, size, usage);
 
         check_error("create_buffer");
         return buffer;

@@ -125,6 +125,15 @@ namespace Pathfinder {
         }
     }
 
+    inline VkBufferUsageFlagBits to_vk_buffer_usage(BufferUsage usage) {
+        switch (usage) {
+            case BufferUsage::HOST_VISIBLE_AND_COHERENT:
+                return static_cast<VkBufferUsageFlagBits>(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                                          VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+            case BufferUsage::DEVICE_LOCAL:
+                return static_cast<VkBufferUsageFlagBits>(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        }
+    }
 }
 
 #endif

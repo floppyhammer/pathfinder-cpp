@@ -25,7 +25,7 @@ namespace Pathfinder {
                                                         TextureFormat p_format,
                                                         const std::shared_ptr<RenderPass> &render_pass) override;
 
-        std::shared_ptr<Buffer> create_buffer(BufferType type, size_t size) override;
+        std::shared_ptr<Buffer> create_buffer(BufferType type, size_t size, BufferUsage usage) override;
 
         std::shared_ptr<Texture> create_texture(uint32_t width,
                                                 uint32_t height,

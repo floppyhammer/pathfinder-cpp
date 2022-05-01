@@ -55,7 +55,9 @@ namespace Pathfinder {
         // Reallocate if capacity is not enough.
         if (points_capacity < needed_points_capacity) {
             // Old buffer will be dropped automatically.
-            points_buffer = driver->create_buffer(BufferType::General, needed_points_capacity * sizeof(Vec2<float>));
+            points_buffer = driver->create_buffer(BufferType::General,
+                                                  needed_points_capacity * sizeof(Vec2<float>),
+                                                  BufferUsage::DEVICE_LOCAL);
 
             points_capacity = needed_points_capacity;
         }
@@ -64,7 +66,8 @@ namespace Pathfinder {
         if (point_indices_capacity < needed_point_indices_capacity) {
             // Old buffer will be dropped automatically.
             point_indices_buffer = driver->create_buffer(BufferType::General,
-                                                         needed_point_indices_capacity * sizeof(SegmentIndicesD3D11));
+                                                         needed_point_indices_capacity * sizeof(SegmentIndicesD3D11),
+                                                         BufferUsage::DEVICE_LOCAL);
 
             point_indices_capacity = needed_point_indices_capacity;
         }
@@ -106,15 +109,15 @@ namespace Pathfinder {
         allocated_fill_count = INITIAL_ALLOCATED_FILL_COUNT;
 
         // Create uniform buffers.
-        bin_ub = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t));
-        bound_ub = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t));
-        dice_ub0 = driver->create_buffer(BufferType::Uniform, 12 * sizeof(float));
-        dice_ub1 = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t));
-        fill_ub = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t));
-        propagate_ub = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t));
-        sort_ub = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t));
-        tile_ub0 = driver->create_buffer(BufferType::Uniform, 8 * sizeof(float));
-        tile_ub1 = driver->create_buffer(BufferType::Uniform, 8 * sizeof(float));
+        bin_ub = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t), BufferUsage::HOST_VISIBLE_AND_COHERENT);
+        bound_ub = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t), BufferUsage::HOST_VISIBLE_AND_COHERENT);
+        dice_ub0 = driver->create_buffer(BufferType::Uniform, 12 * sizeof(float), BufferUsage::HOST_VISIBLE_AND_COHERENT);
+        dice_ub1 = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t), BufferUsage::HOST_VISIBLE_AND_COHERENT);
+        fill_ub = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t), BufferUsage::HOST_VISIBLE_AND_COHERENT);
+        propagate_ub = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t), BufferUsage::HOST_VISIBLE_AND_COHERENT);
+        sort_ub = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t), BufferUsage::HOST_VISIBLE_AND_COHERENT);
+        tile_ub0 = driver->create_buffer(BufferType::Uniform, 8 * sizeof(float), BufferUsage::HOST_VISIBLE_AND_COHERENT);
+        tile_ub1 = driver->create_buffer(BufferType::Uniform, 8 * sizeof(float), BufferUsage::HOST_VISIBLE_AND_COHERENT);
 
         // Unlike D3D9, we use RGBA8 here instead of RGBA16F.
         mask_texture = driver->create_texture(MASK_FRAMEBUFFER_WIDTH,
@@ -380,20 +383,20 @@ namespace Pathfinder {
         // SSBOs to 8 (#373).
         // Add FILL_INDIRECT_DRAW_PARAMS_SIZE in case tile size is zero.
         auto size = tile_size().area() + FILL_INDIRECT_DRAW_PARAMS_SIZE;
-        auto buffer_id = driver->create_buffer(BufferType::General, size * sizeof(int32_t));
+        auto buffer_id = driver->create_buffer(BufferType::General, size * sizeof(int32_t), BufferUsage::DEVICE_LOCAL);
 
         return buffer_id;
     }
 
     std::shared_ptr<Buffer> RendererD3D11::allocate_first_tile_map() {
         auto size = tile_size().area();
-        auto buffer_id = driver->create_buffer(BufferType::General, size * sizeof(FirstTileD3D11));
+        auto buffer_id = driver->create_buffer(BufferType::General, size * sizeof(FirstTileD3D11), BufferUsage::DEVICE_LOCAL);
 
         return buffer_id;
     }
 
     std::shared_ptr<Buffer> RendererD3D11::allocate_alpha_tile_info(uint32_t index_count) {
-        auto buffer_id = driver->create_buffer(BufferType::General, index_count * sizeof(AlphaTileD3D11));
+        auto buffer_id = driver->create_buffer(BufferType::General, index_count * sizeof(AlphaTileD3D11), BufferUsage::DEVICE_LOCAL);
 
         return buffer_id;
     }
@@ -403,7 +406,8 @@ namespace Pathfinder {
             std::vector<BackdropInfoD3D11> &backdrops) {
         auto propagate_metadata_storage_id =
                 driver->create_buffer(BufferType::General,
-                                      propagate_metadata.size() * sizeof(PropagateMetadataD3D11));
+                                      propagate_metadata.size() * sizeof(PropagateMetadataD3D11),
+                                      BufferUsage::DEVICE_LOCAL);
 
         auto cmd_buffer = driver->create_command_buffer(true);
         cmd_buffer->upload_to_buffer(propagate_metadata_storage_id,
@@ -413,7 +417,8 @@ namespace Pathfinder {
         cmd_buffer->submit(driver);
 
         auto backdrops_storage_id = driver->create_buffer(BufferType::General,
-                                                          backdrops.size() * sizeof(BackdropInfoD3D11));
+                                                          backdrops.size() * sizeof(BackdropInfoD3D11),
+                                                          BufferUsage::DEVICE_LOCAL);
 
         return {propagate_metadata_storage_id, backdrops_storage_id};
     }
@@ -431,7 +436,8 @@ namespace Pathfinder {
     void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
         // Upload tiles to GPU or allocate them as appropriate.
         auto tiles_d3d11_buffer_id = driver->create_buffer(BufferType::General,
-                                                           batch.tile_count * sizeof(TileD3D11));
+                                                           batch.tile_count * sizeof(TileD3D11),
+                                                           BufferUsage::DEVICE_LOCAL);
 
         // Allocate a Z-buffer.
         auto z_buffer_id = allocate_z_buffer();
@@ -538,11 +544,14 @@ namespace Pathfinder {
             Transform2 transform) {
         // Allocate some general buffers.
         auto microlines_buffer_id = driver->create_buffer(BufferType::General,
-                                                          allocated_microline_count * sizeof(MicrolineD3D11));
+                                                          allocated_microline_count * sizeof(MicrolineD3D11),
+                                                          BufferUsage::DEVICE_LOCAL);
         auto dice_metadata_buffer_id = driver->create_buffer(BufferType::General,
-                                                             dice_metadata.size() * sizeof(DiceMetadataD3D11));
+                                                             dice_metadata.size() * sizeof(DiceMetadataD3D11),
+                                                             BufferUsage::DEVICE_LOCAL);
         auto indirect_draw_params_buffer_id = driver->create_buffer(BufferType::General,
-                                                                    8 * sizeof(uint32_t));
+                                                                    8 * sizeof(uint32_t),
+                                                                    BufferUsage::DEVICE_LOCAL);
 
         // Get scene source buffers.
         auto &scene_source_buffers = path_source == PathSource::Draw ? scene_buffers.draw : scene_buffers.clip;
@@ -646,7 +655,8 @@ namespace Pathfinder {
 
         // This is a staging buffer, which will be freed in the end of this function.
         auto path_info_buffer_id = driver->create_buffer(BufferType::General,
-                                                         tile_path_info.size() * sizeof(TilePathInfoD3D11));
+                                                         tile_path_info.size() * sizeof(TilePathInfoD3D11),
+                                                         BufferUsage::DEVICE_LOCAL);
         cmd_buffer->upload_to_buffer(path_info_buffer_id,
                                               0,
                                               tile_path_info.size() * sizeof(TilePathInfoD3D11),
@@ -693,7 +703,8 @@ namespace Pathfinder {
 
         // What will be the output of this function.
         auto fill_vertex_buffer_id = driver->create_buffer(BufferType::General,
-                                                           allocated_fill_count * sizeof(Fill));
+                                                           allocated_fill_count * sizeof(Fill),
+                                                           BufferUsage::DEVICE_LOCAL);
 
         // Upload fill indirect draw params to header of the Z-buffer.
         // This is in the Z-buffer, not its own buffer, to work around the 8 SSBO limitation on

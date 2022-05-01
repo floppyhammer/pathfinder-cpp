@@ -281,14 +281,14 @@ namespace Pathfinder {
         return framebuffer_vk;
     }
 
-    std::shared_ptr<Buffer> DriverVk::create_buffer(BufferType type, size_t size) {
-        auto buffer_vk = std::make_shared<BufferVk>(device, type, size);
+    std::shared_ptr<Buffer> DriverVk::create_buffer(BufferType type, size_t size, BufferUsage usage) {
+        auto buffer_vk = std::make_shared<BufferVk>(device, type, size, usage);
 
         switch (type) {
             case BufferType::Uniform: {
                 createVkBuffer(size,
                                VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                               VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                               to_vk_buffer_usage(usage),
                                buffer_vk->vk_buffer,
                                buffer_vk->vk_device_memory);
             }
@@ -296,7 +296,7 @@ namespace Pathfinder {
             case BufferType::Vertex: {
                 createVkBuffer(size,
                                VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                               VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                               to_vk_buffer_usage(usage),
                                buffer_vk->vk_buffer,
                                buffer_vk->vk_device_memory);
             }
@@ -349,6 +349,7 @@ namespace Pathfinder {
         auto command_buffer_vk = std::make_shared<CommandBufferVk>();
         command_buffer_vk->vk_command_buffer = commandBuffer;
         command_buffer_vk->one_time = one_time;
+        command_buffer_vk->vk_device = device;
 
         return command_buffer_vk;
     }

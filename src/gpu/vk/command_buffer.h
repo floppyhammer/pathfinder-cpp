@@ -74,6 +74,8 @@ namespace Pathfinder {
 
     private:
         VkCommandBuffer vk_command_buffer;
+
+        VkDevice vk_device;
     };
 }
 

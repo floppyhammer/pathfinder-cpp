@@ -28,8 +28,8 @@ TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
             0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0
     };
 
-    vertex_buffer = driver->create_buffer(Pathfinder::BufferType::Vertex, sizeof(vertices));
-    uniform_buffer = driver->create_buffer(Pathfinder::BufferType::Uniform, 16 * sizeof(float));
+    vertex_buffer = driver->create_buffer(Pathfinder::BufferType::Vertex, sizeof(vertices), Pathfinder::BufferUsage::DEVICE_LOCAL);
+    uniform_buffer = driver->create_buffer(Pathfinder::BufferType::Uniform, 16 * sizeof(float), Pathfinder::BufferUsage::HOST_VISIBLE_AND_COHERENT);
 
     auto cmd_buffer = driver->create_command_buffer(true);
     cmd_buffer->upload_to_buffer(vertex_buffer,

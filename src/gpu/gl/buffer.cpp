@@ -6,7 +6,7 @@
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    BufferGl::BufferGl(BufferType p_type, size_t p_size) : Buffer(p_type, p_size) {
+    BufferGl::BufferGl(BufferType p_type, size_t p_size, BufferUsage p_usage) : Buffer(p_type, p_size, p_usage) {
         if (size == 0) {
             Logger::error("Tried to create a buffer with zero size!");
         }
@@ -39,6 +39,10 @@ namespace Pathfinder {
             }
                 break;
         }
+    }
+
+    BufferGl::~BufferGl() {
+        glDeleteBuffers(1, &id);
     }
 }
 

@@ -11,11 +11,9 @@
 namespace Pathfinder {
     class BufferGl : public Buffer {
     public:
-        BufferGl(BufferType p_type, size_t p_size);
+        BufferGl(BufferType p_type, size_t p_size, BufferUsage p_usage);
 
-        ~BufferGl() {
-            glDeleteBuffers(1, &id);
-        };
+        ~BufferGl();
 
         uint32_t id;
     };
