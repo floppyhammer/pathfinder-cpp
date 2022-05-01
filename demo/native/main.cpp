@@ -34,12 +34,11 @@ int main() {
         platform->poll_events();
 
         // Acquire next image.
-        uint32_t image_index;
-        if (!swap_chain->acquire_image(image_index)) continue;
+        if (!swap_chain->acquire_image()) continue;
 
         app.loop(swap_chain);
 
-        swap_chain->flush(image_index);
+        swap_chain->flush();
     }
 
     platform->cleanup();

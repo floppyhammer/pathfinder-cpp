@@ -13,21 +13,33 @@ namespace Pathfinder {
 
         Vec2<uint32_t> extent;
 
-        uint32_t current_image;
+        /// Currently available image in the chain.
+        uint32_t current_image{};
 
         virtual std::shared_ptr<RenderPass> get_render_pass() = 0;
 
-        virtual std::shared_ptr<Framebuffer> get_framebuffer(uint32_t image_index) = 0;
+        /**
+         * Get current framebuffer.
+         * @return
+         */
+        virtual std::shared_ptr<Framebuffer> get_framebuffer() = 0;
 
+        /**
+         * Get current command buffer.
+         * @return
+         */
         virtual std::shared_ptr<CommandBuffer> get_command_buffer() = 0;
 
-        virtual bool acquire_image(uint32_t &image_index) = 0;
+        /**
+         * Acquire an image in the swap chain.
+         */
+        virtual bool acquire_image() = 0;
 
         /**
          * Flush command buffers to the image with the index.
          * @param imageIndex Which image in the swap chain should be used.
          */
-        virtual void flush(uint32_t imageIndex) = 0;
+        virtual void flush() = 0;
     };
 }
 

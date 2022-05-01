@@ -23,13 +23,21 @@ namespace Pathfinder {
         createSyncObjects();
     }
 
+    std::shared_ptr<RenderPass> SwapChainVk::get_render_pass() {
+        return render_pass;
+    }
+
+    std::shared_ptr<Framebuffer> SwapChainVk::get_framebuffer() {
+        return framebuffers[currentImage];
+    }
+
     std::shared_ptr<CommandBuffer> SwapChainVk::get_command_buffer() {
         auto command_buffer_vk = std::make_shared<CommandBufferVk>();
         command_buffer_vk->vk_command_buffer = commandBuffers[current_image];
         return command_buffer_vk;
     }
 
-    bool SwapChainVk::acquire_image(uint32_t &image_index) {
+    bool SwapChainVk::acquire_image() {
         return acquireSwapChainImage(current_image);
     }
 
@@ -265,12 +273,12 @@ namespace Pathfinder {
         }
     }
 
-    void SwapChainVk::flush(uint32_t imageIndex) {
+    void SwapChainVk::flush() {
         auto device = driver->get_device();
         auto graphicsQueue = driver->get_graphics_queue();
         auto presentQueue = driver->get_present_queue();
 
-        imageIndex = currentImage;
+        auto imageIndex = currentImage;
 
         if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
             vkWaitForFences(device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);

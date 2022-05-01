@@ -19,17 +19,13 @@ namespace Pathfinder {
                     PlatformVk *p_platform,
                     DriverVk *p_driver);
 
-        std::shared_ptr<RenderPass> get_render_pass() override {
-            return render_pass;
-        }
+        std::shared_ptr<RenderPass> get_render_pass() override;
 
-        inline std::shared_ptr<Framebuffer> get_framebuffer(uint32_t image_index) override {
-            return framebuffers[currentImage];
-        }
+        inline std::shared_ptr<Framebuffer> get_framebuffer() override;
 
         std::shared_ptr<CommandBuffer> get_command_buffer() override;
 
-        bool acquire_image(uint32_t &image_index);
+        bool acquire_image() override;
 
     private:
         std::shared_ptr<RenderPass> render_pass;
@@ -124,7 +120,7 @@ namespace Pathfinder {
          */
         void createCommandBuffers();
 
-        void flush(uint32_t imageIndex) override;
+        void flush() override;
 
         void cleanup();
     };

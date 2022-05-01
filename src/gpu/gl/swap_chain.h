@@ -27,7 +27,7 @@ namespace Pathfinder {
             return render_pass;
         };
 
-        inline std::shared_ptr<Framebuffer> get_framebuffer(uint32_t image_index) override {
+        inline std::shared_ptr<Framebuffer> get_framebuffer() override {
             return framebuffer;
         }
 
@@ -35,9 +35,9 @@ namespace Pathfinder {
             return command_buffer;
         }
 
-        inline bool acquire_image(uint32_t &image_index) override { return true; }
+        inline bool acquire_image() override { return true; }
 
-        inline void flush(uint32_t imageIndex) override { glfwSwapBuffers(window); };
+        inline void flush() override { glfwSwapBuffers(window); };
 
     private:
         GLFWwindow *window;

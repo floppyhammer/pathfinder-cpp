@@ -58,7 +58,7 @@ void App::loop(const std::shared_ptr<Pathfinder::SwapChain> &swap_chain) {
 
     auto cmd_buffer = swap_chain->get_command_buffer();
 
-    auto framebuffer = swap_chain->get_framebuffer(0);
+    auto framebuffer = swap_chain->get_framebuffer();
 
     // Swap chain render pass.
     {
