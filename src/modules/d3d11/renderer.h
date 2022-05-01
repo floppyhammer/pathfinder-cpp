@@ -78,7 +78,7 @@ namespace Pathfinder {
     public:
         explicit RendererD3D11(const std::shared_ptr<Pathfinder::Driver> &driver, uint32_t canvas_width, uint32_t canvas_height);
 
-        void set_up_pipelines();
+        void set_up_pipelines(uint32_t canvas_width, uint32_t canvas_height);
 
         void draw(SceneBuilderD3D11 &scene_builder);
 

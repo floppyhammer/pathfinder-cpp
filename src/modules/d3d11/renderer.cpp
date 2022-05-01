@@ -73,7 +73,7 @@ namespace Pathfinder {
 
         // Upload data.
         {
-            auto cmd_buffer = driver->create_command_buffer();
+            auto cmd_buffer = driver->create_command_buffer(true);
 
             cmd_buffer->upload_to_buffer(points_buffer,
                                          0,
@@ -119,51 +119,16 @@ namespace Pathfinder {
         // Unlike D3D9, we use RGBA8 here instead of RGBA16F.
         mask_texture = driver->create_texture(MASK_FRAMEBUFFER_WIDTH,
                                               MASK_FRAMEBUFFER_HEIGHT,
-                                              TextureFormat::RGBA8,
+                                              TextureFormat::RGBA8_UNORM,
                                               DataType::UNSIGNED_BYTE);
 
         dest_texture = driver->create_texture(canvas_width,
                                               canvas_height,
-                                              TextureFormat::RGBA8,
+                                              TextureFormat::RGBA8_UNORM,
                                               DataType::UNSIGNED_BYTE);
     }
 
-    void RendererD3D11::set_up_pipelines() {
-#ifdef PATHFINDER_SHADERS_EMBEDDED
-        const std::string dice_string =
-#include "../src/shaders/minified/minified_dice.comp"
-        ;
-        const std::string bound_string =
-#include "../src/shaders/minified/minified_bound.comp"
-        ;
-        const std::string bin_string =
-#include "../src/shaders/minified/minified_bin.comp"
-        ;
-        const std::string propagate_string =
-#include "../src/shaders/minified/minified_propagate.comp"
-        ;
-        const std::string sort_string =
-#include "../src/shaders/minified/minified_sort.comp"
-        ;
-        const std::string fill_string =
-#include "../src/shaders/minified/minified_fill.comp"
-        ;
-        const std::string tile_string_0 =
-#include "../src/shaders/minified/minified_tile.comp.0"
-        ;
-        const std::string tile_string_1 =
-#include "../src/shaders/minified/minified_tile.comp.1"
-        ;
-        const std::string tile_string = tile_string_0 + tile_string_1;
-
-        const std::vector<char> dice_source = {dice_string.begin(), dice_string.end()};
-        const std::vector<char> bound_source = {bound_string.begin(), bound_string.end()};
-        const std::vector<char> bin_source = {bin_string.begin(), bin_string.end()};
-        const std::vector<char> propagate_source = {propagate_string.begin(), propagate_string.end()};
-        const std::vector<char> fill_source = {fill_string.begin(), fill_string.end()};
-        const std::vector<char> sort_source = {sort_string.begin(), sort_string.end()};
-        const std::vector<char> tile_source = {tile_string.begin(), tile_string.end()};
-#else
+    void RendererD3D11::set_up_pipelines(uint32_t canvas_width, uint32_t canvas_height) {
         const auto dice_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/dice.comp");
         const auto bound_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/bound.comp");
         const auto bin_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/bin.comp");
@@ -171,7 +136,6 @@ namespace Pathfinder {
         const auto fill_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/fill.comp");
         const auto sort_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/sort.comp");
         const auto tile_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/tile.comp");
-#endif
 
         // Bound pipeline.
         {
@@ -375,7 +339,7 @@ namespace Pathfinder {
                                                 (int32_t) framebuffer_tile_size0.y, // uFramebufferTileSize
                                                 clear_op}; // uLoadAction
 
-            auto cmd_buffer = driver->create_command_buffer();
+            auto cmd_buffer = driver->create_command_buffer(true);
             cmd_buffer->upload_to_buffer(tile_ub0, 0, 8 * sizeof(float), ubo_data0.data());
             cmd_buffer->upload_to_buffer(tile_ub1, 0, 5 * sizeof(int32_t), ubo_data1.data());
             cmd_buffer->submit(driver);
@@ -393,7 +357,7 @@ namespace Pathfinder {
             tile_descriptor_set->add_or_update_descriptor({DescriptorType::GeneralBuffer, ShaderType::Compute, 1, "", first_tile_map_buffer_id, nullptr}); // Read only.
         }
 
-        auto cmd_buffer = driver->create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer(true);
 
         cmd_buffer->begin_compute_pass();
 
@@ -443,7 +407,7 @@ namespace Pathfinder {
                 driver->create_buffer(BufferType::General,
                                       propagate_metadata.size() * sizeof(PropagateMetadataD3D11));
 
-        auto cmd_buffer = driver->create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer(true);
         cmd_buffer->upload_to_buffer(propagate_metadata_storage_id,
                                      0,
                                      propagate_metadata.size() * sizeof(PropagateMetadataD3D11),
@@ -458,7 +422,7 @@ namespace Pathfinder {
 
     void RendererD3D11::upload_initial_backdrops(const std::shared_ptr<Buffer> &backdrops_buffer_id,
                                                  std::vector<BackdropInfoD3D11> &backdrops) {
-        auto cmd_buffer = driver->create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer(true);
         cmd_buffer->upload_to_buffer(backdrops_buffer_id,
                                      0,
                                      backdrops.size() * sizeof(BackdropInfoD3D11),
@@ -591,7 +555,7 @@ namespace Pathfinder {
         // Upload dice indirect draw params, which are also used for output.
         uint32_t indirect_compute_params[8] = {0, 0, 0, 0, point_indices_count, 0, 0, 0};
 
-        auto cmd_buffer = driver->create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer(true);
         cmd_buffer->upload_to_buffer(
                 indirect_draw_params_buffer_id,
                 0,
@@ -635,7 +599,7 @@ namespace Pathfinder {
                     {DescriptorType::GeneralBuffer, ShaderType::Compute, 4, "", microlines_buffer_id, nullptr}); // Write only.
         }
 
-        auto cmd_buffer = driver->create_command_buffer();
+        cmd_buffer = driver->create_command_buffer(true);
 
         cmd_buffer->begin_compute_pass();
 
@@ -650,7 +614,7 @@ namespace Pathfinder {
         cmd_buffer->submit(driver);
 
         // Read indirect draw params back to CPU memory.
-        cmd_buffer = driver->create_command_buffer();
+        cmd_buffer = driver->create_command_buffer(true);
         cmd_buffer->read_buffer(indirect_draw_params_buffer_id,
                                          0,
                                          8 * sizeof(uint32_t),
@@ -680,7 +644,7 @@ namespace Pathfinder {
     void RendererD3D11::bound(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
                               uint32_t tile_count,
                               std::vector<TilePathInfoD3D11> &tile_path_info) {
-        auto cmd_buffer = driver->create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer(true);
 
         // This is a staging buffer, which will be freed in the end of this function.
         auto path_info_buffer_id = driver->create_buffer(BufferType::General,
@@ -705,7 +669,7 @@ namespace Pathfinder {
                     {DescriptorType::GeneralBuffer, ShaderType::Compute, 1, "", tiles_d3d11_buffer_id, nullptr}); // Write only.
         }
 
-        auto cmd_buffer = driver->create_command_buffer();
+        cmd_buffer = driver->create_command_buffer(true);
 
         cmd_buffer->begin_compute_pass();
 
@@ -727,7 +691,7 @@ namespace Pathfinder {
             PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids,
             const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
             const std::shared_ptr<Buffer> &z_buffer_id) {
-        auto cmd_buffer = driver->create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer(true);
 
         // What will be the output of this function.
         auto fill_vertex_buffer_id = driver->create_buffer(BufferType::General,
@@ -767,7 +731,7 @@ namespace Pathfinder {
                      nullptr}); // Read write.
         }
 
-        auto cmd_buffer = driver->create_command_buffer();
+        cmd_buffer = driver->create_command_buffer(true);
 
         cmd_buffer->begin_compute_pass();
 
@@ -781,7 +745,7 @@ namespace Pathfinder {
 
         cmd_buffer->submit(driver);
 
-        cmd_buffer = driver->create_command_buffer();
+        cmd_buffer = driver->create_command_buffer(true);
         cmd_buffer->read_buffer(z_buffer_id,
                                          0,
                                          8 * sizeof(uint32_t),
@@ -811,7 +775,7 @@ namespace Pathfinder {
             const std::shared_ptr<Buffer> &first_tile_map_buffer_id,
             const std::shared_ptr<Buffer> &alpha_tiles_buffer_id,
             PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids) {
-        auto cmd_buffer = driver->create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer(true);
 
         // TODO(pcwalton): Zero out the Z-buffer on GPU?
         auto z_buffer_size = tile_size();
@@ -861,7 +825,7 @@ namespace Pathfinder {
                     {DescriptorType::GeneralBuffer, ShaderType::Compute, 7, "", alpha_tiles_buffer_id, nullptr}); // Write only.
         }
 
-        auto cmd_buffer = driver->create_command_buffer();
+        cmd_buffer = driver->create_command_buffer(true);
 
         cmd_buffer->begin_compute_pass();
 
@@ -875,7 +839,7 @@ namespace Pathfinder {
 
         cmd_buffer->submit(driver);
 
-        cmd_buffer = driver->create_command_buffer();
+        cmd_buffer = driver->create_command_buffer(true);
 
         uint32_t fill_indirect_draw_params[8];
         cmd_buffer->read_buffer(z_buffer_id,
@@ -907,7 +871,7 @@ namespace Pathfinder {
         // This setup is a workaround for the annoying 64K limit of compute invocation in OpenGL.
         uint32_t local_alpha_tile_count = alpha_tile_range.end - alpha_tile_range.start;
 
-        auto cmd_buffer = driver->create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer(true);
 
         // Update uniform buffers.
         auto framebuffer_tile_size0 = framebuffer_tile_size();
@@ -928,7 +892,7 @@ namespace Pathfinder {
                     {DescriptorType::GeneralBuffer, ShaderType::Compute, 2, "", alpha_tiles_buffer_id, nullptr}); // Read only.
         }
 
-        auto cmd_buffer = driver->create_command_buffer();
+        cmd_buffer = driver->create_command_buffer(true);
 
         cmd_buffer->begin_compute_pass();
 
@@ -950,7 +914,7 @@ namespace Pathfinder {
                                    const std::shared_ptr<Buffer> &z_buffer_id) {
         auto tile_count = framebuffer_tile_size().area();
 
-        auto cmd_buffer = driver->create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer(true);
 
         // Update uniform buffers.
         cmd_buffer->upload_to_buffer(sort_ub, 0, sizeof(int32_t), &tile_count);
@@ -967,7 +931,7 @@ namespace Pathfinder {
                     {DescriptorType::GeneralBuffer, ShaderType::Compute, 2, "", z_buffer_id, nullptr}); // Read only.
         }
 
-        auto cmd_buffer = driver->create_command_buffer();
+        cmd_buffer = driver->create_command_buffer(true);
 
         cmd_buffer->begin_compute_pass();
 

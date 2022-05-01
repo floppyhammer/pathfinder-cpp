@@ -1,16 +1,9 @@
 #ifndef PATHFINDER_DEMO_APP_H
 #define PATHFINDER_DEMO_APP_H
 
-#include "../../src/gpu/driver.h"
-#include "../../src/gpu/framebuffer.h"
-#include "../../src/gpu/swap_chain.h"
-#include "../../src/modules/d3dx/canvas.h"
-#include "../../src/modules/vgui/nodes/label.h"
-#include "../../src/modules/vgui/nodes/button.h"
-#include "../../src/modules/vgui/nodes/texture_rect.h"
-#include "../../src/modules/vgui/servers/input_server.h"
-#include "../../src/common/global_macros.h"
-#include "../../src/common/io.h"
+#include "pathfinder.h"
+#include "texture_rect.h"
+
 #include <chrono>
 
 class App {
@@ -29,9 +22,8 @@ private:
     std::shared_ptr<Pathfinder::Driver> driver;
 
     std::shared_ptr<Pathfinder::Canvas> canvas;
-    std::shared_ptr<Pathfinder::Label> label;
-    std::shared_ptr<Pathfinder::TextureRect> texture_rect0, texture_rect1;
-    std::shared_ptr<Pathfinder::Button> button;
+
+    std::shared_ptr<TextureRect> texture_rect;
 
     std::chrono::time_point<std::chrono::steady_clock> start_time;
     std::chrono::time_point<std::chrono::steady_clock> last_time;

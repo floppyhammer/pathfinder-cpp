@@ -75,21 +75,8 @@ namespace Pathfinder {
             const auto fill_vert_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/fill_vert.spv");
             const auto fill_frag_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/fill_frag.spv");
 #else
-#ifdef PATHFINDER_SHADERS_EMBEDDED
-            const std::string fill_vert_string =
-#include "../src/shaders/minified/minified_fill.vert"
-            ;
-
-            const std::string fill_frag_string =
-#include "../src/shaders/minified/minified_fill.frag"
-            ;
-
-            const std::vector<char> fill_vert_source = {fill_vert_string.begin(), fill_vert_string.end()};
-            const std::vector<char> fill_frag_source = {fill_frag_string.begin(), fill_frag_string.end()};
-#else
             const auto fill_vert_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/fill.vert");
             const auto fill_frag_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/fill.frag");
-#endif
 #endif
 
             // Set vertex attributes.
@@ -161,26 +148,8 @@ namespace Pathfinder {
             const auto tile_vert_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/tile_vert.spv");
             const auto tile_frag_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/tile_frag.spv");
 #else
-#ifdef PATHFINDER_SHADERS_EMBEDDED
-            const std::string tile_vert_string =
-#include "../src/shaders/minified/minified_tile.vert"
-            ;
-
-            const std::string tile_frag_string_0 =
-#include "../src/shaders/minified/minified_tile.frag.0"
-            ;
-
-            const std::string tile_frag_string_1 =
-#include "../src/shaders/minified/minified_tile.frag.1"
-            ;
-            const std::string tile_frag_string = tile_frag_string_0 + tile_frag_string_1;
-
-            const std::vector<char> tile_vert_source = {tile_vert_string.begin(), tile_vert_string.end()};
-            const std::vector<char> tile_frag_source = {tile_frag_string.begin(), tile_frag_string.end()};
-#else
             const auto tile_vert_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/tile.vert");
             const auto tile_frag_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/tile.frag");
-#endif
 #endif
 
             // Set vertex attributes.

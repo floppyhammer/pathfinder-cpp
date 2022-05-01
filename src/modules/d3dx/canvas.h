@@ -6,7 +6,6 @@
 #include "../d3d9/renderer.h"
 #include "../d3d11/scene_builder.h"
 #include "../d3d11/renderer.h"
-#include "../../include/pathfinder.h"
 
 #include <memory>
 
@@ -128,7 +127,7 @@ namespace Pathfinder {
         // ------------------------------------------------
 
         /// Rebuild and redraw the scene.
-        void draw();
+        void build_and_render();
 
         /// Clear the scene.
         void clear();

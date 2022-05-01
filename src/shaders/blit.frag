@@ -1,4 +1,3 @@
-R"(
 #version 300 es
 //#version 300 es (For GLES)
 //#version 330 (For GL)
@@ -28,5 +27,3 @@ uniform sampler2D uTexture;
 void main() {
     oFragColor = texture(uTexture, vUV);
 }
-
-)"

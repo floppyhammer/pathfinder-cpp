@@ -22,9 +22,6 @@ int main() {
     // Create swap chain via platform.
     auto swap_chain = platform->create_swap_chain(driver, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    // Start input server.
-    InputServer::get_singleton();
-
     // Create app.
     auto area_lut_input = load_file_as_bytes(PATHFINDER_ASSET_DIR"area-lut.png");
     auto font_input = load_file_as_bytes(PATHFINDER_ASSET_DIR"OpenSans-Regular.ttf");

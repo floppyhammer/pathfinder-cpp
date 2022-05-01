@@ -1,4 +1,3 @@
-R"(
 #version 300 es
 //#version 300 es (For GLES)
 //#version 330 (For GL)
@@ -33,5 +32,3 @@ void main() {
     // When rendering to screen, the Y coordinate is flipped.
     gl_Position.y *= -1.0;
 }
-
-)"
