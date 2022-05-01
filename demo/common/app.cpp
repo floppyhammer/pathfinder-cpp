@@ -5,7 +5,6 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
          uint32_t window_width,
          uint32_t window_height,
          std::vector<char> &area_lut_input,
-         std::vector<char> &font_input,
          const std::string &p_svg_input) {
     // Set logger level.
     Pathfinder::Logger::set_level(Pathfinder::Logger::Level::DEBUG);
@@ -75,4 +74,9 @@ void App::loop(const std::shared_ptr<Pathfinder::SwapChain> &swap_chain) {
     }
 
     cmd_buffer->submit(driver);
+}
+
+void App::cleanup() {
+    texture_rect.reset();
+    canvas.reset();
 }

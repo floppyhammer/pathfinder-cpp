@@ -7,8 +7,6 @@
 #include "../../common/global_macros.h"
 #include "../../common/logger.h"
 
-#include "stb_image.h"
-
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {

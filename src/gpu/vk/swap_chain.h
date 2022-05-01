@@ -49,13 +49,6 @@ namespace Pathfinder {
         VkFormat swapChainImageFormat; // Default is VK_FORMAT_B8G8R8A8_SRGB.
         VkExtent2D swapChainExtent;
 
-        /// VkFramebuffer + VkRenderPass defines the render target.
-        /// Render pass defines which attachment will be written with colors.
-        /// VkFramebuffer defines which VkImageView is to be which attachment.
-//        std::vector<VkFramebuffer> swapChainFramebuffers;
-
-        VkRenderPass renderPass;
-
         std::vector<VkCommandBuffer> commandBuffers;
 
         /// Each frame should have its own set of semaphores, so a list is used.
@@ -122,7 +115,7 @@ namespace Pathfinder {
 
         void flush() override;
 
-        void cleanup();
+        void cleanup() override;
     };
 }
 

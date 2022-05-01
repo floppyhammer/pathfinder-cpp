@@ -2,6 +2,8 @@
 #define PATHFINDER_API_H
 
 #include "../src/gpu/driver.h"
+#include "../src/gpu/vk/driver.h"
+#include "../src/gpu/vk/texture.h"
 #include "../src/gpu/framebuffer.h"
 #include "../src/gpu/swap_chain.h"
 #include "../src/modules/d3dx/canvas.h"

@@ -37,7 +37,9 @@ namespace Pathfinder {
 
         inline bool acquire_image() override { return true; }
 
-        inline void flush() override { glfwSwapBuffers(window); };
+        inline void flush() override { glfwSwapBuffers(window); }
+
+        inline void cleanup() override {}
 
     private:
         GLFWwindow *window;

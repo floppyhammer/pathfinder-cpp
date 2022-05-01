@@ -57,28 +57,27 @@ namespace Pathfinder {
     }
 
     void SwapChainVk::recreateSwapChain() {
-//        // Handling window minimization.
+        // Handling window minimization.
 //        int width = 0, height = 0;
 //        glfwGetFramebufferSize(window, &width, &height);
 //        while (width == 0 || height == 0) {
 //            glfwGetFramebufferSize(window, &width, &height);
 //            glfwWaitEvents();
 //        }
-//
-//        vkDeviceWaitIdle(device);
-//
-//        cleanupSwapChain();
-//
-//        initSwapChain();
-//
-//        imagesInFlight.resize(swapChainImages.size(), VK_NULL_HANDLE);
+
+        cleanupSwapChain();
+
+        initSwapChain();
+
+        imagesInFlight.resize(swapChainImages.size(), VK_NULL_HANDLE);
     }
 
     void SwapChainVk::cleanupSwapChain() {
         auto device = driver->get_device();
         auto commandPool = driver->get_command_pool();
-        // Command buffers contain swap chain related info, so we also need to free them here.
-//        RenderServer::getSingleton().cleanupSwapChainRelatedResources();
+
+        // Wait on the host for the completion of outstanding queue operations for all queues on a given logical device.
+        vkDeviceWaitIdle(device);
 
         // Only command buffers are freed but not the pool.
         vkFreeCommandBuffers(device,
@@ -86,7 +85,10 @@ namespace Pathfinder {
                              static_cast<uint32_t>(commandBuffers.size()),
                              commandBuffers.data());
 
-        vkDestroyRenderPass(device, renderPass, nullptr);
+        // We don't actually have to do this.
+        framebuffers.clear();
+
+        render_pass.reset();
 
         for (auto imageView: swapChainImageViews) {
             vkDestroyImageView(device, imageView, nullptr);
@@ -187,12 +189,12 @@ namespace Pathfinder {
     void SwapChainVk::createFramebuffers() {
         auto device = driver->get_device();
 
-        // FIXME: Swap chain framebuffers should not clean up its image.
         framebuffers.clear();
 
         for (size_t i = 0; i < swapChainImages.size(); i++) {
             auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
 
+            // No texture for swap chain framebuffer.
             auto framebuffer_vk = std::make_shared<FramebufferVk>(
                     device,
                     render_pass_vk->get_vk_render_pass(),

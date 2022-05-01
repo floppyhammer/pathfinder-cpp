@@ -135,7 +135,7 @@ namespace Pathfinder {
                                                    VkImageTiling tiling,
                                                    VkFormatFeatureFlags features) const;
 
-        void cleanup();
+        void cleanup() override;
 
     private:
         VkInstance instance;

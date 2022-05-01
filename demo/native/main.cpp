@@ -24,10 +24,9 @@ int main() {
 
     // Create app.
     auto area_lut_input = load_file_as_bytes(PATHFINDER_ASSET_DIR"area-lut.png");
-    auto font_input = load_file_as_bytes(PATHFINDER_ASSET_DIR"OpenSans-Regular.ttf");
     auto svg_input = load_file_as_string(PATHFINDER_ASSET_DIR"tiger.svg");
 
-    App app(driver, swap_chain, WINDOW_WIDTH, WINDOW_HEIGHT, area_lut_input, font_input, svg_input);
+    App app(driver, swap_chain, WINDOW_WIDTH, WINDOW_HEIGHT, area_lut_input, svg_input);
 
     // Main loop.
     while (!glfwWindowShouldClose(platform->get_glfw_window())) {
@@ -40,6 +39,10 @@ int main() {
 
         swap_chain->flush();
     }
+
+    app.cleanup();
+
+    swap_chain->cleanup();
 
     platform->cleanup();
 

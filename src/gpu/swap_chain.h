@@ -40,6 +40,8 @@ namespace Pathfinder {
          * @param imageIndex Which image in the swap chain should be used.
          */
         virtual void flush() = 0;
+
+        virtual void cleanup() = 0;
     };
 }
 

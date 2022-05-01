@@ -422,9 +422,6 @@ namespace Pathfinder {
     }
 
     void PlatformVk::cleanup() {
-        // Wait on the host for the completion of outstanding queue operations for all queues on a given logical device.
-        vkDeviceWaitIdle(device);
-
         vkDestroyCommandPool(device, commandPool, nullptr);
 
         vkDestroyDevice(device, nullptr);
@@ -434,6 +431,7 @@ namespace Pathfinder {
         }
 
         vkDestroySurfaceKHR(instance, surface, nullptr);
+
         vkDestroyInstance(instance, nullptr);
 
         glfwDestroyWindow(window);
