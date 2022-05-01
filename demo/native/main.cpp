@@ -40,9 +40,9 @@ int main() {
         swap_chain->flush();
     }
 
-    app.cleanup();
-
     swap_chain->cleanup();
+
+    app.cleanup();
 
     platform->cleanup();
 

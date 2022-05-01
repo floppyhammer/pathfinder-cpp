@@ -22,7 +22,9 @@ namespace Pathfinder {
         }
 
         ~RenderPipelineVk() {
+            vkDestroyDescriptorSetLayout(device, descriptor_set_layout, nullptr);
             vkDestroyPipeline(device, id, nullptr);
+            vkDestroyPipelineLayout(device, layout, nullptr);
         }
 
         inline const std::vector<VertexInputAttributeDescription> &get_attribute_descriptions() const {
