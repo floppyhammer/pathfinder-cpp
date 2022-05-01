@@ -20,15 +20,13 @@ namespace Pathfinder {
         std::shared_ptr<Framebuffer> create_framebuffer(uint32_t p_width,
                                                         uint32_t p_height,
                                                         TextureFormat p_format,
-                                                        DataType p_type,
                                                         const std::shared_ptr<RenderPass> &render_pass) override;
 
         std::shared_ptr<Buffer> create_buffer(BufferType type, size_t size) override;
 
         std::shared_ptr<Texture> create_texture(uint32_t p_width,
                                                 uint32_t p_height,
-                                                TextureFormat p_format,
-                                                DataType p_type) override;
+                                                TextureFormat p_format) override;
 
         std::shared_ptr<CommandBuffer> create_command_buffer(bool one_time) override;
 

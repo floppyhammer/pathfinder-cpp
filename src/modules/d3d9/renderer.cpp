@@ -32,8 +32,7 @@ namespace Pathfinder {
         auto z_buffer_texture = driver->create_texture(
                 z_buffer_map.rect.width(),
                 z_buffer_map.rect.height(),
-                TextureFormat::RGBA8_UNORM,
-                DataType::UNSIGNED_BYTE);
+                TextureFormat::RGBA8_UNORM);
 
         auto cmd_buffer = driver->create_command_buffer(true);
         cmd_buffer->upload_to_texture(z_buffer_texture, {}, z_buffer_map.data.data());
@@ -51,13 +50,11 @@ namespace Pathfinder {
         mask_framebuffer = driver->create_framebuffer(MASK_FRAMEBUFFER_WIDTH,
                                                       MASK_FRAMEBUFFER_HEIGHT,
                                                       TextureFormat::RGBA16F,
-                                                      DataType::HALF_FLOAT,
                                                       mask_render_pass);
 
         dest_framebuffer = driver->create_framebuffer(canvas_width,
                                                       canvas_height,
                                                       TextureFormat::RGBA8_UNORM,
-                                                      DataType::UNSIGNED_BYTE,
                                                       dest_render_pass);
 
         // Quad vertex buffer. Shared by fills and tiles drawing.

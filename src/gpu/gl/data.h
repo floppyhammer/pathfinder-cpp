@@ -49,15 +49,6 @@ namespace Pathfinder {
                 return GL_RGBA8;
         }
     }
-
-    inline GLint to_gl_pixel_data_format(PixelDataFormat pixel_data_format) {
-        switch (pixel_data_format) {
-            case PixelDataFormat::RED:
-                return GL_RED;
-            case PixelDataFormat::RGBA:
-                return GL_RGBA;
-        }
-    }
 }
 
 #endif

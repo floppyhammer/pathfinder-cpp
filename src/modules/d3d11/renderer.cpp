@@ -119,13 +119,11 @@ namespace Pathfinder {
         // Unlike D3D9, we use RGBA8 here instead of RGBA16F.
         mask_texture = driver->create_texture(MASK_FRAMEBUFFER_WIDTH,
                                               MASK_FRAMEBUFFER_HEIGHT,
-                                              TextureFormat::RGBA8_UNORM,
-                                              DataType::UNSIGNED_BYTE);
+                                              TextureFormat::RGBA8_UNORM);
 
         dest_texture = driver->create_texture(canvas_width,
                                               canvas_height,
-                                              TextureFormat::RGBA8_UNORM,
-                                              DataType::UNSIGNED_BYTE);
+                                              TextureFormat::RGBA8_UNORM);
     }
 
     void RendererD3D11::set_up_pipelines(uint32_t canvas_width, uint32_t canvas_height) {

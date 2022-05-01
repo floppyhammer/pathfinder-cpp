@@ -264,15 +264,19 @@ namespace Pathfinder {
     }
 
     std::shared_ptr<Framebuffer> DriverVk::create_framebuffer(uint32_t width, uint32_t height,
-                                                              TextureFormat format, DataType type,
+                                                              TextureFormat format,
                                                               const std::shared_ptr<RenderPass> &render_pass) {
         auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
 
-        auto texture = create_texture(width, height, format, type);
+        auto texture = create_texture(width, height, format);
 
         auto framebuffer_vk = std::make_shared<FramebufferVk>(
-                device, render_pass_vk->vk_render_pass, texture,
-                width, height, format, type);
+                device,
+                render_pass_vk->vk_render_pass,
+                texture,
+                width,
+                height,
+                format);
 
         return framebuffer_vk;
     }
@@ -305,9 +309,8 @@ namespace Pathfinder {
     }
 
     std::shared_ptr<Texture> DriverVk::create_texture(uint32_t width, uint32_t height,
-                                                      TextureFormat format, DataType type) {
-        auto texture_vk = std::make_shared<TextureVk>(
-                device, width, height, format, type);
+                                                      TextureFormat format) {
+        auto texture_vk = std::make_shared<TextureVk>(device, width, height, format);
 
         createVkImage(width,
                       height,

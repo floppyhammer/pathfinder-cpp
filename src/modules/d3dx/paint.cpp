@@ -79,7 +79,6 @@ namespace Pathfinder {
                 render_target_size.x,
                 render_target_size.y,
                 TextureFormat::RGBA8_UNORM,
-                DataType::UNSIGNED_BYTE,
                 render_pass);
 
         RenderTarget render_target;

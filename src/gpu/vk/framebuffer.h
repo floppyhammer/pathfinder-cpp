@@ -14,7 +14,7 @@ namespace Pathfinder {
     public:
         /// Normal framebuffer.
         FramebufferVk(VkDevice device, VkRenderPass render_pass, std::shared_ptr<Texture> texture,
-                      uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type);
+                      uint32_t p_width, uint32_t p_height, TextureFormat p_format);
 
         /// Swap chain framebuffer.
         FramebufferVk(VkDevice device,

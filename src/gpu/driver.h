@@ -15,15 +15,13 @@ namespace Pathfinder {
         virtual std::shared_ptr<Framebuffer> create_framebuffer(uint32_t p_width,
                                                                 uint32_t p_height,
                                                                 TextureFormat p_format,
-                                                                DataType p_type,
                                                                 const std::shared_ptr<RenderPass> &render_pass) = 0;
 
         virtual std::shared_ptr<Buffer> create_buffer(BufferType type, size_t size) = 0;
 
         virtual std::shared_ptr<Texture> create_texture(uint32_t p_width,
                                                         uint32_t p_height,
-                                                        TextureFormat p_format,
-                                                        DataType p_type) = 0;
+                                                        TextureFormat p_format) = 0;
 
         virtual std::shared_ptr<CommandBuffer> create_command_buffer(bool one_time) = 0;
 

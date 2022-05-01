@@ -484,8 +484,8 @@ namespace Pathfinder {
                     glBindTexture(GL_TEXTURE_2D, texture_gl->get_texture_id());
                     glTexSubImage2D(GL_TEXTURE_2D, 0,
                                     args.offset_x, args.offset_y, args.width, args.height,
-                                    to_gl_pixel_data_format(PixelDataFormat::RGBA),
-                                    to_gl_data_type(args.texture->get_pixel_type()),
+                                    GL_RGBA,
+                                    to_gl_data_type(texture_format_to_data_type(args.texture->get_format())),
                                     args.data);
                     glBindTexture(GL_TEXTURE_2D, 0);
 

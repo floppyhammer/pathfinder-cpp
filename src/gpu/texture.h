@@ -8,8 +8,8 @@
 namespace Pathfinder {
     class Texture {
     public:
-        Texture(uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type)
-                : width(p_width), height(p_height), format(p_format), type(p_type) {}
+        Texture(uint32_t p_width, uint32_t p_height, TextureFormat p_format)
+                : width(p_width), height(p_height), format(p_format) {}
 
         inline uint32_t get_width() const {
             return width;
@@ -27,10 +27,6 @@ namespace Pathfinder {
             return format;
         }
 
-        inline DataType get_pixel_type() const {
-            return type;
-        }
-
     protected:
         /// Size.
         uint32_t width = 0;
@@ -38,9 +34,6 @@ namespace Pathfinder {
 
         /// Pixel data type (GPU).
         TextureFormat format;
-
-        /// Pixel data type (CPU).
-        DataType type = DataType::UNSIGNED_BYTE;
     };
 }
 

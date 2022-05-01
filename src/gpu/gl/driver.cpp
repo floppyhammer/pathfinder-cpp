@@ -12,9 +12,9 @@
 
 namespace Pathfinder {
     std::shared_ptr<Framebuffer> DriverGl::create_framebuffer(uint32_t p_width, uint32_t p_height,
-                                                              TextureFormat p_format, DataType p_type,
+                                                              TextureFormat p_format,
                                                               const std::shared_ptr<RenderPass> &render_pass) {
-        auto framebuffer_gl = std::make_shared<FramebufferGl>(p_width, p_height, p_format, p_type);
+        auto framebuffer_gl = std::make_shared<FramebufferGl>(p_width, p_height, p_format);
 
         check_error("create_framebuffer");
         return framebuffer_gl;
@@ -29,9 +29,8 @@ namespace Pathfinder {
 
     std::shared_ptr<Texture> DriverGl::create_texture(uint32_t p_width,
                                                       uint32_t p_height,
-                                                      TextureFormat p_format,
-                                                      DataType p_type) {
-        auto texture_gl = std::make_shared<TextureGl>(p_width, p_height, p_format, p_type);
+                                                      TextureFormat p_format) {
+        auto texture_gl = std::make_shared<TextureGl>(p_width, p_height, p_format);
 
         check_error("create_texture");
         return texture_gl;

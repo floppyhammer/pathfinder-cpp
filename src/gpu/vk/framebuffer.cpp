@@ -12,8 +12,7 @@ namespace Pathfinder {
                                  std::shared_ptr<Texture> p_texture,
                                  uint32_t p_width,
                                  uint32_t p_height,
-                                 TextureFormat p_format,
-                                 DataType p_type) : Framebuffer(p_width, p_height) {
+                                 TextureFormat p_format) : Framebuffer(p_width, p_height) {
         vk_device = device;
 
         // Set color texture.

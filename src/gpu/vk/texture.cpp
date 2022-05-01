@@ -7,8 +7,8 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    TextureVk::TextureVk(VkDevice p_device, uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type)
-            : Texture(p_width, p_height, p_format, p_type), device(p_device) {
+    TextureVk::TextureVk(VkDevice p_device, uint32_t p_width, uint32_t p_height, TextureFormat p_format)
+            : Texture(p_width, p_height, p_format), device(p_device) {
     }
 
     TextureVk::~TextureVk() {

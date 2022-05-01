@@ -26,8 +26,7 @@ namespace Pathfinder {
         // We only allocate the metadata texture once.
         metadata_texture = driver->create_texture(TEXTURE_METADATA_TEXTURE_WIDTH,
                                                   TEXTURE_METADATA_TEXTURE_HEIGHT,
-                                                  TextureFormat::RGBA16F,
-                                                  DataType::HALF_FLOAT);
+                                                  TextureFormat::RGBA16F);
 
         // Uniform buffer.
         {
@@ -49,8 +48,7 @@ namespace Pathfinder {
         auto image_data = ImageData::from_memory(area_lut_input, false);
 
         area_lut_texture = driver->create_texture(image_data->width, image_data->height,
-                                                  TextureFormat::RGBA8_UNORM,
-                                                  DataType::UNSIGNED_BYTE);
+                                                  TextureFormat::RGBA8_UNORM);
 
         auto cmd_buffer = driver->create_command_buffer(true);
         cmd_buffer->upload_to_texture(area_lut_texture, {}, image_data->data);

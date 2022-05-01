@@ -12,7 +12,7 @@ namespace Pathfinder {
     class FramebufferGl : public Framebuffer {
     public:
         /// Normal framebuffer.
-        FramebufferGl(uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type);
+        FramebufferGl(uint32_t p_width, uint32_t p_height, TextureFormat p_format);
 
         /// Swap chain framebuffer.
         FramebufferGl(uint32_t p_width, uint32_t p_height);

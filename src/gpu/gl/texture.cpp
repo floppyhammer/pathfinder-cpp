@@ -5,8 +5,11 @@
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    TextureGl::TextureGl(uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type)
-            : Texture(p_width, p_height, p_format, p_type) {
+    TextureGl::TextureGl(uint32_t p_width, uint32_t p_height, TextureFormat p_format)
+            : Texture(p_width, p_height, p_format) {
+        // We can deduce the pixel data type by the texture format.
+        DataType type = texture_format_to_data_type(p_format);
+
         // Generate a texture.
         glGenTextures(1, &texture_id);
         glBindTexture(GL_TEXTURE_2D, texture_id);
@@ -19,8 +22,9 @@ namespace Pathfinder {
         glTexImage2D(GL_TEXTURE_2D, 0,
                      to_gl_texture_format(p_format),
                      width, height, 0,
-                     to_gl_pixel_data_format(PixelDataFormat::RGBA),
-                     to_gl_data_type(type), nullptr);
+                     GL_RGBA,
+                     to_gl_data_type(type),
+                     nullptr);
 #endif
 
         // Set texture sampler.

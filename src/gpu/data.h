@@ -75,11 +75,25 @@ namespace Pathfinder {
     inline uint32_t get_pixel_size(TextureFormat format) {
         switch (format) {
             case TextureFormat::RGBA8_UNORM:
+            case TextureFormat::RGBA8_SRGB:
             case TextureFormat::BGRA8_SRGB: {
                 return 4;
             }
             case TextureFormat::RGBA16F: {
                 return 8;
+            }
+        }
+    }
+
+    inline DataType texture_format_to_data_type(TextureFormat format) {
+        switch (format) {
+            case TextureFormat::RGBA8_UNORM:
+            case TextureFormat::RGBA8_SRGB:
+            case TextureFormat::BGRA8_SRGB: {
+                return DataType::UNSIGNED_BYTE;
+            }
+            case TextureFormat::RGBA16F: {
+                return DataType::HALF_FLOAT;
             }
         }
     }
