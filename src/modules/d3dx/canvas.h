@@ -1,10 +1,7 @@
-//
-// Created by floppyhammer on 2021/11/15.
-//
-
 #ifndef PATHFINDER_CANVAS_H
 #define PATHFINDER_CANVAS_H
 
+#include "../../gpu/driver.h"
 #include "../d3d9/scene_builder.h"
 #include "../d3d9/renderer.h"
 #include "../d3d11/scene_builder.h"
@@ -47,26 +44,34 @@ namespace Pathfinder {
         Luminosity,
     };
 
+    /// Pen state.
     struct State {
         Transform2 transform;
         float line_width = 0;
+
         LineCap line_cap = LineCap::Butt;
         LineJoin line_join = LineJoin::Miter;
         float miter_limit = 10;
+
         std::vector<float> line_dash;
         float line_dash_offset = 0;
+
         Paint fill_paint;
         Paint stroke_paint;
+
         ColorU shadow_color;
         float shadow_blur = 0;
         Vec2<float> shadow_offset;
+
         BlendMode global_composite_operation;
     };
 
-    struct Canvas {
+    class Canvas {
     public:
-        Canvas(float p_size_x, float p_size_y, const std::vector<unsigned char> &area_lut_input);
+        Canvas(const std::shared_ptr<Driver>& p_driver, float p_size_x, float p_size_y, const std::vector<char> &area_lut_input);
 
+        // Set state.
+        // ------------------------------------------------
         Paint fill_paint() const;
 
         void set_fill_paint(const Paint &p_fill_paint);
@@ -101,7 +106,7 @@ namespace Pathfinder {
 
         Vec2<float> shadow_offset() const;
 
-        void set_shadow_offset(const Vec2<float> &p_shadow_offset);
+        void set_shadow_offset(float p_shadow_offset_x, float p_shadow_offset_y);
 
         std::vector<float> line_dash() const;
 
@@ -110,15 +115,19 @@ namespace Pathfinder {
         float line_dash_offset() const;
 
         void set_line_dash_offset(float p_line_dash_offset);
+        // ------------------------------------------------
 
+        // Drawing ops.
+        // ------------------------------------------------
         /// Fill a shape.
         void fill_shape(Shape p_shape, FillRule p_fill_rule);
 
         /// Stroke a shape.
         void stroke_shape(Shape p_shape);
+        // ------------------------------------------------
 
         /// Rebuild and redraw the scene.
-        void draw();
+        void build_and_render();
 
         /// Clear the scene.
         void clear();
@@ -135,6 +144,8 @@ namespace Pathfinder {
         void load_svg(const std::string& input);
 
     private:
+        std::shared_ptr<Driver> driver;
+
         State current_state;
         std::vector<State> saved_states;
 

@@ -4,13 +4,15 @@
 
 #include "renderer.h"
 
-#include "../../rendering/device.h"
+#include "../../gpu/gl/driver.h"
 #include "../../common/timestamp.h"
 #include "../../common/math/basic.h"
 #include "../../common/global_macros.h"
 #include "../../common/math/vec3.h"
 #include "../../common/math/mat4x4.h"
-#include "../../rendering/command_buffer.h"
+#include "../../common/io.h"
+#include "../../gpu/gl/command_buffer.h"
+#include "../../gpu/platform.h"
 
 #include <array>
 
@@ -25,53 +27,56 @@ namespace Pathfinder {
     const size_t MAX_FILLS_PER_BATCH = 0x10000;
 
     /// It might not be worth it to cache z buffer textures as they're generally small.
-    std::shared_ptr<Texture> upload_z_buffer(const DenseTileMap<uint32_t> &z_buffer_map) {
-        auto z_buffer_texture = Device::create_texture(
+    std::shared_ptr<Texture> upload_z_buffer(const std::shared_ptr<Driver> &driver,
+                                             const DenseTileMap<uint32_t> &z_buffer_map) {
+        auto z_buffer_texture = driver->create_texture(
                 z_buffer_map.rect.width(),
                 z_buffer_map.rect.height(),
-                TextureFormat::RGBA8,
+                TextureFormat::RGBA8_UNORM,
                 DataType::UNSIGNED_BYTE);
 
-        auto cmd_buffer = Device::create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer(true);
         cmd_buffer->upload_to_texture(z_buffer_texture, {}, z_buffer_map.data.data());
-        cmd_buffer->submit();
+        cmd_buffer->submit(driver);
 
         return z_buffer_texture;
     }
 
-    RendererD3D9::RendererD3D9(uint32_t canvas_width, uint32_t canvas_height) {
-        dest_framebuffer = Device::create_framebuffer(canvas_width,
-                                                         canvas_height,
-                                                         TextureFormat::RGBA8,
-                                                         DataType::UNSIGNED_BYTE);
+    RendererD3D9::RendererD3D9(const std::shared_ptr<Driver>& p_driver, uint32_t canvas_width, uint32_t canvas_height)
+            : Renderer(p_driver) {
+        mask_render_pass = driver->create_render_pass(TextureFormat::RGBA16F, ImageLayout::SHADER_READ_ONLY);
 
-        mask_framebuffer = Device::create_framebuffer(MASK_FRAMEBUFFER_WIDTH,
-                                                   MASK_FRAMEBUFFER_HEIGHT,
-                                                   TextureFormat::RGBA16F,
-                                                   DataType::HALF_FLOAT);
+        dest_render_pass = driver->create_render_pass(TextureFormat::RGBA8_UNORM, ImageLayout::SHADER_READ_ONLY);
+
+        mask_framebuffer = driver->create_framebuffer(MASK_FRAMEBUFFER_WIDTH,
+                                                      MASK_FRAMEBUFFER_HEIGHT,
+                                                      TextureFormat::RGBA16F,
+                                                      DataType::HALF_FLOAT,
+                                                      mask_render_pass);
+
+        dest_framebuffer = driver->create_framebuffer(canvas_width,
+                                                      canvas_height,
+                                                      TextureFormat::RGBA8_UNORM,
+                                                      DataType::UNSIGNED_BYTE,
+                                                      dest_render_pass);
 
         // Quad vertex buffer. Shared by fills and tiles drawing.
-        quad_vertex_buffer = Device::create_buffer(BufferType::Vertex, 12 * sizeof(uint16_t));
+        quad_vertex_buffer = driver->create_buffer(BufferType::Vertex, 12 * sizeof(uint16_t));
 
-        auto cmd_buffer = Device::create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer(true);
         cmd_buffer->upload_to_buffer(quad_vertex_buffer, 0, 12 * sizeof(uint16_t), QUAD_VERTEX_POSITIONS);
-        cmd_buffer->submit();
+        cmd_buffer->submit(driver);
     }
 
-    void RendererD3D9::set_up_pipelines() {
+    void RendererD3D9::set_up_pipelines(uint32_t canvas_width, uint32_t canvas_height) {
         // Fill pipeline.
         {
-#ifdef PATHFINDER_SHADERS_EMBEDDED
-            const std::string fill_vert_source =
-#include "../src/shaders/minified/minified_fill.vert"
-            ;
-
-            const std::string fill_frag_source =
-#include "../src/shaders/minified/minified_fill.frag"
-            ;
+#ifdef PATHFINDER_USE_VULKAN
+            const auto fill_vert_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/fill_vert.spv");
+            const auto fill_frag_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/fill_frag.spv");
 #else
-            const auto fill_vert_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d9/fill.vert");
-            const auto fill_frag_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d9/fill.frag");
+            const auto fill_vert_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/fill.vert");
+            const auto fill_frag_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/fill.frag");
 #endif
 
             // Set vertex attributes.
@@ -108,48 +113,43 @@ namespace Pathfinder {
 
             ColorBlendState blend_state = {true, BlendFactor::ONE, BlendFactor::ONE};
 
-            fill_pipeline = std::make_shared<RenderPipeline>(fill_vert_source,
-                                                             fill_frag_source,
-                                                             attribute_descriptions,
-                                                             blend_state);
-
             // Set descriptor set.
             {
-                fill_descriptor_set = std::make_shared<DescriptorSet>();
+                fill_descriptor_set = driver->create_descriptor_set();
 
                 fill_descriptor_set->add_or_update_descriptor({
                     DescriptorType::UniformBuffer,
+                    ShaderType::Vertex,
                     0,
                     "bFixedSizes",
                     fixed_sizes_ub,
                     nullptr});
                 fill_descriptor_set->add_or_update_descriptor({
                     DescriptorType::Texture,
-                    0,
+                    ShaderType::Fragment,
+                    1,
                     "uAreaLUT",
                     nullptr,
                     area_lut_texture});
             }
+
+            fill_pipeline = driver->create_render_pipeline(fill_vert_source,
+                                                           fill_frag_source,
+                                                           attribute_descriptions,
+                                                           blend_state,
+                                                           {MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT},
+                                                           fill_descriptor_set,
+                                                           mask_render_pass);
         }
 
         // Tile pipeline.
         {
-#ifdef PATHFINDER_SHADERS_EMBEDDED
-            const std::string tile_vert_source =
-#include "../src/shaders/minified/minified_tile.vert"
-            ;
-
-            const std::string tile_frag_source_0 =
-#include "../src/shaders/minified/minified_tile.frag.0"
-            ;
-
-            const std::string tile_frag_source_1 =
-#include "../src/shaders/minified/minified_tile.frag.1"
-            ;
-            const std::string tile_frag_source = tile_frag_source_0 + tile_frag_source_1;
+#ifdef PATHFINDER_USE_VULKAN
+            const auto tile_vert_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/tile_vert.spv");
+            const auto tile_frag_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/tile_frag.spv");
 #else
-            const auto tile_vert_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d9/tile.vert");
-            const auto tile_frag_source = load_file_as_string(PATHFINDER_SHADER_DIR"d3d9/tile.frag");
+            const auto tile_vert_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/tile.vert");
+            const auto tile_frag_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/tile.frag");
 #endif
 
             // Set vertex attributes.
@@ -161,7 +161,7 @@ namespace Pathfinder {
                 attribute_descriptions.push_back({0,
                                                  2,
                                                  DataType::UNSIGNED_SHORT,
-                                                 0,
+                                                 2 * sizeof(uint16_t),
                                                  0,
                                                  VertexInputRate::VERTEX});
 
@@ -203,25 +203,21 @@ namespace Pathfinder {
 
             ColorBlendState blend_state = {true, BlendFactor::ONE, BlendFactor::ONE_MINUS_SRC_ALPHA};
 
-            tile_pipeline = std::make_shared<RenderPipeline>(tile_vert_source,
-                                                             tile_frag_source,
-                                                             attribute_descriptions,
-                                                             blend_state);
-
             // Create uniform buffers.
-            tile_transform_ub = Device::create_buffer(BufferType::Uniform, 16 * sizeof(float));
-            tile_varying_sizes_ub = Device::create_buffer(BufferType::Uniform, 8 * sizeof(float));
+            tile_transform_ub = driver->create_buffer(BufferType::Uniform, 16 * sizeof(float));
+            tile_varying_sizes_ub = driver->create_buffer(BufferType::Uniform, 8 * sizeof(float));
 
             // Set descriptor set.
             {
-                tile_descriptor_set = std::make_shared<DescriptorSet>();
+                tile_descriptor_set = driver->create_descriptor_set();
 
                 // Uniform buffers.
 
                 {
                     Descriptor descriptor;
                     descriptor.type = DescriptorType::UniformBuffer;
-                    descriptor.binding = 0;
+                    descriptor.stage = ShaderType::Vertex,
+                    descriptor.binding = 2;
                     descriptor.binding_name = "bTransform";
                     descriptor.buffer = tile_transform_ub;
 
@@ -231,7 +227,8 @@ namespace Pathfinder {
                 {
                     Descriptor descriptor;
                     descriptor.type = DescriptorType::UniformBuffer;
-                    descriptor.binding = 1;
+                    descriptor.stage = ShaderType::VertexFragment,
+                    descriptor.binding = 3;
                     descriptor.binding_name = "bVaryingSizes";
                     descriptor.buffer = tile_varying_sizes_ub;
 
@@ -241,7 +238,8 @@ namespace Pathfinder {
                 {
                     Descriptor descriptor;
                     descriptor.type = DescriptorType::UniformBuffer;
-                    descriptor.binding = 2;
+                    descriptor.stage = ShaderType::VertexFragment,
+                    descriptor.binding = 4;
                     descriptor.binding_name = "bFixedSizes";
                     descriptor.buffer = fixed_sizes_ub;
 
@@ -253,7 +251,8 @@ namespace Pathfinder {
                 {
                     Descriptor descriptor;
                     descriptor.type = DescriptorType::Texture;
-                    descriptor.binding = 1;
+                    descriptor.stage = ShaderType::Vertex,
+                    descriptor.binding = 0;
                     descriptor.binding_name = "uTextureMetadata";
                     descriptor.texture = metadata_texture;
 
@@ -263,13 +262,28 @@ namespace Pathfinder {
                 {
                     Descriptor descriptor;
                     descriptor.type = DescriptorType::Texture;
-                    descriptor.binding = 3;
+                    descriptor.stage = ShaderType::Fragment,
+                    descriptor.binding = 6;
                     descriptor.binding_name = "uMaskTexture0";
                     descriptor.texture = mask_framebuffer->get_texture();
 
                     tile_descriptor_set->add_or_update_descriptor(descriptor);
                 }
+
+                // Placeholders.
+                tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Fragment, 7, "uDestTexture", nullptr, nullptr});
+                tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Fragment, 8, "uGammaLUT", nullptr, nullptr});
+                tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Vertex, 1, "uZBuffer", nullptr, nullptr});
+                tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Fragment, 5, "uColorTexture0", nullptr, nullptr});
             }
+
+            tile_pipeline = driver->create_render_pipeline(tile_vert_source,
+                                                           tile_frag_source,
+                                                           attribute_descriptions,
+                                                           blend_state,
+                                                           {canvas_width, canvas_height},
+                                                           tile_descriptor_set,
+                                                           dest_render_pass);
         }
     }
 
@@ -293,41 +307,41 @@ namespace Pathfinder {
         auto byte_size = sizeof(Fill) * fills.size();
 
         if (fill_vertex_buffer == nullptr || byte_size > fill_vertex_buffer->size) {
-            fill_vertex_buffer = Device::create_buffer(BufferType::Vertex, byte_size);
+            fill_vertex_buffer = driver->create_buffer(BufferType::Vertex, byte_size);
         }
 
-        auto cmd_buffer = Device::create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer(true);
         cmd_buffer->upload_to_buffer(fill_vertex_buffer,
                                      0,
                                      byte_size,
                                      (void *) fills.data());
-        cmd_buffer->submit();
+        cmd_buffer->submit(driver);
     }
 
     void RendererD3D9::upload_tiles(const std::vector<TileObjectPrimitive> &tiles) {
         auto byte_size = sizeof(TileObjectPrimitive) * tiles.size();
 
         if (tile_vertex_buffer == nullptr || byte_size > tile_vertex_buffer->size) {
-            tile_vertex_buffer = Device::create_buffer(BufferType::Vertex, byte_size);
+            tile_vertex_buffer = driver->create_buffer(BufferType::Vertex, byte_size);
         }
 
-        auto cmd_buffer = Device::create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer(true);
         cmd_buffer->upload_to_buffer(tile_vertex_buffer,
                                      0,
                                      byte_size,
                                      (void *) tiles.data());
-        cmd_buffer->submit();
+        cmd_buffer->submit(driver);
     }
 
     void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatch> &tile_batches,
                                              const std::vector<TextureMetadataEntry> &metadata) {
         // Upload metadata (color, blur, etc...).
-        upload_metadata(metadata_texture, metadata);
+        upload_metadata(driver, metadata_texture, metadata);
 
         need_to_clear_dest = true;
 
         for (const auto &batch: tile_batches) {
-            auto z_buffer_texture = upload_z_buffer(batch.z_buffer_data);
+            auto z_buffer_texture = upload_z_buffer(driver, batch.z_buffer_data);
 
             upload_tiles(batch.tiles);
 
@@ -342,11 +356,12 @@ namespace Pathfinder {
         // No fills to draw or no valid mask viewport.
         if (fills_count == 0 || mask_framebuffer == nullptr) return;
 
-        auto cmd_buffer = Device::create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer(true);
 
-        cmd_buffer->begin_render_pass(mask_framebuffer,
-                                     true,
-                                     ColorF());
+        cmd_buffer->begin_render_pass(mask_render_pass,
+                                      mask_framebuffer,
+                                      true,
+                                      ColorF());
 
         cmd_buffer->bind_render_pipeline(fill_pipeline);
 
@@ -358,7 +373,9 @@ namespace Pathfinder {
 
         cmd_buffer->end_render_pass();
 
-        cmd_buffer->submit();
+        cmd_buffer->submit(driver);
+
+        // TODO: Transition image layout here.
     }
 
     void RendererD3D9::draw_tiles(uint32_t tiles_count,
@@ -368,21 +385,23 @@ namespace Pathfinder {
         // No tiles to draw.
         if (tiles_count == 0) return;
 
-        auto cmd_buffer = Device::create_command_buffer();
+        auto cmd_buffer = driver->create_command_buffer(true);
 
         Vec2<float> render_target_size;
 
         // If no specific RenderTarget is given.
         if (render_target.framebuffer == nullptr) {
-            cmd_buffer->begin_render_pass(dest_framebuffer,
-                                         need_to_clear_dest,
-                                         ColorF());
+            cmd_buffer->begin_render_pass(dest_render_pass,
+                                          dest_framebuffer,
+                                          need_to_clear_dest,
+                                          ColorF());
             render_target_size = {(float) dest_framebuffer->get_width(), (float) dest_framebuffer->get_height()};
             need_to_clear_dest = false;
         } else { // Otherwise, we need to render to that render target.
-            cmd_buffer->begin_render_pass(render_target.framebuffer,
-                                         true,
-                                         ColorF());
+            cmd_buffer->begin_render_pass(dest_render_pass,
+                                          render_target.framebuffer,
+                                          true,
+                                          ColorF());
             render_target_size = {(float) render_target.framebuffer->get_width(), (float) render_target.framebuffer->get_height()};
         }
 
@@ -390,28 +409,26 @@ namespace Pathfinder {
         {
             // MVP.
             auto model_mat = Mat4x4<float>(1.f);
-            model_mat = model_mat.translate(Vec3<float>(-1.f, 1.f, 0.f));
-            model_mat = model_mat.scale(Vec3<float>(2.f / render_target_size.x, -2.f / render_target_size.y, 1.f));
+            model_mat = model_mat.translate(Vec3<float>(-1.f, -1.f, 0.f)); // Move to top-left.
+            model_mat = model_mat.scale(Vec3<float>(2.f / render_target_size.x, 2.f / render_target_size.y, 1.f));
             auto mvp_mat = model_mat;
 
             std::array<float, 6> ubo_data = {(float) z_buffer_texture->get_width(), (float) z_buffer_texture->get_height(),
                                              (float) color_target.size.x, (float) color_target.size.y,
                                              render_target_size.x, render_target_size.y};
 
-            auto cmd_buffer = Device::create_command_buffer();
+            auto cmd_buffer = driver->create_command_buffer(true);
             cmd_buffer->upload_to_buffer(tile_transform_ub, 0, 16 * sizeof(float), &mvp_mat);
             cmd_buffer->upload_to_buffer(tile_varying_sizes_ub, 0, 6 * sizeof(float), ubo_data.data());
-            cmd_buffer->submit();
+            cmd_buffer->submit(driver);
         }
 
         // Update descriptor set.
         {
-            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, 0, "uDestTexture", nullptr, nullptr});
-            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, 2, "uZBuffer", nullptr, z_buffer_texture});
-
-            if (color_target.framebuffer != nullptr) {
-                tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, 4, "uColorTexture0", nullptr, color_target.framebuffer->get_texture()});
-            }
+            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Fragment, 7, "uDestTexture", nullptr, z_buffer_texture});
+            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Vertex, 1, "uZBuffer", nullptr, z_buffer_texture});
+            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Fragment, 5, "uColorTexture0", nullptr, color_target.framebuffer != nullptr ? color_target.framebuffer->get_texture() : z_buffer_texture});
+            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Fragment, 8, "uGammaLUT", nullptr, z_buffer_texture});
         }
 
         cmd_buffer->bind_render_pipeline(tile_pipeline);
@@ -424,7 +441,7 @@ namespace Pathfinder {
 
         cmd_buffer->end_render_pass();
 
-        cmd_buffer->submit();
+        cmd_buffer->submit(driver);
     }
 
     std::shared_ptr<Texture> RendererD3D9::get_dest_texture() {

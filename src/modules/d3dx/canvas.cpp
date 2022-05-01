@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 2021/11/15.
-//
-
 #include "canvas.h"
 
 #include "stroke.h"
@@ -12,6 +8,7 @@
 #include "../../common/logger.h"
 
 #define NANOSVG_IMPLEMENTATION
+
 #include <nanosvg.h>
 
 #include <utility>
@@ -38,7 +35,8 @@ namespace Pathfinder {
      * @param current_state Canvas state.
      * @param outline_bounds Original shape bounds.
      */
-    ShadowBlurRenderTargetInfo push_shadow_blur_render_targets(Scene &scene,
+    ShadowBlurRenderTargetInfo push_shadow_blur_render_targets(const std::shared_ptr<Driver> &driver,
+                                                               Scene &scene,
                                                                State &current_state,
                                                                Rect<float> outline_bounds) {
         ShadowBlurRenderTargetInfo shadow_blur_info;
@@ -52,8 +50,8 @@ namespace Pathfinder {
         // Bounds expansion caused by blurring.
         auto bounds = outline_bounds.dilate(sigma * 3.f).round_out().to_i32();
 
-        shadow_blur_info.id_y = scene.push_render_target(bounds.size());
-        shadow_blur_info.id_x = scene.push_render_target(bounds.size());
+        shadow_blur_info.id_y = scene.push_render_target(driver, bounds.size());
+        shadow_blur_info.id_x = scene.push_render_target(driver, bounds.size());
 
         shadow_blur_info.sigma = sigma;
         shadow_blur_info.bounds = bounds;
@@ -120,7 +118,10 @@ namespace Pathfinder {
         scene.push_draw_path(path_y);
     }
 
-    Canvas::Canvas(float size_x, float size_y, const std::vector<unsigned char> &area_lut_input) {
+    Canvas::Canvas(const std::shared_ptr<Driver> &p_driver, float size_x, float size_y,
+                   const std::vector<char> &area_lut_input) {
+        driver = p_driver;
+
         // Set up a scene.
         scene = std::make_shared<Scene>(0, Rect<float>(0, 0, size_x, size_y));
 
@@ -129,14 +130,14 @@ namespace Pathfinder {
 
         // Set up a renderer.
 #ifndef PATHFINDER_USE_D3D11
-        renderer = std::make_shared<RendererD3D9>(size_x, size_y);
+        renderer = std::make_shared<RendererD3D9>(p_driver, size_x, size_y);
 #else
-        renderer = std::make_shared<RendererD3D11>(size_x, size_y);
+        renderer = std::make_shared<RendererD3D11>(p_driver, size_x, size_y);
 #endif
 
         renderer->set_up_area_lut(area_lut_input);
 
-        renderer->set_up_pipelines();
+        renderer->set_up_pipelines(size_x, size_y);
     }
 
     void Canvas::push_shape(Shape p_shape,
@@ -161,7 +162,7 @@ namespace Pathfinder {
             // Set shadow offset.
             shadow_shape.transform(Transform2::from_translation(current_state.shadow_offset));
 
-            auto shadow_blur_info = push_shadow_blur_render_targets(*scene, current_state, shadow_shape.bounds);
+            auto shadow_blur_info = push_shadow_blur_render_targets(driver, *scene, current_state, shadow_shape.bounds);
 
             shadow_shape.transform(Transform2::from_translation(-shadow_blur_info.bounds.origin().to_f32()));
 
@@ -308,8 +309,8 @@ namespace Pathfinder {
         return current_state.shadow_offset;
     }
 
-    void Canvas::set_shadow_offset(const Vec2<float> &p_shadow_offset) {
-        current_state.shadow_offset = p_shadow_offset;
+    void Canvas::set_shadow_offset(float p_shadow_offset_x, float p_shadow_offset_y) {
+        current_state.shadow_offset = {p_shadow_offset_x, p_shadow_offset_y};
     }
 
     std::vector<float> Canvas::line_dash() const {
@@ -328,7 +329,7 @@ namespace Pathfinder {
         current_state.line_dash_offset = p_line_dash_offset;
     }
 
-    void Canvas::draw() {
+    void Canvas::build_and_render() {
         scene_builder.build();
         renderer->draw(scene_builder);
     }
@@ -396,7 +397,7 @@ namespace Pathfinder {
         }
     }
 
-    void Canvas::load_svg(const std::string& input) {
+    void Canvas::load_svg(const std::string &input) {
         Timestamp timestamp;
 
         // Load the SVG image via NanoSVG.
@@ -404,7 +405,7 @@ namespace Pathfinder {
 
         // Make a copy as nsvgParse() will empty the string.
         auto input_copy = input;
-        char* string_c = const_cast<char *>(input_copy.c_str());
+        char *string_c = const_cast<char *>(input_copy.c_str());
         image = nsvgParse(string_c, "px", 96);
 
         // Check if image loading is successful.
@@ -447,7 +448,8 @@ namespace Pathfinder {
 
             // Set dash.
             set_line_dash_offset(nsvg_shape->strokeDashOffset);
-            set_line_dash(std::vector<float>(nsvg_shape->strokeDashArray, nsvg_shape->strokeDashArray + nsvg_shape->strokeDashCount));
+            set_line_dash(std::vector<float>(nsvg_shape->strokeDashArray,
+                                             nsvg_shape->strokeDashArray + nsvg_shape->strokeDashCount));
 
             // Add fill.
             set_fill_paint(Paint::from_color(ColorU(nsvg_shape->fill.color)));

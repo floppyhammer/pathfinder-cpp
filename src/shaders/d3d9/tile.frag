@@ -1,5 +1,7 @@
-#version 300 es
-//#version 330
+#version 310 es
+//#version 300 es (For GLES)
+//#version 330 (For GL)
+//#version 310 es (For Vulkan)
 
 // pathfinder/shaders/tile.fs.glsl
 //
@@ -17,24 +19,51 @@ precision highp int; // Fix Android rendering artifacts.
 precision highp sampler2D;
 #endif
 
-layout (std140) uniform bVaryingSizes {
+#ifdef VULKAN
+layout(binding = 3) uniform bVaryingSizes {
+#else
+layout(std140) uniform bVaryingSizes {
+#endif
     vec2 uZBufferSize; // Will vary.
     vec2 uColorTextureSize0; // Will vary.
     vec2 uFramebufferSize; // Will vary.
     vec2 pad0;
 };
 
-layout (std140) uniform bFixedSizes {
+#ifdef VULKAN
+layout(binding = 4) uniform bFixedSizes {
+#else
+layout(std140) uniform bFixedSizes {
+#endif
     vec2 uMaskTextureSize0; // Fixed as (4096, 1024).
     vec2 uTileSize; // Fixed as (16, 16). Not used here.
     vec2 uTextureMetadataSize; // Fixed as (1280, 512). Not used here.
     vec2 pad1;
 };
 
+#ifdef VULKAN
+layout(binding = 5) uniform sampler2D uColorTexture0; // Pattern image.
+layout(binding = 6) uniform sampler2D uMaskTexture0;
+layout(binding = 7) uniform sampler2D uDestTexture;
+layout(binding = 8) uniform sampler2D uGammaLUT;
+
+layout(location = 0) in vec3 vMaskTexCoord0;
+layout(location = 1) in vec2 vColorTexCoord0;
+layout(location = 2) in vec4 vBaseColor;
+layout(location = 3) in float vTileCtrl;
+layout(location = 4) in vec4 vFilterParams0;
+layout(location = 5) in vec4 vFilterParams1;
+layout(location = 6) in vec4 vFilterParams2;
+layout(location = 7) in vec4 vFilterParams3;
+layout(location = 8) in vec4 vFilterParams4;
+layout(location = 9) in float vCtrl;
+
+layout(location=0) out vec4 oFragColor;
+#else
 uniform sampler2D uColorTexture0; // Pattern image.
 uniform sampler2D uMaskTexture0;
 uniform sampler2D uDestTexture;
-uniform sampler2D uGammaLUT;
+uniform sampler2D uGammaLUT; // For text.
 
 in vec3 vMaskTexCoord0;
 in vec2 vColorTexCoord0;
@@ -48,6 +77,7 @@ in vec4 vFilterParams4;
 in float vCtrl;
 
 out vec4 oFragColor;
+#endif
 
 //      Mask UV 0         Mask UV 1
 //          +                 +
@@ -210,8 +240,7 @@ vec4 filterText(vec2 colorTexCoord, sampler2D colorTexture, sampler2D gammaLUT,
     }
 
     // Apply gamma correction if necessary.
-    if (gammaCorrectionEnabled)
-    alpha = filterTextGammaCorrect(bgColor, alpha, gammaLUT);
+    if (gammaCorrectionEnabled) alpha = filterTextGammaCorrect(bgColor, alpha, gammaLUT);
 
     // Finish.
     return vec4(mix(bgColor, fgColor, alpha), 1.0);

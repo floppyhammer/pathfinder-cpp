@@ -9,9 +9,9 @@
 #include "scene_builder.h"
 #include "../d3dx/scene.h"
 #include "../d3d9/data/draw_tile_batch.h"
-#include "../../rendering/compute_pipeline.h"
-#include "../../rendering/buffer.h"
-#include "../../rendering/descriptor_set.h"
+#include "../../gpu/gl/compute_pipeline.h"
+#include "../../gpu/gl/buffer.h"
+#include "../../gpu/descriptor_set.h"
 #include "../d3dx/renderer.h"
 
 #ifdef PATHFINDER_USE_D3D11
@@ -50,7 +50,7 @@ namespace Pathfinder {
         uint32_t point_indices_capacity = 0;
 
         /// Upload segments to buffer.
-        void upload(SegmentsD3D11 &segments);
+        void upload(const std::shared_ptr<Pathfinder::Driver> &driver, SegmentsD3D11 &segments);
     };
 
     struct SceneBuffers {
@@ -60,7 +60,8 @@ namespace Pathfinder {
         ~SceneBuffers();
 
         /// Upload draw and clip segments to buffers.
-        void upload(SegmentsD3D11 &draw_segments,
+        void upload(const std::shared_ptr<Pathfinder::Driver> &driver,
+                    SegmentsD3D11 &draw_segments,
                     SegmentsD3D11 &clip_segments);
     };
 
@@ -75,9 +76,9 @@ namespace Pathfinder {
 
     class RendererD3D11 : public Renderer {
     public:
-        explicit RendererD3D11(uint32_t canvas_width, uint32_t canvas_height);
+        explicit RendererD3D11(const std::shared_ptr<Pathfinder::Driver> &driver, uint32_t canvas_width, uint32_t canvas_height);
 
-        void set_up_pipelines();
+        void set_up_pipelines(uint32_t canvas_width, uint32_t canvas_height);
 
         void draw(SceneBuilderD3D11 &scene_builder);
 

@@ -1,14 +1,8 @@
-//
-// Created by floppyhammer on 8/3/2021.
-//
-
 #ifndef PATHFINDER_GLOBAL_MACROS_H
 #define PATHFINDER_GLOBAL_MACROS_H
 
 // Choose between D3D9 and D3D11.
-//#define PATHFINDER_USE_D3D11
-
-//#define PATHFINDER_USE_VULKAN
+#define PATHFINDER_USE_D3D11
 
 // Enable DEBUG mode, in which we will check for GL errors. Influencing performance.
 #define PATHFINDER_DEBUG
@@ -19,15 +13,14 @@
 // Enable SIMD.
 #define PATHFINDER_SIMD_ENABLED
 
-// This is optional for the native demo, as we can access shader files directly.
-//#define PATHFINDER_SHADERS_EMBEDDED
+// Resource directories.
 #define PATHFINDER_SHADER_DIR "../src/shaders/"
 #define PATHFINDER_ASSET_DIR "../assets/"
 
 #ifdef PATHFINDER_USE_VULKAN
 #define GLFW_INCLUDE_VULKAN
 
-#include "GLFW/glfw3.h"
+#include <GLFW/glfw3.h>
 
 #else
 // OpenGL headers.

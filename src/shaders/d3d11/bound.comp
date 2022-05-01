@@ -12,7 +12,7 @@ precision highp float;
 
 layout(local_size_x = 64) in;
 
-layout (std140) uniform bUniform {
+layout (std140, binding = 2) uniform bUniform {
     int uPathCount;
     int uTileCount;
     int pad0;

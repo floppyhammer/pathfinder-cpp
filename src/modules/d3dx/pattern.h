@@ -9,7 +9,8 @@
 #include "../../common/math/vec2.h"
 #include "../../common/math/transform2.h"
 #include "../../common/color.h"
-#include "../../rendering/framebuffer.h"
+#include "../../gpu/framebuffer.h"
+#include "../../gpu/render_pass.h"
 
 #include <cstdint>
 #include <utility>
@@ -27,6 +28,8 @@ namespace Pathfinder {
         uint32_t scene = 0;
         /// The ID of the render target within this scene.
         uint32_t id = 0;
+        /// Render pass.
+        std::shared_ptr<RenderPass> render_pass;
         /// Framebuffer.
         std::shared_ptr<Framebuffer> framebuffer;
         /// Size.

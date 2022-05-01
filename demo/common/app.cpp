@@ -1,45 +1,26 @@
-//
-// Created by floppyhammer on 2/24/2022.
-//
-
 #include "app.h"
 
-#include "../../src/common/global_macros.h"
-#include "../../src/common/logger.h"
-#include "../../src/rendering/device.h"
-#include "../../src/modules/vgui/servers/vector_server.h"
-
-App::App(int window_width,
-         int window_height,
+App::App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
+         const std::shared_ptr<Pathfinder::SwapChain> &swap_chain,
+         uint32_t window_width,
+         uint32_t window_height,
          std::vector<char> &area_lut_input,
          std::vector<char> &font_input,
          const std::string &p_svg_input) {
     // Set logger level.
     Pathfinder::Logger::set_level(Pathfinder::Logger::Level::DEBUG);
 
-    Pathfinder::VectorServer::get_singleton().init(window_width,
-                                                   window_height,
-                                                   reinterpret_cast<std::vector<unsigned char> &>(area_lut_input));
+    driver = p_driver;
 
     // Set up a canvas.
-    canvas = std::make_shared<Pathfinder::Canvas>(window_width,
+    canvas = std::make_shared<Pathfinder::Canvas>(driver,
+                                                  window_width,
                                                   window_height,
-                                                  reinterpret_cast<std::vector<unsigned char> &>(area_lut_input));
+                                                  area_lut_input);
     canvas->load_svg(p_svg_input);
 
-    // Set up a text label.
-    label = std::make_shared<Pathfinder::Label>();
-    label->set_rect_size(128, 64);
-    label->set_style(64, Pathfinder::ColorU::white(), 0, Pathfinder::ColorU::red());
-    label->set_font(std::make_shared<Pathfinder::Font>(font_input));
-    label->set_horizontal_alignment(Pathfinder::Alignment::Center);
-
-    // Create a screen viewport.
-    screen_framebuffer = std::make_shared<Pathfinder::Framebuffer>(window_width, window_height);
-
     // Set viewport texture to a texture rect.
-    texture_rect0 = std::make_shared<Pathfinder::TextureRect>(window_width, window_height);
-    texture_rect1 = std::make_shared<Pathfinder::TextureRect>(window_width, window_height);
+    texture_rect = std::make_shared<TextureRect>(driver, swap_chain->get_render_pass(), window_width, window_height);
 
     // Timers.
     start_time = std::chrono::steady_clock::now();
@@ -47,7 +28,7 @@ App::App(int window_width,
     last_time_updated_fps = start_time;
 }
 
-void App::loop() {
+void App::loop(const std::shared_ptr<Pathfinder::SwapChain> &swap_chain) {
     // Timing.
     // ----------------------------------------
     auto current_time = std::chrono::steady_clock::now();
@@ -66,45 +47,32 @@ void App::loop() {
     if (duration.count() > 1) {
         last_time_updated_fps = current_time;
 
-        // Set frame time.
+        // Show frame time.
         std::ostringstream string_stream;
         string_stream << round(delta * 10.f) * 0.1f << "\n";
-        label->set_text(string_stream.str());
+        std::cout << string_stream.str() << std::endl;
     }
     // ----------------------------------------
 
-    // Server process.
-    Pathfinder::VectorServer::get_singleton().canvas->clear();
+    canvas->build_and_render();
 
-    // Update.
+    auto cmd_buffer = swap_chain->get_command_buffer();
+
+    auto framebuffer = swap_chain->get_framebuffer(0);
+
+    // Swap chain render pass.
     {
-        label->update();
+        cmd_buffer->begin_render_pass(swap_chain->get_render_pass(),
+                                      framebuffer,
+                                      true,
+                                      Pathfinder::ColorF(0.2, 0.2, 0.2, 1.0));
+
+        // Draw canvas to screen.
+        texture_rect->set_texture(canvas->get_dest_texture());
+        texture_rect->draw(driver, cmd_buffer, framebuffer->get_size());
+
+        cmd_buffer->end_render_pass();
     }
 
-    // Draw.
-    {
-        canvas->draw();
-        label->draw();
-    }
-
-    // Server process.
-    Pathfinder::VectorServer::get_singleton().canvas->draw();
-
-    auto cmd_buffer = Pathfinder::Device::create_command_buffer();
-
-    cmd_buffer->begin_render_pass(screen_framebuffer,
-                                  true,
-                                  Pathfinder::ColorF(0.3, 0.3, 0.3, 1.0));
-
-    // Draw canvas to screen.
-    texture_rect0->set_texture(canvas->get_dest_texture());
-    texture_rect0->draw(cmd_buffer, screen_framebuffer);
-
-    // Draw label to screen.
-    texture_rect1->set_texture(Pathfinder::VectorServer::get_singleton().canvas->get_dest_texture());
-    texture_rect1->draw(cmd_buffer, screen_framebuffer);
-
-    cmd_buffer->end_render_pass();
-
-    cmd_buffer->submit();
+    cmd_buffer->submit(driver);
 }

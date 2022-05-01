@@ -13,6 +13,7 @@
 #include "../../common/math/vec2.h"
 #include "../../common/math/rect.h"
 #include "../../common/math/transform2.h"
+#include "../../gpu/driver.h"
 
 #include <map>
 #include <utility>
@@ -113,12 +114,12 @@ namespace Pathfinder {
 
             int overlay_index_l = -1;
             if (overlay && overlay->contents.pattern) {
-                overlay_index_l = overlay->contents.pattern->source.render_target.framebuffer->get_texture_id();
+                overlay_index_l = overlay->contents.pattern->source.render_target.framebuffer->get_unique_id();
             }
 
             int overlay_index_r = -1;
             if (rhs.overlay && rhs.overlay->contents.pattern) {
-                overlay_index_r = rhs.overlay->contents.pattern->source.render_target.framebuffer->get_texture_id();
+                overlay_index_r = rhs.overlay->contents.pattern->source.render_target.framebuffer->get_unique_id();
             }
 
             if (base_color_index_l < base_color_index_r) {
@@ -231,7 +232,7 @@ namespace Pathfinder {
 
         Paint get_paint(uint32_t paint_id) const;
 
-        RenderTarget push_render_target(const Vec2<int> &render_target_size);
+        RenderTarget push_render_target(const std::shared_ptr<Driver>& p_driver, const Vec2<int> &render_target_size);
 
         std::shared_ptr<Framebuffer> get_render_target(uint32_t render_target_id) const;
 

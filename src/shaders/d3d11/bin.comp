@@ -18,7 +18,7 @@ precision highp float;
 
 layout(local_size_x = 64) in;
 
-layout (std140) uniform bUniform {
+layout (std140, binding = 6) uniform bUniform {
     int uMicrolineCount;
     int uMaxFillCount; // How many slots we have allocated for fills.
     int pad0;

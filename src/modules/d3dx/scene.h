@@ -8,7 +8,7 @@
 #include "paint.h"
 #include "data/shape.h"
 #include "data/data.h"
-#include "../../rendering/framebuffer.h"
+#include "../../gpu/gl/framebuffer.h"
 
 #include <vector>
 #include <limits>
@@ -114,7 +114,7 @@ namespace Pathfinder {
         ///
         /// Render targets form a stack. All `push_draw_path()` commands go to the render target at the
         /// top of the stack.
-        RenderTarget push_render_target(Vec2<int> render_target_size);
+        RenderTarget push_render_target(const std::shared_ptr<Driver>& driver, Vec2<int> render_target_size);
 
         /// Removes the most-recently-pushed render target from the top of the stack.
         ///

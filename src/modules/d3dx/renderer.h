@@ -6,8 +6,7 @@
 #define PATHFINDER_RENDERER_H
 
 #include "data/data.h"
-#include "../../rendering/buffer.h"
-#include "../../rendering/framebuffer.h"
+#include "../../gpu/driver.h"
 
 #include <cstdint>
 
@@ -26,20 +25,23 @@ namespace Pathfinder {
     const int32_t TEXTURE_METADATA_TEXTURE_WIDTH = TEXTURE_METADATA_ENTRIES_PER_ROW * 10;
     const int32_t TEXTURE_METADATA_TEXTURE_HEIGHT = 65536 / TEXTURE_METADATA_ENTRIES_PER_ROW;
 
-    void upload_metadata(const std::shared_ptr<Texture>& metadata_texture,
+    void upload_metadata(const std::shared_ptr<Driver> &driver,
+                         const std::shared_ptr<Texture>& metadata_texture,
                          const std::vector<TextureMetadataEntry> &metadata);
 
     /// Base for D3D9 and D3D11 renderers.
     class Renderer {
     public:
-        Renderer();
+        explicit Renderer(const std::shared_ptr<Driver> &p_driver);
 
         /// Set up Area Lut texture.
-        void set_up_area_lut(const std::vector<unsigned char> &area_lut_input);
+        void set_up_area_lut(const std::vector<char> &area_lut_input);
 
         virtual std::shared_ptr<Texture> get_dest_texture() = 0;
 
     protected:
+        std::shared_ptr<Driver> driver;
+
         /// If we should clear the dest framebuffer or texture.
         bool need_to_clear_dest;
 

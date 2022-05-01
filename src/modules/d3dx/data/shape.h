@@ -13,7 +13,7 @@
 namespace Pathfinder {
     /// A shape drawn to the output or to a render target.
     /// Same as DrawPath + Outline in Pathfinder Rust.
-    struct Shape {
+    class Shape {
     public:
         /// Paths (each path starts with the MoveTo command).
         std::vector<Path> paths;

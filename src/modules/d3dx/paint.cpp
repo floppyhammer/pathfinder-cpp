@@ -4,7 +4,7 @@
 
 #include "paint.h"
 
-#include "../../rendering/device.h"
+#include "../../gpu/platform.h"
 
 #include <stdexcept>
 
@@ -71,16 +71,20 @@ namespace Pathfinder {
         return paints[paint_id];
     }
 
-    RenderTarget Palette::push_render_target(const Vec2<int> &render_target_size) {
+    RenderTarget Palette::push_render_target(const std::shared_ptr<Driver>& driver, const Vec2<int> &render_target_size) {
+        auto render_pass = driver->create_render_pass(TextureFormat::RGBA8_UNORM, ImageLayout::SHADER_READ_ONLY);
+        
         // Create a new framebuffer.
-        auto framebuffer = Device::create_framebuffer(
+        auto framebuffer = driver->create_framebuffer(
                 render_target_size.x,
                 render_target_size.y,
-                TextureFormat::RGBA8,
-                DataType::UNSIGNED_BYTE);
+                TextureFormat::RGBA8_UNORM,
+                DataType::UNSIGNED_BYTE,
+                render_pass);
 
         RenderTarget render_target;
         render_target.id = render_targets.size();
+        render_target.render_pass = render_pass;
         render_target.framebuffer = framebuffer;
         render_target.size = {(uint32_t) render_target_size.x, (uint32_t) render_target_size.y};
 

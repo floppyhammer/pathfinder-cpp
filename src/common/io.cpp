@@ -51,12 +51,12 @@ namespace Pathfinder {
         return bytes;
     }
 
-    std::shared_ptr<ImageData> ImageData::from_memory(const std::vector<unsigned char> &bytes, bool flip_y) {
+    std::shared_ptr<ImageData> ImageData::from_memory(const std::vector<char> &bytes, bool flip_y) {
         stbi_set_flip_vertically_on_load(flip_y);
 
         int32_t img_width, img_height, img_channels;
-        unsigned char *img_data = stbi_load_from_memory(bytes.data(),
-                                                        (int) (bytes.size() * sizeof(unsigned char)),
+        unsigned char *img_data = stbi_load_from_memory(reinterpret_cast<const stbi_uc *>(bytes.data()),
+                                                        bytes.size() * sizeof(char),
                                                         &img_width,
                                                         &img_height,
                                                         &img_channels,
