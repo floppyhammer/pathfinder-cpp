@@ -115,6 +115,8 @@ namespace Pathfinder {
         float line_dash_offset() const;
 
         void set_line_dash_offset(float p_line_dash_offset);
+
+        void set_transform(Transform2 &p_transform);
         // ------------------------------------------------
 
         // Drawing ops.
