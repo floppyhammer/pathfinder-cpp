@@ -1,10 +1,4 @@
-//
-// Created by floppyhammer on 7/9/2021.
-//
-
 #include "path.h"
-
-#include <cassert>
 
 namespace Pathfinder {
     Vec2<float> Path::position_of_last(int index) {
@@ -141,11 +135,11 @@ namespace Pathfinder {
         return segment;
     }
 
-    bool SegmentsIter::is_at_start() {
+    bool SegmentsIter::is_at_start() const {
         return head == 0;
     }
 
-    bool SegmentsIter::is_at_end() {
+    bool SegmentsIter::is_at_end() const {
         return !has_next;
     }
 }

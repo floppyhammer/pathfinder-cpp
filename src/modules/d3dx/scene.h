@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 6/19/2021.
-//
-
 #ifndef PATHFINDER_SCENE_H
 #define PATHFINDER_SCENE_H
 
@@ -15,7 +11,7 @@
 #include <map>
 
 namespace Pathfinder {
-/// High-level drawing commands.
+    /// High-level drawing commands.
     struct DisplayItem {
         enum class Type {
             DrawPaths,

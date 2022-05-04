@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 7/9/2021.
-//
-
 #ifndef PATHFINDER_D3D9_ALPHA_TILE_ID_H
 #define PATHFINDER_D3D9_ALPHA_TILE_ID_H
 
@@ -19,8 +15,7 @@ namespace Pathfinder {
         // Data racing happens here.
         AlphaTileId(size_t *next_alpha_tile_index, int level);
 
-        /// A valid value means a solid tile.
-        /// Default is invalid.
+        /// A valid value means a solid tile. Default is invalid.
         uint32_t value = std::numeric_limits<uint32_t>::max();
 
         bool is_valid() const;

@@ -1,15 +1,11 @@
-//
-// Created by floppyhammer on 7/9/2021.
-//
-
 #ifndef PATHFINDER_PATH_H
 #define PATHFINDER_PATH_H
 
+#include "segment.h"
+#include "data.h"
 #include "../../../common/math/vec2.h"
 #include "../../../common/math/rect.h"
 #include "../../../common/math/transform2.h"
-#include "segment.h"
-#include "data.h"
 
 #include <vector>
 
@@ -69,8 +65,8 @@ namespace Pathfinder {
         /// Get next segment in the path.
         Segment get_next(bool force_closed = false);
 
-        bool is_at_start();
-        bool is_at_end();
+        bool is_at_start() const;
+        bool is_at_end() const;
 
     private:
         /// Path data.

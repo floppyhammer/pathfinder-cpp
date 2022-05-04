@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 6/19/2021.
-//
-
 #ifndef PATHFINDER_D3D9_TILER_H
 #define PATHFINDER_D3D9_TILER_H
 
@@ -9,12 +5,6 @@
 #include "../d3dx/data/data.h"
 
 namespace Pathfinder {
-    enum class StepDirection {
-        None,
-        X,
-        Y,
-    };
-
     struct Outcode {
         uint8_t flag = 0x00;
 
@@ -33,8 +23,6 @@ namespace Pathfinder {
             return res;
         }
     };
-
-    Outcode compute_outcode(const Vec2<float>& point, const Rect<float>& rect);
 
     /// This is the meat of the technique. It implements the fast lattice-clipping algorithm from
     /// Nehab and Hoppe, "Random-Access Rendering of General Vector Graphics" 2006.

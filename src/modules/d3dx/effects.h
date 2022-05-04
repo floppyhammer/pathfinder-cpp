@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 2021/10/20.
-//
-
 #ifndef PATHFINDER_EFFECTS_H
 #define PATHFINDER_EFFECTS_H
 

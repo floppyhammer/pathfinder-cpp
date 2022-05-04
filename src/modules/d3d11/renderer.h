@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 8/26/2021.
-//
-
 #ifndef PATHFINDER_D3D11_RENDERER_H
 #define PATHFINDER_D3D11_RENDERER_H
 
@@ -173,7 +169,7 @@ namespace Pathfinder {
                 std::vector<PropagateMetadataD3D11> &propagate_metadata,
                 std::vector<BackdropInfoD3D11> &backdrops);
 
-        [[nodiscard]] Vec2<uint32_t> tile_size() const;
+        Vec2<uint32_t> tile_size() const;
 
         Vec2<uint32_t> framebuffer_tile_size();
 

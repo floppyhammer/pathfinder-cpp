@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 7/9/2021.
-//
-
 #include "unit_vector.h"
 
 namespace Pathfinder {

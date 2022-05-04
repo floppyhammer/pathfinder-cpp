@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 6/24/2021.
-//
-
 #include "scene.h"
 
 namespace Pathfinder {

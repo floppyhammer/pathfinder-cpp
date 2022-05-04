@@ -1,12 +1,8 @@
-//
-// Created by floppyhammer on 7/9/2021.
-//
-
 #ifndef PATHFINDER_SEGMENT_H
 #define PATHFINDER_SEGMENT_H
 
-#include "../../d3d9/data/line_segment.h"
 #include "data.h"
+#include "../../d3d9/data/line_segment.h"
 #include "../../../common/math/transform2.h"
 
 namespace Pathfinder {

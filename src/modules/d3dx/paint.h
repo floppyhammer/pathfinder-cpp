@@ -1,14 +1,10 @@
-//
-// Created by floppyhammer on 9/27/2021.
-//
-
 #ifndef PATHFINDER_PAINT_H
 #define PATHFINDER_PAINT_H
 
-#include "data/data.h"
-#include "../d3d9/data/line_segment.h"
 #include "gradient.h"
 #include "pattern.h"
+#include "data/data.h"
+#include "../d3d9/data/line_segment.h"
 #include "../../common/color.h"
 #include "../../common/math/vec2.h"
 #include "../../common/math/rect.h"

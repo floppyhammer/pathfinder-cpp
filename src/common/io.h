@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 2022/1/7.
-//
-
 #ifndef PATHFINDER_IO_H
 #define PATHFINDER_IO_H
 

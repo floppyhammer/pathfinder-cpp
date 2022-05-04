@@ -1,10 +1,6 @@
-//
-// Created by floppyhammer on 2021/10/9.
-//
-
 #include "dash.h"
 
-#include "cmath"
+#include <cmath>
 
 namespace Pathfinder {
     const float EPSILON = 0.0001;

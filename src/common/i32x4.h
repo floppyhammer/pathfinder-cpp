@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 1/25/2022.
-//
-
 #ifndef PATHFINDER_I32X4_H
 #define PATHFINDER_I32X4_H
 

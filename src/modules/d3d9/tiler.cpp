@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 6/24/2021.
-//
-
 #include "tiler.h"
 
 #include "../../common/math/basic.h"
@@ -14,12 +10,36 @@ namespace Pathfinder {
     // This value amounts to 16.0 * tolerance * tolerance in Pathfinder Rust.
     const float FLATTENING_TOLERANCE = 1.0f;
 
+    enum class StepDirection {
+        None,
+        X,
+        Y,
+    };
+
     bool Outcode::is_empty() const {
         return flag == 0x00;
     }
 
     bool Outcode::contains(uint8_t p_side) const {
         return (flag & p_side) != 0x00;
+    }
+
+    Outcode compute_outcode(const Vec2<float>& point, const Rect<float>& rect) {
+        Outcode outcode;
+
+        if (point.x < rect.min_x()) {
+            outcode.flag |= Outcode::LEFT;
+        } else if (point.x > rect.max_x()) {
+            outcode.flag |= Outcode::RIGHT;
+        }
+
+        if (point.y < rect.min_y()) {
+            outcode.flag |= Outcode::TOP;
+        } else if (point.y > rect.max_y()) {
+            outcode.flag |= Outcode::BOTTOM;
+        }
+
+        return outcode;
     }
 
     /// Clips a line segment to an axis-aligned rectangle using Cohen-Sutherland clipping.
@@ -85,24 +105,6 @@ namespace Pathfinder {
                 outcode_to = compute_outcode(point, rect);
             }
         }
-    }
-
-    Outcode compute_outcode(const Vec2<float>& point, const Rect<float>& rect) {
-        Outcode outcode;
-
-        if (point.x < rect.min_x()) {
-            outcode.flag |= Outcode::LEFT;
-        } else if (point.x > rect.max_x()) {
-            outcode.flag |= Outcode::RIGHT;
-        }
-
-        if (point.y < rect.min_y()) {
-            outcode.flag |= Outcode::TOP;
-        } else if (point.y > rect.max_y()) {
-            outcode.flag |= Outcode::BOTTOM;
-        }
-
-        return outcode;
     }
 
     void process_line_segment(LineSegmentF p_line_segment,

@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 7/9/2021.
-//
-
 #include "line_segment.h"
 
 #include "../../../common/math/basic.h"
@@ -11,11 +7,6 @@
 #include <cmath>
 
 namespace Pathfinder {
-// std::round is not found in NDK GCC C++11, so we wrap our own.
-    float my_round(float x) {
-        return round(x);
-    }
-
     LineSegmentF::LineSegmentF(const F32x4 &p_value) : value(p_value) {}
 
     LineSegmentF::LineSegmentF(const Vec2<float> &p_from, const Vec2<float> &p_to)
@@ -26,20 +17,18 @@ namespace Pathfinder {
             : value(F32x4(p_from_x, p_from_y, p_to_x, p_to_y)) {
     }
 
-    /// Element-wise clamping.
     LineSegmentF LineSegmentF::clamp(float min, float max) const {
         F32x4 result = value.clamp(F32x4::splat(min), F32x4::splat(max));
 
         return LineSegmentF{result};
     }
 
-    /// Element-wise rounding.
     LineSegmentF LineSegmentF::round() const {
         auto result = F32x4(
-                my_round(value.get<0>()),
-                my_round(value.get<1>()),
-                my_round(value.get<2>()),
-                my_round(value.get<3>()));
+                std::round(value.get<0>()),
+                std::round(value.get<1>()),
+                std::round(value.get<2>()),
+                std::round(value.get<3>()));
 
         return LineSegmentF(result);
     }

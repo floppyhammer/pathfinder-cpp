@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 6/24/2021.
-//
-
 #ifndef PATHFINDER_D3DX_DATA_H
 #define PATHFINDER_D3DX_DATA_H
 

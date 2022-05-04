@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 2021/11/26.
-//
-
 #include "pattern.h"
 
 namespace Pathfinder {

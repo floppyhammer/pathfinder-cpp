@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 2021/10/9.
-//
-
 #ifndef PATHFINDER_DASH_H
 #define PATHFINDER_DASH_H
 

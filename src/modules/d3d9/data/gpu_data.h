@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 2021/11/3.
-//
-
 #ifndef PATHFINDER_D3D9_GPU_DATA_H
 #define PATHFINDER_D3D9_GPU_DATA_H
 
@@ -28,19 +24,6 @@ namespace Pathfinder {
         int8_t backdrop = 0;
         uint32_t path_id = 0;
         uint32_t metadata_id = 0;
-
-        TileObjectPrimitive() = default;
-
-        TileObjectPrimitive(int16_t p_tile_x,
-                            int16_t p_tile_y,
-                            AlphaTileId p_alpha_tile_id,
-                            uint8_t p_ctrl,
-                            int8_t p_backdrop,
-                            uint32_t p_path_id,
-                            uint32_t p_metadata_id)
-                : tile_x(p_tile_x), tile_y(p_tile_y),
-                  alpha_tile_id(p_alpha_tile_id), ctrl(p_ctrl),
-                  backdrop(p_backdrop), path_id(p_path_id), metadata_id(p_metadata_id) {}
     };
 }
 

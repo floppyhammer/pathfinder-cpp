@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 7/6/2021.
-//
-
 #include "stroke.h"
 
 #include "../../common/math/unit_vector.h"

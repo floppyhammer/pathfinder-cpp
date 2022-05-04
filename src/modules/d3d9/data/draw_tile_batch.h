@@ -1,14 +1,10 @@
-//
-// Created by floppyhammer on 7/9/2021.
-//
-
 #ifndef PATHFINDER_D3D9_DRAW_TILE_BATCH_H
 #define PATHFINDER_D3D9_DRAW_TILE_BATCH_H
 
-#include "../../d3dx/data/dense_tile_map.h"
 #include "gpu_data.h"
 #include "../../d3dx/effects.h"
 #include "../../d3dx/paint.h"
+#include "../../d3dx/data/dense_tile_map.h"
 #include "../../../gpu/gl/texture.h"
 #include "../../../gpu/gl/framebuffer.h"
 
@@ -21,8 +17,6 @@ namespace Pathfinder {
         int32_t dest_backdrop = 0;
         uint32_t src_tile_id = 0;
         int32_t src_backdrop = 0;
-
-        Clip() = default;
     };
 
     struct DrawTileBatch {

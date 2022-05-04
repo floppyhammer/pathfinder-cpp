@@ -1,16 +1,12 @@
-//
-// Created by floppyhammer on 8/26/2021.
-//
-
 #ifndef PATHFINDER_D3D11_GPU_DATA_H
 #define PATHFINDER_D3D11_GPU_DATA_H
 
-#include "../d3d9/data/line_segment.h"
-#include "../../common/math/transform2.h"
-#include "../../common/math/rect.h"
-#include "../d3dx/data/built_path.h"
 #include "../d3dx/paint.h"
 #include "../d3dx/scene.h"
+#include "../d3d9/data/line_segment.h"
+#include "../d3dx/data/built_path.h"
+#include "../../common/math/transform2.h"
+#include "../../common/math/rect.h"
 
 #include <vector>
 
@@ -62,9 +58,6 @@ namespace Pathfinder {
 
         /// Together with the `TileBatchId`, uniquely identifies a path on the renderer side.
         uint32_t path_index;
-
-        BackdropInfoD3D11(int32_t p_initial_backdrop, int32_t p_tile_x_offset, uint32_t p_path_index)
-                : initial_backdrop(p_initial_backdrop), tile_x_offset(p_tile_x_offset), path_index(p_path_index) {}
     };
 
     struct PropagateMetadataD3D11 {
@@ -79,19 +72,6 @@ namespace Pathfinder {
         uint32_t pad0 = 0;
         uint32_t pad1 = 0;
         uint32_t pad2 = 0;
-
-        PropagateMetadataD3D11(const Rect<int32_t>& p_tile_rect,
-                               uint32_t p_tile_offset,
-                               uint32_t p_path_index,
-                               uint32_t p_z_write,
-                               uint32_t p_clip_path_index,
-                               uint32_t p_backdrop_offset)
-                : tile_rect(p_tile_rect),
-                  tile_offset(p_tile_offset),
-                  path_index(p_path_index),
-                  z_write(p_z_write),
-                  clip_path_index(p_clip_path_index),
-                  backdrop_offset(p_backdrop_offset) {}
     };
 
     struct DiceMetadataD3D11 {
@@ -100,13 +80,6 @@ namespace Pathfinder {
         uint32_t first_global_segment_index = 0;
         uint32_t first_batch_segment_index = 0;
         uint32_t pad = 0;
-
-        DiceMetadataD3D11(uint32_t p_global_path_id,
-                          uint32_t p_first_global_segment_index,
-                          uint32_t p_first_batch_segment_index)
-                : global_path_id(p_global_path_id),
-                  first_global_segment_index(p_first_global_segment_index),
-                  first_batch_segment_index(p_first_batch_segment_index) {}
     };
 
     struct TilePathInfoD3D11 {
@@ -119,23 +92,6 @@ namespace Pathfinder {
         uint16_t color = 0;
         uint8_t ctrl = 0;
         int8_t backdrop = 0;
-
-        TilePathInfoD3D11(int16_t p_tile_min_x,
-                          int16_t p_tile_min_y,
-                          int16_t p_tile_max_x,
-                          int16_t p_tile_max_y,
-                          uint32_t p_first_tile_index,
-                          uint16_t p_color,
-                          uint8_t p_ctrl,
-                          int8_t p_backdrop)
-                : tile_min_x(p_tile_min_x),
-                  tile_min_y(p_tile_min_y),
-                  tile_max_x(p_tile_max_x),
-                  tile_max_y(p_tile_max_y),
-                  first_tile_index(p_first_tile_index),
-                  color(p_color),
-                  ctrl(p_ctrl),
-                  backdrop(p_backdrop) {}
     };
 
     /// Information about a batch of tiles to be prepared on GPU.
@@ -222,9 +178,6 @@ namespace Pathfinder {
 
         // Segment type, i.e. line, quadratic, or cubic.
         uint32_t flag = 0;
-
-        SegmentIndicesD3D11(uint32_t p_first_point_index, uint32_t p_flag)
-                : first_point_index(p_first_point_index), flag(p_flag) {}
     };
 
     struct SegmentsD3D11 {

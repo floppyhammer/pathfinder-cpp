@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 6/25/2021.
-//
-
 #include "renderer.h"
 
 #include "../../gpu/gl/driver.h"

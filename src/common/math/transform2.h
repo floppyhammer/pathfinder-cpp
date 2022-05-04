@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 7/8/2021.
-//
-
 #ifndef PATHFINDER_TRANSFORM2_H
 #define PATHFINDER_TRANSFORM2_H
 

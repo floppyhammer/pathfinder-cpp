@@ -5,10 +5,10 @@
 #include "../d3d9/data/draw_tile_batch.h"
 #include "../../common/math/basic.h"
 #include "../../common/io.h"
-#include "../../gpu/platform.h"
-#include "../../gpu/gl/command_buffer.h"
 #include "../../common/logger.h"
 #include "../../common/timestamp.h"
+#include "../../gpu/platform.h"
+#include "../../gpu/gl/command_buffer.h"
 
 #include <array>
 

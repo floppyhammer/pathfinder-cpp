@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 7/5/2021.
-//
-
 #include "timestamp.h"
 
 #include "global_macros.h"

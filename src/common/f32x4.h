@@ -1,13 +1,9 @@
-//
-// Created by floppyhammer on 8/3/2021.
-//
-
 #ifndef PATHFINDER_F32X4_H
 #define PATHFINDER_F32X4_H
 
-#include "math/vec2.h"
 #include "global_macros.h"
 #include "logger.h"
+#include "math/vec2.h"
 
 #undef min
 #undef max

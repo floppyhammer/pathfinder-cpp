@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 6/7/2021.
-//
-
 #ifndef PATHFINDER_BASIC_MATH_H
 #define PATHFINDER_BASIC_MATH_H
 

@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 9/27/2021.
-//
-
 #include "paint.h"
 
 #include "../../gpu/platform.h"

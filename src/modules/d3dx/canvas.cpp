@@ -2,7 +2,6 @@
 
 #include "stroke.h"
 #include "dash.h"
-
 #include "../../common/timestamp.h"
 #include "../../common/global_macros.h"
 #include "../../common/logger.h"

@@ -1,13 +1,11 @@
-//
-// Created by floppyhammer on 2022/1/6.
-//
-
 #ifndef PATHFINDER_GRADIENT_H
 #define PATHFINDER_GRADIENT_H
 
 #include "../d3d9/data/line_segment.h"
 #include "../../common/color.h"
 #include "../../common/math/transform2.h"
+
+#include <vector>
 
 //! Gradient effects that paths can be filled with.
 namespace Pathfinder {

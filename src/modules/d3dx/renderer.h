@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 2021/12/28.
-//
-
 #ifndef PATHFINDER_RENDERER_H
 #define PATHFINDER_RENDERER_H
 
@@ -43,7 +39,7 @@ namespace Pathfinder {
         std::shared_ptr<Driver> driver;
 
         /// If we should clear the dest framebuffer or texture.
-        bool need_to_clear_dest;
+        bool need_to_clear_dest = true;
 
         /// Pre-defined texture used to draw the mask texture. Shared by D3D9 and D3D10.
         std::shared_ptr<Texture> area_lut_texture;

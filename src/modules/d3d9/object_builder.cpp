@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 6/24/2021.
-//
-
 #include "object_builder.h"
 
 #include "../d3dx/data/data.h"

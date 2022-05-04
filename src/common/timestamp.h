@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 7/5/2021.
-//
-
 #ifndef PATHFINDER_TIMESTAMP_H
 #define PATHFINDER_TIMESTAMP_H
 

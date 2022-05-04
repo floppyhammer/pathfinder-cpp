@@ -1,15 +1,11 @@
-//
-// Created by floppyhammer on 6/24/2021.
-//
-
 #ifndef PATHFINDER_D3D9_SCENE_BUILDER_H
 #define PATHFINDER_D3D9_SCENE_BUILDER_H
 
-#include "../d3dx/scene.h"
-#include "../d3dx/data/built_path.h"
 #include "data/alpha_tile_id.h"
 #include "data/gpu_data.h"
 #include "data/draw_tile_batch.h"
+#include "../d3dx/scene.h"
+#include "../d3dx/data/built_path.h"
 
 #include <omp.h>
 #include <memory>

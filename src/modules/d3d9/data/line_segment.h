@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 7/9/2021.
-//
-
 #ifndef PATHFINDER_D3D9_LINE_SEGMENT_H
 #define PATHFINDER_D3D9_LINE_SEGMENT_H
 
@@ -60,8 +56,10 @@ namespace Pathfinder {
             return from() + vector() * t;
         }
 
+        /// Element-wise clamping.
         LineSegmentF clamp(float min, float max) const;
 
+        /// Element-wise rounding.
         LineSegmentF round() const;
 
         LineSegmentF reversed() const;

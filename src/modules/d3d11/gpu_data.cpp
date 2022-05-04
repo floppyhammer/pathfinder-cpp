@@ -14,11 +14,7 @@ namespace Pathfinder {
         //backdrops.reserve(backdrops.size() + tile_rect.width());
 
         for (int32_t tile_x_offset = 0; tile_x_offset < tile_rect.width(); tile_x_offset++) {
-            backdrops.emplace_back(
-                    0,
-                    tile_x_offset,
-                    path_index
-            );
+            backdrops.push_back({0, tile_x_offset, path_index});
         }
     }
 
@@ -38,13 +34,15 @@ namespace Pathfinder {
         auto batch_path_index = path_count;
         path_count++;
 
-        prepare_info.propagate_metadata.emplace_back(
-                path.tile_bounds,
-                tile_count,
-                batch_path_index,
-                z_write,
-                static_cast<uint32_t>(~0),
-                static_cast<uint32_t>(prepare_info.backdrops.size())
+        prepare_info.propagate_metadata.push_back(
+                {
+                        path.tile_bounds,
+                        tile_count,
+                        batch_path_index,
+                        z_write,
+                        ~0u,
+                        static_cast<uint32_t>(prepare_info.backdrops.size())
+                }
         );
 
         init_backdrops(prepare_info.backdrops, batch_path_index, path.tile_bounds);
@@ -52,21 +50,25 @@ namespace Pathfinder {
         auto &segment_ranges = last_scene.draw_segment_ranges;
         auto &segment_range = segment_ranges[global_path_id];
 
-        prepare_info.dice_metadata.emplace_back(
-                global_path_id,
-                static_cast<uint32_t>(segment_range.start),
-                segment_count
+        prepare_info.dice_metadata.push_back(
+                {
+                        global_path_id,
+                        static_cast<uint32_t>(segment_range.start),
+                        segment_count
+                }
         );
 
-        prepare_info.tile_path_info.emplace_back(
-                static_cast<int16_t>(path.tile_bounds.min_x()),
-                static_cast<int16_t>(path.tile_bounds.min_y()),
-                static_cast<int16_t>(path.tile_bounds.max_x()),
-                static_cast<int16_t>(path.tile_bounds.max_y()),
-                tile_count,
-                path.paint_id,
-                path.ctrl_byte,
-                0
+        prepare_info.tile_path_info.push_back(
+                {
+                        static_cast<int16_t>(path.tile_bounds.min_x()),
+                        static_cast<int16_t>(path.tile_bounds.min_y()),
+                        static_cast<int16_t>(path.tile_bounds.max_x()),
+                        static_cast<int16_t>(path.tile_bounds.max_y()),
+                        tile_count,
+                        path.paint_id,
+                        path.ctrl_byte,
+                        0
+                }
         );
 
         tile_count += path.tile_bounds.area();
@@ -102,7 +104,7 @@ namespace Pathfinder {
                         }
                     }
 
-                    indices.emplace_back(static_cast<uint32_t>(points.size()), flag);
+                    indices.push_back({static_cast<uint32_t>(points.size()), flag});
                 }
 
                 points.push_back(path.points[point_index]);

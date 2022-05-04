@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 7/9/2021.
-//
-
 #ifndef PATHFINDER_COLOR_H
 #define PATHFINDER_COLOR_H
 
@@ -10,7 +6,7 @@
 #include <cstdint>
 
 namespace Pathfinder {
-    /// Color(1.0, 1.0, 1.0, 1.0).
+    /// Color(0~1, 0~1, 0~1, 0~1).
     struct ColorF {
         float r = 0;
         float g = 0;
@@ -42,7 +38,7 @@ namespace Pathfinder {
         }
     };
 
-    /// Color(255, 255, 255, 255).
+    /// Color(0~255, 0~255, 0~255, 0~255).
     struct ColorU {
         uint8_t r = 0u;
         uint8_t g = 0u;

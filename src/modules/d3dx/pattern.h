@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 2021/11/15.
-//
-
 #ifndef PATHFINDER_PATTERN_H
 #define PATHFINDER_PATTERN_H
 

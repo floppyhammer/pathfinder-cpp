@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 6/19/2021.
-//
-
 #ifndef PATHFINDER_D3D9_RENDERER_H
 #define PATHFINDER_D3D9_RENDERER_H
 

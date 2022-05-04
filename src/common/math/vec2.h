@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 7/5/2021.
-//
-
 #ifndef PATHFINDER_VEC2_H
 #define PATHFINDER_VEC2_H
 

@@ -1,13 +1,9 @@
-//
-// Created by floppyhammer on 6/15/2021.
-//
-
 #ifndef PATHFINDER_D3D9_OBJECT_BUILDER_H
 #define PATHFINDER_D3D9_OBJECT_BUILDER_H
 
-#include "../d3dx/data/built_path.h"
 #include "data/gpu_data.h"
 #include "scene_builder.h"
+#include "../d3dx/data/built_path.h"
 
 #include <limits>
 

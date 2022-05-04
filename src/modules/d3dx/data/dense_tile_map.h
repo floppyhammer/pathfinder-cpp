@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 7/9/2021.
-//
-
 #ifndef PATHFINDER_DENSE_TILE_MAP_H
 #define PATHFINDER_DENSE_TILE_MAP_H
 

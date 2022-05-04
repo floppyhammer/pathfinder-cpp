@@ -1,15 +1,10 @@
-//
-// Created by floppyhammer on 7/9/2021.
-//
-
 #ifndef PATHFINDER_BUILT_PATH_H
 #define PATHFINDER_BUILT_PATH_H
 
+#include "data.h"
 #include "dense_tile_map.h"
 #include "../../d3d9/data/gpu_data.h"
 #include "../../../common/math/rect.h"
-#include "data.h"
-#include "../paint.h"
 
 #include <cstdint>
 #include <utility>

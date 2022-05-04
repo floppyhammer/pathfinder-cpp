@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 6/24/2021.
-//
-
 #include "scene_builder.h"
 #include "tiler.h"
 #include "../../common/timestamp.h"
@@ -12,10 +8,9 @@
 
 namespace Pathfinder {
     /// Create tile batches.
-    DrawTileBatch build_tile_batches_for_draw_path_display_item(
-            Scene &p_scene,
-            const std::vector<BuiltDrawPath> &built_paths,
-            Range draw_path_range) {
+    DrawTileBatch build_tile_batches_for_draw_path_display_item(Scene &p_scene,
+                                                                const std::vector<BuiltDrawPath> &built_paths,
+                                                                Range draw_path_range) {
         // New draw tile batch.
         DrawTileBatch draw_tile_batch;
 

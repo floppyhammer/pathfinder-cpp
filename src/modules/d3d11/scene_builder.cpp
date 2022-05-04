@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 8/27/2021.
-//
-
 #include "scene_builder.h"
 
 #include "gpu_data.h"

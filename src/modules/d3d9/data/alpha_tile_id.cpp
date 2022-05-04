@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 7/9/2021.
-//
-
 #include "alpha_tile_id.h"
 
 namespace Pathfinder {
