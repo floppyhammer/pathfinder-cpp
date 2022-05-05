@@ -140,22 +140,21 @@ namespace Pathfinder {
             Logger::error("Tried to upload invalid data to buffer!");
         }
 
-        // FIXME: This does not work.
         // Update buffer by memory mapping.
-//        if (buffer->get_memory_property() == MemoryProperty::HOST_VISIBLE_AND_COHERENT) {
-//            auto buffer_vk = static_cast<BufferVk *>(buffer.get());
-//
-//            void *mapped_data;
-//            auto res = vkMapMemory(vk_device, buffer_vk->get_vk_device_memory(), offset, data_size, 0, &mapped_data);
-//            memcpy(mapped_data, &data, data_size);
-//            vkUnmapMemory(vk_device, buffer_vk->get_vk_device_memory());
-//
-//            if (res != VK_SUCCESS) {
-//                Logger::error("Failed to map memory!", "Vulkan");
-//            }
-//
-//            return;
-//        }
+        if (buffer->get_memory_property() == MemoryProperty::HOST_VISIBLE_AND_COHERENT) {
+            auto buffer_vk = static_cast<BufferVk *>(buffer.get());
+
+            void *mapped_data;
+            auto res = vkMapMemory(vk_device, buffer_vk->get_vk_device_memory(), offset, data_size, 0, &mapped_data);
+            memcpy(mapped_data, data, data_size);
+            vkUnmapMemory(vk_device, buffer_vk->get_vk_device_memory());
+
+            if (res != VK_SUCCESS) {
+                Logger::error("Failed to map memory!", "Vulkan");
+            }
+
+            return;
+        }
 
         Command cmd;
         cmd.type = CommandType::UploadToBuffer;
