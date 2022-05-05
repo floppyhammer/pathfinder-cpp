@@ -14,6 +14,9 @@ namespace Pathfinder {
         friend class DriverVk;
         friend class SwapChainVk;
     public:
+        /// We have to provide these two to create a valid command buffer.
+        CommandBufferVk(VkCommandBuffer command_buffer, VkDevice device);
+
         // Render pass
 
         void begin_render_pass(const std::shared_ptr<RenderPass> &render_pass,

@@ -15,6 +15,9 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+    CommandBufferVk::CommandBufferVk(VkCommandBuffer command_buffer, VkDevice device)
+            : vk_command_buffer(command_buffer), vk_device(device) {}
+
     void CommandBufferVk::begin_render_pass(const std::shared_ptr<RenderPass> &render_pass,
                                             const std::shared_ptr<Framebuffer> &framebuffer,
                                             bool clear,

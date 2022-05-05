@@ -32,8 +32,7 @@ namespace Pathfinder {
     }
 
     std::shared_ptr<CommandBuffer> SwapChainVk::get_command_buffer() {
-        auto command_buffer_vk = std::make_shared<CommandBufferVk>();
-        command_buffer_vk->vk_command_buffer = commandBuffers[current_image];
+        auto command_buffer_vk = std::make_shared<CommandBufferVk>(commandBuffers[current_image], driver->device);
         return command_buffer_vk;
     }
 
