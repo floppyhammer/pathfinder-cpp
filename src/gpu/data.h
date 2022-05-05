@@ -21,6 +21,7 @@ namespace Pathfinder {
     /// Texture format in GPU memory.
     enum class TextureFormat {
         RGBA8_UNORM,
+        BGRA8_UNORM,
         RGBA8_SRGB,
         BGRA8_SRGB,
         RGBA16F,

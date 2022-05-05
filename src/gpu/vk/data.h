@@ -13,6 +13,8 @@ namespace Pathfinder {
         switch (texture_format) {
             case TextureFormat::RGBA8_UNORM:
                 return VK_FORMAT_R8G8B8A8_UNORM;
+            case TextureFormat::BGRA8_UNORM:
+                return VK_FORMAT_B8G8R8A8_UNORM;
             case TextureFormat::RGBA8_SRGB:
                 return VK_FORMAT_R8G8B8A8_SRGB;
             case TextureFormat::BGRA8_SRGB:
@@ -28,6 +30,8 @@ namespace Pathfinder {
         switch (texture_format) {
             case VK_FORMAT_R8G8B8A8_UNORM:
                 return TextureFormat::RGBA8_UNORM;
+            case VK_FORMAT_B8G8R8A8_UNORM:
+                return TextureFormat::BGRA8_UNORM;
             case VK_FORMAT_R8G8B8A8_SRGB:
                 return TextureFormat::RGBA8_SRGB;
             case VK_FORMAT_B8G8R8A8_SRGB:
