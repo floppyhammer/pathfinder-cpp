@@ -73,7 +73,7 @@ namespace Pathfinder {
         Max,
     };
 
-    enum class BufferUsage {
+    enum class MemoryProperty {
         HOST_VISIBLE_AND_COHERENT,
         DEVICE_LOCAL,
     };

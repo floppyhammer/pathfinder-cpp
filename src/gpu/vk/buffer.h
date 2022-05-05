@@ -13,7 +13,7 @@ namespace Pathfinder {
     class BufferVk : public Buffer {
         friend class DriverVk;
     public:
-        BufferVk(VkDevice p_device, BufferType p_type, size_t p_size, BufferUsage usage);
+        BufferVk(VkDevice p_device, BufferType p_type, size_t p_size, MemoryProperty property);
 
         ~BufferVk();
 

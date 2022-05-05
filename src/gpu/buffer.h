@@ -12,13 +12,13 @@ namespace Pathfinder {
 
     class Buffer {
     public:
-        Buffer(BufferType p_type, size_t p_size, BufferUsage p_usage) : type(p_type), size(p_size), usage(p_usage) {}
+        Buffer(BufferType p_type, size_t p_size, MemoryProperty p_property) : type(p_type), size(p_size), memory_property(p_property) {}
 
-        inline BufferUsage get_usage() const { return usage; }
+        inline MemoryProperty get_memory_property() const { return memory_property; }
 
         size_t size;
         BufferType type;
-        BufferUsage usage;
+        MemoryProperty memory_property;
     };
 }
 

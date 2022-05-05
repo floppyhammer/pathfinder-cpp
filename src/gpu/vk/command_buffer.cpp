@@ -142,7 +142,7 @@ namespace Pathfinder {
 
         // FIXME: This does not work.
         // Update buffer by memory mapping.
-//        if (buffer->get_usage() == BufferUsage::HOST_VISIBLE_AND_COHERENT) {
+//        if (buffer->get_memory_property() == MemoryProperty::HOST_VISIBLE_AND_COHERENT) {
 //            auto buffer_vk = static_cast<BufferVk *>(buffer.get());
 //
 //            void *mapped_data;

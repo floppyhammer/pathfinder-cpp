@@ -11,7 +11,7 @@
 namespace Pathfinder {
     class BufferGl : public Buffer {
     public:
-        BufferGl(BufferType p_type, size_t p_size, BufferUsage p_usage);
+        BufferGl(BufferType p_type, size_t p_size, MemoryProperty p_property);
 
         ~BufferGl();
 

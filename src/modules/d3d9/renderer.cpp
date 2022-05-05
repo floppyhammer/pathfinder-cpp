@@ -54,7 +54,7 @@ namespace Pathfinder {
                                                       dest_render_pass);
 
         // Quad vertex buffer. Shared by fills and tiles drawing.
-        quad_vertex_buffer = driver->create_buffer(BufferType::Vertex, 12 * sizeof(uint16_t), BufferUsage::DEVICE_LOCAL);
+        quad_vertex_buffer = driver->create_buffer(BufferType::Vertex, 12 * sizeof(uint16_t), MemoryProperty::DEVICE_LOCAL);
 
         auto cmd_buffer = driver->create_command_buffer(true);
         cmd_buffer->upload_to_buffer(quad_vertex_buffer, 0, 12 * sizeof(uint16_t), QUAD_VERTEX_POSITIONS);
@@ -197,8 +197,8 @@ namespace Pathfinder {
             ColorBlendState blend_state = {true, BlendFactor::ONE, BlendFactor::ONE_MINUS_SRC_ALPHA};
 
             // Create uniform buffers.
-            tile_transform_ub = driver->create_buffer(BufferType::Uniform, 16 * sizeof(float), BufferUsage::HOST_VISIBLE_AND_COHERENT);
-            tile_varying_sizes_ub = driver->create_buffer(BufferType::Uniform, 8 * sizeof(float), BufferUsage::HOST_VISIBLE_AND_COHERENT);
+            tile_transform_ub = driver->create_buffer(BufferType::Uniform, 16 * sizeof(float), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
+            tile_varying_sizes_ub = driver->create_buffer(BufferType::Uniform, 8 * sizeof(float), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
 
             // Set descriptor set.
             {
@@ -300,7 +300,7 @@ namespace Pathfinder {
         auto byte_size = sizeof(Fill) * fills.size();
 
         if (fill_vertex_buffer == nullptr || byte_size > fill_vertex_buffer->size) {
-            fill_vertex_buffer = driver->create_buffer(BufferType::Vertex, byte_size, BufferUsage::DEVICE_LOCAL);
+            fill_vertex_buffer = driver->create_buffer(BufferType::Vertex, byte_size, MemoryProperty::DEVICE_LOCAL);
         }
 
         auto cmd_buffer = driver->create_command_buffer(true);
@@ -315,7 +315,7 @@ namespace Pathfinder {
         auto byte_size = sizeof(TileObjectPrimitive) * tiles.size();
 
         if (tile_vertex_buffer == nullptr || byte_size > tile_vertex_buffer->size) {
-            tile_vertex_buffer = driver->create_buffer(BufferType::Vertex, byte_size, BufferUsage::DEVICE_LOCAL);
+            tile_vertex_buffer = driver->create_buffer(BufferType::Vertex, byte_size, MemoryProperty::DEVICE_LOCAL);
         }
 
         auto cmd_buffer = driver->create_command_buffer(true);

@@ -30,7 +30,7 @@ namespace Pathfinder {
 
         // Uniform buffer.
         {
-            fixed_sizes_ub = driver->create_buffer(BufferType::Uniform, 8 * sizeof(float), BufferUsage::HOST_VISIBLE_AND_COHERENT);
+            fixed_sizes_ub = driver->create_buffer(BufferType::Uniform, 8 * sizeof(float), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
 
             // Upload data to the uniform buffer with fixed data.
             std::array<float, 6> fixed_sizes_ubo_data = {MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT,

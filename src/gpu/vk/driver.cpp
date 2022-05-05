@@ -281,14 +281,14 @@ namespace Pathfinder {
         return framebuffer_vk;
     }
 
-    std::shared_ptr<Buffer> DriverVk::create_buffer(BufferType type, size_t size, BufferUsage usage) {
-        auto buffer_vk = std::make_shared<BufferVk>(device, type, size, usage);
+    std::shared_ptr<Buffer> DriverVk::create_buffer(BufferType type, size_t size, MemoryProperty property) {
+        auto buffer_vk = std::make_shared<BufferVk>(device, type, size, property);
 
         switch (type) {
             case BufferType::Uniform: {
                 createVkBuffer(size,
                                VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                               to_vk_buffer_usage(usage),
+                               to_vk_memory_property(property),
                                buffer_vk->vk_buffer,
                                buffer_vk->vk_device_memory);
             }
@@ -296,7 +296,7 @@ namespace Pathfinder {
             case BufferType::Vertex: {
                 createVkBuffer(size,
                                VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                               to_vk_buffer_usage(usage),
+                               to_vk_memory_property(property),
                                buffer_vk->vk_buffer,
                                buffer_vk->vk_device_memory);
             }

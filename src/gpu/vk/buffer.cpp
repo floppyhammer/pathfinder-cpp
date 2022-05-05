@@ -7,8 +7,8 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    BufferVk::BufferVk(VkDevice p_device, BufferType p_type, size_t p_size, BufferUsage usage)
-            : Buffer(p_type, p_size, usage), vk_device(p_device) {}
+    BufferVk::BufferVk(VkDevice p_device, BufferType p_type, size_t p_size, MemoryProperty property)
+            : Buffer(p_type, p_size, property), vk_device(p_device) {}
 
     BufferVk::~BufferVk() {
         vkDestroyBuffer(vk_device, vk_buffer, nullptr);
