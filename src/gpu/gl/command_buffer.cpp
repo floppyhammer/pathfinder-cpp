@@ -230,6 +230,8 @@ namespace Pathfinder {
 
                     render_pipeline = args.pipeline;
                     compute_pipeline = nullptr;
+
+                    check_error("BindRenderPipeline");
                 }
                     break;
                 case CommandType::BindVertexBuffers: {
@@ -383,14 +385,8 @@ namespace Pathfinder {
                     check_error("DrawInstanced");
                 }
                     break;
-                case CommandType::EndRenderPass: {
-
-                }
-                    break;
-                case CommandType::BeginComputePass: {
-
-                }
-                    break;
+                case CommandType::EndRenderPass:
+                case CommandType::BeginComputePass: break;
                 case CommandType::BindComputePipeline: {
                     auto &args = cmd.args.bind_compute_pipeline;
 
@@ -431,12 +427,12 @@ namespace Pathfinder {
                     int gl_buffer_type;
 
                     switch (args.buffer->type) {
-                        case BufferType::Uniform: {
-                            gl_buffer_type = GL_UNIFORM_BUFFER;
-                        }
-                            break;
                         case BufferType::Vertex: {
                             gl_buffer_type = GL_ARRAY_BUFFER;
+                        }
+                            break;
+                        case BufferType::Uniform: {
+                            gl_buffer_type = GL_UNIFORM_BUFFER;
                         }
                             break;
 #ifdef PATHFINDER_USE_D3D11
@@ -457,9 +453,15 @@ namespace Pathfinder {
                 case CommandType::ReadBuffer: {
                     auto &args = cmd.args.read_buffer;
 
-                    auto buffer_gl = static_cast<BufferGl *>(args.buffer);
+                    // We can only read from general buffers.
+                    if (args.buffer->type != BufferType::General) {
+                        Logger::error("Tried to read from a non-general buffer!", "Command Buffer");
+                        break;
+                    }
 
 #ifdef PATHFINDER_USE_D3D11
+                    auto buffer_gl = static_cast<BufferGl *>(args.buffer);
+
                     glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer_gl->id);
 
 #ifdef __ANDROID__
@@ -483,11 +485,12 @@ namespace Pathfinder {
 
                     glBindTexture(GL_TEXTURE_2D, texture_gl->get_texture_id());
                     glTexSubImage2D(GL_TEXTURE_2D, 0,
-                                    args.offset_x, args.offset_y, args.width, args.height,
+                                    args.offset_x, args.offset_y,
+                                    args.width, args.height,
                                     GL_RGBA,
                                     to_gl_data_type(texture_format_to_data_type(args.texture->get_format())),
                                     args.data);
-                    glBindTexture(GL_TEXTURE_2D, 0);
+                    glBindTexture(GL_TEXTURE_2D, 0); // Unbind.
 
                     check_error("UploadToTexture");
                 }

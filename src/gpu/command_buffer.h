@@ -22,7 +22,6 @@ namespace Pathfinder {
         BeginRenderPass = 0,
         BindRenderPipeline,
         BindVertexBuffers,
-        BindIndexBuffer,
         BindDescriptorSet,
         Draw,
         DrawInstanced,
@@ -38,8 +37,6 @@ namespace Pathfinder {
         UploadToBuffer,
         UploadToTexture,
         ReadBuffer,
-
-        Submit,
 
         Max,
     };
