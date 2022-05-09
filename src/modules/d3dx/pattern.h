@@ -35,9 +35,9 @@ namespace Pathfinder {
     };
 
     /// A raster image, in 32-bit RGBA (8 bits per channel), non-premultiplied form.
-    struct RawImage {
+    struct Image {
         Vec2<uint32_t> size;
-        std::vector<ColorU> pixels;
+        std::shared_ptr<Texture> texture;
         bool is_opaque = false;
     };
 
@@ -49,7 +49,7 @@ namespace Pathfinder {
         } type = Type::RenderTarget;
 
         /// A image whose pixels are stored in CPU memory.
-        RawImage image;
+        Image image;
 
         /// Previously-rendered vector content.
         ///
@@ -96,7 +96,7 @@ namespace Pathfinder {
         /// Creates a new pattern from the given image.
         ///
         /// The transform is initialized to the identity transform. There is no filter.
-        static inline Pattern from_image(const RawImage &image) {
+        static inline Pattern from_image(const Image &image) {
             PatternSource source;
             source.type = PatternSource::Type::Image;
             source.image = image;

@@ -23,11 +23,11 @@ namespace Pathfinder {
         /// Tiles to draw.
         std::vector<DrawTileBatch> pending_tile_batches;
 
-        RendererD3D9(const std::shared_ptr<Driver>& p_driver, uint32_t canvas_width, uint32_t canvas_height);
+        RendererD3D9(const std::shared_ptr<Driver> &p_driver, uint32_t canvas_width, uint32_t canvas_height);
 
         void set_up_pipelines(uint32_t canvas_width, uint32_t canvas_height);
 
-        void draw(const SceneBuilderD3D9& scene_builder);
+        void draw(const SceneBuilderD3D9 &scene_builder);
 
         std::shared_ptr<Texture> get_dest_texture() override;
 
@@ -52,19 +52,19 @@ namespace Pathfinder {
 
         std::shared_ptr<RenderPass> mask_render_pass, dest_render_pass;
 
-        void upload_and_draw_tiles(const std::vector<DrawTileBatch>& tile_batches,
-                                   const std::vector<TextureMetadataEntry>& metadata);
+        void upload_and_draw_tiles(const std::vector<DrawTileBatch> &tile_batches,
+                                   const std::vector<TextureMetadataEntry> &metadata);
 
         /// Upload fills data to GPU.
-        void upload_fills(const std::vector<Fill>& fills);
+        void upload_fills(const std::vector<Fill> &fills);
 
         /// Upload tiles data to GPU.
         void upload_tiles(const std::vector<TileObjectPrimitive> &tiles);
 
         /// Draw tiles.
         void draw_tiles(uint32_t tile_count,
-                        const RenderTarget& target_viewport,
-                        const RenderTarget& color_texture,
+                        const RenderTarget &target_viewport,
+                        const std::shared_ptr<Texture> &color_texture,
                         const std::shared_ptr<Texture> &z_buffer_texture);
 
         /// Draw the mask texture. Use Renderer::buffered_fills.

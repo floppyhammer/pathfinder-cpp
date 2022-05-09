@@ -92,7 +92,7 @@ namespace Pathfinder {
         float dpi_scale_x, dpi_scale_y;
         glfwGetMonitorContentScale(monitors[0], &dpi_scale_x, &dpi_scale_y);
 
-        window = glfwCreateWindow(p_width, p_height, "Vulkan", nullptr, nullptr);
+        window = glfwCreateWindow(p_width, p_height, "Pathfinder Demo (Vulkan)", nullptr, nullptr);
 
         // Center window.
         glfwSetWindowPos(window,

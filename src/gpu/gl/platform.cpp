@@ -32,7 +32,7 @@ namespace Pathfinder {
 #endif
 
         // GLFW: window creation.
-        window = glfwCreateWindow(p_width, p_height, "Pathfinder Demo (GL)", nullptr, nullptr);
+        window = glfwCreateWindow(p_width, p_height, "Pathfinder Demo (OpenGL)", nullptr, nullptr);
 
         if (window == nullptr) {
             Logger::error("Failed to create GLFW window!", "GLFW");

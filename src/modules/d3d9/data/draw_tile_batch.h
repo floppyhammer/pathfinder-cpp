@@ -29,7 +29,7 @@ namespace Pathfinder {
         DenseTileMap <uint32_t> z_buffer_data;
 
         /// The color texture to use.
-        RenderTarget color_target;
+        std::shared_ptr<Texture> color_texture;
 
         /// Render target.
         RenderTarget render_target;

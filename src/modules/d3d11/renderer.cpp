@@ -293,7 +293,7 @@ namespace Pathfinder {
 
         draw_tiles(batch_info.tiles_d3d11_buffer_id,
                    batch_info.first_tile_map_buffer_id,
-                   batch.viewport,
+                   batch.render_target,
                    batch.color_texture);
 
         timestamp.record("draw_tiles");
@@ -306,7 +306,7 @@ namespace Pathfinder {
     void RendererD3D11::draw_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
                                    const std::shared_ptr<Buffer> &first_tile_map_buffer_id,
                                    const RenderTarget &render_target,
-                                   const RenderTarget &color_target) {
+                                   const std::shared_ptr<Texture> &color_texture) {
         // The framebuffer mentioned here is different from the target viewport.
         // This doesn't change as long as the destination texture's size doesn't change.
         auto framebuffer_tile_size0 = framebuffer_tile_size();
@@ -330,8 +330,8 @@ namespace Pathfinder {
         // Update uniform buffers.
         {
             std::array<float, 8> ubo_data0 = {0, 0, 0, 0, // uClearColor
-                                              (float) color_target.size.x,
-                                              (float) color_target.size.y, // uColorTextureSize0
+                                              color_texture ? (float) color_texture->get_width() : 0,
+                                              color_texture ? (float) color_texture->get_height() : 0, // uColorTextureSize0
                                               (float) target_size.x, (float) target_size.y}; // uFramebufferSize
 
 
@@ -349,8 +349,7 @@ namespace Pathfinder {
         // Update descriptor set.
         {
             tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Compute, 3, "uZBuffer", nullptr, mask_texture});
-            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Compute, 4, "uColorTexture0", nullptr,
-                                                           color_target.framebuffer != nullptr ? color_target.framebuffer->get_texture() : metadata_texture});
+            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Compute, 4, "uColorTexture0", nullptr, color_texture ? color_texture : metadata_texture});
             tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Compute, 6, "uGammaLUT", nullptr, metadata_texture});
             tile_descriptor_set->add_or_update_descriptor({DescriptorType::Image, ShaderType::Compute, 7, "", nullptr, target_texture});
 

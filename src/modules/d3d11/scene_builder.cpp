@@ -113,12 +113,12 @@ namespace Pathfinder {
                 }
                     break;
                 case DisplayItem::Type::DrawPaths: {
-                    tile_batches.push_back(build_tile_batches_for_draw_path_display_item(
+                    auto tile_batch = build_tile_batches_for_draw_path_display_item(
                             *scene,
                             display_item.path_range,
                             metadata,
                             last_scene,
-                            next_batch_id));
+                            next_batch_id);
 
                     next_batch_id += 1;
 
@@ -128,13 +128,21 @@ namespace Pathfinder {
 
                     auto overlay = paint.get_overlay();
                     if (overlay && overlay->contents.pattern) {
-                        tile_batches.back().color_texture = overlay->contents.pattern->source.render_target;
+                        auto pattern = overlay->contents.pattern;
+                        if (pattern->source.type == PatternSource::Type::Image) {
+                            // FIXME: Make it work.
+                            tile_batch.color_texture = nullptr;
+                        } else {
+                            tile_batch.color_texture = overlay->contents.pattern->source.render_target.framebuffer->get_texture();
+                        }
                     }
 
                     // Set render target. Render to screen if there's no render targets on the stack.
                     if (!render_target_stack.empty()) {
-                        tile_batches.back().viewport = render_target_stack.back();
+                        tile_batch.render_target = render_target_stack.back();
                     }
+
+                    tile_batches.push_back(tile_batch);
                 }
                     break;
             }

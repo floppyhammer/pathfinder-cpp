@@ -152,7 +152,7 @@ namespace Pathfinder {
 
         std::vector<RenderTarget> render_target_stack;
 
-        // Prepare display items.
+        // Build batches using the display items.
         for (const auto &display_item: scene->display_list) {
             switch (display_item.type) {
                 case DisplayItem::Type::PushRenderTarget: {
@@ -164,17 +164,29 @@ namespace Pathfinder {
                 }
                     break;
                 case DisplayItem::Type::DrawPaths: {
-                    auto tile_batch = build_tile_batches_for_draw_path_display_item(*scene,
-                                                                                    built_paths,
-                                                                                    display_item.path_range);
+                    // Create a new batch.
+                    auto tile_batch = build_tile_batches_for_draw_path_display_item(
+                            *scene,
+                            built_paths,
+                            display_item.path_range);
+
+                    // Get paint.
                     auto paint_id = built_paths[display_item.path_range.start].path.paint_id;
                     Paint paint = scene->palette.get_paint(paint_id);
+
+                    // Set color texture.
                     auto overlay = paint.get_overlay();
                     if (overlay && overlay->contents.pattern) {
-                        tile_batch.color_target = overlay->contents.pattern->source.render_target;
+                        auto pattern = overlay->contents.pattern;
+                        if (pattern->source.type == PatternSource::Type::Image) {
+                            // FIXME: Make it work.
+                            tile_batch.color_texture = nullptr;
+                        } else {
+                            tile_batch.color_texture = overlay->contents.pattern->source.render_target.framebuffer->get_texture();
+                        }
                     }
 
-                    // Set render target. Render to screen if there's no render targets on the stack.
+                    // Set render target. Pick the one on the top of the stack.
                     if (!render_target_stack.empty()) {
                         tile_batch.render_target = render_target_stack.back();
                     }

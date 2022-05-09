@@ -163,13 +163,10 @@ namespace Pathfinder {
         TileBatchDataD3D11 tile_batch_data;
 
         /// The color texture to use.
-        //TileBatchTexture color_texture;
-
-        /// The color texture to use.
-        RenderTarget color_texture;
+        std::shared_ptr<Texture> color_texture;
 
         /// Render target.
-        RenderTarget viewport;
+        RenderTarget render_target;
     };
 
     struct SegmentIndicesD3D11 {

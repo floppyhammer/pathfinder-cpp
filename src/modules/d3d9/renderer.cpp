@@ -340,7 +340,7 @@ namespace Pathfinder {
 
             draw_tiles(batch.tiles.size(),
                        batch.render_target,
-                       batch.color_target,
+                       batch.color_texture,
                        z_buffer_texture);
         }
     }
@@ -367,13 +367,11 @@ namespace Pathfinder {
         cmd_buffer->end_render_pass();
 
         cmd_buffer->submit(driver);
-
-        // TODO: Transition image layout here.
     }
 
     void RendererD3D9::draw_tiles(uint32_t tiles_count,
                                   const RenderTarget &render_target,
-                                  const RenderTarget &color_target,
+                                  const std::shared_ptr<Texture> &color_texture,
                                   const std::shared_ptr<Texture> &z_buffer_texture) {
         // No tiles to draw.
         if (tiles_count == 0) return;
@@ -407,21 +405,21 @@ namespace Pathfinder {
             auto mvp_mat = model_mat;
 
             std::array<float, 6> ubo_data = {(float) z_buffer_texture->get_width(), (float) z_buffer_texture->get_height(),
-                                             (float) color_target.size.x, (float) color_target.size.y,
+                                             color_texture ? (float) color_texture->get_width() : 0, color_texture ? (float) color_texture->get_width() : 0,
                                              render_target_size.x, render_target_size.y};
 
-            auto cmd_buffer = driver->create_command_buffer(true);
-            cmd_buffer->upload_to_buffer(tile_transform_ub, 0, 16 * sizeof(float), &mvp_mat);
-            cmd_buffer->upload_to_buffer(tile_varying_sizes_ub, 0, 6 * sizeof(float), ubo_data.data());
-            cmd_buffer->submit(driver);
+            auto temp_cmd_buffer = driver->create_command_buffer(true);
+            temp_cmd_buffer->upload_to_buffer(tile_transform_ub, 0, 16 * sizeof(float), &mvp_mat);
+            temp_cmd_buffer->upload_to_buffer(tile_varying_sizes_ub, 0, 6 * sizeof(float), ubo_data.data());
+            temp_cmd_buffer->submit(driver);
         }
 
         // Update descriptor set.
         {
-            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Fragment, 7, "uDestTexture", nullptr, z_buffer_texture});
+            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Fragment, 7, "uDestTexture", nullptr, z_buffer_texture}); // Unused
             tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Vertex, 1, "uZBuffer", nullptr, z_buffer_texture});
-            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Fragment, 5, "uColorTexture0", nullptr, color_target.framebuffer != nullptr ? color_target.framebuffer->get_texture() : z_buffer_texture});
-            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Fragment, 8, "uGammaLUT", nullptr, z_buffer_texture});
+            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Fragment, 5, "uColorTexture0", nullptr, color_texture ? color_texture : z_buffer_texture});
+            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Fragment, 8, "uGammaLUT", nullptr, z_buffer_texture}); // Unused
         }
 
         cmd_buffer->bind_render_pipeline(tile_pipeline);

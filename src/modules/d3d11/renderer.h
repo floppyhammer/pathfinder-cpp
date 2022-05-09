@@ -149,8 +149,8 @@ namespace Pathfinder {
 
         void draw_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
                         const std::shared_ptr<Buffer> &first_tile_map_buffer_id,
-                        const RenderTarget &target_viewport,
-                        const RenderTarget &color_texture);
+                        const RenderTarget &render_target,
+                        const std::shared_ptr<Texture> &color_texture);
 
         void upload_initial_backdrops(const std::shared_ptr<Buffer> &backdrops_buffer_id,
                                       std::vector<BackdropInfoD3D11> &backdrops);
