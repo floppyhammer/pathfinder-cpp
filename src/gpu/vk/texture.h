@@ -36,7 +36,7 @@ namespace Pathfinder {
         VkSampler sampler{};
 
         /// For releasing resources in destructor.
-        VkDevice device;
+        VkDevice device{};
     };
 }
 

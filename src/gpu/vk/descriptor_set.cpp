@@ -14,7 +14,7 @@ namespace Pathfinder {
         if (!descriptor_set_allocated) {
             std::vector<VkDescriptorPoolSize> poolSizes{};
             for (auto &d: descriptors) {
-                VkDescriptorPoolSize pool_size;
+                VkDescriptorPoolSize pool_size{};
 
                 if (d.second.type == DescriptorType::UniformBuffer) {
                     pool_size.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -58,6 +58,11 @@ namespace Pathfinder {
             // Must initialize it with {}.
             VkWriteDescriptorSet descriptor_write{};
 
+            // These two have to be here to prevent them from going out of scope
+            // before being used in vkUpdateDescriptorSets().
+            VkDescriptorBufferInfo bufferInfo{};
+            VkDescriptorImageInfo imageInfo{};
+
             descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             descriptor_write.dstSet = descriptor_set;
             descriptor_write.dstBinding = descriptor.binding;
@@ -67,7 +72,6 @@ namespace Pathfinder {
             if (descriptor.type == DescriptorType::UniformBuffer) {
                 auto buffer_vk = static_cast<BufferVk *>(descriptor.buffer.get());
 
-                VkDescriptorBufferInfo bufferInfo{};
                 bufferInfo.buffer = buffer_vk->get_vk_buffer();
                 bufferInfo.offset = 0;
                 bufferInfo.range = buffer_vk->size;
@@ -77,7 +81,6 @@ namespace Pathfinder {
             } else if (descriptor.type == DescriptorType::Texture) {
                 auto texture_vk = static_cast<TextureVk *>(descriptor.texture.get());
 
-                VkDescriptorImageInfo imageInfo{};
                 imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 imageInfo.imageView = texture_vk->get_image_view();
                 imageInfo.sampler = texture_vk->get_sampler();
@@ -88,7 +91,6 @@ namespace Pathfinder {
                 abort();
             }
 
-//            descriptor_writes.push_back(descriptor_write);
             vkUpdateDescriptorSets(device,
                                    1,
                                    &descriptor_write,
