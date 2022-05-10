@@ -138,6 +138,15 @@ namespace Pathfinder {
                 return VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
         }
     }
+
+    inline VkAttachmentLoadOp to_vk_attachment_load_op(AttachmentLoadOp load_op) {
+        switch (load_op) {
+            case AttachmentLoadOp::CLEAR:
+                return VK_ATTACHMENT_LOAD_OP_CLEAR;
+            case AttachmentLoadOp::LOAD:
+                return VK_ATTACHMENT_LOAD_OP_LOAD;
+        }
+    }
 }
 
 #endif

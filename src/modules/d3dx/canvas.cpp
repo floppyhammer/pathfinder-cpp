@@ -446,6 +446,7 @@ namespace Pathfinder {
                     shape.close();
             }
 
+            // Shadow test.
 //            set_shadow_color(ColorU::green());
 //            set_shadow_blur(8);
 

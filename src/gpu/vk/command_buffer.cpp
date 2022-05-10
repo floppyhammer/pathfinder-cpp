@@ -20,7 +20,6 @@ namespace Pathfinder {
 
     void CommandBufferVk::begin_render_pass(const std::shared_ptr<RenderPass> &render_pass,
                                             const std::shared_ptr<Framebuffer> &framebuffer,
-                                            bool clear,
                                             ColorF clear_color) {
         Command cmd;
         cmd.type = CommandType::BeginRenderPass;
@@ -28,7 +27,6 @@ namespace Pathfinder {
         auto &args = cmd.args.begin_render_pass;
         args.render_pass = render_pass.get();
         args.framebuffer = framebuffer.get();
-        args.clear = clear;
         args.clear_color = clear_color;
         args.extent = framebuffer->get_size();
 
@@ -263,6 +261,21 @@ namespace Pathfinder {
                     vkCmdBeginRenderPass(vk_command_buffer,
                                          &renderPassInfo,
                                          VK_SUBPASS_CONTENTS_INLINE);
+
+                    // Set viewport and scissor dynamically.
+                    VkViewport viewport{};
+                    viewport.x = 0.0f;
+                    viewport.y = 0.0f;
+                    viewport.width = (float) framebuffer_vk->get_width();
+                    viewport.height = (float) framebuffer_vk->get_height();
+                    viewport.minDepth = 0.0f;
+                    viewport.maxDepth = 1.0f;
+                    vkCmdSetViewport(vk_command_buffer, 0, 1, &viewport);
+
+                    VkRect2D scissor{};
+                    scissor.extent.width  = framebuffer_vk->get_width();
+                    scissor.extent.height = framebuffer_vk->get_height();
+                    vkCmdSetScissor(vk_command_buffer, 0, 1, &scissor);
                 }
                     break;
                 case CommandType::BindRenderPipeline: {

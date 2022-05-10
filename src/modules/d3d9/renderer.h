@@ -50,7 +50,7 @@ namespace Pathfinder {
         /// Where to draw the mask texture.
         std::shared_ptr<Framebuffer> mask_framebuffer;
 
-        std::shared_ptr<RenderPass> mask_render_pass, dest_render_pass;
+        std::shared_ptr<RenderPass> mask_render_pass, dest_render_pass_clear, dest_render_pass_load;
 
         void upload_and_draw_tiles(const std::vector<DrawTileBatch> &tile_batches,
                                    const std::vector<TextureMetadataEntry> &metadata);

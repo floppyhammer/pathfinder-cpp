@@ -160,24 +160,31 @@ namespace Pathfinder {
         inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         inputAssembly.primitiveRestartEnable = VK_FALSE;
 
-        VkViewport viewport{};
-        viewport.x = 0.0f;
-        viewport.y = 0.0f;
-        viewport.width = (float) viewport_size.x;
-        viewport.height = (float) viewport_size.y;
-        viewport.minDepth = 0.0f; // The depth range for the viewport.
-        viewport.maxDepth = 1.0f;
+//        VkViewport viewport{};
+//        viewport.x = 0.0f;
+//        viewport.y = 0.0f;
+//        viewport.width = (float) viewport_size.x;
+//        viewport.height = (float) viewport_size.y;
+//        viewport.minDepth = 0.0f; // The depth range for the viewport.
+//        viewport.maxDepth = 1.0f;
+//
+//        VkRect2D scissor{};
+//        scissor.offset = {0, 0};
+//        scissor.extent = {viewport_size.x, viewport_size.y};
 
-        VkRect2D scissor{};
-        scissor.offset = {0, 0};
-        scissor.extent = {viewport_size.x, viewport_size.y};
+        // Specify that these states will be dynamic, i.e. not part of pipeline state object.
+        std::array<VkDynamicState, 2> dynamics{VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+
+        VkPipelineDynamicStateCreateInfo dynamic{VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO};
+        dynamic.pDynamicStates = dynamics.data();
+        dynamic.dynamicStateCount = dynamics.size();
 
         VkPipelineViewportStateCreateInfo viewportState{};
         viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         viewportState.viewportCount = 1;
-        viewportState.pViewports = &viewport;
+        //viewportState.pViewports = &viewport; // We will have dynamic viewport size.
         viewportState.scissorCount = 1;
-        viewportState.pScissors = &scissor;
+        //viewportState.pScissors = &scissor; // We will have dynamic scissor size.
 
         VkPipelineRasterizationStateCreateInfo rasterizer{};
         rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -234,6 +241,7 @@ namespace Pathfinder {
         pipelineInfo.renderPass = render_pass_vk->vk_render_pass;
         pipelineInfo.subpass = 0;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+        pipelineInfo.pDynamicState = &dynamic; // Make viewport and scissor dynamic.
 
         // Create pipeline.
         if (vkCreateGraphicsPipelines(device,
@@ -257,8 +265,8 @@ namespace Pathfinder {
         return std::make_shared<ComputePipeline>();
     }
 
-    std::shared_ptr<RenderPass> DriverVk::create_render_pass(TextureFormat format, ImageLayout final_layout) {
-        auto render_pass_vk = std::make_shared<RenderPassVk>(device, format, final_layout);
+    std::shared_ptr<RenderPass> DriverVk::create_render_pass(TextureFormat format, AttachmentLoadOp load_op, ImageLayout final_layout) {
+        auto render_pass_vk = std::make_shared<RenderPassVk>(device, format, load_op, final_layout);
 
         return render_pass_vk;
     }

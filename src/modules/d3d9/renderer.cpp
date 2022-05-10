@@ -39,9 +39,10 @@ namespace Pathfinder {
 
     RendererD3D9::RendererD3D9(const std::shared_ptr<Driver>& p_driver, uint32_t canvas_width, uint32_t canvas_height)
             : Renderer(p_driver) {
-        mask_render_pass = driver->create_render_pass(TextureFormat::RGBA16F, ImageLayout::SHADER_READ_ONLY);
+        mask_render_pass = driver->create_render_pass(TextureFormat::RGBA16F, AttachmentLoadOp::CLEAR, ImageLayout::SHADER_READ_ONLY);
 
-        dest_render_pass = driver->create_render_pass(TextureFormat::RGBA8_UNORM, ImageLayout::SHADER_READ_ONLY);
+        dest_render_pass_clear = driver->create_render_pass(TextureFormat::RGBA8_UNORM, AttachmentLoadOp::CLEAR, ImageLayout::SHADER_READ_ONLY);
+        dest_render_pass_load = driver->create_render_pass(TextureFormat::RGBA8_UNORM, AttachmentLoadOp::LOAD, ImageLayout::SHADER_READ_ONLY);
 
         mask_framebuffer = driver->create_framebuffer(MASK_FRAMEBUFFER_WIDTH,
                                                       MASK_FRAMEBUFFER_HEIGHT,
@@ -51,7 +52,7 @@ namespace Pathfinder {
         dest_framebuffer = driver->create_framebuffer(canvas_width,
                                                       canvas_height,
                                                       TextureFormat::RGBA8_UNORM,
-                                                      dest_render_pass);
+                                                      dest_render_pass_clear);
 
         // Quad vertex buffer. Shared by fills and tiles drawing.
         quad_vertex_buffer = driver->create_buffer(BufferType::Vertex, 12 * sizeof(uint16_t), MemoryProperty::DEVICE_LOCAL);
@@ -276,7 +277,7 @@ namespace Pathfinder {
                                                            blend_state,
                                                            {canvas_width, canvas_height},
                                                            tile_descriptor_set,
-                                                           dest_render_pass);
+                                                           dest_render_pass_clear);
         }
     }
 
@@ -353,7 +354,6 @@ namespace Pathfinder {
 
         cmd_buffer->begin_render_pass(mask_render_pass,
                                       mask_framebuffer,
-                                      true,
                                       ColorF());
 
         cmd_buffer->bind_render_pipeline(fill_pipeline);
@@ -382,16 +382,21 @@ namespace Pathfinder {
 
         // If no specific RenderTarget is given.
         if (render_target.framebuffer == nullptr) {
-            cmd_buffer->begin_render_pass(dest_render_pass,
-                                          dest_framebuffer,
-                                          need_to_clear_dest,
-                                          ColorF());
+            if (need_to_clear_dest) {
+                cmd_buffer->begin_render_pass(dest_render_pass_clear,
+                                              dest_framebuffer,
+                                              ColorF());
+            } else {
+                cmd_buffer->begin_render_pass(dest_render_pass_load,
+                                              dest_framebuffer,
+                                              ColorF());
+            }
+
             render_target_size = {(float) dest_framebuffer->get_width(), (float) dest_framebuffer->get_height()};
             need_to_clear_dest = false;
         } else { // Otherwise, we need to render to that render target.
-            cmd_buffer->begin_render_pass(dest_render_pass,
+            cmd_buffer->begin_render_pass(dest_render_pass_clear,
                                           render_target.framebuffer,
-                                          true,
                                           ColorF());
             render_target_size = {(float) render_target.framebuffer->get_width(), (float) render_target.framebuffer->get_height()};
         }

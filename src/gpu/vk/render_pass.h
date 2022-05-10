@@ -10,7 +10,7 @@ namespace Pathfinder {
     class RenderPassVk : public RenderPass {
         friend class DriverVk;
     public:
-        RenderPassVk(VkDevice device, TextureFormat texture_format, ImageLayout final_layout);
+        RenderPassVk(VkDevice device, TextureFormat texture_format, AttachmentLoadOp load_op, ImageLayout final_layout);
 
         ~RenderPassVk();
 

@@ -3,7 +3,10 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    Pathfinder::RenderPassVk::RenderPassVk(VkDevice device, TextureFormat texture_format, ImageLayout final_layout) {
+    Pathfinder::RenderPassVk::RenderPassVk(VkDevice device,
+                                           TextureFormat texture_format,
+                                           AttachmentLoadOp load_op,
+                                           ImageLayout final_layout) {
         vk_device = device;
 
         // Color attachment.
@@ -11,11 +14,11 @@ namespace Pathfinder {
         VkAttachmentDescription colorAttachment{};
         colorAttachment.format = to_vk_texture_format(texture_format); // Specifying the format of the image view that will be used for the attachment.
         colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT; // Specifying the number of samples of the image.
-        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Specifying how the contents of color and depth components of the attachment are treated at the beginning of the subpass where it is first used.
+        colorAttachment.loadOp = to_vk_attachment_load_op(load_op); // Specifying how the contents of color and depth components of the attachment are treated at the beginning of the subpass where it is first used.
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // Specifying how the contents of color and depth components of the attachment are treated at the end of the subpass where it is last used.
         colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // The layout the attachment image subresource will be in when a render pass instance begins.
+        colorAttachment.initialLayout = load_op == AttachmentLoadOp::CLEAR ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; // The layout the attachment image subresource will be in when a render pass instance begins.
         colorAttachment.finalLayout = to_vk_layout(final_layout); // The layout the attachment image subresource will be transitioned to when a render pass instance ends.
 
         VkAttachmentReference colorAttachmentRef{};

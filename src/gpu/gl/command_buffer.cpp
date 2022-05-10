@@ -1,5 +1,6 @@
 #include "command_buffer.h"
 
+#include "render_pass.h"
 #include "framebuffer.h"
 #include "render_pipeline.h"
 #include "compute_pipeline.h"
@@ -13,7 +14,6 @@
 namespace Pathfinder {
     void CommandBufferGl::begin_render_pass(const std::shared_ptr<RenderPass> &render_pass,
                                             const std::shared_ptr<Framebuffer> &framebuffer,
-                                            bool clear,
                                             ColorF clear_color) {
         Command cmd;
         cmd.type = CommandType::BeginRenderPass;
@@ -22,7 +22,6 @@ namespace Pathfinder {
         args.render_pass = render_pass.get();
         args.framebuffer = framebuffer.get();
         args.extent = {framebuffer->get_width(), framebuffer->get_height()};
-        args.clear = clear;
         args.clear_color = clear_color;
 
         commands.push(cmd);
@@ -198,12 +197,12 @@ namespace Pathfinder {
             switch (cmd.type) {
                 case CommandType::BeginRenderPass: {
                     auto &args = cmd.args.begin_render_pass;
-
-                    auto framebuffer_gl = dynamic_cast<FramebufferGl *>(args.framebuffer);
+                    auto render_pass_gl = static_cast<RenderPassGl *>(args.render_pass);
+                    auto framebuffer_gl = static_cast<FramebufferGl *>(args.framebuffer);
 
                     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_gl->get_gl_framebuffer());
 
-                    if (args.clear) {
+                    if (render_pass_gl->get_attachment_load_op() == AttachmentLoadOp::CLEAR) {
                         glClearColor(args.clear_color.r, args.clear_color.g, args.clear_color.b,
                                      args.clear_color.a);
                         glClear(GL_COLOR_BUFFER_BIT);

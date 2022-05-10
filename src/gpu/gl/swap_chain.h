@@ -20,7 +20,7 @@ namespace Pathfinder {
 
             command_buffer = std::make_shared<CommandBufferGl>();
 
-            render_pass = std::make_shared<RenderPassGl>();
+            render_pass = std::make_shared<RenderPassGl>(AttachmentLoadOp::CLEAR);
         }
 
         inline std::shared_ptr<RenderPass> get_render_pass() override {

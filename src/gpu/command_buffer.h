@@ -49,7 +49,6 @@ namespace Pathfinder {
                 RenderPass *render_pass;
                 Framebuffer *framebuffer;
                 Vec2<uint32_t> extent;
-                bool clear;
                 ColorF clear_color;
             } begin_render_pass{};
             struct {
@@ -111,7 +110,6 @@ namespace Pathfinder {
 
         virtual void begin_render_pass(const std::shared_ptr<RenderPass> &render_pass,
                                        const std::shared_ptr<Framebuffer> &framebuffer,
-                                       bool clear,
                                        ColorF clear_color) = 0;
 
         /// Bind pipeline.

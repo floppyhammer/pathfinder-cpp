@@ -21,7 +21,6 @@ namespace Pathfinder {
 
         void begin_render_pass(const std::shared_ptr<RenderPass> &render_pass,
                                const std::shared_ptr<Framebuffer> &framebuffer,
-                               bool clear,
                                ColorF clear_color) override;
 
         /// Bind pipeline.

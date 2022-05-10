@@ -63,7 +63,6 @@ void App::loop(const std::shared_ptr<Pathfinder::SwapChain> &swap_chain) {
     {
         cmd_buffer->begin_render_pass(swap_chain->get_render_pass(),
                                       framebuffer,
-                                      true,
                                       Pathfinder::ColorF(0.2, 0.2, 0.2, 1.0));
 
         // Draw canvas to screen.

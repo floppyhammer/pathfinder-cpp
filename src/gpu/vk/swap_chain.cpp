@@ -182,7 +182,7 @@ namespace Pathfinder {
     }
 
     void SwapChainVk::createRenderPass() {
-        render_pass = driver->create_render_pass(vk_to_texture_format(swapChainImageFormat), ImageLayout::PRESENT_SRC);
+        render_pass = driver->create_render_pass(vk_to_texture_format(swapChainImageFormat), AttachmentLoadOp::CLEAR, ImageLayout::PRESENT_SRC);
     }
 
     void SwapChainVk::createFramebuffers() {

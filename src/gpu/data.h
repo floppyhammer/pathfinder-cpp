@@ -90,6 +90,11 @@ namespace Pathfinder {
         ReadWrite,
     };
 
+    enum class AttachmentLoadOp {
+        LOAD = 0,
+        CLEAR = 1,
+    };
+
     inline uint32_t get_pixel_size(TextureFormat format) {
         switch (format) {
             case TextureFormat::RGBA8_UNORM:
@@ -106,6 +111,7 @@ namespace Pathfinder {
     inline DataType texture_format_to_data_type(TextureFormat format) {
         switch (format) {
             case TextureFormat::RGBA8_UNORM:
+            case TextureFormat::BGRA8_UNORM:
             case TextureFormat::RGBA8_SRGB:
             case TextureFormat::BGRA8_SRGB: {
                 return DataType::UNSIGNED_BYTE;
