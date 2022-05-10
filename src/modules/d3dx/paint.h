@@ -130,7 +130,7 @@ namespace Pathfinder {
 
     struct TextureLocation {
         uint32_t page{};
-        Rect<int> rect;
+        Rect<uint32_t> rect;
     };
 
     struct TextureSamplingFlags {
@@ -161,6 +161,7 @@ namespace Pathfinder {
         PatternFilter pattern_filter;
     };
 
+    /// Metadata related to color texture.
     struct PaintColorTextureMetadata {
         /// The location of the paint.
         TextureLocation location;
@@ -191,15 +192,6 @@ namespace Pathfinder {
 
         /// True if this paint is fully opaque.
         bool is_opaque = true;
-
-        PaintMetadata(PaintColorTextureMetadata p_color_texture_metadata,
-                      ColorU p_base_color,
-                      BlendMode p_blend_mode,
-                      bool p_is_opaque)
-                : color_texture_metadata(p_color_texture_metadata),
-                  base_color(p_base_color),
-                  blend_mode(p_blend_mode),
-                  is_opaque(p_is_opaque) {}
 
         inline Filter filter() const {
             Filter filter;

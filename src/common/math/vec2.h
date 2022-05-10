@@ -104,19 +104,19 @@ namespace Pathfinder {
             return Vec2{x / b.x, y / b.y};
         }
 
-        inline Vec2 operator+(float s) const {
+        inline Vec2 operator+(T s) const {
             return Vec2{x + s, y + s};
         }
 
-        inline Vec2 operator-(float s) const {
+        inline Vec2 operator-(T s) const {
             return Vec2{x - s, y - s};
         }
 
-        inline Vec2 operator/(float s) const {
+        inline Vec2 operator/(T s) const {
             return Vec2{x / s, y / s};
         }
 
-        inline Vec2 operator*(float s) const {
+        inline Vec2 operator*(T s) const {
             return Vec2{x * s, y * s};
         }
 

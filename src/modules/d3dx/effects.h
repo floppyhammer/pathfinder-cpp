@@ -34,7 +34,7 @@ namespace Pathfinder {
         /// direction.
         struct Blur {
             /// The axis of the blur: horizontal or vertical.
-            BlurDirection direction = BlurDirection::X;
+            BlurDirection direction{};
             /// Half the blur radius.
             float sigma = 0;
         } blur;

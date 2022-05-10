@@ -53,7 +53,7 @@ namespace Pathfinder {
 
         // Push.
         uint32_t paint_id = paints.size();
-        cache.insert({ paint, paint_id });
+        cache.insert({paint, paint_id});
         paints.push_back(paint);
 
         return paint_id;
@@ -67,9 +67,11 @@ namespace Pathfinder {
         return paints[paint_id];
     }
 
-    RenderTarget Palette::push_render_target(const std::shared_ptr<Driver>& driver, const Vec2<int> &render_target_size) {
-        auto render_pass = driver->create_render_pass(TextureFormat::RGBA8_UNORM, AttachmentLoadOp::CLEAR, ImageLayout::SHADER_READ_ONLY);
-        
+    RenderTarget
+    Palette::push_render_target(const std::shared_ptr<Driver> &driver, const Vec2<int> &render_target_size) {
+        auto render_pass = driver->create_render_pass(TextureFormat::RGBA8_UNORM, AttachmentLoadOp::CLEAR,
+                                                      ImageLayout::SHADER_READ_ONLY);
+
         // Create a new framebuffer.
         auto framebuffer = driver->create_framebuffer(
                 render_target_size.x,
@@ -152,14 +154,16 @@ namespace Pathfinder {
                     switch (overlay->contents.gradient->wrap) {
                         case GradientWrap::Repeat: {
                             sampling_flags.value |= TextureSamplingFlags::REPEAT_U;
-                        } break;
-                        case GradientWrap::Clamp: break;
+                        }
+                            break;
+                        case GradientWrap::Clamp:
+                            break;
                     }
 
                     // FIXME: Incomplete.
                 } else if (overlay->contents.pattern) {
                     const auto pattern = overlay->contents.pattern;
-                    auto border = Vec2<int>(pattern->repeat_x() ? 0 : 1,
+                    auto border = Vec2<uint32_t>(pattern->repeat_x() ? 0 : 1,
                                             pattern->repeat_y() ? 0 : 1);
 
                     PaintFilter paint_filter;
@@ -167,10 +171,12 @@ namespace Pathfinder {
                     paint_filter.pattern_filter = pattern->filter;
 
                     TextureLocation texture_location;
-                    texture_location.rect = Rect<int>(0,
-                                                      0,
-                                                      pattern->source.render_target.size.x,
-                                                      pattern->source.render_target.size.y);
+
+                    if (pattern->source.type == PatternSource::Type::RenderTarget) {
+                        texture_location.rect = Rect<uint32_t>({}, pattern->source.render_target.size);
+                    } else {
+                        texture_location.rect = Rect<uint32_t>() + border * 2;
+                    }
 
                     color_texture_metadata.location = texture_location;
                     color_texture_metadata.filter = paint_filter;
@@ -179,18 +185,18 @@ namespace Pathfinder {
                 }
             }
 
-            paint_metadata.emplace_back(
-                    color_texture_metadata,
-                    paint.get_base_color(),
-                    BlendMode::SrcOver,
-                    paint.is_opaque()
+            paint_metadata.push_back(
+                    {color_texture_metadata,
+                     paint.get_base_color(),
+                     BlendMode::SrcOver,
+                     paint.is_opaque()}
             );
         }
 
         return paint_metadata;
     }
 
-    Rect<float> rect_to_uv(Rect<int> rect, Vec2<float> texture_scale) {
+    Rect<float> rect_to_uv(Rect<uint32_t> rect, Vec2<float> texture_scale) {
         return rect.to_f32() * texture_scale;
     }
 
