@@ -8,6 +8,8 @@
 #include "render_pipeline.h"
 #include "descriptor_set.h"
 #include "../../common/logger.h"
+#include "../command_buffer.h"
+
 
 #include <cassert>
 #include <functional>
@@ -228,8 +230,6 @@ namespace Pathfinder {
             throw std::runtime_error("Failed to begin recording command buffer!");
         }
 
-        std::vector<std::function<void()>> callbacks;
-
         while (!commands.empty()) {
             auto &cmd = commands.front();
 
@@ -377,14 +377,38 @@ namespace Pathfinder {
                                              args.data_size);
                     // ---------------------------------
 
+//                    VkBufferMemoryBarrier barrier;
+//                    barrier.pNext = nullptr;
+//                    barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+//                    barrier.buffer = buffer_vk->get_vk_buffer();
+//                    barrier.offset = 0;
+//                    barrier.size = buffer_vk->size;
+//                    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+//                    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+//
+//                    barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+//                    barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+//
+//                    vkCmdPipelineBarrier(vk_command_buffer, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
+//                                         VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+//                                         0, nullptr, 1, &barrier, 0, nullptr);
+
                     driver->copyVkBuffer(vk_command_buffer, stagingBuffer, buffer_vk->get_vk_buffer(), args.data_size);
+
+//                    // Don't read vertex data as we're writing it.
+//                    barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+//                    barrier.dstAccessMask = VK_ACCESS_INDEX_READ_BIT | VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+//
+//                    vkCmdPipelineBarrier(vk_command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT,
+//                                         VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, 0,
+//                                         0, nullptr, 1, &barrier, 0, nullptr);
 
                     // Callback to clean up staging resources.
                     auto callback = [driver, stagingBuffer, stagingBufferMemory] {
                         vkDestroyBuffer(driver->get_device(), stagingBuffer, nullptr);
                         vkFreeMemory(driver->get_device(), stagingBufferMemory, nullptr);
                     };
-                    callbacks.push_back(callback);
+                    add_callback(callback);
                 }
                     break;
                 case CommandType::ReadBuffer: {
@@ -471,7 +495,7 @@ namespace Pathfinder {
                         vkDestroyBuffer(driver->get_device(), stagingBuffer, nullptr);
                         vkFreeMemory(driver->get_device(), stagingBufferMemory, nullptr);
                     };
-                    callbacks.push_back(callback);
+                    add_callback(callback);
                 }
                     break;
                 case CommandType::Max:
@@ -505,6 +529,8 @@ namespace Pathfinder {
         for (auto &callback: callbacks) {
             callback();
         }
+
+        callbacks.clear();
     }
 }
 

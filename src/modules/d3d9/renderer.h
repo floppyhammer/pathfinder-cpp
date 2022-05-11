@@ -53,22 +53,23 @@ namespace Pathfinder {
         std::shared_ptr<RenderPass> mask_render_pass, dest_render_pass_clear, dest_render_pass_load;
 
         void upload_and_draw_tiles(const std::vector<DrawTileBatch> &tile_batches,
-                                   const std::vector<TextureMetadataEntry> &metadata);
+                                   const std::vector<TextureMetadataEntry> &metadata,
+                                   const std::shared_ptr<CommandBuffer> &cmd_buffer);
 
         /// Upload fills data to GPU.
-        void upload_fills(const std::vector<Fill> &fills);
+        void upload_fills(const std::vector<Fill> &fills, const std::shared_ptr<CommandBuffer>& cmd_buffer);
 
         /// Upload tiles data to GPU.
-        void upload_tiles(const std::vector<TileObjectPrimitive> &tiles);
+        void upload_tiles(const std::vector<TileObjectPrimitive> &tiles, const std::shared_ptr<CommandBuffer> &cmd_buffer);
 
         /// Draw tiles.
         void draw_tiles(uint32_t tile_count,
                         const RenderTarget &target_viewport,
                         const std::shared_ptr<Texture> &color_texture,
-                        const std::shared_ptr<Texture> &z_buffer_texture);
+                        const std::shared_ptr<Texture> &z_buffer_texture, const std::shared_ptr<CommandBuffer> &cmd_buffer);
 
         /// Draw the mask texture. Use Renderer::buffered_fills.
-        void draw_fills(uint32_t fills_count);
+        void draw_fills(uint32_t fills_count, const std::shared_ptr<CommandBuffer>& cmd_buffer);
     };
 }
 

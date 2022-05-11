@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <queue>
 #include <memory>
+#include <functional>
 
 namespace Pathfinder {
     class Driver;
@@ -164,10 +165,16 @@ namespace Pathfinder {
 
         virtual void submit(const std::shared_ptr<Driver> &p_driver) = 0;
 
+        inline void add_callback(const std::function<void()> &callback) {
+            callbacks.push_back(callback);
+        }
+
     protected:
         std::queue<Command> commands;
 
         bool one_time = false;
+
+        std::vector<std::function<void()>> callbacks;
 
         RenderPipeline *render_pipeline{};
         ComputePipeline *compute_pipeline{};

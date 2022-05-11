@@ -500,6 +500,13 @@ namespace Pathfinder {
 
             commands.pop();
         }
+
+        // Release allocated memory if there's any.
+        for (auto &callback: callbacks) {
+            callback();
+        }
+
+        callbacks.clear();
     }
 }
 

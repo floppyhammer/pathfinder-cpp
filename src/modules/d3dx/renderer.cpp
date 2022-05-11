@@ -22,15 +22,20 @@ namespace Pathfinder {
 
     Renderer::Renderer(const std::shared_ptr<Driver> &p_driver) {
         driver = p_driver;
+    }
 
+    void Renderer::set_up(const std::vector<char> &area_lut_input) {
         // We only allocate the metadata texture once.
         metadata_texture = driver->create_texture(TEXTURE_METADATA_TEXTURE_WIDTH,
                                                   TEXTURE_METADATA_TEXTURE_HEIGHT,
                                                   TextureFormat::RGBA16F);
 
+        auto cmd_buffer = driver->create_command_buffer(true);
+
         // Uniform buffer.
         {
-            fixed_sizes_ub = driver->create_buffer(BufferType::Uniform, 8 * sizeof(float), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
+            fixed_sizes_ub = driver->create_buffer(BufferType::Uniform, 8 * sizeof(float),
+                                                   MemoryProperty::HOST_VISIBLE_AND_COHERENT);
 
             // Upload data to the uniform buffer with fixed data.
             std::array<float, 6> fixed_sizes_ubo_data = {MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT,
@@ -38,20 +43,16 @@ namespace Pathfinder {
                                                          TEXTURE_METADATA_TEXTURE_WIDTH,
                                                          TEXTURE_METADATA_TEXTURE_HEIGHT};
 
-            auto cmd_buffer = driver->create_command_buffer(true);
             cmd_buffer->upload_to_buffer(fixed_sizes_ub, 0, 6 * sizeof(float), fixed_sizes_ubo_data.data());
-            cmd_buffer->submit(driver);
         }
-    }
 
-    void Renderer::set_up_area_lut(const std::vector<char> &area_lut_input) {
         auto image_data = ImageData::from_memory(area_lut_input, false);
 
         area_lut_texture = driver->create_texture(image_data->width, image_data->height,
                                                   TextureFormat::RGBA8_UNORM);
 
-        auto cmd_buffer = driver->create_command_buffer(true);
         cmd_buffer->upload_to_texture(area_lut_texture, {}, image_data->data);
+
         cmd_buffer->submit(driver);
     }
 
@@ -113,9 +114,9 @@ namespace Pathfinder {
         return filter_params;
     }
 
-    void upload_metadata(const std::shared_ptr<Driver> &driver,
-                         const std::shared_ptr<Texture> &metadata_texture,
-                         const std::vector<TextureMetadataEntry> &metadata) {
+    void upload_metadata(const std::shared_ptr<Texture> &metadata_texture,
+                         const std::vector<TextureMetadataEntry> &metadata,
+                         const std::shared_ptr<CommandBuffer> &cmd_buffer) {
         auto padded_texel_size = alignup_i32((int32_t) metadata.size(),
                                              TEXTURE_METADATA_ENTRIES_PER_ROW) * TEXTURE_METADATA_TEXTURE_WIDTH * 4;
 
@@ -156,30 +157,15 @@ namespace Pathfinder {
                     filter_params.p1.zw().x,
                     filter_params.p1.zw().y,
                     // 5
-                    0.0f,
-                    0.0f,
-                    0.0f,
-                    0.0f,
+                    0.0f, 0.0f, 0.0f, 0.0f,
                     // 6
-                    0.0f,
-                    0.0f,
-                    0.0f,
-                    0.0f,
+                    0.0f, 0.0f, 0.0f, 0.0f,
                     // 7
-                    0.0f,
-                    0.0f,
-                    0.0f,
-                    0.0f,
+                    0.0f, 0.0f, 0.0f, 0.0f,
                     // 8
-                    (float) filter_params.ctrl,
-                    0.0f,
-                    0.0f,
-                    0.0f,
+                    (float) filter_params.ctrl, 0.0f, 0.0f, 0.0f,
                     // 9
-                    0.0f,
-                    0.0f,
-                    0.0f,
-                    0.0f,
+                    0.0f, 0.0f, 0.0f, 0.0f,
             };
 
             texels.insert(texels.end(), slice.begin(), slice.end());
@@ -190,13 +176,22 @@ namespace Pathfinder {
             texels.emplace_back(0.0f);
         }
 
-        // Only update valid region.
-        auto width = TEXTURE_METADATA_TEXTURE_WIDTH;
-        auto height = texels.size() / (4 * TEXTURE_METADATA_TEXTURE_WIDTH);
-        auto region_rect = Rect<uint32_t>(0, 0, width, height);
+        // Update the region that contains info instead of the whole texture.
+        auto region_rect = Rect<uint32_t>(0,
+                                          0,
+                                          TEXTURE_METADATA_TEXTURE_WIDTH,
+                                          texels.size() / (4 * TEXTURE_METADATA_TEXTURE_WIDTH));
 
-        auto cmd_buffer = driver->create_command_buffer(true);
-        cmd_buffer->upload_to_texture(metadata_texture, region_rect, texels.data());
-        cmd_buffer->submit(driver);
+        // Don't use a vector as we need to delay the de-allocation until the image data is uploaded to GPU.
+        auto raw_texels = new half[texels.size()];
+        std::copy(texels.begin(), texels.end(), raw_texels);
+
+        // Callback to clean up staging resources.
+        auto callback = [raw_texels] {
+            delete[] raw_texels;
+        };
+        cmd_buffer->add_callback(callback);
+
+        cmd_buffer->upload_to_texture(metadata_texture, region_rect, raw_texels);
     }
 }

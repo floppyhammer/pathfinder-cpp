@@ -134,7 +134,7 @@ namespace Pathfinder {
         renderer = std::make_shared<RendererD3D11>(p_driver, size_x, size_y);
 #endif
 
-        renderer->set_up_area_lut(area_lut_input);
+        renderer->set_up(area_lut_input);
 
         renderer->set_up_pipelines(size_x, size_y);
     }
