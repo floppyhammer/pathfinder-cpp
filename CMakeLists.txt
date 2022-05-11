@@ -26,7 +26,7 @@ if (VULKAN_SUPPORT)
 
     # We need to include Vulkan headers manually because of the above reason.
     include_directories("C:/VulkanSDK/1.3.204.0/Include")
-else()
+else ()
     message("Using OpenGL")
 endif ()
 
@@ -34,7 +34,7 @@ endif ()
 include_directories(external third_party)
 
 # GLFW library.
-include_directories(external/glfw/include) # Include headers.
+include_directories(external/glfw/include)
 add_subdirectory(external/glfw)
 
 # Core library.
