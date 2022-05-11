@@ -1,12 +1,13 @@
 # Build results
 bin
 
-# Jetbrains IDEs
-.idea
-
-# CLion outputs
+# Build files
 cmake-build-debug
 cmake-build-release
+cmake-build-relwithdebinfo
+
+# Jetbrains IDEs
+.idea
 
 # NDK outputs
 ndk/obj
