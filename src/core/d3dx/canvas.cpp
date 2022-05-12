@@ -328,7 +328,7 @@ namespace Pathfinder {
         current_state.line_dash_offset = p_line_dash_offset;
     }
 
-    void Canvas::set_transform(Transform2 &p_transform) {
+    void Canvas::set_transform(const Transform2 &p_transform) {
         current_state.transform = p_transform;
     }
 

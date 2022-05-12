@@ -116,7 +116,7 @@ namespace Pathfinder {
 
         void set_line_dash_offset(float p_line_dash_offset);
 
-        void set_transform(Transform2 &p_transform);
+        void set_transform(const Transform2 &p_transform);
         // ------------------------------------------------
 
         // Drawing ops.
