@@ -145,6 +145,15 @@ namespace Pathfinder {
          */
         void load_svg(const std::string& input);
 
+        // TODO
+        void draw_image();
+
+        // Canvas state
+
+        void save_state();
+
+        void restore_state();
+
     private:
         std::shared_ptr<Driver> driver;
 

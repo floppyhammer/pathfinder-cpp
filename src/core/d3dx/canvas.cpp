@@ -475,4 +475,19 @@ namespace Pathfinder {
         timestamp.record("add shape to canvas");
         timestamp.print();
     }
+
+    void Canvas::draw_image() {
+
+    }
+
+    void Canvas::save_state() {
+        saved_states.push_back(current_state);
+    }
+
+    void Canvas::restore_state() {
+        if (!saved_states.empty()) {
+            current_state = saved_states.back();
+            saved_states.pop_back();
+        }
+    }
 }
