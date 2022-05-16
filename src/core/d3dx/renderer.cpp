@@ -116,7 +116,7 @@ namespace Pathfinder {
 
     void upload_metadata(const std::shared_ptr<Texture> &metadata_texture,
                          const std::vector<TextureMetadataEntry> &metadata,
-                         const std::shared_ptr<CommandBuffer> &cmd_buffer) {
+                         const std::shared_ptr<Driver> &driver) {
         auto padded_texel_size = alignup_i32((int32_t) metadata.size(),
                                              TEXTURE_METADATA_ENTRIES_PER_ROW) * TEXTURE_METADATA_TEXTURE_WIDTH * 4;
 
@@ -190,8 +190,10 @@ namespace Pathfinder {
         auto callback = [raw_texels] {
             delete[] raw_texels;
         };
-        cmd_buffer->add_callback(callback);
 
+        auto cmd_buffer = driver->create_command_buffer(true);
+        cmd_buffer->add_callback(callback);
         cmd_buffer->upload_to_texture(metadata_texture, region_rect, raw_texels);
+        cmd_buffer->submit(driver);
     }
 }

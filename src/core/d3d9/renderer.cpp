@@ -293,22 +293,22 @@ namespace Pathfinder {
     void RendererD3D9::draw(const SceneBuilderD3D9 &scene_builder) {
         if (scene_builder.pending_fills.empty()) return;
 
-        auto cmd_buffer = driver->create_command_buffer(true);
-
         // We are supposed to do this before the builder finishes building.
         // But it doesn't improve much performance, so we just leave it as it is for the sake of simplicity.
         {
+            auto cmd_buffer = driver->create_command_buffer(true);
+
             // Upload fills to buffer.
             upload_fills(scene_builder.pending_fills, cmd_buffer);
 
             // We can do fill drawing as soon as the fill vertex buffer is ready.
             draw_fills(scene_builder.pending_fills.size(), cmd_buffer);
+
+            cmd_buffer->submit(driver);
         }
 
         // Tiles need to be drawn after fill drawing and after tile batches are prepared.
-        upload_and_draw_tiles(scene_builder.tile_batches, scene_builder.metadata, cmd_buffer);
-
-        cmd_buffer->submit(driver);
+        upload_and_draw_tiles(scene_builder.tile_batches, scene_builder.metadata);
     }
 
     void RendererD3D9::upload_fills(const std::vector<Fill> &fills, const std::shared_ptr<CommandBuffer> &cmd_buffer) {
@@ -345,10 +345,9 @@ namespace Pathfinder {
     }
 
     void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatch> &tile_batches,
-                                             const std::vector<TextureMetadataEntry> &metadata,
-                                             const std::shared_ptr<CommandBuffer> &cmd_buffer) {
+                                             const std::vector<TextureMetadataEntry> &metadata) {
         // Upload metadata (color, blur, etc...).
-        upload_metadata(metadata_texture, metadata, cmd_buffer);
+        upload_metadata(metadata_texture, metadata, driver);
 
         // Clear the destination framebuffer for the first time.
         need_to_clear_dest = true;
@@ -359,6 +358,10 @@ namespace Pathfinder {
             // No tiles to draw.
             if (tile_count == 0) continue;
 
+            // Different batches will use the same vertex buffer, so we need to make sure a batch is drawn
+            // before processing the next batch.
+            auto cmd_buffer = driver->create_command_buffer(true);
+
             auto z_buffer_texture = upload_z_buffer(driver, batch.z_buffer_data, cmd_buffer);
 
             upload_tiles(batch.tiles, cmd_buffer);
@@ -368,6 +371,8 @@ namespace Pathfinder {
                        batch.color_texture,
                        z_buffer_texture,
                        cmd_buffer);
+
+            cmd_buffer->submit(driver);
         }
     }
 

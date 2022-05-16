@@ -53,8 +53,7 @@ namespace Pathfinder {
         std::shared_ptr<RenderPass> mask_render_pass, dest_render_pass_clear, dest_render_pass_load;
 
         void upload_and_draw_tiles(const std::vector<DrawTileBatch> &tile_batches,
-                                   const std::vector<TextureMetadataEntry> &metadata,
-                                   const std::shared_ptr<CommandBuffer> &cmd_buffer);
+                                   const std::vector<TextureMetadataEntry> &metadata);
 
         /// Upload fills data to GPU.
         void upload_fills(const std::vector<Fill> &fills, const std::shared_ptr<CommandBuffer>& cmd_buffer);

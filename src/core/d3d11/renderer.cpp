@@ -289,9 +289,7 @@ namespace Pathfinder {
 
         auto batch_info = tile_batch_info[tile_batch_id];
 
-        auto cmd_buffer = driver->create_command_buffer(true);
-        upload_metadata(metadata_texture, metadata, cmd_buffer);
-        cmd_buffer->submit(driver);
+        upload_metadata(metadata_texture, metadata, driver);
 
         draw_tiles(batch_info.tiles_d3d11_buffer_id,
                    batch_info.first_tile_map_buffer_id,

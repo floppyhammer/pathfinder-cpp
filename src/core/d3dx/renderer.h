@@ -23,7 +23,7 @@ namespace Pathfinder {
 
     void upload_metadata(const std::shared_ptr<Texture>& metadata_texture,
                          const std::vector<TextureMetadataEntry> &metadata,
-                         const std::shared_ptr<CommandBuffer> &cmd_buffer);
+                         const std::shared_ptr<Driver> &driver);
 
     /// Base for D3D9 and D3D11 renderers.
     class Renderer {
