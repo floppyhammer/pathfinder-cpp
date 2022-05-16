@@ -295,7 +295,8 @@ namespace Pathfinder {
 
         auto cmd_buffer = driver->create_command_buffer(true);
 
-        // TODO: We should do this before the builder finishes building.
+        // We are supposed to do this before the builder finishes building.
+        // But it doesn't improve much performance, so we just leave it as it is for the sake of simplicity.
         {
             // Upload fills to buffer.
             upload_fills(scene_builder.pending_fills, cmd_buffer);
@@ -313,8 +314,11 @@ namespace Pathfinder {
     void RendererD3D9::upload_fills(const std::vector<Fill> &fills, const std::shared_ptr<CommandBuffer> &cmd_buffer) {
         auto byte_size = sizeof(Fill) * fills.size();
 
+        // If we need to allocate a new fill vertex buffer.
         if (fill_vertex_buffer == nullptr || byte_size > fill_vertex_buffer->size) {
-            fill_vertex_buffer = driver->create_buffer(BufferType::Vertex, byte_size, MemoryProperty::DEVICE_LOCAL);
+            fill_vertex_buffer = driver->create_buffer(BufferType::Vertex,
+                                                       byte_size,
+                                                       MemoryProperty::DEVICE_LOCAL);
         }
 
         cmd_buffer->upload_to_buffer(fill_vertex_buffer,
@@ -327,8 +331,11 @@ namespace Pathfinder {
                                     const std::shared_ptr<CommandBuffer> &cmd_buffer) {
         auto byte_size = sizeof(TileObjectPrimitive) * tiles.size();
 
+        // If we need to allocate a new tile vertex buffer.
         if (tile_vertex_buffer == nullptr || byte_size > tile_vertex_buffer->size) {
-            tile_vertex_buffer = driver->create_buffer(BufferType::Vertex, byte_size, MemoryProperty::DEVICE_LOCAL);
+            tile_vertex_buffer = driver->create_buffer(BufferType::Vertex,
+                                                       byte_size,
+                                                       MemoryProperty::DEVICE_LOCAL);
         }
 
         cmd_buffer->upload_to_buffer(tile_vertex_buffer,
@@ -343,14 +350,20 @@ namespace Pathfinder {
         // Upload metadata (color, blur, etc...).
         upload_metadata(metadata_texture, metadata, cmd_buffer);
 
+        // Clear the destination framebuffer for the first time.
         need_to_clear_dest = true;
 
         for (const auto &batch: tile_batches) {
+            uint32_t tile_count = batch.tiles.size();
+
+            // No tiles to draw.
+            if (tile_count == 0) continue;
+
             auto z_buffer_texture = upload_z_buffer(driver, batch.z_buffer_data, cmd_buffer);
 
             upload_tiles(batch.tiles, cmd_buffer);
 
-            draw_tiles(batch.tiles.size(),
+            draw_tiles(tile_count,
                        batch.render_target,
                        batch.color_texture,
                        z_buffer_texture,
@@ -382,47 +395,42 @@ namespace Pathfinder {
                                   const std::shared_ptr<Texture> &color_texture,
                                   const std::shared_ptr<Texture> &z_buffer_texture,
                                   const std::shared_ptr<CommandBuffer> &cmd_buffer) {
-        // No tiles to draw.
-        if (tiles_count == 0) return;
-
-        Vec2<float> render_target_size;
+        std::shared_ptr<Framebuffer> target_framebuffer;
 
         // If no specific RenderTarget is given.
         if (render_target.framebuffer == nullptr) {
-            if (need_to_clear_dest) {
-                cmd_buffer->begin_render_pass(dest_render_pass_clear,
-                                              dest_framebuffer,
-                                              ColorF());
-            } else {
-                cmd_buffer->begin_render_pass(dest_render_pass_load,
-                                              dest_framebuffer,
-                                              ColorF());
-            }
+            cmd_buffer->begin_render_pass(need_to_clear_dest ? dest_render_pass_clear : dest_render_pass_load,
+                                          dest_framebuffer,
+                                          ColorF());
 
-            render_target_size = {(float) dest_framebuffer->get_width(), (float) dest_framebuffer->get_height()};
+            target_framebuffer = dest_framebuffer;
+
             need_to_clear_dest = false;
         } else { // Otherwise, we need to render to that render target.
             cmd_buffer->begin_render_pass(dest_render_pass_clear,
                                           render_target.framebuffer,
                                           ColorF());
-            render_target_size = {(float) render_target.framebuffer->get_width(),
-                                  (float) render_target.framebuffer->get_height()};
+
+            target_framebuffer = render_target.framebuffer;
         }
+
+        Vec2<float> target_framebuffer_size = {(float) target_framebuffer->get_width(),
+                                               (float) target_framebuffer->get_height()};
 
         // Update uniform buffers.
         {
             // MVP (with only the model matrix).
             auto model_mat = Mat4x4<float>(1.f);
             model_mat = model_mat.translate(Vec3<float>(-1.f, -1.f, 0.f)); // Move to top-left.
-            model_mat = model_mat.scale(Vec3<float>(2.f / render_target_size.x, 2.f / render_target_size.y, 1.f));
+            model_mat = model_mat.scale(Vec3<float>(2.f / target_framebuffer_size.x, 2.f / target_framebuffer_size.y, 1.f));
 
             std::array<float, 6> ubo_data = {
                     (float) z_buffer_texture->get_width(),
                     (float) z_buffer_texture->get_height(),
                     color_texture ? (float) color_texture->get_width() : 0,
                     color_texture ? (float) color_texture->get_width() : 0,
-                    render_target_size.x,
-                    render_target_size.y
+                    target_framebuffer_size.x,
+                    target_framebuffer_size.y
             };
 
             // We don't need to preserve the data until the upload commands are implemented because
