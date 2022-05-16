@@ -24,7 +24,8 @@ namespace Pathfinder {
 
     /// It might not be worth it to cache z buffer textures as they're generally small.
     std::shared_ptr<Texture> upload_z_buffer(const std::shared_ptr<Driver> &driver,
-                                             const DenseTileMap<uint32_t> &z_buffer_map, const std::shared_ptr<CommandBuffer> &cmd_buffer) {
+                                             const DenseTileMap<uint32_t> &z_buffer_map,
+                                             const std::shared_ptr<CommandBuffer> &cmd_buffer) {
         auto z_buffer_texture = driver->create_texture(
                 z_buffer_map.rect.width(),
                 z_buffer_map.rect.height(),
@@ -322,7 +323,8 @@ namespace Pathfinder {
                                      (void *) fills.data());
     }
 
-    void RendererD3D9::upload_tiles(const std::vector<TileObjectPrimitive> &tiles, const std::shared_ptr<CommandBuffer> &cmd_buffer) {
+    void RendererD3D9::upload_tiles(const std::vector<TileObjectPrimitive> &tiles,
+                                    const std::shared_ptr<CommandBuffer> &cmd_buffer) {
         auto byte_size = sizeof(TileObjectPrimitive) * tiles.size();
 
         if (tile_vertex_buffer == nullptr || byte_size > tile_vertex_buffer->size) {
@@ -378,7 +380,8 @@ namespace Pathfinder {
     void RendererD3D9::draw_tiles(uint32_t tiles_count,
                                   const RenderTarget &render_target,
                                   const std::shared_ptr<Texture> &color_texture,
-                                  const std::shared_ptr<Texture> &z_buffer_texture, const std::shared_ptr<CommandBuffer> &cmd_buffer) {
+                                  const std::shared_ptr<Texture> &z_buffer_texture,
+                                  const std::shared_ptr<CommandBuffer> &cmd_buffer) {
         // No tiles to draw.
         if (tiles_count == 0) return;
 
@@ -408,22 +411,24 @@ namespace Pathfinder {
 
         // Update uniform buffers.
         {
-            // MVP.
+            // MVP (with only the model matrix).
             auto model_mat = Mat4x4<float>(1.f);
             model_mat = model_mat.translate(Vec3<float>(-1.f, -1.f, 0.f)); // Move to top-left.
             model_mat = model_mat.scale(Vec3<float>(2.f / render_target_size.x, 2.f / render_target_size.y, 1.f));
-            auto mvp_mat = model_mat;
 
-            std::array<float, 6> ubo_data = {(float) z_buffer_texture->get_width(),
-                                             (float) z_buffer_texture->get_height(),
-                                             color_texture ? (float) color_texture->get_width() : 0,
-                                             color_texture ? (float) color_texture->get_width() : 0,
-                                             render_target_size.x, render_target_size.y};
+            std::array<float, 6> ubo_data = {
+                    (float) z_buffer_texture->get_width(),
+                    (float) z_buffer_texture->get_height(),
+                    color_texture ? (float) color_texture->get_width() : 0,
+                    color_texture ? (float) color_texture->get_width() : 0,
+                    render_target_size.x,
+                    render_target_size.y
+            };
 
-            auto temp_cmd_buffer = driver->create_command_buffer(true);
-            temp_cmd_buffer->upload_to_buffer(tile_transform_ub, 0, 16 * sizeof(float), &mvp_mat);
-            temp_cmd_buffer->upload_to_buffer(tile_varying_sizes_ub, 0, 6 * sizeof(float), ubo_data.data());
-            temp_cmd_buffer->submit(driver);
+            // We don't need to preserve the data until the upload commands are implemented because
+            // these uniform buffers are host-visible/coherent.
+            cmd_buffer->upload_to_buffer(tile_transform_ub, 0, 16 * sizeof(float), &model_mat);
+            cmd_buffer->upload_to_buffer(tile_varying_sizes_ub, 0, 6 * sizeof(float), ubo_data.data());
         }
 
         // Update descriptor set.
