@@ -37,8 +37,7 @@ restrict writeonly layout(std430, binding = 1) buffer bTiles {
 
 void main() {
     uint tileIndex = gl_GlobalInvocationID.x;
-    if (tileIndex >= uint(uTileCount))
-    return;
+    if (tileIndex >= uint(uTileCount)) return;
 
     uint lowPathIndex = 0u, highPathIndex = uint(uPathCount);
     int iteration = 0;

@@ -181,10 +181,10 @@ void main() {
             drawAlphaTileIndex = int(drawBatchAlphaTileIndex) + uFirstAlphaTileIndex;
         }
 
+        // Note that drawAlphaTileIndex is signed.
         iDrawTiles[drawTileIndex * 4u + TILE_FIELD_BACKDROP_ALPHA_TILE_ID] =
         (uint(drawAlphaTileIndex) & 0x00ffffffu) | (uint(drawBackdropDelta) << 24);
-        iDrawTiles[drawTileIndex * 4u + TILE_FIELD_CONTROL] =
-        drawTileWord | (uint(drawTileBackdrop) << 24);
+        iDrawTiles[drawTileIndex * 4u + TILE_FIELD_CONTROL] = drawTileWord | (uint(drawTileBackdrop) << 24);
 
         // Write to Z-buffer if necessary.
         ivec2 tileCoord = ivec2(tileX, tileY) + ivec2(drawTileRect.xy);

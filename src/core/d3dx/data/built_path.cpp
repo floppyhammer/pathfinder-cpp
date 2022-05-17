@@ -9,11 +9,10 @@ namespace Pathfinder {
             : fill_rule(p_fill_rule), paint_id(p_paint_id) {
         // Set fill rule.
         ctrl_byte = fill_rule == FillRule::EvenOdd ?
-                    TILE_CTRL_MASK_EVEN_ODD << TILE_CTRL_MASK_0_SHIFT : TILE_CTRL_MASK_WINDING << TILE_CTRL_MASK_0_SHIFT;
+                    TILE_CTRL_MASK_EVEN_ODD << TILE_CTRL_MASK_0_SHIFT :
+                    TILE_CTRL_MASK_WINDING << TILE_CTRL_MASK_0_SHIFT;
 
-        Rect<float> tile_map_bounds;
-
-        tile_map_bounds = path_bounds;
+        Rect<float> tile_map_bounds = path_bounds;
 
         tile_bounds = round_rect_out_to_tile_bounds(tile_map_bounds);
 

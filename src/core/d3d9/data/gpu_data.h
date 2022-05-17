@@ -19,8 +19,8 @@ namespace Pathfinder {
     struct TileObjectPrimitive {
         int16_t tile_x = 0;
         int16_t tile_y = 0;
-        AlphaTileId alpha_tile_id; // 4 bytes
-        uint8_t ctrl = 0;
+        AlphaTileId alpha_tile_id;
+        uint8_t ctrl = 0; // Fill rule
         int8_t backdrop = 0;
         uint32_t path_id = 0;
         uint32_t metadata_id = 0;
