@@ -131,12 +131,12 @@ void main() {
         return;
 
     int fillIndex = int(iTiles[tileIndex * 4u + TILE_FIELD_FIRST_FILL_ID]);
-    int backdrop = int(iTiles[tileIndex * 4u + TILE_FIELD_CONTROL]) >> 24;
+    uint tileControlWord = iTiles[tileIndex * 4u + TILE_FIELD_CONTROL];
+    int backdrop = int(tileControlWord) >> 24;
 
     vec4 coverages = vec4(backdrop);
     coverages += accumulateCoverageForFillList(fillIndex, tileSubCoord);
 
-    uint tileControlWord = iTiles[tileIndex * 4 + TILE_FIELD_CONTROL];
     int tileCtrl = int((tileControlWord >> 16) & 0xffu);
     int maskCtrl = (tileCtrl >> TILE_CTRL_MASK_0_SHIFT) & TILE_CTRL_MASK_MASK;
     if ((maskCtrl & TILE_CTRL_MASK_WINDING) != 0) {

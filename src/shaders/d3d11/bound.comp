@@ -48,8 +48,7 @@ void main() {
             highPathIndex = midPathIndex;
         } else {
             lowPathIndex = midPathIndex;
-            if (tileIndex == midTileIndex)
-            break;
+            if (tileIndex == midTileIndex) break;
         }
         iteration++;
     }
@@ -58,8 +57,11 @@ void main() {
     uvec4 pathInfo = iTilePathInfo[pathIndex];
 
     ivec2 packedTileRect = ivec2(pathInfo.xy);
-    ivec4 tileRect = ivec4((packedTileRect.x << 16) >> 16, packedTileRect.x >> 16,
-    (packedTileRect.y << 16) >> 16, packedTileRect.y >> 16);
+    ivec4 tileRect = ivec4(
+    (packedTileRect.x << 16) >> 16,
+    packedTileRect.x >> 16,
+    (packedTileRect.y << 16) >> 16,
+    packedTileRect.y >> 16);
 
     uint tileOffset = tileIndex - pathInfo.z;
     uint tileWidth = uint(tileRect.z - tileRect.x);

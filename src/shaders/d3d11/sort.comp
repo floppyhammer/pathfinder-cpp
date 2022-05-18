@@ -49,8 +49,7 @@ void setNextTile(int tileIndex, int newNextTileIndex) {
 
 void main() {
     uint globalTileIndex = gl_GlobalInvocationID.x;
-    if (globalTileIndex >= uint(uTileCount))
-        return;
+    if (globalTileIndex >= uint(uTileCount)) return;
 
     int zValue = iZBuffer[FILL_INDIRECT_DRAW_PARAMS_SIZE + int(globalTileIndex)];
 
