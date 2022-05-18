@@ -15,6 +15,12 @@ layout(local_size_x = 64) in;
 #define FILL_INDIRECT_DRAW_PARAMS_ALPHA_TILE_COUNT_INDEX    4
 #define FILL_INDIRECT_DRAW_PARAMS_SIZE                      8
 
+#define TILE_CTRL_MASK_MASK                     0x3
+#define TILE_CTRL_MASK_WINDING                  0x1
+#define TILE_CTRL_MASK_EVEN_ODD                 0x2
+
+#define TILE_CTRL_MASK_0_SHIFT                  0
+
 layout (std140, binding = 8) uniform bUniform {
     ivec2 uFramebufferTileSize;
     int uColumnCount;
@@ -185,6 +191,16 @@ void main() {
         iDrawTiles[drawTileIndex * 4u + TILE_FIELD_BACKDROP_ALPHA_TILE_ID] =
         (uint(drawAlphaTileIndex) & 0x00ffffffu) | (uint(drawBackdropDelta) << 24);
         iDrawTiles[drawTileIndex * 4u + TILE_FIELD_CONTROL] = drawTileWord | (uint(drawTileBackdrop) << 24);
+
+        // Even-Odd fill rule will make some solid tiles invisible, we shouldn't write them into Z buffer.
+        if (drawTileBackdrop != 0) {
+            int tileCtrl = int((drawTileWord >> 16) & 0xffu);
+            int maskCtrl = (tileCtrl >> TILE_CTRL_MASK_0_SHIFT) & TILE_CTRL_MASK_MASK;
+
+            if ((maskCtrl & TILE_CTRL_MASK_EVEN_ODD) != 0 && mod(abs(drawTileBackdrop), 2) == 0) {
+                zWrite = false;
+            }
+        }
 
         // Write to Z-buffer if necessary.
         ivec2 tileCoord = ivec2(tileX, tileY) + ivec2(drawTileRect.xy);
