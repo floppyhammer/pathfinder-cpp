@@ -23,13 +23,15 @@ namespace Pathfinder {
         /// Tiles to draw.
         std::vector<DrawTileBatch> pending_tile_batches;
 
-        RendererD3D9(const std::shared_ptr<Driver> &p_driver, uint32_t canvas_width, uint32_t canvas_height);
+        explicit RendererD3D9(const std::shared_ptr<Driver> &p_driver);
 
         void set_up_pipelines(uint32_t canvas_width, uint32_t canvas_height);
 
         void draw(const SceneBuilderD3D9 &scene_builder);
 
         std::shared_ptr<Texture> get_dest_texture() override;
+
+        void resize_dest_texture(uint32_t width, uint32_t height) override;
 
     private:
         /// Vertex buffers.

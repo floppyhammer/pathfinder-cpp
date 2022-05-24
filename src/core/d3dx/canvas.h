@@ -134,6 +134,8 @@ namespace Pathfinder {
         /// Clear the scene.
         void clear();
 
+        void resize(float p_size_x, float p_size_y);
+
         std::shared_ptr<Scene> get_scene() const;
 
         std::shared_ptr<Texture> get_dest_texture();

@@ -102,9 +102,7 @@ namespace Pathfinder {
         //clip.upload(clip_segments);
     }
 
-    RendererD3D11::RendererD3D11(const std::shared_ptr<Pathfinder::Driver> &driver,
-                                 uint32_t canvas_width,
-                                 uint32_t canvas_height) : Renderer(driver) {
+    RendererD3D11::RendererD3D11(const std::shared_ptr<Pathfinder::Driver> &driver) : Renderer(driver) {
         allocated_microline_count = INITIAL_ALLOCATED_MICROLINE_COUNT;
         allocated_fill_count = INITIAL_ALLOCATED_FILL_COUNT;
 
@@ -123,13 +121,11 @@ namespace Pathfinder {
         mask_texture = driver->create_texture(MASK_FRAMEBUFFER_WIDTH,
                                               MASK_FRAMEBUFFER_HEIGHT,
                                               TextureFormat::RGBA8_UNORM);
-
-        dest_texture = driver->create_texture(canvas_width,
-                                              canvas_height,
-                                              TextureFormat::RGBA8_UNORM);
     }
 
     void RendererD3D11::set_up_pipelines(uint32_t canvas_width, uint32_t canvas_height) {
+        resize_dest_texture(canvas_width, canvas_height);
+
         const auto dice_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/dice.comp");
         const auto bound_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/bound.comp");
         const auto bin_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/bin.comp");
@@ -271,6 +267,12 @@ namespace Pathfinder {
 
     std::shared_ptr<Texture> RendererD3D11::get_dest_texture() {
         return dest_texture;
+    }
+
+    void RendererD3D11::resize_dest_texture(uint32_t width, uint32_t height) {
+        dest_texture = driver->create_texture(width,
+                                              height,
+                                              TextureFormat::RGBA8_UNORM);
     }
 
     void RendererD3D11::upload_scene(SegmentsD3D11 &draw_segments, SegmentsD3D11 &clip_segments) {

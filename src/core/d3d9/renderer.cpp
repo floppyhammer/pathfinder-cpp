@@ -36,7 +36,7 @@ namespace Pathfinder {
         return z_buffer_texture;
     }
 
-    RendererD3D9::RendererD3D9(const std::shared_ptr<Driver> &p_driver, uint32_t canvas_width, uint32_t canvas_height)
+    RendererD3D9::RendererD3D9(const std::shared_ptr<Driver> &p_driver)
             : Renderer(p_driver) {
         mask_render_pass = driver->create_render_pass(TextureFormat::RGBA16F, AttachmentLoadOp::CLEAR,
                                                       ImageLayout::SHADER_READ_ONLY);
@@ -51,11 +51,6 @@ namespace Pathfinder {
                                                       TextureFormat::RGBA16F,
                                                       mask_render_pass);
 
-        dest_framebuffer = driver->create_framebuffer(canvas_width,
-                                                      canvas_height,
-                                                      TextureFormat::RGBA8_UNORM,
-                                                      dest_render_pass_clear);
-
         // Quad vertex buffer. Shared by fills and tiles drawing.
         quad_vertex_buffer = driver->create_buffer(BufferType::Vertex, 12 * sizeof(uint16_t),
                                                    MemoryProperty::DEVICE_LOCAL);
@@ -65,7 +60,16 @@ namespace Pathfinder {
         cmd_buffer->submit(driver);
     }
 
+    void RendererD3D9::resize_dest_texture(uint32_t width, uint32_t height) {
+        dest_framebuffer = driver->create_framebuffer(width,
+                                                      height,
+                                                      TextureFormat::RGBA8_UNORM,
+                                                      dest_render_pass_clear);
+    }
+
     void RendererD3D9::set_up_pipelines(uint32_t canvas_width, uint32_t canvas_height) {
+        resize_dest_texture(canvas_width, canvas_height);
+
         // Fill pipeline.
         {
 #ifdef PATHFINDER_USE_VULKAN
