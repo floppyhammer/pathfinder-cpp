@@ -111,11 +111,15 @@ namespace Pathfinder {
     }
 
     void Shape::add_line(Vec2<float> p_start, Vec2<float> p_end) {
+        if (p_start == p_end) return;
+
         move_to(p_start.x, p_start.y);
         line_to(p_end.x, p_end.y);
     }
 
     void Shape::add_rect(const Rect<float> &p_rect, float p_corner_radius) {
+        if (p_rect.size().x == 0 || p_rect.size().y == 0) return;
+
         if (p_corner_radius <= 0) {
             move_to(p_rect.min_x(), p_rect.min_y());
             line_to(p_rect.max_x(), p_rect.min_y());
@@ -150,6 +154,8 @@ namespace Pathfinder {
     }
 
     void Shape::add_circle(Vec2<float> p_center, float p_radius) {
+        if (p_radius == 0) return;
+
         // See https://stackoverflow.com/questions/1734745/how-to-create-circle-with-b%C3%A9zier-curves.
         float adjusted_radius = p_radius * RATIO;
 
