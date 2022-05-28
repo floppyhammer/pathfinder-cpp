@@ -31,8 +31,8 @@ namespace Pathfinder {
             return &singleton;
         }
 
-        enum Level {
-            VERBOSE = 0,
+        enum class Level {
+            VERBOSE,
             DEBUG,
             INFO,
             WARN,
@@ -74,7 +74,7 @@ namespace Pathfinder {
         }
 
     private:
-        // So we can't be instantiated by outsiders.
+        // So it can't be instantiated by outsiders.
         Logger() = default;
 
     public:

@@ -40,10 +40,10 @@ namespace Pathfinder {
 
     /// Color(0~255, 0~255, 0~255, 0~255).
     struct ColorU {
-        uint8_t r = 0u;
-        uint8_t g = 0u;
-        uint8_t b = 0u;
-        uint8_t a = 0u;
+        uint8_t r = 0;
+        uint8_t g = 0;
+        uint8_t b = 0;
+        uint8_t a = 0;
 
         ColorU() = default;
 
@@ -53,12 +53,13 @@ namespace Pathfinder {
 
         ColorU(uint8_t p_r, uint8_t p_g, uint8_t p_b, uint8_t p_a);
 
+        ColorU(uint8_t p_r, uint8_t p_g, uint8_t p_b);
+
         uint32_t to_u32() const;
 
         ColorF to_f32() const;
 
-        bool is_transparent() const;
-
+        /// Not transparent.
         bool is_opaque() const;
 
         static ColorU red() {

@@ -154,7 +154,7 @@ namespace Pathfinder {
         p_shape.transform(transform);
 
         // Add shadow.
-        if (!current_state.shadow_color.is_transparent()) {
+        if (current_state.shadow_color.is_opaque()) {
             // Copy shape.
             auto shadow_shape = p_shape;
 

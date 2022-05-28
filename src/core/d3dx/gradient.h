@@ -116,7 +116,7 @@ namespace Pathfinder {
             add(ColorStop(color, offset));
         }
 
-        /// Returns true if all colors of all stops in this gradient are opaque (alpha is 1.0).
+        /// Returns true if all colors of all stops in this gradient are opaque.
         inline bool is_opaque() {
             bool opaque = true;
             for (auto& stop : stops) {
