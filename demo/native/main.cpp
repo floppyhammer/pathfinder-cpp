@@ -3,17 +3,15 @@
 #include "../src/gpu/vk/platform.h"
 #include "../src/gpu/vk/swap_chain.h"
 
-using namespace Pathfinder;
-
 uint32_t WINDOW_WIDTH = 1920;
 uint32_t WINDOW_HEIGHT = 1080;
 
 int main() {
     // Create platform.
 #ifdef PATHFINDER_USE_VULKAN
-    auto platform = PlatformVk::create(WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto platform = Pathfinder::PlatformVk::create(WINDOW_WIDTH, WINDOW_HEIGHT);
 #else
-    auto platform = PlatformGl::create(WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto platform = Pathfinder::PlatformGl::create(WINDOW_WIDTH, WINDOW_HEIGHT);
 #endif
 
     // Create driver via platform.
@@ -23,8 +21,8 @@ int main() {
     auto swap_chain = platform->create_swap_chain(driver, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     // Create app.
-    auto area_lut_input = load_file_as_bytes(PATHFINDER_ASSET_DIR"area-lut.png");
-    auto svg_input = load_file_as_string(PATHFINDER_ASSET_DIR"tiger.svg");
+    auto area_lut_input = Pathfinder::load_file_as_bytes(PATHFINDER_ASSET_DIR"area-lut.png");
+    auto svg_input = Pathfinder::load_file_as_string(PATHFINDER_ASSET_DIR"features.svg");
 
     App app(driver, swap_chain, WINDOW_WIDTH, WINDOW_HEIGHT, area_lut_input, svg_input);
 
@@ -42,6 +40,7 @@ int main() {
 
     swap_chain->cleanup();
 
+    // Do this after swap chain cleanup.
     app.cleanup();
 
     platform->cleanup();

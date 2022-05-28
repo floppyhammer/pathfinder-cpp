@@ -102,9 +102,7 @@ namespace Pathfinder {
         //clip.upload(clip_segments);
     }
 
-    RendererD3D11::RendererD3D11(const std::shared_ptr<Pathfinder::Driver> &driver,
-                                 uint32_t canvas_width,
-                                 uint32_t canvas_height) : Renderer(driver) {
+    RendererD3D11::RendererD3D11(const std::shared_ptr<Pathfinder::Driver> &driver) : Renderer(driver) {
         allocated_microline_count = INITIAL_ALLOCATED_MICROLINE_COUNT;
         allocated_fill_count = INITIAL_ALLOCATED_FILL_COUNT;
 
@@ -123,13 +121,11 @@ namespace Pathfinder {
         mask_texture = driver->create_texture(MASK_FRAMEBUFFER_WIDTH,
                                               MASK_FRAMEBUFFER_HEIGHT,
                                               TextureFormat::RGBA8_UNORM);
-
-        dest_texture = driver->create_texture(canvas_width,
-                                              canvas_height,
-                                              TextureFormat::RGBA8_UNORM);
     }
 
     void RendererD3D11::set_up_pipelines(uint32_t canvas_width, uint32_t canvas_height) {
+        resize_dest_texture(canvas_width, canvas_height);
+
         const auto dice_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/dice.comp");
         const auto bound_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/bound.comp");
         const auto bin_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/bin.comp");
@@ -273,6 +269,12 @@ namespace Pathfinder {
         return dest_texture;
     }
 
+    void RendererD3D11::resize_dest_texture(uint32_t width, uint32_t height) {
+        dest_texture = driver->create_texture(width,
+                                              height,
+                                              TextureFormat::RGBA8_UNORM);
+    }
+
     void RendererD3D11::upload_scene(SegmentsD3D11 &draw_segments, SegmentsD3D11 &clip_segments) {
         scene_buffers.upload(driver, draw_segments, clip_segments);
     }
@@ -289,9 +291,7 @@ namespace Pathfinder {
 
         auto batch_info = tile_batch_info[tile_batch_id];
 
-        auto cmd_buffer = driver->create_command_buffer(true);
-        upload_metadata(metadata_texture, metadata, cmd_buffer);
-        cmd_buffer->submit(driver);
+        upload_metadata(metadata_texture, metadata, driver);
 
         draw_tiles(batch_info.tiles_d3d11_buffer_id,
                    batch_info.first_tile_map_buffer_id,

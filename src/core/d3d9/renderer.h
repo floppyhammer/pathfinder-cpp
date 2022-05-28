@@ -23,13 +23,15 @@ namespace Pathfinder {
         /// Tiles to draw.
         std::vector<DrawTileBatch> pending_tile_batches;
 
-        RendererD3D9(const std::shared_ptr<Driver> &p_driver, uint32_t canvas_width, uint32_t canvas_height);
+        explicit RendererD3D9(const std::shared_ptr<Driver> &p_driver);
 
         void set_up_pipelines(uint32_t canvas_width, uint32_t canvas_height);
 
         void draw(const SceneBuilderD3D9 &scene_builder);
 
         std::shared_ptr<Texture> get_dest_texture() override;
+
+        void resize_dest_texture(uint32_t width, uint32_t height) override;
 
     private:
         /// Vertex buffers.
@@ -53,8 +55,7 @@ namespace Pathfinder {
         std::shared_ptr<RenderPass> mask_render_pass, dest_render_pass_clear, dest_render_pass_load;
 
         void upload_and_draw_tiles(const std::vector<DrawTileBatch> &tile_batches,
-                                   const std::vector<TextureMetadataEntry> &metadata,
-                                   const std::shared_ptr<CommandBuffer> &cmd_buffer);
+                                   const std::vector<TextureMetadataEntry> &metadata);
 
         /// Upload fills data to GPU.
         void upload_fills(const std::vector<Fill> &fills, const std::shared_ptr<CommandBuffer>& cmd_buffer);

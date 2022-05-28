@@ -129,9 +129,9 @@ namespace Pathfinder {
 
         // Set up a renderer.
 #ifndef PATHFINDER_USE_D3D11
-        renderer = std::make_shared<RendererD3D9>(p_driver, size_x, size_y);
+        renderer = std::make_shared<RendererD3D9>(p_driver);
 #else
-        renderer = std::make_shared<RendererD3D11>(p_driver, size_x, size_y);
+        renderer = std::make_shared<RendererD3D11>(p_driver);
 #endif
 
         renderer->set_up(area_lut_input);
@@ -345,6 +345,10 @@ namespace Pathfinder {
         scene_builder.scene = scene;
     }
 
+    void Canvas::resize(float p_size_x, float p_size_y) {
+        renderer->resize_dest_texture(p_size_x, p_size_y);
+    }
+
     std::shared_ptr<Scene> Canvas::get_scene() const {
         return scene;
     }
@@ -474,5 +478,20 @@ namespace Pathfinder {
 
         timestamp.record("add shape to canvas");
         timestamp.print();
+    }
+
+    void Canvas::draw_image() {
+
+    }
+
+    void Canvas::save_state() {
+        saved_states.push_back(current_state);
+    }
+
+    void Canvas::restore_state() {
+        if (!saved_states.empty()) {
+            current_state = saved_states.back();
+            saved_states.pop_back();
+        }
     }
 }

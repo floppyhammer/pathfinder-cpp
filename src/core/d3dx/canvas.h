@@ -134,6 +134,8 @@ namespace Pathfinder {
         /// Clear the scene.
         void clear();
 
+        void resize(float p_size_x, float p_size_y);
+
         std::shared_ptr<Scene> get_scene() const;
 
         std::shared_ptr<Texture> get_dest_texture();
@@ -144,6 +146,15 @@ namespace Pathfinder {
          * @param input SVG file content.
          */
         void load_svg(const std::string& input);
+
+        // TODO
+        void draw_image();
+
+        // Canvas state
+
+        void save_state();
+
+        void restore_state();
 
     private:
         std::shared_ptr<Driver> driver;

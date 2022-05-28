@@ -23,7 +23,7 @@ namespace Pathfinder {
 
     void upload_metadata(const std::shared_ptr<Texture>& metadata_texture,
                          const std::vector<TextureMetadataEntry> &metadata,
-                         const std::shared_ptr<CommandBuffer> &cmd_buffer);
+                         const std::shared_ptr<Driver> &driver);
 
     /// Base for D3D9 and D3D11 renderers.
     class Renderer {
@@ -34,6 +34,8 @@ namespace Pathfinder {
         void set_up(const std::vector<char> &area_lut_input);
 
         virtual std::shared_ptr<Texture> get_dest_texture() = 0;
+
+        virtual void resize_dest_texture(uint32_t width, uint32_t height) = 0;
 
     protected:
         std::shared_ptr<Driver> driver;

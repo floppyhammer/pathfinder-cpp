@@ -142,6 +142,36 @@ namespace Pathfinder {
         args.data = data;
 
         commands.push(cmd);
+
+        // Moved from submit() to here in order to handle host-visible/corehent buffers properly.
+        // -------------------------------------------------------
+        auto buffer_gl = static_cast<BufferGl *>(args.buffer);
+
+        int gl_buffer_type;
+
+        switch (args.buffer->type) {
+            case BufferType::Vertex: {
+                gl_buffer_type = GL_ARRAY_BUFFER;
+            }
+                break;
+            case BufferType::Uniform: {
+                gl_buffer_type = GL_UNIFORM_BUFFER;
+            }
+                break;
+#ifdef PATHFINDER_USE_D3D11
+                case BufferType::General: {
+                                gl_buffer_type = GL_SHADER_STORAGE_BUFFER;
+                            }
+                                break;
+#endif
+        }
+
+        glBindBuffer(gl_buffer_type, buffer_gl->id);
+        glBufferSubData(gl_buffer_type, args.offset, args.data_size, args.data);
+        glBindBuffer(gl_buffer_type, 0); // Unbind.
+
+        check_error("UploadToBuffer");
+        // -------------------------------------------------------
     }
 
     void CommandBufferGl::upload_to_texture(const std::shared_ptr<Texture> &texture, Rect<uint32_t> p_region,
@@ -419,34 +449,7 @@ namespace Pathfinder {
                 }
                     break;
                 case CommandType::UploadToBuffer: {
-                    auto &args = cmd.args.upload_to_buffer;
 
-                    auto buffer_gl = static_cast<BufferGl *>(args.buffer);
-
-                    int gl_buffer_type;
-
-                    switch (args.buffer->type) {
-                        case BufferType::Vertex: {
-                            gl_buffer_type = GL_ARRAY_BUFFER;
-                        }
-                            break;
-                        case BufferType::Uniform: {
-                            gl_buffer_type = GL_UNIFORM_BUFFER;
-                        }
-                            break;
-#ifdef PATHFINDER_USE_D3D11
-                            case BufferType::General: {
-                                gl_buffer_type = GL_SHADER_STORAGE_BUFFER;
-                            }
-                                break;
-#endif
-                    }
-
-                    glBindBuffer(gl_buffer_type, buffer_gl->id);
-                    glBufferSubData(gl_buffer_type, args.offset, args.data_size, args.data);
-                    glBindBuffer(gl_buffer_type, 0); // Unbind.
-
-                    check_error("UploadToBuffer");
                 }
                     break;
                 case CommandType::ReadBuffer: {
