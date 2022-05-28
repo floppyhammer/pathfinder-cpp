@@ -11,6 +11,10 @@ namespace Pathfinder {
         return Transform2::from_translation(p_vector) * *this;
     }
 
+    Transform2 Transform2::rotate(float theta) const {
+        return Transform2::from_rotation(theta) * *this;
+    }
+
     Transform2 Transform2::inverse() const {
         auto matrix_inv = matrix.inverse();
         auto vector_inv = -(matrix_inv * vector);

@@ -19,6 +19,10 @@ namespace Pathfinder {
             return {Mat2x2<float>::from_scale(p_scale), Vec2<float>(0)};
         }
 
+        static Transform2 from_rotation(float theta) {
+            return {Mat2x2<float>::from_rotation(theta), Vec2<float>(0)};
+        }
+
         static Transform2 from_translation(const Vec2<float> &p_vector) {
             return {Mat2x2<float>::from_scale(Vec2<float>(1)), p_vector};
         }
@@ -30,6 +34,8 @@ namespace Pathfinder {
         Transform2 inverse() const;
 
         Transform2 translate(Vec2<float> p_vector) const;
+
+        Transform2 rotate(float theta) const;
 
         inline float m11() const {
             return matrix.m11();

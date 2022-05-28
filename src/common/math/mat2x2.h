@@ -24,6 +24,10 @@ namespace Pathfinder {
             return Mat2x2(p_scale.x, 0.0, 0.0, p_scale.y);
         }
 
+        static Mat2x2 from_rotation(float theta) {
+            return Mat2x2::from_rotation_vector(UnitVector::from_angle(theta));
+        }
+
         static Mat2x2 from_rotation_vector(const UnitVector &p_vector) {
             return Mat2x2(1.0 * p_vector.x, 1.0 * p_vector.y, -1.0 * p_vector.y, 1.0 * p_vector.x);
         }
