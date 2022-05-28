@@ -13,42 +13,42 @@ namespace Pathfinder {
         return palette.get_paint(paint_id);
     }
 
-    uint32_t Scene::push_draw_path(const Shape &p_shape) {
+    uint32_t Scene::push_draw_shape(const Shape &p_shape) {
         // Need to rebuild the scene.
         is_dirty = true;
 
         // Get the shape index in the scene.
-        auto draw_path_index = draw_paths.size();
+        auto draw_shape_index = draw_shapes.size();
 
         // Push the shape.
-        draw_paths.push_back(p_shape);
+        draw_shapes.push_back(p_shape);
 
         // Update the scene bounds.
         bounds = bounds.union_rect(p_shape.bounds);
 
         // Update the display list.
         if (!display_list.empty() && display_list.back().type == DisplayItem::Type::DrawPaths) {
-            display_list.back().path_range.end = draw_path_index + 1;
+            display_list.back().path_range.end = draw_shape_index + 1;
         } else {
             DisplayItem item;
             item.type = DisplayItem::Type::DrawPaths;
-            item.path_range = Range(draw_path_index, draw_path_index + 1);
+            item.path_range = Range(draw_shape_index, draw_shape_index + 1);
             display_list.push_back(item);
         }
 
-        return draw_path_index;
+        return draw_shape_index;
     }
 
     void Scene::append_scene(const Scene &p_scene) {
-        if (p_scene.draw_paths.empty())
+        if (p_scene.draw_shapes.empty())
             return;
 
         // Need to rebuild the scene.
         is_dirty = true;
 
         // Extend shapes.
-        draw_paths.reserve(draw_paths.size() + p_scene.draw_paths.size());
-        draw_paths.insert(std::end(draw_paths), std::begin(p_scene.draw_paths), std::end(p_scene.draw_paths));
+        draw_shapes.reserve(draw_shapes.size() + p_scene.draw_shapes.size());
+        draw_shapes.insert(std::end(draw_shapes), std::begin(p_scene.draw_shapes), std::end(p_scene.draw_shapes));
 
         // Combine bounds.
         bounds = bounds.union_rect(p_scene.bounds);

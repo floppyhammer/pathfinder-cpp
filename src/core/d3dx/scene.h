@@ -47,10 +47,10 @@ namespace Pathfinder {
         std::vector<DisplayItem> display_list;
 
         /// Shapes.
-        std::vector<Shape> draw_paths;
+        std::vector<Shape> draw_shapes;
 
         /// Clip shapes.
-        std::vector<Shape> clip_paths;
+        std::vector<Shape> clip_shapes;
 
         /// Contains paints.
         Palette palette;
@@ -76,7 +76,7 @@ namespace Pathfinder {
 
         /**
          * Defines a new paint, which specifies how paths are to be filled or stroked.
-         * @return An ID that can be later specified alongside draw paths.
+         * @return An ID that can be later specified alongside draw shapes.
          */
         uint32_t push_paint(const Paint &paint);
 
@@ -90,7 +90,7 @@ namespace Pathfinder {
          * @param p_shape Shape to add.
          * @return An ID which can later be used to retrieve the shape.
          */
-        uint32_t push_draw_path(const Shape &p_shape);
+        uint32_t push_draw_shape(const Shape &p_shape);
 
         /**
          * Add all shapes in a scene to this one.
@@ -106,9 +106,9 @@ namespace Pathfinder {
          */
         void transform(Vec2<float> position, Vec2<float> scale, float rotation);
 
-        /// Directs subsequent draw paths to draw to the given render target instead of the output.
+        /// Directs subsequent draw shapes to draw to the given render target instead of the output.
         ///
-        /// Render targets form a stack. All `push_draw_path()` commands go to the render target at the
+        /// Render targets form a stack. All `push_draw_shape()` commands go to the render target at the
         /// top of the stack.
         RenderTarget push_render_target(const std::shared_ptr<Driver>& driver, Vec2<int> render_target_size);
 

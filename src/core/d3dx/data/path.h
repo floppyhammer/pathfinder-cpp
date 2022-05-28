@@ -17,9 +17,10 @@ namespace Pathfinder {
         Path() = default;
 
         std::vector<Vec2<float>> points;
+
         std::vector<PointFlags> flags;
 
-        Rect<float> bounds = Rect<float>();
+        Rect<float> bounds;
 
         /// If we should connect the end point to the start point.
         bool closed = false;

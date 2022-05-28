@@ -34,25 +34,25 @@ namespace Pathfinder {
 
     private:
         /**
-         * Assign built paths into batches.
-         * @param built_paths
+         * Assign built shapes into batches.
+         * @param built_shapes
          */
-        void finish_building(const std::vector<BuiltDrawPath> &built_paths);
+        void finish_building(const std::vector<BuiltDrawShape> &built_shapes);
 
         /**
-         * Build draw paths into built draw paths.
+         * Build draw shapes into built draw shapes.
          */
-        std::vector<BuiltDrawPath> build_paths_on_cpu();
+        std::vector<BuiltDrawShape> build_shapes_on_cpu();
 
         /**
-         * Run in a thread. Run a tiler on a outline (path).
-         * @param path_id Unique ID of the shape in the scene.
+         * Run in a thread. Run a tiler on a shape.
+         * @param shape_id Unique ID of the shape in the scene.
          * @return A built shape.
          */
-        BuiltDrawPath build_draw_path_on_cpu(uint32_t path_id, omp_lock_t &write_lock);
+        BuiltDrawShape build_draw_shape_on_cpu(uint32_t shape_id, omp_lock_t &write_lock);
 
         /// Build patches for built paths.
-        void build_tile_batches(const std::vector<BuiltDrawPath> &built_paths);
+        void build_tile_batches(const std::vector<BuiltDrawShape> &built_paths);
 
         /**
          * Send fills to Renderer::buffered_fills. fill_batch.size() = 124.

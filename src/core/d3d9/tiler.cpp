@@ -282,14 +282,14 @@ namespace Pathfinder {
         process_segment(next, p_scene_builder, p_object_builder);
     }
 
-    Tiler::Tiler(SceneBuilderD3D9 &p_scene_builder, uint32_t path_id, const Shape &p_shape,
+    Tiler::Tiler(SceneBuilderD3D9 &p_scene_builder, uint32_t shape_id, const Shape &p_shape,
                  FillRule fill_rule, const Rect<float> &view_box)
             : shape(p_shape), scene_builder(p_scene_builder) {
         // The intersection rect of the path bounds and the view box.
         auto bounds = p_shape.bounds.intersection(view_box);
 
         // Create an object builder.
-        object_builder = ObjectBuilder(path_id, bounds, shape.paint, view_box, fill_rule);
+        object_builder = ObjectBuilder(shape_id, bounds, shape.paint, view_box, fill_rule);
     }
 
     void Tiler::generate_tiles() {
@@ -320,8 +320,8 @@ namespace Pathfinder {
 
     void Tiler::prepare_tiles() {
         // Prepared previously by generate_fills().
-        auto &backdrops = object_builder.built_path.data.backdrops;
-        auto &tiles = object_builder.built_path.data.tiles;
+        auto &backdrops = object_builder.built_shape.data.backdrops;
+        auto &tiles = object_builder.built_shape.data.tiles;
 
         auto tiles_across = tiles.rect.width();
 

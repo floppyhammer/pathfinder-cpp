@@ -22,7 +22,7 @@ namespace Pathfinder {
         AlphaTileId alpha_tile_id;
         uint8_t ctrl = 0; // Fill rule
         int8_t backdrop = 0;
-        uint32_t path_id = 0;
+        uint32_t shape_id = 0;
         uint32_t metadata_id = 0;
     };
 }

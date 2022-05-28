@@ -6,15 +6,15 @@
 #include "../../common/math/basic.h"
 
 namespace Pathfinder {
-    ObjectBuilder::ObjectBuilder(uint32_t path_id, Rect<float> path_bounds,
+    ObjectBuilder::ObjectBuilder(uint32_t shape_id, Rect<float> shape_bounds,
                                  uint32_t paint_id, Rect<float> view_box_bounds,
-                                 FillRule fill_rule) : bounds(path_bounds) {
-        built_path = BuiltPath(path_id, path_bounds, paint_id, view_box_bounds, fill_rule);
+                                 FillRule fill_rule) : bounds(shape_bounds) {
+        built_shape = BuiltShape(shape_id, shape_bounds, paint_id, view_box_bounds, fill_rule);
     }
 
     void ObjectBuilder::add_fill(SceneBuilderD3D9 &scene_builder, LineSegmentF p_segment, Vec2<int> tile_coords) {
         // Ensure this fill is in bounds. If not, cull it.
-        if (!built_path.tile_bounds.contains_point(tile_coords)) {
+        if (!built_shape.tile_bounds.contains_point(tile_coords)) {
             return;
         }
 
@@ -60,7 +60,7 @@ namespace Pathfinder {
     }
 
     int ObjectBuilder::tile_coords_to_local_index_unchecked(const Vec2<int> &coords) const {
-        auto tile_rect = built_path.tile_bounds;
+        auto tile_rect = built_shape.tile_bounds;
         auto offset = coords - tile_rect.origin();
         return offset.x + tile_rect.width() * offset.y;
     }
@@ -70,8 +70,8 @@ namespace Pathfinder {
         // Tile index in the tile bounds.
         auto local_tile_index = tile_coords_to_local_index_unchecked(tile_coords);
 
-        // Get a reference of the dense tile map from the built path data.
-        auto &tiles = built_path.data.tiles;
+        // Get a reference of the dense tile map from the built shape data.
+        auto &tiles = built_shape.data.tiles;
 
         // Get the alpha tile id.
         auto alpha_tile_id = tiles.data[local_tile_index].alpha_tile_id;
@@ -91,8 +91,8 @@ namespace Pathfinder {
     }
 
     void ObjectBuilder::adjust_alpha_tile_backdrop(const Vec2<int> &tile_coords, int8_t delta) {
-        auto &tiles = built_path.data.tiles;
-        auto &backdrops = built_path.data.backdrops;
+        auto &tiles = built_shape.data.tiles;
+        auto &backdrops = built_shape.data.backdrops;
 
         auto tile_offset = tile_coords - tiles.rect.origin();
 

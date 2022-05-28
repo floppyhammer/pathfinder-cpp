@@ -11,17 +11,13 @@
 #include <vector>
 
 namespace Pathfinder {
-    /// ALIAS: BuiltShapeData.
-    struct BuiltPathData {
-        /// During tiling, or if backdrop computation is done on GPU, this stores the sum of backdrops
-        /// for tile columns above the viewport.
+    struct BuiltShapeData {
         std::vector<int32_t> backdrops;
         DenseTileMap<TileObjectPrimitive> tiles;
     };
 
-    /// ALIAS: BuiltShape.
-    struct BuiltPath {
-        BuiltPathData data;
+    struct BuiltShape {
+        BuiltShapeData data;
         Rect<int> tile_bounds;
         FillRule fill_rule = FillRule::Winding;
 
@@ -29,22 +25,36 @@ namespace Pathfinder {
         uint16_t paint_id = 0;
 
         /// Path is shape.
-        BuiltPath() = default;
+        BuiltShape() = default;
 
-        BuiltPath(uint32_t path_id, Rect<float> path_bounds, uint32_t paint_id, Rect<float> view_box_bounds,
-                  FillRule p_fill_rule);
+        BuiltShape(uint32_t shape_id, Rect<float> path_bounds, uint32_t p_paint_id,
+                   Rect<float> view_box_bounds, FillRule p_fill_rule)
+                : fill_rule(p_fill_rule), paint_id(p_paint_id) {
+            // Set fill rule.
+            ctrl_byte = fill_rule == FillRule::EvenOdd ?
+                        TILE_CTRL_MASK_EVEN_ODD << TILE_CTRL_MASK_0_SHIFT :
+                        TILE_CTRL_MASK_WINDING << TILE_CTRL_MASK_0_SHIFT;
+
+            Rect<float> tile_map_bounds = path_bounds;
+
+            tile_bounds = round_rect_out_to_tile_bounds(tile_map_bounds);
+
+            data.backdrops = std::vector<int32_t>(tile_bounds.width(), 0);
+
+            data.tiles = DenseTileMap<TileObjectPrimitive>(tile_bounds, shape_id, paint_id, ctrl_byte);
+        }
     };
 
-    /// This stores a built path with extra info related to its drawing.
-    struct BuiltDrawPath {
+    /// This stores a built shape with extra info related to its drawing.
+    struct BuiltDrawShape {
     public:
-        BuiltDrawPath() = default;
+        BuiltDrawShape() = default;
 
-        BuiltDrawPath(BuiltPath p_path, BlendMode p_blend_mode, FillRule p_fill_rule, bool p_occludes)
-                : path(std::move(p_path)), blend_mode(p_blend_mode),
+        BuiltDrawShape(BuiltShape p_shape, BlendMode p_blend_mode, FillRule p_fill_rule, bool p_occludes)
+                : shape(std::move(p_shape)), blend_mode(p_blend_mode),
                   mask_0_fill_rule(p_fill_rule), occludes(p_occludes) {}
 
-        BuiltPath path;
+        BuiltShape shape;
         BlendMode blend_mode = BlendMode::SrcIn;
         FillRule mask_0_fill_rule = FillRule::Winding;
 

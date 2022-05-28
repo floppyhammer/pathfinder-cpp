@@ -10,13 +10,13 @@
 namespace Pathfinder {
     class ObjectBuilder {
     public:
-        BuiltPath built_path;
+        BuiltShape built_shape;
         std::vector<Fill> fills;
         Rect<float> bounds;
 
         ObjectBuilder() = default;
 
-        ObjectBuilder(uint32_t path_id, Rect<float> path_bounds, uint32_t paint_id,
+        ObjectBuilder(uint32_t shape_id, Rect<float> shape_bounds, uint32_t paint_id,
                       Rect<float> view_box_bounds, FillRule fill_rule);
 
         /// Alpha tile id is set at this stage.

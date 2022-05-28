@@ -192,7 +192,7 @@ namespace Pathfinder {
                                                   1,
                                                   DataType::INT,
                                                   stride,
-                                                  offsetof(TileObjectPrimitive, path_id),
+                                                  offsetof(TileObjectPrimitive, shape_id),
                                                   VertexInputRate::INSTANCE});
                 attribute_descriptions.push_back({1,
                                                   1,

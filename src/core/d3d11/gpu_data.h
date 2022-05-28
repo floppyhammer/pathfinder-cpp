@@ -75,8 +75,8 @@ namespace Pathfinder {
     };
 
     struct DiceMetadataD3D11 {
-        /// Either a draw path ID or a clip path ID, depending on context.
-        uint32_t global_path_id = 0;
+        /// Either a draw shape ID or a clip shape ID, depending on context.
+        uint32_t global_shape_id = 0;
         uint32_t first_global_segment_index = 0;
         uint32_t first_batch_segment_index = 0;
         uint32_t pad = 0;
@@ -126,8 +126,8 @@ namespace Pathfinder {
         TileBatchDataD3D11(uint32_t p_batch_id,
                            PathSource p_path_source);
 
-        uint32_t push(BuiltPath &path,
-                      uint32_t global_path_id,
+        uint32_t push(BuiltShape &shape,
+                      uint32_t global_shape_id,
                       bool z_write,
                       LastSceneInfo &last_scene);
 
