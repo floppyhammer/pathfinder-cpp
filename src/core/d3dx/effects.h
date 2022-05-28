@@ -1,7 +1,7 @@
 #ifndef PATHFINDER_EFFECTS_H
 #define PATHFINDER_EFFECTS_H
 
-#include "../d3d9/data/line_segment.h"
+#include "data/line_segment.h"
 #include "../../common/color.h"
 
 namespace Pathfinder {

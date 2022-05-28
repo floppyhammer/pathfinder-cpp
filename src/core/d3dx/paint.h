@@ -4,7 +4,7 @@
 #include "gradient.h"
 #include "pattern.h"
 #include "data/data.h"
-#include "../d3d9/data/line_segment.h"
+#include "data/line_segment.h"
 #include "../../common/color.h"
 #include "../../common/math/vec2.h"
 #include "../../common/math/rect.h"
@@ -93,10 +93,10 @@ namespace Pathfinder {
         /// Returns true if this paint is obviously opaque, via a quick check.
         bool is_opaque() const;
 
-        /// Returns the *base color* of this paint.
+        /// Returns the base color of this paint.
         ColorU get_base_color() const;
 
-        /// Changes the *base color* of this paint.
+        /// Changes the base color of this paint.
         void set_base_color(ColorU p_color);
 
         /// Returns the paint overlay, which is the portion of the paint on top of the base color.

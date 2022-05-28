@@ -1,7 +1,7 @@
 #ifndef PATHFINDER_GRADIENT_H
 #define PATHFINDER_GRADIENT_H
 
-#include "../d3d9/data/line_segment.h"
+#include "data/line_segment.h"
 #include "../../common/color.h"
 #include "../../common/math/transform2.h"
 

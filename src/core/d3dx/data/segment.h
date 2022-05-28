@@ -2,7 +2,7 @@
 #define PATHFINDER_SEGMENT_H
 
 #include "data.h"
-#include "../../d3d9/data/line_segment.h"
+#include "line_segment.h"
 #include "../../../common/math/transform2.h"
 
 namespace Pathfinder {

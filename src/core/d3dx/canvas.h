@@ -47,12 +47,13 @@ namespace Pathfinder {
     /// Pen state.
     struct State {
         Transform2 transform;
-        float line_width = 0;
 
+        float line_width = 0;
         LineCap line_cap = LineCap::Butt;
         LineJoin line_join = LineJoin::Miter;
         float miter_limit = 10;
 
+        // Dash.
         std::vector<float> line_dash;
         float line_dash_offset = 0;
 

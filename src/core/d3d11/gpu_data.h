@@ -3,7 +3,7 @@
 
 #include "../d3dx/paint.h"
 #include "../d3dx/scene.h"
-#include "../d3d9/data/line_segment.h"
+#include "../d3dx/data/line_segment.h"
 #include "../d3dx/data/built_path.h"
 #include "../../common/math/transform2.h"
 #include "../../common/math/rect.h"

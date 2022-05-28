@@ -1,7 +1,3 @@
-//
-// Created by floppyhammer on 2021/11/4.
-//
-
 #include "gpu_data.h"
 
 #ifdef PATHFINDER_USE_D3D11
