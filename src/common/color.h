@@ -36,6 +36,10 @@ namespace Pathfinder {
         static ColorF black() {
             return {0, 0, 0, 1};
         }
+
+        inline ColorF operator*(ColorF other) const {
+            return {r * other.r, g * other.g, b * other.b, a * other.a};
+        }
     };
 
     /// Color(0~255, 0~255, 0~255, 0~255).

@@ -158,6 +158,9 @@ namespace Pathfinder {
     inline Vec2<T> lerp(const Vec2<T> &a, const Vec2<T> &b, float t) {
         return Vec2<T>{a.x + t * (b.x - a.x), a.y + t * (b.y - a.y)};
     }
+
+    typedef Vec2<float> Vec2F;
+    typedef Vec2<int> Vec2I;
 }
 
 #endif //PATHFINDER_VEC2_H

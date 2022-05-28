@@ -17,7 +17,24 @@ namespace Pathfinder {
         static inline Vec3 zero() {
             return {0};
         }
+
+        Vec2<T> xy() const {
+            return {x, y};
+        }
+
+        inline Vec3 operator*(float s) const {
+            return Vec3{x * s, y * s, z * s};
+        }
+
+        inline void operator+=(const Vec3 &b) {
+            x += b.x;
+            y += b.y;
+            z += b.z;
+        }
     };
+
+    typedef Vec3<float> Vec3F;
+    typedef Vec3<int> Vec3I;
 }
 
 #endif //PATHFINDER_VEC3_H
