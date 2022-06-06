@@ -20,4 +20,8 @@ namespace Pathfinder {
         auto vector_inv = -(matrix_inv * vector);
         return {matrix_inv, vector_inv};
     }
+
+    Vec2<float> Transform2::get_position() const {
+        return vector;
+    }
 }

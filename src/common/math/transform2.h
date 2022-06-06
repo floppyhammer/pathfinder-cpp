@@ -8,9 +8,11 @@
 
 namespace Pathfinder {
     struct Transform2 {
+    private:
         Mat2x2<float> matrix;
         Vec2<float> vector;
 
+    public:
         Transform2();
 
         Transform2(Mat2x2<float> p_matrix, Vec2<float> p_vector);
@@ -36,6 +38,8 @@ namespace Pathfinder {
         Transform2 translate(Vec2<float> p_vector) const;
 
         Transform2 rotate(float theta) const;
+
+        Vec2<float> get_position() const;
 
         inline float m11() const {
             return matrix.m11();
