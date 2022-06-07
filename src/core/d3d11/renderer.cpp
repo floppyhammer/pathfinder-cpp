@@ -580,9 +580,9 @@ namespace Pathfinder {
         // Update uniform buffers.
         {
             // Note that a row of mat2 occupies 4 floats just like a mat4.
-            std::array<float, 10> ubo_data0 = {transform.matrix.v[0], transform.matrix.v[1], 0, 0,
-                                               transform.matrix.v[2], transform.matrix.v[3], 0, 0,
-                                               transform.vector.x, transform.vector.y};
+            std::array<float, 10> ubo_data0 = {transform.m11(), transform.m21(), 0, 0,
+                                               transform.m12(), transform.m22(), 0, 0,
+                                               transform.get_position().x, transform.get_position().y};
             cmd_buffer->upload_to_buffer(dice_ub0, 0, 10 * sizeof(float), ubo_data0.data());
 
             std::array<int32_t, 3> ubo_data1 = {static_cast<int32_t>(dice_metadata.size()),

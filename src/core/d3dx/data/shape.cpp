@@ -6,108 +6,108 @@ namespace Pathfinder {
     const float RATIO = 0.552284749831; // 4.0f * (sqrt(2.0f) - 1.0f) / 3.0f
 
     void Shape::move_to(float x, float y) {
-        // Add a new empty path.
-        paths.emplace_back();
+        // Add a new empty contour.
+        contours.emplace_back();
 
-        auto &current_path = paths.back();
+        auto &current_contour = contours.back();
 
         // First on-curve point.
-        paths.back().points.emplace_back(x, y);
-        paths.back().flags.emplace_back();
+        contours.back().points.emplace_back(x, y);
+        contours.back().flags.emplace_back();
 
-        // Update path bounds.
-        union_rect(current_path.bounds, Vec2<float>(x, y), true);
+        // Update contour bounds.
+        union_rect(current_contour.bounds, Vec2<float>(x, y), true);
 
         // Update shape bounds.
-        bounds = bounds.union_rect(current_path.bounds);
+        bounds = bounds.union_rect(current_contour.bounds);
     }
 
     void Shape::line_to(float x, float y) {
-        if (paths.empty())
+        if (contours.empty())
             return;
 
         // Avoid adding a zero-length line.
-        if (!paths.back().points.empty()) {
-            if (paths.back().points.back() == Vec2<float>(x, y)) {
+        if (!contours.back().points.empty()) {
+            if (contours.back().points.back() == Vec2<float>(x, y)) {
                 return;
             }
         }
 
-        auto &current_path = paths.back();
+        auto &current_contour = contours.back();
 
-        current_path.points.emplace_back(x, y);
-        current_path.flags.emplace_back();
+        current_contour.points.emplace_back(x, y);
+        current_contour.flags.emplace_back();
 
-        // Update path bounds.
-        union_rect(current_path.bounds, Vec2<float>(x, y));
+        // Update contour bounds.
+        union_rect(current_contour.bounds, Vec2<float>(x, y));
 
         // Update shape bounds.
-        bounds = bounds.union_rect(current_path.bounds);
+        bounds = bounds.union_rect(current_contour.bounds);
     }
 
     void Shape::curve_to(float cx, float cy, float x, float y) {
-        if (paths.empty())
+        if (contours.empty())
             return;
 
-        auto &current_path = paths.back();
+        auto &current_contour = contours.back();
 
-        current_path.points.emplace_back(cx, cy);
-        current_path.flags.emplace_back(PointFlags::CONTROL_POINT_0);
+        current_contour.points.emplace_back(cx, cy);
+        current_contour.flags.emplace_back(PointFlags::CONTROL_POINT_0);
 
-        current_path.points.emplace_back(x, y);
-        current_path.flags.emplace_back();
+        current_contour.points.emplace_back(x, y);
+        current_contour.flags.emplace_back();
 
-        // Update path bounds.
-        union_rect(current_path.bounds, Vec2<float>(cx, cy));
-        union_rect(current_path.bounds, Vec2<float>(x, y));
+        // Update contour bounds.
+        union_rect(current_contour.bounds, Vec2<float>(cx, cy));
+        union_rect(current_contour.bounds, Vec2<float>(x, y));
 
         // Update shape bounds.
-        bounds = bounds.union_rect(current_path.bounds);
+        bounds = bounds.union_rect(current_contour.bounds);
     }
 
     void Shape::cubic_to(float cx, float cy, float cx1, float cy1, float x, float y) {
-        if (paths.empty())
+        if (contours.empty())
             return;
 
-        auto &current_path = paths.back();
+        auto &current_contour = contours.back();
 
-        current_path.points.emplace_back(cx, cy);
-        current_path.flags.emplace_back(PointFlags::CONTROL_POINT_0);
+        current_contour.points.emplace_back(cx, cy);
+        current_contour.flags.emplace_back(PointFlags::CONTROL_POINT_0);
 
-        current_path.points.emplace_back(cx1, cy1);
-        current_path.flags.emplace_back(PointFlags::CONTROL_POINT_1);
+        current_contour.points.emplace_back(cx1, cy1);
+        current_contour.flags.emplace_back(PointFlags::CONTROL_POINT_1);
 
-        current_path.points.emplace_back(x, y);
-        current_path.flags.emplace_back();
+        current_contour.points.emplace_back(x, y);
+        current_contour.flags.emplace_back();
 
-        // Update path bounds.
-        union_rect(current_path.bounds, Vec2<float>(cx, cy));
-        union_rect(current_path.bounds, Vec2<float>(cx1, cy1));
-        union_rect(current_path.bounds, Vec2<float>(x, y));
+        // Update contour bounds.
+        union_rect(current_contour.bounds, Vec2<float>(cx, cy));
+        union_rect(current_contour.bounds, Vec2<float>(cx1, cy1));
+        union_rect(current_contour.bounds, Vec2<float>(x, y));
 
         // Update shape bounds.
-        bounds = bounds.union_rect(current_path.bounds);
+        bounds = bounds.union_rect(current_contour.bounds);
     }
 
     void Shape::close() {
-        if (paths.empty())
+        if (contours.empty())
             return;
 
-        auto &current_path = paths.back();
+        auto &current_contour = contours.back();
 
-        // If the last segment is a line and the last point is the same as the first point in a close path, just ignore the last one.
-        // This is to make sure the path will be correctly stroked.
+        // If the last segment is a line and the last point is the same as the first point in a close contour, just ignore the last one.
+        // This is to make sure the contour will be correctly stroked.
         // FIXME: This is a makeshift fix for text stroke rendering.
-        if (current_path.points.size() > 1) {
-            if ((current_path.flags.rbegin() + 1)->value == 0) {
-                if (current_path.points.back() == current_path.points.front()) {
-                    current_path.points.pop_back();
-                    current_path.flags.pop_back();
+        if (current_contour.points.size() > 1) {
+            if ((current_contour.flags.rbegin() + 1)->value == 0) {
+                if (current_contour.points.back() == current_contour.points.front()) {
+                    current_contour.points.pop_back();
+                    current_contour.flags.pop_back();
                 }
             }
         }
 
-        current_path.closed = true;
+        current_contour.closed = true;
     }
 
     void Shape::add_line(Vec2<float> p_start, Vec2<float> p_end) {
@@ -176,8 +176,8 @@ namespace Pathfinder {
         //Vec2<float> origin = bounds.origin();
         Vec2<float> origin{};
 
-        for (auto &path: paths) {
-            for (auto &point: path.points) {
+        for (auto &contour: contours) {
+            for (auto &point: contour.points) {
                 // Move to local coordinates first.
                 point -= origin;
 
@@ -193,8 +193,8 @@ namespace Pathfinder {
     }
 
     void Shape::translate(const Vec2<float> &translation) {
-        for (auto &path: paths) {
-            for (auto &point: path.points) {
+        for (auto &contour: contours) {
+            for (auto &point: contour.points) {
                 point += translation;
             }
         }
@@ -209,8 +209,8 @@ namespace Pathfinder {
 
         float rotation_in_radian = deg2rad(rotation);
 
-        for (auto &path: paths) {
-            for (auto &point: path.points) {
+        for (auto &contour: contours) {
+            for (auto &point: contour.points) {
                 // Move to local coordinates first.
                 point -= origin;
 
@@ -226,8 +226,8 @@ namespace Pathfinder {
     }
 
     void Shape::transform(const Transform2 &transform) {
-        for (auto &path: paths) {
-            for (auto &point: path.points) {
+        for (auto &contour: contours) {
+            for (auto &point: contour.points) {
                 point = transform * point;
             }
         }
@@ -238,32 +238,32 @@ namespace Pathfinder {
     void Shape::update_bounds() {
         bounds = Rect<float>();
 
-        // Update child paths' bounds and its own bounds.
-        for (auto &path: paths) {
-            path.bounds = Rect<float>();
+        // Update child contours' bounds and its own bounds.
+        for (auto &contour: contours) {
+            contour.bounds = Rect<float>();
 
-            for (auto &point: path.points) {
-                union_rect(path.bounds, point);
+            for (auto &point: contour.points) {
+                union_rect(contour.bounds, point);
             }
 
             // Own bounds.
-            bounds = bounds.union_rect(path.bounds);
+            bounds = bounds.union_rect(contour.bounds);
         }
     }
 
-    void Shape::push_path(const Path &p_path) {
-        if (p_path.is_empty()) {
+    void Shape::push_contour(const Contour &p_contour) {
+        if (p_contour.is_empty()) {
             return;
         }
 
-        // Push path.
-        paths.push_back(p_path);
+        // Push contour.
+        contours.push_back(p_contour);
 
         // Update bounds.
-        if (paths.empty()) {
-            bounds = p_path.bounds;
+        if (contours.empty()) {
+            bounds = p_contour.bounds;
         } else {
-            bounds = bounds.union_rect(p_path.bounds);
+            bounds = bounds.union_rect(p_contour.bounds);
         }
     }
 }

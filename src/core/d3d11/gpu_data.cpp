@@ -74,24 +74,24 @@ namespace Pathfinder {
     Range SegmentsD3D11::add_path(const Shape &shape) {
         auto first_segment_index = indices.size();
 
-        // Traverse all paths in the shape.
-        for (auto &path: shape.paths) {
-            auto point_count = path.points.size();
+        // Traverse all contours in the shape.
+        for (auto &contour: shape.contours) {
+            auto point_count = contour.points.size();
 
-            // Traverse all points in the path.
+            // Traverse all points in the contour.
             for (size_t point_index = 0; point_index < point_count; point_index++) {
                 // If this point is an on-curve point.
-                if ((path.flags[point_index].value
+                if ((contour.flags[point_index].value
                      & (PointFlags::CONTROL_POINT_0 | PointFlags::CONTROL_POINT_1)) == 0) {
                     // Segment type. Default is a line.
                     uint32_t flag = 0;
 
                     // If the next point is a 0-type control point.
                     if (point_index + 1 < point_count &&
-                        (path.flags[point_index + 1].value & PointFlags::CONTROL_POINT_0) != 0) {
+                        (contour.flags[point_index + 1].value & PointFlags::CONTROL_POINT_0) != 0) {
                         // If the point behind the next point is a 1-type control point, this is a cubic curve.
                         if (point_index + 2 < point_count &&
-                            (path.flags[point_index + 2].value & PointFlags::CONTROL_POINT_1) != 0) {
+                            (contour.flags[point_index + 2].value & PointFlags::CONTROL_POINT_1) != 0) {
                             flag = CURVE_IS_CUBIC;
                         } else { // This is a quadratic curve.
                             flag = CURVE_IS_QUADRATIC;
@@ -101,10 +101,10 @@ namespace Pathfinder {
                     indices.push_back({static_cast<uint32_t>(points.size()), flag});
                 }
 
-                points.push_back(path.points[point_index]);
+                points.push_back(contour.points[point_index]);
             }
 
-            points.push_back(path.points[0]);
+            points.push_back(contour.points[0]);
         }
 
         auto last_segment_index = indices.size();

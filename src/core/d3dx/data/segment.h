@@ -6,7 +6,7 @@
 #include "../../../common/math/transform2.h"
 
 namespace Pathfinder {
-    struct Path;
+    struct Contour;
 
     /// A single line or Bézier curve segment, with explicit start and end points.
     struct Segment {
@@ -23,7 +23,7 @@ namespace Pathfinder {
         // The type of segment this is: invalid, line, quadratic, or cubic Bézier curve.
         SegmentKind kind = SegmentKind::None;
 
-        // Various flags that describe information about this segment in a path.
+        // Various flags that describe information about this segment in a contour.
         SegmentFlags flags = SegmentFlags::NONE;
 
         Segment() = default;
@@ -69,10 +69,10 @@ namespace Pathfinder {
 
         Segment offset_once(float distance) const;
 
-        void add_to_path(float distance, LineJoin join, Vec2<float> join_point,
-                            float join_miter_limit, Path &contour) const;
+        void add_to_contour(float distance, LineJoin join, Vec2<float> join_point,
+                            float join_miter_limit, Contour &contour) const;
 
-        void offset(float distance, LineJoin join, float join_miter_limit, Path &contour) const;
+        void offset(float distance, LineJoin join, float join_miter_limit, Contour &contour) const;
 
         /**
          * Change segment's orientation.

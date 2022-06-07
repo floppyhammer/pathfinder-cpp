@@ -5,13 +5,13 @@
 #include "../../../common/f32x4.h"
 
 namespace Pathfinder {
-    /// Various flags that specify the relation of this segment to other segments in a path.
+    /// Various flags that specify the relation of this segment to other segments in a contour.
     enum class SegmentFlags {
         NONE = 0x00,
         /// This segment is the first one in the contour.
-        FIRST_IN_PATH = 0x01,
-        /// This segment is the closing segment of the path (i.e. it returns back to the starting point).
-        LAST_IN_PATH = 0x02,
+        FIRST_IN_CONTOUR = 0x01,
+        /// This segment is the closing segment of the contour (i.e. it returns back to the starting point).
+        LAST_IN_CONTOUR = 0x02,
     };
 
     enum class SegmentKind {

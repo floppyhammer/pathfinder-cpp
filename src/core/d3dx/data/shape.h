@@ -1,18 +1,19 @@
 #ifndef PATHFINDER_SHAPE_H
 #define PATHFINDER_SHAPE_H
 
-#include "path.h"
+#include "contour.h"
 #include "../../../common/color.h"
 
 #include <vector>
 
 namespace Pathfinder {
+    // TODO: Refactor to Path.
     /// A shape drawn to the output or to a render target.
     /// Same as DrawPath + Outline in Pathfinder Rust.
     class Shape {
     public:
-        /// Paths (each path starts with the MoveTo command).
-        std::vector<Path> paths;
+        /// Contours (each contour starts with the MoveTo command).
+        std::vector<Contour> contours;
 
         /// Bounding box.
         Rect<float> bounds;
@@ -81,14 +82,13 @@ namespace Pathfinder {
          */
         void update_bounds();
 
-        /// Add a new path to this shape.
-        void push_path(const Path &p_path);
+        /// Add a new contour to this shape.
+        void push_contour(const Contour &p_contour);
     };
 
     /// Describes a shape that can be used to clip other shapes.
     struct ClipShape {
-        /// The actual vector paths.
-        std::vector<Path> paths;
+        std::vector<Contour> contours;
 
         /// Bounding box.
         Rect<float> bounds;

@@ -13,18 +13,18 @@ namespace Pathfinder {
 
     const float EPSILON = 0.001;
 
-    PathStrokeToFill::PathStrokeToFill(Path p_input, float p_radius, LineJoin p_join, float p_join_miter_limit)
+    ContourStrokeToFill::ContourStrokeToFill(Contour p_input, float p_radius, LineJoin p_join, float p_join_miter_limit)
             : input(std::move(p_input)),
               radius(p_radius),
               join(p_join),
               join_miter_limit(p_join_miter_limit) {}
 
-    void PathStrokeToFill::offset_forward() {
+    void ContourStrokeToFill::offset_forward() {
         auto segments_iter = SegmentsIter(input.points, input.flags, input.closed);
 
         // Traverse curve/line segments.
         while (!segments_iter.is_at_end()) {
-            // Get next segment in the path.
+            // Get next segment in the contour.
             auto segment = segments_iter.get_next();
 
             // Invalid segment.
@@ -39,13 +39,12 @@ namespace Pathfinder {
         }
     }
 
-    void PathStrokeToFill::offset_backward() {
+    void ContourStrokeToFill::offset_backward() {
         auto segments = input.get_segments();
 
         std::reverse(segments.begin(), segments.end());
 
         for (int segment_index = 0; segment_index < segments.size(); segment_index++) {
-            // Reverse the segment.
             auto segment = segments[segment_index].reversed();
 
             // FIXME(pcwalton): We negate the radius here so that round end caps can be drawn clockwise.
@@ -60,59 +59,55 @@ namespace Pathfinder {
             : input(p_input), style(p_style) {}
 
     void ShapeStrokeToFill::offset() {
-        // Resulting paths.
-        std::vector<Path> new_paths;
+        // Resulting contours.
+        std::vector<Contour> new_contours;
 
-        // Convert each path.
-        for (auto &path: input.paths) {
-            auto closed = path.closed;
+        // Convert each contour.
+        for (auto &contour: input.contours) {
+            auto closed = contour.closed;
 
             // Note that we need to pass radius instead of width.
-            auto stroker = PathStrokeToFill(path, style.line_width * 0.5f, style.line_join, style.miter_limit);
+            auto stroker = ContourStrokeToFill(contour, style.line_width * 0.5f, style.line_join, style.miter_limit);
 
-            // Scale the path up, forming an outer path.
+            // Scale the contour up, forming an outer contour.
             stroker.offset_forward();
 
-            // (Easy Case) If the path is closed, we can just use the even-odd fill rule
-            // on the outer and inner paths to get the enclosed stroke fill.
-            // (Complex Case) If the path is not closed, we need to merge the outer
-            // and inner paths into a single path.
-
+            // If closed (easy case), we can just use even-odd fill rule on the outer and inner contours to get the stroke fill.
             if (closed) {
-                push_stroked_path(new_paths, stroker, true);
-                stroker = PathStrokeToFill(path, style.line_width * 0.5f, style.line_join, style.miter_limit);
-            } else { // Add a cap to the outer path.
+                push_stroked_contour(new_contours, stroker, true);
+                stroker = ContourStrokeToFill(contour, style.line_width * 0.5f, style.line_join, style.miter_limit);
+            } else { // If not closed (hard case), we need to connect the outer and inner contours into a single contour.
                 add_cap(stroker.output);
             }
 
-            // Scale the path down, forming an inner path.
+            // Scale the contour down, forming an inner contour.
             stroker.offset_backward();
 
-            // If not closed, we need to connect the outer and inner paths.
-            if (!closed) { // Add a cap to the inner path.
+            // If not closed, we need to connect the outer and inner contours.
+            if (!closed) {
                 add_cap(stroker.output);
             }
 
-            push_stroked_path(new_paths, stroker, closed);
+            push_stroked_contour(new_contours, stroker, closed);
         }
 
         Rect<float> new_bounds;
 
-        for (auto &p: new_paths) {
+        for (auto &p: new_contours) {
             p.update_bounds(new_bounds);
         }
 
-        output.paths = new_paths;
+        output.contours = new_contours;
         output.bounds = new_bounds;
     }
 
-    Shape ShapeStrokeToFill::into_shape() const {
+    Shape ShapeStrokeToFill::into_outline() const {
         return output;
     }
 
-    void ShapeStrokeToFill::push_stroked_path(std::vector<Path> &new_contours,
-                                              PathStrokeToFill stroker,
-                                              bool closed) const {
+    void ShapeStrokeToFill::push_stroked_contour(std::vector<Contour> &new_contours,
+                                                 ContourStrokeToFill stroker,
+                                                 bool closed) const {
         // Add join if necessary.
         if (closed && stroker.output.might_need_join(style.line_join)) {
             auto p1 = stroker.output.points[1];
@@ -130,8 +125,8 @@ namespace Pathfinder {
         new_contours.push_back(stroker.output);
     }
 
-    void ShapeStrokeToFill::add_cap(Path &contour) const {
-        // If cap is butt, the two points in the outer and inner path can
+    void ShapeStrokeToFill::add_cap(Contour &contour) const {
+        // If cap is butt, the two points in the outer and inner contour can
         // connect to each other automatically because of the shared
         // ON_CURVE_POINT flag.
         if (style.line_cap == LineCap::Butt || contour.points.size() < 2) {
@@ -186,11 +181,11 @@ namespace Pathfinder {
         }
     }
 
-    bool Path::is_empty() const {
+    bool Contour::is_empty() const {
         return points.empty();
     }
 
-    bool Path::might_need_join(LineJoin join) const {
+    bool Contour::might_need_join(LineJoin join) const {
         // A single line has no join.
         if (points.size() < 2) {
             return false;
@@ -202,8 +197,8 @@ namespace Pathfinder {
         }
     }
 
-    void Path::add_join(float distance, LineJoin join, Vec2<float> join_point,
-                        LineSegmentF next_tangent, float miter_limit) {
+    void Contour::add_join(float distance, LineJoin join, Vec2<float> join_point,
+                           LineSegmentF next_tangent, float miter_limit) {
         auto p0 = position_of_last(2);
         auto p1 = position_of_last(1);
 
@@ -245,9 +240,7 @@ namespace Pathfinder {
         }
     }
 
-    /// Given the endpoints of a unit arc, adds Bézier curves to approximate that arc to the
-    /// current contour. The given transform is applied to the resulting arc.
-    void Path::push_arc_from_unit_chord(Transform2 &transform, LineSegmentF chord, const ArcDirection direction) {
+    void Contour::push_arc_from_unit_chord(Transform2 &transform, LineSegmentF chord, const ArcDirection direction) {
         auto direction_transform = Transform2();
         if (direction == ArcDirection::CCW) {
             chord = chord * Vec2<float>(1.0f, -1.0f);
@@ -361,8 +354,12 @@ namespace Pathfinder {
     }
 
     Segment Segment::reversed() const {
-        // We only need to reverse the control points for cubic curves.
-        LineSegmentF new_ctrl = is_cubic() ? ctrl.reversed() : ctrl;
+        LineSegmentF new_ctrl;
+        if (is_quadratic()) {
+            new_ctrl = ctrl;
+        } else {
+            new_ctrl = ctrl.reversed();
+        }
 
         return {baseline.reversed(), new_ctrl, kind, flags};
     }
@@ -391,42 +388,42 @@ namespace Pathfinder {
         return true;
     }
 
-    void Segment::add_to_path(float distance, LineJoin join, Vec2<float> join_point,
-                              float join_miter_limit, Path &path) const {
+    void Segment::add_to_contour(float distance, LineJoin join, Vec2<float> join_point,
+                                 float join_miter_limit, Contour &contour) const {
         // Add join if necessary.
-        if (path.might_need_join(join)) {
+        if (contour.might_need_join(join)) {
             auto p3 = baseline.from();
 
             // NB: If you change the representation of quadratic curves,
             // you will need to change this.
             Vec2<float> p4 = is_line() ? baseline.to() : ctrl.from();
 
-            path.add_join(distance, join, join_point, LineSegmentF(p4, p3), join_miter_limit);
+            contour.add_join(distance, join, join_point, LineSegmentF(p4, p3), join_miter_limit);
         }
 
         // Push segment.
         PushSegmentFlags push_flags;
         push_flags.value = PushSegmentFlags::UPDATE_BOUNDS | PushSegmentFlags::INCLUDE_FROM_POINT;
-        path.push_segment(*this, push_flags);
+        contour.push_segment(*this, push_flags);
     }
 
-    void Segment::offset(float distance, LineJoin join, float join_miter_limit, Path &path) const {
+    void Segment::offset(float distance, LineJoin join, float join_miter_limit, Contour &contour) const {
         auto join_point = baseline.from();
         if (baseline.square_length() < STROKE_TOL * STROKE_TOL) {
-            add_to_path(distance, join, join_point, join_miter_limit, path);
+            add_to_contour(distance, join, join_point, join_miter_limit, contour);
             return;
         }
 
         auto candidate = offset_once(distance);
         if (error_is_within_tolerance(candidate, distance)) {
-            candidate.add_to_path(distance, join, join_point, join_miter_limit, path);
+            candidate.add_to_contour(distance, join, join_point, join_miter_limit, contour);
             return;
         }
 
         Segment before, after;
         split(0.5f, before, after);
 
-        before.offset(distance, join, join_miter_limit, path);
-        after.offset(distance, join, join_miter_limit, path);
+        before.offset(distance, join, join_miter_limit, contour);
+        after.offset(distance, join, join_miter_limit, contour);
     }
 }

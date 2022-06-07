@@ -1,6 +1,6 @@
 #include "dash.h"
 
-#include <cmath>
+#include "cmath"
 
 namespace Pathfinder {
     const float EPSILON = 0.0001;
@@ -22,7 +22,7 @@ namespace Pathfinder {
             current_dash_index += 1;
         }
 
-        output = Path();
+        output = Contour();
         distance_left = p_offset;
     }
 
@@ -47,20 +47,20 @@ namespace Pathfinder {
             : input(p_input), output(Shape()), state(DashState(p_dashes, p_offset)) {}
 
     void OutlineDash::dash() {
-        for (auto &contour: input.paths) {
+        for (auto &contour: input.contours) {
             ContourDash(contour, output, state).dash();
         }
     }
 
     Shape OutlineDash::into_outline() {
         if (state.is_on()) {
-            output.push_path(state.output);
+            output.push_contour(state.output);
         }
 
         return output;
     }
 
-    ContourDash::ContourDash(Path &p_input, Shape &p_output, DashState &p_state)
+    ContourDash::ContourDash(Contour &p_input, Shape &p_output, DashState &p_state)
             : input(p_input), output(p_output), state(p_state) {}
 
     void ContourDash::dash() {
@@ -106,8 +106,8 @@ namespace Pathfinder {
 
             if (state.distance_left < EPSILON) {
                 if (state.is_on()) {
-                    output.push_path(state.output);
-                    state.output = Path();
+                    output.push_contour(state.output);
+                    state.output = Contour();
                 }
 
                 state.current_dash_index += 1;

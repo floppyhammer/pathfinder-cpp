@@ -1,11 +1,11 @@
-#include "path.h"
+#include "contour.h"
 
 namespace Pathfinder {
-    Vec2<float> Path::position_of_last(int index) {
+    Vec2<float> Contour::position_of_last(int index) {
         return points[points.size() - index];
     }
 
-    void Path::push_point(Vec2<float> point, PointFlags p_flag, bool update_bounds) {
+    void Contour::push_point(Vec2<float> point, PointFlags p_flag, bool update_bounds) {
         if (update_bounds) {
             auto first = points.empty();
             union_rect(bounds, point, first);
@@ -15,11 +15,11 @@ namespace Pathfinder {
         flags.push_back(p_flag);
     }
 
-    void Path::push_endpoint(Vec2<float> to) {
+    void Contour::push_endpoint(Vec2<float> to) {
         push_point(to, PointFlags{}, true);
     }
 
-    void Path::push_segment(const Segment &segment, PushSegmentFlags p_flags) {
+    void Contour::push_segment(const Segment &segment, PushSegmentFlags p_flags) {
         // Not a valid segment.
         if (segment.kind == SegmentKind::None) {
             return;
@@ -46,7 +46,7 @@ namespace Pathfinder {
         push_point(segment.baseline.to(), PointFlags(), update_bounds);
     }
 
-    void Path::update_bounds(Rect<float> &p_bounds) const {
+    void Contour::update_bounds(Rect<float> &p_bounds) const {
         // The bounds to union is not valid.
         if (!p_bounds.is_valid()) {
             p_bounds = bounds;
@@ -54,7 +54,7 @@ namespace Pathfinder {
         p_bounds = p_bounds.union_rect(bounds);
     }
 
-    std::vector<Segment> Path::get_segments(bool force_closed) const {
+    std::vector<Segment> Contour::get_segments(bool force_closed) const {
         std::vector<Segment> segments;
 
         auto segments_iter = SegmentsIter(points, flags, closed);
@@ -121,12 +121,12 @@ namespace Pathfinder {
                 }
             }
         } else { // Reach end.
-            // Close path.
+            // Close contour.
             if ((closed || force_closed) && points.size() > 1) {
                 segment.baseline.set_from(points.back());
                 segment.baseline.set_to(points.front());
                 segment.kind = SegmentKind::Line;
-                segment.flags = SegmentFlags::LAST_IN_PATH;
+                segment.flags = SegmentFlags::LAST_IN_CONTOUR;
             }
 
             has_next = false;

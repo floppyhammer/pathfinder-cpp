@@ -5,7 +5,7 @@
 
 namespace Pathfinder {
     struct DashState {
-        Path output;
+        Contour output;
         std::vector<float> dashes;
         size_t current_dash_index;
         float distance_left;
@@ -29,11 +29,11 @@ namespace Pathfinder {
     };
 
     struct ContourDash {
-        Path &input;
+        Contour &input;
         Shape &output;
         DashState &state;
 
-        ContourDash(Path &p_input, Shape &p_output, DashState &p_state);
+        ContourDash(Contour &p_input, Shape &p_output, DashState &p_state);
 
         void dash();
     };

@@ -302,8 +302,8 @@ namespace Pathfinder {
 
     void Tiler::generate_fills() {
         // Traverse paths in the shape.
-        for (const auto &path: shape.paths) {
-            auto segments_iter = SegmentsIter(path.points, path.flags, path.closed);
+        for (const auto &contour: shape.contours) {
+            auto segments_iter = SegmentsIter(contour.points, contour.flags, contour.closed);
 
             // Traverse curve/line segments.
             while (!segments_iter.is_at_end()) {

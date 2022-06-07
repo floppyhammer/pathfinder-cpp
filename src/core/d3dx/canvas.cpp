@@ -229,7 +229,7 @@ namespace Pathfinder {
             // Do stroking.
             stroke_to_fill.offset();
 
-            auto stroke_shape = stroke_to_fill.into_shape();
+            auto stroke_shape = stroke_to_fill.into_outline();
 
             // Strokes don't have the Even-Odd fill rule.
             stroke_shape.fill_rule = FillRule::Winding;

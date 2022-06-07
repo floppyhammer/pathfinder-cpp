@@ -42,7 +42,6 @@ namespace Pathfinder {
         // This is a temporary value for test.
         // FIXME: Fix hardcoded transform.
         auto transform = Transform2::from_translation(Vec2<float>(0, 0));
-        transform.matrix = Mat2x2<float>(1, 0, 0, 1);
 
         // Create a new batch if necessary.
         draw_tile_batch.tile_batch_data = TileBatchDataD3D11(next_batch_id, PathSource::Draw);
