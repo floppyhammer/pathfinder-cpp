@@ -35,8 +35,18 @@ namespace Pathfinder {
 
         Transform2 inverse() const;
 
+        /**
+         * Left-multiply a translation matrix.
+         * @param p_vector Translation
+         * @return New transform
+         */
         Transform2 translate(Vec2<float> p_vector) const;
 
+        /**
+         * Left-multiply a rotation matrix.
+         * @param theta Rotation in radian
+         * @return New transform
+         */
         Transform2 rotate(float theta) const;
 
         Vec2<float> get_position() const;
