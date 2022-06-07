@@ -23,14 +23,16 @@ namespace Pathfinder {
         prepare_info = PrepareTilesInfoD3D11{};
     }
 
-    uint32_t TileBatchDataD3D11::push(BuiltShape &shape, uint32_t global_path_id,
-                                      bool z_write, LastSceneInfo &last_scene) {
+    uint32_t TileBatchDataD3D11::push(BuiltPath &path,
+                                      uint32_t global_path_id,
+                                      bool z_write,
+                                      LastSceneInfo &last_scene) {
         auto batch_path_index = path_count;
         path_count++;
 
         prepare_info.propagate_metadata.push_back(
                 {
-                        shape.tile_bounds,
+                        path.tile_bounds,
                         tile_count,
                         batch_path_index,
                         z_write,
@@ -39,7 +41,7 @@ namespace Pathfinder {
                 }
         );
 
-        init_backdrops(prepare_info.backdrops, batch_path_index, shape.tile_bounds);
+        init_backdrops(prepare_info.backdrops, batch_path_index, path.tile_bounds);
 
         auto &segment_ranges = last_scene.draw_segment_ranges;
         auto &segment_range = segment_ranges[global_path_id];
@@ -54,18 +56,18 @@ namespace Pathfinder {
 
         prepare_info.tile_path_info.push_back(
                 {
-                        static_cast<int16_t>(shape.tile_bounds.min_x()),
-                        static_cast<int16_t>(shape.tile_bounds.min_y()),
-                        static_cast<int16_t>(shape.tile_bounds.max_x()),
-                        static_cast<int16_t>(shape.tile_bounds.max_y()),
+                        static_cast<int16_t>(path.tile_bounds.min_x()),
+                        static_cast<int16_t>(path.tile_bounds.min_y()),
+                        static_cast<int16_t>(path.tile_bounds.max_x()),
+                        static_cast<int16_t>(path.tile_bounds.max_y()),
                         tile_count,
-                        shape.paint_id,
-                        shape.ctrl_byte,
+                        path.paint_id,
+                        path.ctrl_byte,
                         0
                 }
         );
 
-        tile_count += shape.tile_bounds.area();
+        tile_count += path.tile_bounds.area();
         segment_count += segment_range.end - segment_range.start;
 
         return batch_path_index;

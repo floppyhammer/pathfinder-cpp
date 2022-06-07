@@ -8,31 +8,31 @@
 #ifdef PATHFINDER_USE_D3D11
 
 namespace Pathfinder {
-    BuiltDrawShape prepare_draw_shape_for_gpu_binning(
+    BuiltDrawPath prepare_draw_path_for_gpu_binning(
             Scene &scene,
-            uint32_t draw_shape_id,
+            uint32_t draw_path_id,
             Transform2 &transform,
             const std::vector<TextureMetadataEntry> &paint_metadata) {
         auto effective_view_box = scene.view_box;
 
-        auto draw_shape = &scene.draw_shapes[draw_shape_id];
+        auto draw_path = &scene.draw_paths[draw_path_id];
 
-        auto path_bounds = transform * draw_shape->bounds;
+        auto path_bounds = transform * draw_path->bounds;
 
-        auto paint_id = draw_shape->paint;
+        auto paint_id = draw_path->paint;
 
         auto &paint_metadata0 = paint_metadata[paint_id];
 
-        auto built_shape = BuiltShape(draw_shape_id, path_bounds, paint_id, effective_view_box, draw_shape->fill_rule);
+        auto built_path = BuiltPath(draw_path_id, path_bounds, paint_id, effective_view_box, draw_path->fill_rule);
 
         // FIXME: Fix hardcoded blend mode.
-        return {built_shape, BlendMode::SrcOver, draw_shape->fill_rule, true};
+        return {built_path, BlendMode::SrcOver, draw_path->fill_rule, true};
     }
 
     /// Create tile batches.
-    DrawTileBatchD3D11 build_tile_batches_for_draw_shape_display_item(
+    DrawTileBatchD3D11 build_tile_batches_for_draw_path_display_item(
             Scene &scene,
-            Range draw_shape_id_range,
+            Range draw_path_id_range,
             const std::vector<TextureMetadataEntry> &paint_metadata,
             LastSceneInfo &last_scene,
             uint32_t next_batch_id) {
@@ -46,19 +46,19 @@ namespace Pathfinder {
         // Create a new batch if necessary.
         draw_tile_batch.tile_batch_data = TileBatchDataD3D11(next_batch_id, PathSource::Draw);
 
-        //draw_tile_batch.color_texture = draw_shape.color_texture;
+        //draw_tile_batch.color_texture = draw_path.color_texture;
         draw_tile_batch.tile_batch_data.prepare_info.transform = transform;
 
-        for (auto draw_shape_id = draw_shape_id_range.start; draw_shape_id < draw_shape_id_range.end; draw_shape_id++) {
-            auto draw_shape = prepare_draw_shape_for_gpu_binning(
+        for (auto draw_path_id = draw_path_id_range.start; draw_path_id < draw_path_id_range.end; draw_path_id++) {
+            auto draw_path = prepare_draw_path_for_gpu_binning(
                     scene,
-                    draw_shape_id,
+                    draw_path_id,
                     transform,
                     paint_metadata);
 
-            draw_tile_batch.tile_batch_data.push(draw_shape.shape,
-                                                 draw_shape_id,
-                                                 draw_shape.occludes,
+            draw_tile_batch.tile_batch_data.push(draw_path.path,
+                                                 draw_path_id,
+                                                 draw_path.occludes,
                                                  last_scene);
         }
 
@@ -68,7 +68,7 @@ namespace Pathfinder {
     void SceneBuilderD3D11::build() {
         Timestamp timestamp;
 
-        auto draw_shape_count = scene->draw_shapes.size();
+        auto draw_path_count = scene->draw_paths.size();
 
         // Get metadata.
         metadata = scene->palette.build_paint_info();
@@ -88,7 +88,7 @@ namespace Pathfinder {
         timestamp.record("SceneBuilderD3D11::build > finish_building");
         timestamp.print();
 
-        Logger::verbose("build > draw shape count " + std::to_string(draw_shape_count), "SceneBuilderD3D11");
+        Logger::verbose("build > draw path count " + std::to_string(draw_path_count), "SceneBuilderD3D11");
         Logger::verbose("build > tile batch count " + std::to_string(tile_batches.size()), "SceneBuilderD3D11");
     }
 
@@ -112,7 +112,7 @@ namespace Pathfinder {
                 }
                     break;
                 case DisplayItem::Type::DrawPaths: {
-                    auto tile_batch = build_tile_batches_for_draw_shape_display_item(
+                    auto tile_batch = build_tile_batches_for_draw_path_display_item(
                             *scene,
                             display_item.path_range,
                             metadata,
@@ -121,7 +121,7 @@ namespace Pathfinder {
 
                     next_batch_id += 1;
 
-                    auto paint_id = scene->draw_shapes[display_item.path_range.start].paint;
+                    auto paint_id = scene->draw_paths[display_item.path_range.start].paint;
 
                     Paint paint = scene->palette.get_paint(paint_id);
 

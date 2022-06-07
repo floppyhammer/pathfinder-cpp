@@ -20,7 +20,7 @@ namespace Pathfinder {
         DenseTileMap(const std::vector<T> &p_data, const Rect<int> &p_rect) : data(p_data), rect(p_rect) {}
 
         /// Constructor for TileObjectPrimitive.
-        DenseTileMap(const Rect<int> &p_rect, uint32_t p_shape_id, uint32_t p_paint_id, uint8_t p_ctrl_byte) : rect(
+        DenseTileMap(const Rect<int> &p_rect, uint32_t p_path_id, uint32_t p_paint_id, uint8_t p_ctrl_byte) : rect(
                 p_rect) {
             data = std::vector<T>(rect.width() * rect.height(), T());
 
@@ -31,7 +31,7 @@ namespace Pathfinder {
                     data[index].tile_x = x;
                     data[index].tile_y = y;
                     data[index].ctrl = p_ctrl_byte;
-                    data[index].shape_id = p_shape_id;
+                    data[index].path_id = p_path_id;
                     data[index].metadata_id = p_paint_id;
                 }
             }

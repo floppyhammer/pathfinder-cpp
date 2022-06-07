@@ -8,9 +8,9 @@
 
 namespace Pathfinder {
     /// Create tile batches.
-    DrawTileBatch build_tile_batches_for_draw_shape_display_item(Scene &p_scene,
-                                                                const std::vector<BuiltDrawShape> &built_shapes,
-                                                                Range draw_shape_range) {
+    DrawTileBatch build_tile_batches_for_draw_path_display_item(Scene &p_scene,
+                                                                const std::vector<BuiltDrawPath> &built_paths,
+                                                                Range draw_path_range) {
         // New draw tile batch.
         DrawTileBatch draw_tile_batch;
 
@@ -18,9 +18,9 @@ namespace Pathfinder {
 
         draw_tile_batch.z_buffer_data = DenseTileMap<uint32_t>::z_builder(tile_bounds);
 
-        for (unsigned long draw_shape_id = draw_shape_range.start; draw_shape_id < draw_shape_range.end; draw_shape_id++) {
-            const auto &draw_shape = built_shapes[draw_shape_id];
-            const auto &cpu_data = draw_shape.shape.data;
+        for (unsigned long draw_path_id = draw_path_range.start; draw_path_id < draw_path_range.end; draw_path_id++) {
+            const auto &draw_path = built_paths[draw_path_id];
+            const auto &cpu_data = built_paths[draw_path_id].path.data;
 
             for (const auto &tile: cpu_data.tiles.data) {
                 // If not an alpha tile and winding is zero.
@@ -31,7 +31,7 @@ namespace Pathfinder {
                 draw_tile_batch.tiles.push_back(tile);
 
                 // Z buffer is only meant for visible SOLID tiles and not for any ALPHA tiles.
-                if (!draw_shape.occludes || tile.alpha_tile_id.is_valid()) {
+                if (!draw_path.occludes || tile.alpha_tile_id.is_valid()) {
                     continue;
                 }
 
@@ -41,8 +41,8 @@ namespace Pathfinder {
                 auto z_buffer_index = draw_tile_batch.z_buffer_data.coords_to_index_unchecked(tile.tile_x, tile.tile_y);
                 auto z_value = &draw_tile_batch.z_buffer_data.data[z_buffer_index];
 
-                // Store the biggest draw_shape_id as the z value, which means the solid tile of this path is the topmost.
-                *z_value = std::max(*z_value, (unsigned int) draw_shape_id);
+                // Store the biggest draw_path_id as the z value, which means the solid tile of this path is the topmost.
+                *z_value = std::max(*z_value, (unsigned int) draw_path_id);
                 // ----------------------------------------------------------
             }
         }
@@ -63,12 +63,12 @@ namespace Pathfinder {
 
         timestamp.record("Build paint info");
 
-        // Most important step. Build shapes into built draw shapes.
-        auto built_shapes = build_shapes_on_cpu();
+        // Most important step. Build paths (i.e. shapes). Draw paths -> built draw paths.
+        auto built_paths = build_paths_on_cpu();
 
         timestamp.record("Build paths on CPU");
 
-        finish_building(built_shapes);
+        finish_building(built_paths);
 
         timestamp.record("Build tile batches");
         timestamp.print();
@@ -77,13 +77,13 @@ namespace Pathfinder {
         scene->is_dirty = false;
     }
 
-    void SceneBuilderD3D9::finish_building(const std::vector<BuiltDrawShape> &built_shapes) {
+    void SceneBuilderD3D9::finish_building(const std::vector<BuiltDrawPath> &built_paths) {
         // We can already start drawing fills asynchronously at this stage.
 
-        build_tile_batches(built_shapes);
+        build_tile_batches(built_paths);
     }
 
-    std::vector<BuiltDrawShape> SceneBuilderD3D9::build_shapes_on_cpu() {
+    std::vector<BuiltDrawPath> SceneBuilderD3D9::build_paths_on_cpu() {
         // Reset builder.
         {
             // Clear pending fills.
@@ -93,11 +93,11 @@ namespace Pathfinder {
             std::fill(next_alpha_tile_indices, next_alpha_tile_indices + ALPHA_TILE_LEVEL_COUNT, 0);
         }
 
-        // Number of draw shapes.
-        auto draw_shapes_count = scene->draw_shapes.size();
+        // Number of draw paths.
+        auto draw_paths_count = scene->draw_paths.size();
 
-        // Allocate space for built draw shapes.
-        std::vector<BuiltDrawShape> built_shapes(draw_shapes_count);
+        // Allocate space for built draw paths.
+        std::vector<BuiltDrawPath> built_paths(draw_paths_count);
 
         // Set up an OpenMP lock.
         omp_lock_t write_lock;
@@ -107,46 +107,46 @@ namespace Pathfinder {
 #if (PATHFINDER_OPENMP_THREADS > 1)
 #pragma omp parallel for num_threads(PATHFINDER_OPENMP_THREADS)
 #endif
-        for (int path_index = 0; path_index < draw_shapes_count; path_index++) {
-            // Retrieve a draw shape.
-            auto &draw_shape = scene->draw_shapes[path_index];
+        for (int path_index = 0; path_index < draw_paths_count; path_index++) {
+            // Retrieve a draw path.
+            auto &draw_path = scene->draw_paths[path_index];
 
             // Skip if it's invisible (transparent or out of scope).
-            if (!scene->get_paint(draw_shape.paint).is_opaque()
-                || !draw_shape.bounds.intersects(scene->view_box)) {
+            if (!scene->get_paint(draw_path.paint).is_opaque()
+                || !draw_path.bounds.intersects(scene->view_box)) {
                 continue;
             }
 
-            // Build the draw shape.
-            built_shapes[path_index] = build_draw_shape_on_cpu(path_index, write_lock);
+            // Build the draw path.
+            built_paths[path_index] = build_draw_path_on_cpu(path_index, write_lock);
         }
 
         omp_destroy_lock(&write_lock);
 
-        return built_shapes;
+        return built_paths;
     }
 
-    BuiltDrawShape SceneBuilderD3D9::build_draw_shape_on_cpu(uint32_t shape_id, omp_lock_t &write_lock) {
-        // Get the draw shape.
-        const auto &path_object = scene->draw_shapes[shape_id];
+    BuiltDrawPath SceneBuilderD3D9::build_draw_path_on_cpu(uint32_t path_id, omp_lock_t &write_lock) {
+        // Get the draw path (a thin wrapper over outline). A draw path amounts to a shape.
+        const auto &path_object = scene->draw_paths[path_id];
 
-        // Create a tiler for the draw shape.
-        Tiler tiler(*this, shape_id, path_object, path_object.fill_rule, scene->view_box);
+        // Create a tiler for the draw path.
+        Tiler tiler(*this, path_id, path_object, path_object.fill_rule, scene->view_box);
 
         // Core step.
         tiler.generate_tiles();
 
-        tiler.object_builder.built_shape.paint_id = path_object.paint;
+        tiler.object_builder.built_path.paint_id = path_object.paint;
 
         // Add generated fills from the tile generation step. Need a lock.
         omp_set_lock(&write_lock);
         send_fills(tiler.object_builder.fills);
         omp_unset_lock(&write_lock);
 
-        return {tiler.object_builder.built_shape, path_object.blend_mode, path_object.fill_rule, true};
+        return {tiler.object_builder.built_path, path_object.blend_mode, path_object.fill_rule, true};
     }
 
-    void SceneBuilderD3D9::build_tile_batches(const std::vector<BuiltDrawShape> &built_shapes) {
+    void SceneBuilderD3D9::build_tile_batches(const std::vector<BuiltDrawPath> &built_paths) {
         // Clear batches.
         tile_batches.clear();
 
@@ -165,13 +165,13 @@ namespace Pathfinder {
                     break;
                 case DisplayItem::Type::DrawPaths: {
                     // Create a new batch.
-                    auto tile_batch = build_tile_batches_for_draw_shape_display_item(
+                    auto tile_batch = build_tile_batches_for_draw_path_display_item(
                             *scene,
-                            built_shapes,
+                            built_paths,
                             display_item.path_range);
 
                     // Get paint.
-                    auto paint_id = built_shapes[display_item.path_range.start].shape.paint_id;
+                    auto paint_id = built_paths[display_item.path_range.start].path.paint_id;
                     Paint paint = scene->palette.get_paint(paint_id);
 
                     // Set color texture.

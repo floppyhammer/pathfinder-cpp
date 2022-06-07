@@ -36,7 +36,7 @@ namespace Pathfinder {
     /// One tiler for one outline (shape).
     struct Tiler {
     public:
-        Tiler(SceneBuilderD3D9 &p_scene_builder, uint32_t shape_id, const Shape &p_shape,
+        Tiler(SceneBuilderD3D9 &p_scene_builder, uint32_t path_id, const Shape &p_shape,
               FillRule fill_rule, const Rect<float> &view_box);
 
         ObjectBuilder object_builder;

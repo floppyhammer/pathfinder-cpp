@@ -108,13 +108,13 @@ namespace Pathfinder {
         scene.pop_render_target();
 
         // This shape goes to the blur viewport y, with the viewport x as the color texture.
-        scene.push_draw_shape(path_x);
+        scene.push_draw_path(path_x);
 
         // Pop viewport y.
         scene.pop_render_target();
 
         // This shape goes to the canvas viewport, with the viewport y as the color texture.
-        scene.push_draw_shape(path_y);
+        scene.push_draw_path(path_y);
     }
 
     Canvas::Canvas(const std::shared_ptr<Driver> &p_driver, float size_x, float size_y,
@@ -185,7 +185,7 @@ namespace Pathfinder {
             shadow_shape.blend_mode = p_shape.blend_mode;
 
             // This shape goes to the blur viewport x.
-            scene->push_draw_shape(shadow_shape);
+            scene->push_draw_path(shadow_shape);
 
             composite_shadow_blur_render_targets(*scene, shadow_blur_info);
         }
@@ -194,7 +194,7 @@ namespace Pathfinder {
         p_shape.fill_rule = p_fill_rule;
         p_shape.blend_mode = blend_mode;
 
-        scene->push_draw_shape(p_shape);
+        scene->push_draw_path(p_shape);
     }
 
     void Canvas::fill_shape(Shape p_shape,
