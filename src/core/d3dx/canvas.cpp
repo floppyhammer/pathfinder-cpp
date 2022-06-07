@@ -426,7 +426,8 @@ namespace Pathfinder {
 
         timestamp.record("load nsvg image from file");
 
-        // Extract shapes, paths and points from the SVG image.
+        // Extract paths, contours and points from the SVG image.
+        // Notable: NSVGshape equals to Path, and NSVGpath equals to Contour (Sub-Path).
         for (NSVGshape *nsvg_shape = image->shapes; nsvg_shape != nullptr; nsvg_shape = nsvg_shape->next) {
             Shape shape;
 
