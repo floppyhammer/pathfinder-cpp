@@ -1,7 +1,7 @@
 #include "built_path.h"
 
 #include "data.h"
-#include "shape.h"
+#include "path.h"
 
 namespace Pathfinder {
     BuiltPath::BuiltPath(uint32_t path_id, Rect<float> path_bounds, uint32_t p_paint_id,

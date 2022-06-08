@@ -2,7 +2,7 @@
 #define PATHFINDER_SCENE_H
 
 #include "paint.h"
-#include "data/shape.h"
+#include "data/path.h"
 #include "data/data.h"
 #include "../../gpu/gl/framebuffer.h"
 

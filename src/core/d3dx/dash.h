@@ -1,7 +1,7 @@
 #ifndef PATHFINDER_DASH_H
 #define PATHFINDER_DASH_H
 
-#include "data/shape.h"
+#include "data/path.h"
 
 namespace Pathfinder {
     struct DashState {

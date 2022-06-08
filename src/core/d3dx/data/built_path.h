@@ -11,7 +11,6 @@
 #include <vector>
 
 namespace Pathfinder {
-    /// ALIAS: BuiltShapeData.
     struct BuiltPathData {
         /// During tiling, or if backdrop computation is done on GPU, this stores the sum of backdrops
         /// for tile columns above the viewport.
@@ -19,7 +18,6 @@ namespace Pathfinder {
         DenseTileMap<TileObjectPrimitive> tiles;
     };
 
-    /// ALIAS: BuiltShape.
     struct BuiltPath {
         BuiltPathData data;
         Rect<int> tile_bounds;
@@ -28,7 +26,6 @@ namespace Pathfinder {
         uint8_t ctrl_byte = 0;
         uint16_t paint_id = 0;
 
-        /// Path is shape.
         BuiltPath() = default;
 
         BuiltPath(uint32_t path_id, Rect<float> path_bounds, uint32_t paint_id, Rect<float> view_box_bounds,

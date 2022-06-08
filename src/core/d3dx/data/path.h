@@ -8,6 +8,7 @@
 
 namespace Pathfinder {
     /// A vector path to be filled (without drawing info).
+    /// In order to differentiate it from DrawPath and ClipPath, we use the name 'Outline' here.
     /// Outlines consist of contours (a.k.a. sub-paths).
     class Outline {
     public:

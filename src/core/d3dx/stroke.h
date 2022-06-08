@@ -5,7 +5,7 @@
 
 #include "data/contour.h"
 #include "data/segment.h"
-#include "data/shape.h"
+#include "data/path.h"
 #include "../../common/math/transform2.h"
 
 //! Utilities for converting contour strokes to fills.
