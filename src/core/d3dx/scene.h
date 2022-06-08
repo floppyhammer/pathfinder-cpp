@@ -46,11 +46,9 @@ namespace Pathfinder {
 
         std::vector<DisplayItem> display_list;
 
-        /// Shapes.
-        std::vector<Shape> draw_paths;
+        std::vector<DrawPath> draw_paths;
 
-        /// Clip shapes.
-        std::vector<Shape> clip_paths;
+        std::vector<ClipPath> clip_paths;
 
         /// Contains paints.
         Palette palette;
@@ -87,10 +85,10 @@ namespace Pathfinder {
          * Adds a shape to the scene, to be drawn on top of all previously-added shapes.
          * If a render target is on the stack (see `push_render_target()`), the path goes to the
          * render target. Otherwise, it goes to the main output.
-         * @param p_shape Shape to add.
+         * @param p_path Draw path to add.
          * @return An ID which can later be used to retrieve the shape.
          */
-        uint32_t push_draw_path(const Shape &p_shape);
+        uint32_t push_draw_path(const DrawPath &p_path);
 
         /**
          * Add all shapes in a scene to this one.

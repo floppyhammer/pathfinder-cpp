@@ -181,8 +181,8 @@ namespace Pathfinder {
         std::vector<Vec2<float>> points;
         std::vector<SegmentIndicesD3D11> indices;
 
-        /// Add a shape as segments.
-        Range add_path(const Shape& shape);
+        /// Add a outline as segments.
+        Range add_path(const Outline &outline);
     };
 }
 

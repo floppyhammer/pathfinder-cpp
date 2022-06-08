@@ -63,7 +63,7 @@ namespace Pathfinder {
 
         timestamp.record("Build paint info");
 
-        // Most important step. Build paths (i.e. shapes). Draw paths -> built draw paths.
+        // Most important step. Build draw paths into built draw paths.
         auto built_paths = build_paths_on_cpu();
 
         timestamp.record("Build paths on CPU");
@@ -113,7 +113,7 @@ namespace Pathfinder {
 
             // Skip if it's invisible (transparent or out of scope).
             if (!scene->get_paint(draw_path.paint).is_opaque()
-                || !draw_path.bounds.intersects(scene->view_box)) {
+                || !draw_path.outline.bounds.intersects(scene->view_box)) {
                 continue;
             }
 
@@ -127,7 +127,7 @@ namespace Pathfinder {
     }
 
     BuiltDrawPath SceneBuilderD3D9::build_draw_path_on_cpu(uint32_t path_id, omp_lock_t &write_lock) {
-        // Get the draw path (a thin wrapper over outline). A draw path amounts to a shape.
+        // Get the draw path (a thin wrapper over outline).
         const auto &path_object = scene->draw_paths[path_id];
 
         // Create a tiler for the draw path.

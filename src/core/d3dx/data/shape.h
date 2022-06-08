@@ -1,5 +1,5 @@
-#ifndef PATHFINDER_SHAPE_H
-#define PATHFINDER_SHAPE_H
+#ifndef PATHFINDER_PATH_H
+#define PATHFINDER_PATH_H
 
 #include "contour.h"
 #include "../../../common/color.h"
@@ -7,32 +7,16 @@
 #include <vector>
 
 namespace Pathfinder {
-    // TODO: Refactor to Path.
-    /// A shape drawn to the output or to a render target.
-    /// Same as DrawPath + Outline in Pathfinder Rust.
-    class Shape {
+    /// A vector path to be filled (without drawing info).
+    /// Outlines consist of contours (a.k.a. sub-paths).
+    class Outline {
     public:
-        /// Contours (each contour starts with the MoveTo command).
         std::vector<Contour> contours;
 
         /// Bounding box.
         Rect<float> bounds;
 
-        /// The ID of the paint that specifies how to fill this shape.
-        uint16_t paint;
-
-        /// The ID of an optional clip shape that will be used to clip this shape.
-        uint32_t clip_shape;
-
-        /// How to fill this path (winding (nonzero) or even-odd).
-        FillRule fill_rule = FillRule::Winding;
-
-        /// Post-processing blur of the whole shape.
-        float blur = 0;
-
-        /// How to blend this shape with everything below it.
-        BlendMode blend_mode{};
-
+    public:
         /// Basic geometries.
         /// -----------------------------------------------
         void move_to(float x, float y);
@@ -86,20 +70,36 @@ namespace Pathfinder {
         void push_contour(const Contour &p_contour);
     };
 
-    /// Describes a shape that can be used to clip other shapes.
-    struct ClipShape {
-        std::vector<Contour> contours;
+    /// A thin wrapper over Outline, which describes a path that can be drawn.
+    struct DrawPath {
+        /// The actual vector path.
+        Outline outline;
 
-        /// Bounding box.
-        Rect<float> bounds;
+        /// The ID of the paint that specifies how to fill this shape.
+        uint16_t paint{};
+
+        /// The ID of an optional clip shape that will be used to clip this shape.
+        uint32_t clip_path{};
+
+        /// How to fill this shape (winding or even-odd).
+        FillRule fill_rule = FillRule::Winding;
+
+        /// How to blend this shape with everything below it.
+        BlendMode blend_mode{};
+    };
+
+    /// A thin wrapper over Outline, which describes a path that can be used to clip other paths.
+    struct ClipPath {
+        /// The actual vector path.
+        Outline outline;
 
         /// The ID of another, previously-defined, clip shape that clips this one.
         /// Nested clips can be achieved by clipping clip shapes with other clip shapes.
-        uint32_t clip_shape;
+        uint32_t clip_path{};
 
         /// How to fill this shape (winding or even-odd).
         FillRule fill_rule = FillRule::Winding;
     };
 }
 
-#endif //PATHFINDER_SHAPE_H
+#endif //PATHFINDER_PATH_H

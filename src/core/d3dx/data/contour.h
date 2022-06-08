@@ -13,6 +13,7 @@ namespace Pathfinder {
     /// An individual sub-path, consisting of a series of endpoints and/or control points. Contours can
     /// be either open (first and last points disconnected) or closed (first point implicitly joined to
     /// last point with a line).
+    /// Contours must start with the MoveTo command).
     class Contour {
     public:
         Contour() = default;

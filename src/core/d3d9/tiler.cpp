@@ -282,14 +282,14 @@ namespace Pathfinder {
         process_segment(next, p_scene_builder, p_object_builder);
     }
 
-    Tiler::Tiler(SceneBuilderD3D9 &p_scene_builder, uint32_t path_id, const Shape &p_shape,
+    Tiler::Tiler(SceneBuilderD3D9 &p_scene_builder, uint32_t path_id, const DrawPath &p_path,
                  FillRule fill_rule, const Rect<float> &view_box)
-            : shape(p_shape), scene_builder(p_scene_builder) {
+            : path(p_path), scene_builder(p_scene_builder) {
         // The intersection rect of the path bounds and the view box.
-        auto bounds = p_shape.bounds.intersection(view_box);
+        auto bounds = path.outline.bounds.intersection(view_box);
 
         // Create an object builder.
-        object_builder = ObjectBuilder(path_id, bounds, shape.paint, view_box, fill_rule);
+        object_builder = ObjectBuilder(path_id, bounds, path.paint, view_box, fill_rule);
     }
 
     void Tiler::generate_tiles() {
@@ -302,7 +302,7 @@ namespace Pathfinder {
 
     void Tiler::generate_fills() {
         // Traverse paths in the shape.
-        for (const auto &contour: shape.contours) {
+        for (const auto &contour: path.outline.contours) {
             auto segments_iter = SegmentsIter(contour.points, contour.flags, contour.closed);
 
             // Traverse curve/line segments.

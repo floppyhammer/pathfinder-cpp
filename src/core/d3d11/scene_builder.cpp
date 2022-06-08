@@ -15,18 +15,18 @@ namespace Pathfinder {
             const std::vector<TextureMetadataEntry> &paint_metadata) {
         auto effective_view_box = scene.view_box;
 
-        auto draw_path = &scene.draw_paths[draw_path_id];
+        auto &draw_path = scene.draw_paths[draw_path_id];
 
-        auto path_bounds = transform * draw_path->bounds;
+        auto path_bounds = transform * draw_path.outline.bounds;
 
-        auto paint_id = draw_path->paint;
+        auto paint_id = draw_path.paint;
 
         auto &paint_metadata0 = paint_metadata[paint_id];
 
-        auto built_path = BuiltPath(draw_path_id, path_bounds, paint_id, effective_view_box, draw_path->fill_rule);
+        auto built_path = BuiltPath(draw_path_id, path_bounds, paint_id, effective_view_box, draw_path.fill_rule);
 
         // FIXME: Fix hardcoded blend mode.
-        return {built_path, BlendMode::SrcOver, draw_path->fill_rule, true};
+        return {built_path, BlendMode::SrcOver, draw_path.fill_rule, true};
     }
 
     /// Create tile batches.

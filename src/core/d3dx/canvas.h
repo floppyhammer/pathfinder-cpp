@@ -10,7 +10,7 @@
 #include <memory>
 
 namespace Pathfinder {
-    enum ShapeOp {
+    enum PathOp {
         Fill,
         Stroke,
     };
@@ -69,7 +69,8 @@ namespace Pathfinder {
 
     class Canvas {
     public:
-        Canvas(const std::shared_ptr<Driver>& p_driver, float p_size_x, float p_size_y, const std::vector<char> &area_lut_input);
+        Canvas(const std::shared_ptr<Driver> &p_driver, float p_size_x, float p_size_y,
+               const std::vector<char> &area_lut_input);
 
         // Set state.
         // ------------------------------------------------
@@ -123,10 +124,10 @@ namespace Pathfinder {
         // Drawing ops.
         // ------------------------------------------------
         /// Fill a shape.
-        void fill_shape(Shape p_shape, FillRule p_fill_rule);
+        void fill_path(Outline p_outline, FillRule p_fill_rule);
 
-        /// Stroke a shape.
-        void stroke_shape(Shape p_shape);
+        /// Stroke a path.
+        void stroke_path(Outline p_outline);
         // ------------------------------------------------
 
         /// Rebuild and redraw the scene.
@@ -146,7 +147,7 @@ namespace Pathfinder {
          * @param canvas Target canvas.
          * @param input SVG file content.
          */
-        void load_svg(const std::string& input);
+        void load_svg(const std::string &input);
 
         // TODO
         void draw_image();
@@ -176,14 +177,14 @@ namespace Pathfinder {
 #endif
 
         /**
-         * Adds a shape.
-         * @param p_shape Shape to add.
-         * @param p_shape_op Fill/Stroke.
+         * Adds a path.
+         * @param p_outline Path to add.
+         * @param p_path_op Fill/Stroke.
          * @param p_fill_rule Winding/Even-Odd.
          */
-        void push_shape(Shape p_shape,
-                        ShapeOp p_shape_op,
-                        FillRule p_fill_rule);
+        void push_path(Outline &p_outline,
+                       PathOp p_path_op,
+                       FillRule p_fill_rule);
     };
 }
 #endif //PATHFINDER_CANVAS_H

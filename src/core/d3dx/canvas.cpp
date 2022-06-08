@@ -10,8 +10,6 @@
 
 #include <nanosvg.h>
 
-#include <utility>
-
 namespace Pathfinder {
     struct ShadowBlurRenderTargetInfo {
         /// Render targets.
@@ -32,7 +30,7 @@ namespace Pathfinder {
      * Push shadow blur render targets.
      * @param scene Canvas scene.
      * @param current_state Canvas state.
-     * @param outline_bounds Original shape bounds.
+     * @param outline_bounds Original path bounds.
      */
     ShadowBlurRenderTargetInfo push_shadow_blur_render_targets(const std::shared_ptr<Driver> &driver,
                                                                Scene &scene,
@@ -92,28 +90,28 @@ namespace Pathfinder {
         auto paint_id_x = scene.push_paint(paint_x);
         auto paint_id_y = scene.push_paint(paint_y);
 
-        // A rect shape used to blur the shadow shape.
-        // Judging by the size, this shape will be drawn to a small texture.
-        Shape path_x;
-        path_x.add_rect(Rect<float>(Vec2<float>(0.0), info.bounds.size().to_f32()));
+        // A rect path used to blur the shadow path.
+        // Judging by the size, this path will be drawn to a small texture.
+        DrawPath path_x;
+        path_x.outline.add_rect(Rect<float>(Vec2<float>(0.0), info.bounds.size().to_f32()));
         path_x.paint = paint_id_x;
 
-        // A rect shape used to blur the shadow shape.
-        // Judging by the size, this shape will be drawn to the final texture.
-        Shape path_y;
-        path_y.add_rect(info.bounds.to_f32());
+        // A rect path used to blur the shadow path.
+        // Judging by the size, this path will be drawn to the final texture.
+        DrawPath path_y;
+        path_y.outline.add_rect(info.bounds.to_f32());
         path_y.paint = paint_id_y;
 
         // Pop viewport x.
         scene.pop_render_target();
 
-        // This shape goes to the blur viewport y, with the viewport x as the color texture.
+        // This path goes to the blur viewport y, with the viewport x as the color texture.
         scene.push_draw_path(path_x);
 
         // Pop viewport y.
         scene.pop_render_target();
 
-        // This shape goes to the canvas viewport, with the viewport y as the color texture.
+        // This path goes to the canvas viewport, with the viewport y as the color texture.
         scene.push_draw_path(path_y);
     }
 
@@ -139,11 +137,11 @@ namespace Pathfinder {
         renderer->set_up_pipelines(size_x, size_y);
     }
 
-    void Canvas::push_shape(Shape p_shape,
-                            ShapeOp p_shape_op,
-                            FillRule p_fill_rule) {
-        // Set paint.
-        Paint paint = p_shape_op == ShapeOp::Fill ? fill_paint() : stroke_paint();
+    void Canvas::push_path(Outline &p_outline,
+                           PathOp p_path_op,
+                           FillRule p_fill_rule) {
+        // Get paint.
+        Paint paint = p_path_op == PathOp::Fill ? fill_paint() : stroke_paint();
 
         // Push to the scene's palette.
         auto paint_id = scene->push_paint(paint);
@@ -151,19 +149,21 @@ namespace Pathfinder {
         auto transform = current_state.transform;
         auto blend_mode = current_state.global_composite_operation;
 
-        p_shape.transform(transform);
+        // Apply transform.
+        p_outline.transform(transform);
 
         // Add shadow.
         if (current_state.shadow_color.is_opaque()) {
-            // Copy shape.
-            auto shadow_shape = p_shape;
+            // Copy outline.
+            Outline shadow_outline = p_outline;
 
             // Set shadow offset.
-            shadow_shape.transform(Transform2::from_translation(current_state.shadow_offset));
+            shadow_outline.transform(Transform2::from_translation(current_state.shadow_offset));
 
-            auto shadow_blur_info = push_shadow_blur_render_targets(driver, *scene, current_state, shadow_shape.bounds);
+            auto shadow_blur_info = push_shadow_blur_render_targets(driver, *scene, current_state,
+                                                                    shadow_outline.bounds);
 
-            shadow_shape.transform(Transform2::from_translation(-shadow_blur_info.bounds.origin().to_f32()));
+            shadow_outline.transform(Transform2::from_translation(-shadow_blur_info.bounds.origin().to_f32()));
 
             // Per spec the shadow must respect the alpha of the shadowed path, but otherwise have
             // the color of the shadow paint.
@@ -180,31 +180,35 @@ namespace Pathfinder {
 
             auto shadow_paint_id = scene->push_paint(shadow_paint);
 
-            shadow_shape.paint = shadow_paint_id;
-            shadow_shape.fill_rule = p_shape.fill_rule;
-            shadow_shape.blend_mode = p_shape.blend_mode;
+            // Create a new draw path from the outline.
+            DrawPath path;
+            path.outline = shadow_outline;
+            path.paint = shadow_paint_id;
+            path.fill_rule = p_fill_rule;
+            path.blend_mode = blend_mode;
 
-            // This shape goes to the blur viewport x.
-            scene->push_draw_path(shadow_shape);
+            // This path goes to the blur viewport x.
+            scene->push_draw_path(path);
 
             composite_shadow_blur_render_targets(*scene, shadow_blur_info);
         }
 
-        p_shape.paint = paint_id;
-        p_shape.fill_rule = p_fill_rule;
-        p_shape.blend_mode = blend_mode;
+        DrawPath path;
+        path.outline = p_outline;
+        path.paint = paint_id;
+        path.fill_rule = p_fill_rule;
+        path.blend_mode = blend_mode;
 
-        scene->push_draw_path(p_shape);
+        scene->push_draw_path(path);
     }
 
-    void Canvas::fill_shape(Shape p_shape,
-                            FillRule p_fill_rule) {
+    void Canvas::fill_path(Outline outline, FillRule fill_rule) {
         if (current_state.fill_paint.is_opaque()) {
-            push_shape(std::move(p_shape), ShapeOp::Fill, p_fill_rule);
+            push_path(outline, PathOp::Fill, fill_rule);
         }
     }
 
-    void Canvas::stroke_shape(Shape p_shape) {
+    void Canvas::stroke_path(Outline outline) {
         // Set stroke style.
         auto style = StrokeStyle();
         style.line_width = line_width();
@@ -212,31 +216,24 @@ namespace Pathfinder {
         style.miter_limit = miter_limit();
         style.line_cap = line_cap();
 
-        // Set stroke color.
-        auto color = current_state.stroke_paint.get_base_color();
-
         // No need to draw an invisible stroke.
         if (current_state.stroke_paint.is_opaque() && style.line_width > 0) {
             // Do dash before converting stroke to fill.
             if (!current_state.line_dash.empty()) {
-                auto dasher = OutlineDash(p_shape, current_state.line_dash, 0);
+                auto dasher = OutlineDash(outline, current_state.line_dash, 0);
                 dasher.dash();
-                p_shape = dasher.into_outline();
+                outline = dasher.into_outline();
             }
 
-            auto stroke_to_fill = ShapeStrokeToFill(p_shape, style);
+            auto stroke_to_fill = OutlineStrokeToFill(outline, style);
 
             // Do stroking.
             stroke_to_fill.offset();
 
-            auto stroke_shape = stroke_to_fill.into_outline();
+            auto stroke_outline = stroke_to_fill.into_outline();
 
-            // Strokes don't have the Even-Odd fill rule.
-            stroke_shape.fill_rule = FillRule::Winding;
-
-            set_stroke_paint(Paint::from_color(color));
-
-            push_shape(stroke_shape, ShapeOp::Stroke, FillRule::Winding);
+            // Even-Odd fill rule is not applicable for strokes.
+            push_path(stroke_outline, PathOp::Stroke, FillRule::Winding);
         }
     }
 
@@ -429,26 +426,22 @@ namespace Pathfinder {
         // Extract paths, contours and points from the SVG image.
         // Notable: NSVGshape equals to Path, and NSVGpath equals to Contour (Sub-Path).
         for (NSVGshape *nsvg_shape = image->shapes; nsvg_shape != nullptr; nsvg_shape = nsvg_shape->next) {
-            Shape shape;
+            Outline outline;
 
             // Load the bounds from the SVG file, will be modified when pushing points anyway.
-            shape.bounds = Rect<float>(nsvg_shape->bounds[0],
-                                       nsvg_shape->bounds[1],
-                                       nsvg_shape->bounds[2],
-                                       nsvg_shape->bounds[3]);
+            outline.bounds = Rect<float>(nsvg_shape->bounds);
 
             for (NSVGpath *nsvg_path = nsvg_shape->paths; nsvg_path != nullptr; nsvg_path = nsvg_path->next) {
-                shape.move_to(nsvg_path->pts[0], nsvg_path->pts[1]);
+                outline.move_to(nsvg_path->pts[0], nsvg_path->pts[1]);
 
                 // -6 or -3, both will do, probably.
                 for (int point_index = 0; point_index < nsvg_path->npts - 3; point_index += 3) {
                     // * 2 because a point has x and y components.
                     float *p = &nsvg_path->pts[point_index * 2];
-                    shape.cubic_to(p[2], p[3], p[4], p[5], p[6], p[7]);
+                    outline.cubic_to(p[2], p[3], p[4], p[5], p[6], p[7]);
                 }
 
-                if (nsvg_path->closed)
-                    shape.close();
+                if (nsvg_path->closed) outline.close();
             }
 
             // Shadow test.
@@ -462,22 +455,21 @@ namespace Pathfinder {
 
             // Add fill.
             set_fill_paint(Paint::from_color(ColorU(nsvg_shape->fill.color)));
-            auto fill_rule = convert_nsvg_fill_rule(nsvg_shape->fillRule);
-            fill_shape(shape, fill_rule);
+            fill_path(outline, convert_nsvg_fill_rule(nsvg_shape->fillRule));
 
-            // Add stroke if needed.
+            // Add stroke.
             set_stroke_paint(Paint::from_color(ColorU(nsvg_shape->stroke.color)));
             set_line_join(convert_nsvg_line_join(nsvg_shape->strokeLineJoin));
             set_miter_limit(nsvg_shape->miterLimit);
             set_line_cap(convert_nsvg_line_cap(nsvg_shape->strokeLineCap));
             set_line_width(nsvg_shape->strokeWidth);
-            stroke_shape(shape);
+            stroke_path(outline);
         }
 
         // Clean up NanoSVG.
         nsvgDelete(image);
 
-        timestamp.record("add shape to canvas");
+        timestamp.record("add path to canvas");
         timestamp.print();
     }
 

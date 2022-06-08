@@ -5,7 +5,7 @@
 namespace Pathfinder {
     const float RATIO = 0.552284749831; // 4.0f * (sqrt(2.0f) - 1.0f) / 3.0f
 
-    void Shape::move_to(float x, float y) {
+    void Outline::move_to(float x, float y) {
         // Add a new empty contour.
         contours.emplace_back();
 
@@ -18,11 +18,11 @@ namespace Pathfinder {
         // Update contour bounds.
         union_rect(current_contour.bounds, Vec2<float>(x, y), true);
 
-        // Update shape bounds.
+        // Update path bounds.
         bounds = bounds.union_rect(current_contour.bounds);
     }
 
-    void Shape::line_to(float x, float y) {
+    void Outline::line_to(float x, float y) {
         if (contours.empty())
             return;
 
@@ -41,11 +41,11 @@ namespace Pathfinder {
         // Update contour bounds.
         union_rect(current_contour.bounds, Vec2<float>(x, y));
 
-        // Update shape bounds.
+        // Update path bounds.
         bounds = bounds.union_rect(current_contour.bounds);
     }
 
-    void Shape::curve_to(float cx, float cy, float x, float y) {
+    void Outline::curve_to(float cx, float cy, float x, float y) {
         if (contours.empty())
             return;
 
@@ -61,11 +61,11 @@ namespace Pathfinder {
         union_rect(current_contour.bounds, Vec2<float>(cx, cy));
         union_rect(current_contour.bounds, Vec2<float>(x, y));
 
-        // Update shape bounds.
+        // Update path bounds.
         bounds = bounds.union_rect(current_contour.bounds);
     }
 
-    void Shape::cubic_to(float cx, float cy, float cx1, float cy1, float x, float y) {
+    void Outline::cubic_to(float cx, float cy, float cx1, float cy1, float x, float y) {
         if (contours.empty())
             return;
 
@@ -85,11 +85,11 @@ namespace Pathfinder {
         union_rect(current_contour.bounds, Vec2<float>(cx1, cy1));
         union_rect(current_contour.bounds, Vec2<float>(x, y));
 
-        // Update shape bounds.
+        // Update path bounds.
         bounds = bounds.union_rect(current_contour.bounds);
     }
 
-    void Shape::close() {
+    void Outline::close() {
         if (contours.empty())
             return;
 
@@ -110,14 +110,14 @@ namespace Pathfinder {
         current_contour.closed = true;
     }
 
-    void Shape::add_line(Vec2<float> p_start, Vec2<float> p_end) {
+    void Outline::add_line(Vec2<float> p_start, Vec2<float> p_end) {
         if (p_start == p_end) return;
 
         move_to(p_start.x, p_start.y);
         line_to(p_end.x, p_end.y);
     }
 
-    void Shape::add_rect(const Rect<float> &p_rect, float p_corner_radius) {
+    void Outline::add_rect(const Rect<float> &p_rect, float p_corner_radius) {
         if (p_rect.size().x == 0 || p_rect.size().y == 0) return;
 
         if (p_corner_radius <= 0) {
@@ -153,7 +153,7 @@ namespace Pathfinder {
         close();
     }
 
-    void Shape::add_circle(Vec2<float> p_center, float p_radius) {
+    void Outline::add_circle(Vec2<float> p_center, float p_radius) {
         if (p_radius == 0) return;
 
         // See https://stackoverflow.com/questions/1734745/how-to-create-circle-with-b%C3%A9zier-curves.
@@ -171,8 +171,8 @@ namespace Pathfinder {
         close();
     }
 
-    void Shape::scale(const Vec2<float> &scale) {
-        // Shape origin.
+    void Outline::scale(const Vec2<float> &scale) {
+        // Outline origin.
         //Vec2<float> origin = bounds.origin();
         Vec2<float> origin{};
 
@@ -192,7 +192,7 @@ namespace Pathfinder {
         update_bounds();
     }
 
-    void Shape::translate(const Vec2<float> &translation) {
+    void Outline::translate(const Vec2<float> &translation) {
         for (auto &contour: contours) {
             for (auto &point: contour.points) {
                 point += translation;
@@ -202,8 +202,8 @@ namespace Pathfinder {
         update_bounds();
     }
 
-    void Shape::rotate(float rotation) {
-        // Shape origin.
+    void Outline::rotate(float rotation) {
+        // Outline origin.
         //Vec2<float> origin = bounds.origin();
         Vec2<float> origin{};
 
@@ -225,7 +225,7 @@ namespace Pathfinder {
         update_bounds();
     }
 
-    void Shape::transform(const Transform2 &transform) {
+    void Outline::transform(const Transform2 &transform) {
         for (auto &contour: contours) {
             for (auto &point: contour.points) {
                 point = transform * point;
@@ -235,7 +235,7 @@ namespace Pathfinder {
         update_bounds();
     }
 
-    void Shape::update_bounds() {
+    void Outline::update_bounds() {
         bounds = Rect<float>();
 
         // Update child contours' bounds and its own bounds.
@@ -251,7 +251,7 @@ namespace Pathfinder {
         }
     }
 
-    void Shape::push_contour(const Contour &p_contour) {
+    void Outline::push_contour(const Contour &p_contour) {
         if (p_contour.is_empty()) {
             return;
         }

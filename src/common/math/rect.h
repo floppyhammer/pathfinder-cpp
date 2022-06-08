@@ -26,6 +26,9 @@ namespace Pathfinder {
         Rect(Vec2<T> p_left_top, Vec2<T> p_right_bottom)
                 : left(p_left_top.x), top(p_left_top.y), right(p_right_bottom.x), bottom(p_right_bottom.y) {}
 
+        explicit Rect(T value[4])
+                : left(value[0]), top(value[1]), right(value[2]), bottom(value[3]) {}
+
         template<typename U>
         explicit Rect(Rect<U> p_rect) {
             left = static_cast<T>(p_rect.left);

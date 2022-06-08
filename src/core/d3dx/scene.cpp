@@ -13,18 +13,18 @@ namespace Pathfinder {
         return palette.get_paint(paint_id);
     }
 
-    uint32_t Scene::push_draw_path(const Shape &p_shape) {
+    uint32_t Scene::push_draw_path(const DrawPath &p_path) {
         // Need to rebuild the scene.
         is_dirty = true;
 
-        // Get the shape index in the scene.
+        // Get the path index in the scene.
         auto draw_path_index = draw_paths.size();
 
-        // Push the shape.
-        draw_paths.push_back(p_shape);
+        // Push the path.
+        draw_paths.push_back(p_path);
 
         // Update the scene bounds.
-        bounds = bounds.union_rect(p_shape.bounds);
+        bounds = bounds.union_rect(p_path.outline.bounds);
 
         // Update the display list.
         if (!display_list.empty() && display_list.back().type == DisplayItem::Type::DrawPaths) {
@@ -46,7 +46,7 @@ namespace Pathfinder {
         // Need to rebuild the scene.
         is_dirty = true;
 
-        // Extend shapes.
+        // Extend paths.
         draw_paths.reserve(draw_paths.size() + p_scene.draw_paths.size());
         draw_paths.insert(std::end(draw_paths), std::begin(p_scene.draw_paths), std::end(p_scene.draw_paths));
 

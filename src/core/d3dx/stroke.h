@@ -43,19 +43,19 @@ namespace Pathfinder {
         void offset_backward();
     };
 
-    /// Strokes a shape with a stroke style to produce a new shape.
-    struct ShapeStrokeToFill {
-        const Shape &input;
-        Shape output{};
+    /// Strokes an outline with a stroke style to produce a new shape.
+    struct OutlineStrokeToFill {
+        const Outline &input;
+        Outline output{};
         StrokeStyle style;
 
-        ShapeStrokeToFill(const Shape &p_input, StrokeStyle p_style);
+        OutlineStrokeToFill(const Outline &p_input, StrokeStyle p_style);
 
         /// Performs the stroke operation.
         void offset();
 
         /// Returns the resulting stroked outline. This should be called after `offset()`.
-        Shape into_outline() const;
+        Outline into_outline() const;
 
         void push_stroked_contour(std::vector<Contour> &new_contours, ContourStrokeToFill stroker, bool closed) const;
 

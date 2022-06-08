@@ -73,11 +73,11 @@ namespace Pathfinder {
         return batch_path_index;
     }
 
-    Range SegmentsD3D11::add_path(const Shape &shape) {
+    Range SegmentsD3D11::add_path(const Outline &outline) {
         auto first_segment_index = indices.size();
 
-        // Traverse all contours in the shape.
-        for (auto &contour: shape.contours) {
+        // Traverse all contours in the outline.
+        for (auto &contour: outline.contours) {
             auto point_count = contour.points.size();
 
             // Traverse all points in the contour.

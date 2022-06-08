@@ -21,7 +21,7 @@ namespace Pathfinder {
             built_segments.draw_segment_ranges.reserve(scene.draw_paths.size());
 
             for (const auto &draw_path : scene.draw_paths) {
-                auto range = built_segments.draw_segments.add_path(draw_path);
+                auto range = built_segments.draw_segments.add_path(draw_path.outline);
                 built_segments.draw_segment_ranges.push_back(range);
             }
 

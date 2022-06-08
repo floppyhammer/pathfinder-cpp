@@ -55,10 +55,10 @@ namespace Pathfinder {
         }
     }
 
-    ShapeStrokeToFill::ShapeStrokeToFill(const Shape &p_input, StrokeStyle p_style)
+    OutlineStrokeToFill::OutlineStrokeToFill(const Outline &p_input, StrokeStyle p_style)
             : input(p_input), style(p_style) {}
 
-    void ShapeStrokeToFill::offset() {
+    void OutlineStrokeToFill::offset() {
         // Resulting contours.
         std::vector<Contour> new_contours;
 
@@ -101,11 +101,11 @@ namespace Pathfinder {
         output.bounds = new_bounds;
     }
 
-    Shape ShapeStrokeToFill::into_outline() const {
+    Outline OutlineStrokeToFill::into_outline() const {
         return output;
     }
 
-    void ShapeStrokeToFill::push_stroked_contour(std::vector<Contour> &new_contours,
+    void OutlineStrokeToFill::push_stroked_contour(std::vector<Contour> &new_contours,
                                                  ContourStrokeToFill stroker,
                                                  bool closed) const {
         // Add join if necessary.
@@ -125,7 +125,7 @@ namespace Pathfinder {
         new_contours.push_back(stroker.output);
     }
 
-    void ShapeStrokeToFill::add_cap(Contour &contour) const {
+    void OutlineStrokeToFill::add_cap(Contour &contour) const {
         // If cap is butt, the two points in the outer and inner contour can
         // connect to each other automatically because of the shared
         // ON_CURVE_POINT flag.

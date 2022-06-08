@@ -17,23 +17,23 @@ namespace Pathfinder {
 
     /// Transforms a stroke into a dashed stroke.
     struct OutlineDash {
-        Shape &input;
-        Shape output;
+        Outline &input;
+        Outline output;
         DashState state;
 
-        OutlineDash(Shape &p_input, const std::vector<float> &p_dashes, float p_offset);
+        OutlineDash(Outline &p_input, const std::vector<float> &p_dashes, float p_offset);
 
         void dash();
 
-        Shape into_outline();
+        Outline into_outline();
     };
 
     struct ContourDash {
         Contour &input;
-        Shape &output;
+        Outline &output;
         DashState &state;
 
-        ContourDash(Contour &p_input, Shape &p_output, DashState &p_state);
+        ContourDash(Contour &p_input, Outline &p_output, DashState &p_state);
 
         void dash();
     };
