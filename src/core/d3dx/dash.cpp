@@ -1,6 +1,6 @@
 #include "dash.h"
 
-#include "cmath"
+#include <cmath>
 
 namespace Pathfinder {
     const float EPSILON = 0.0001;
