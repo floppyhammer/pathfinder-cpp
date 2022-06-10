@@ -7,7 +7,7 @@
 #include "../d3dx/scene.h"
 #include "../d3dx/data/built_path.h"
 
-#include <omp.h>
+#include <mutex>
 #include <memory>
 
 namespace Pathfinder {
@@ -16,7 +16,7 @@ namespace Pathfinder {
         std::shared_ptr<Scene> scene;
 
         // Atomic int. Used when adding fills.
-        size_t next_alpha_tile_indices[ALPHA_TILE_LEVEL_COUNT] = {0, 0};
+        std::array<std::atomic<size_t>, ALPHA_TILE_LEVEL_COUNT> next_alpha_tile_indices;
 
         // Send to renderer to draw fills.
         std::vector<Fill> pending_fills;
@@ -49,7 +49,7 @@ namespace Pathfinder {
          * @param path_id Unique ID of the shape in the scene.
          * @return A built shape.
          */
-        BuiltDrawPath build_draw_path_on_cpu(uint32_t path_id, omp_lock_t &write_lock);
+        BuiltDrawPath build_draw_path_on_cpu(uint32_t path_id);
 
         /// Build patches for built paths.
         void build_tile_batches(const std::vector<BuiltDrawPath> &built_paths);
@@ -60,6 +60,8 @@ namespace Pathfinder {
          * @param fill_batch A fill batch.
          */
         void send_fills(const std::vector<Fill> &fill_batch);
+
+        std::mutex write_mutex;
     };
 }
 

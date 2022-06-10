@@ -8,7 +8,7 @@
 #define PATHFINDER_DEBUG
 
 // Enable building scene in parallel.
-#define PATHFINDER_OPENMP_THREADS 4
+#define PATHFINDER_THREADS 4
 
 // Enable SIMD.
 #define PATHFINDER_SIMD_ENABLED

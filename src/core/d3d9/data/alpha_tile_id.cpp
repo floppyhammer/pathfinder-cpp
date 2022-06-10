@@ -1,18 +1,9 @@
 #include "alpha_tile_id.h"
 
 namespace Pathfinder {
-    AlphaTileId::AlphaTileId(size_t *next_alpha_tile_index, int level) {
-        size_t alpha_tile_index;
-
+    AlphaTileId::AlphaTileId(std::array<std::atomic<size_t>, ALPHA_TILE_LEVEL_COUNT> &next_alpha_tile_index, int level) {
         // Atomic fetch & add.
-#pragma omp critical(update_alpha_tile_index)
-        {
-            // Fetch.
-            alpha_tile_index = next_alpha_tile_index[level];
-
-            // Add.
-            next_alpha_tile_index[level] += 1;
-        }
+        size_t alpha_tile_index = next_alpha_tile_index[level].fetch_add(1);
 
         value = level * ALPHA_TILES_PER_LEVEL + alpha_tile_index;
     }

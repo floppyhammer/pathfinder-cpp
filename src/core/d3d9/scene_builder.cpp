@@ -3,6 +3,8 @@
 #include "../../common/timestamp.h"
 #include "../../common/global_macros.h"
 
+#include <thread>
+
 #undef min
 #undef max
 
@@ -85,48 +87,48 @@ namespace Pathfinder {
 
     std::vector<BuiltDrawPath> SceneBuilderD3D9::build_paths_on_cpu() {
         // Reset builder.
-        {
-            // Clear pending fills.
-            pending_fills.clear();
+        // ------------------------------
+        // Clear pending fills.
+        pending_fills.clear();
 
-            // Reset next alpha tile indices.
-            std::fill(next_alpha_tile_indices, next_alpha_tile_indices + ALPHA_TILE_LEVEL_COUNT, 0);
-        }
+        // Clear next alpha tile indices.
+        for (auto &next_alpha_tile_index: next_alpha_tile_indices)
+            next_alpha_tile_index = 0;
+        // ------------------------------
 
-        // Number of draw paths.
         auto draw_paths_count = scene->draw_paths.size();
 
-        // Allocate space for built draw paths.
         std::vector<BuiltDrawPath> built_paths(draw_paths_count);
 
-        // Set up an OpenMP lock.
-        omp_lock_t write_lock;
-        omp_init_lock(&write_lock);
+        // Parallel.
+        auto task = [this, &built_paths, &draw_paths_count](int begin) {
+            for (int path_index = begin; path_index < draw_paths_count; path_index += PATHFINDER_THREADS) {
+                auto &draw_path = scene->draw_paths[path_index];
 
-        // This loop should run in parallel whenever possible.
-#if (PATHFINDER_OPENMP_THREADS > 1)
-#pragma omp parallel for num_threads(PATHFINDER_OPENMP_THREADS)
-#endif
-        for (int path_index = 0; path_index < draw_paths_count; path_index++) {
-            // Retrieve a draw path.
-            auto &draw_path = scene->draw_paths[path_index];
+                // Skip invisible draw paths.
+                if (!scene->get_paint(draw_path.paint).is_opaque()
+                    || !draw_path.outline.bounds.intersects(scene->view_box)) {
+                    continue;
+                }
 
-            // Skip if it's invisible (transparent or out of scope).
-            if (!scene->get_paint(draw_path.paint).is_opaque()
-                || !draw_path.outline.bounds.intersects(scene->view_box)) {
-                continue;
+                built_paths[path_index] = build_draw_path_on_cpu(path_index);
             }
+        };
 
-            // Build the draw path.
-            built_paths[path_index] = build_draw_path_on_cpu(path_index, write_lock);
+        size_t threads_count = std::min(draw_paths_count, (size_t) PATHFINDER_THREADS);
+        std::vector<std::thread> threads(threads_count);
+        for (int i = 0; i < threads_count; i++) {
+            threads[i] = std::thread(task, i);
         }
 
-        omp_destroy_lock(&write_lock);
+        for (auto &t: threads) {
+            t.join();
+        }
 
         return built_paths;
     }
 
-    BuiltDrawPath SceneBuilderD3D9::build_draw_path_on_cpu(uint32_t path_id, omp_lock_t &write_lock) {
+    BuiltDrawPath SceneBuilderD3D9::build_draw_path_on_cpu(uint32_t path_id) {
         // Get the draw path (a thin wrapper over outline).
         const auto &path_object = scene->draw_paths[path_id];
 
@@ -139,9 +141,9 @@ namespace Pathfinder {
         tiler.object_builder.built_path.paint_id = path_object.paint;
 
         // Add generated fills from the tile generation step. Need a lock.
-        omp_set_lock(&write_lock);
+        write_mutex.lock();
         send_fills(tiler.object_builder.fills);
-        omp_unset_lock(&write_lock);
+        write_mutex.unlock();
 
         return {tiler.object_builder.built_path, path_object.blend_mode, path_object.fill_rule, true};
     }
