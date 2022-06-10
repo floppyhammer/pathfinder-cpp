@@ -28,10 +28,10 @@ namespace Pathfinder {
         uint8_t value = 0x00;
 
         /// The bounds should be updated.
-        static const uint8_t UPDATE_BOUNDS;
+        static const uint8_t UPDATE_BOUNDS = 0x01;
 
         /// The "from" point of the segment.
-        static const uint8_t INCLUDE_FROM_POINT;
+        static const uint8_t INCLUDE_FROM_POINT = 0x02;
 
         PushSegmentFlags() = default;
 
@@ -45,10 +45,10 @@ namespace Pathfinder {
 
         /// This point is the first control point of a cubic Bézier curve or the only control point
         /// of a quadratic Bézier curve.
-        static const uint8_t CONTROL_POINT_0;
+        static const uint8_t CONTROL_POINT_0 = 0x01;
 
         /// This point is the second point of a cubic Bézier curve.
-        static const uint8_t CONTROL_POINT_1;
+        static const uint8_t CONTROL_POINT_1 = 0x02;
 
         PointFlags() = default;
 
