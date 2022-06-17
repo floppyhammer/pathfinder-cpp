@@ -14,6 +14,7 @@
 #include <queue>
 #include <memory>
 #include <functional>
+#include <array>
 
 namespace Pathfinder {
     class Driver;

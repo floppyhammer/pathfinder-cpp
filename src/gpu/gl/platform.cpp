@@ -1,9 +1,10 @@
 #include "platform.h"
 
+#include "driver.h"
+#include "swap_chain.h"
 #include "../../common/logger.h"
 
 #include <stdexcept>
-#include <set>
 #include <sstream>
 
 #ifndef PATHFINDER_USE_VULKAN
@@ -11,10 +12,11 @@
 namespace Pathfinder {
     void PlatformGl::init(uint32_t p_width, uint32_t p_height) {
         // Get a GLFW window.
-        initWindow(p_width, p_height);
+        init_window(p_width, p_height);
     }
 
-    void PlatformGl::initWindow(uint32_t p_width, uint32_t p_height) {
+    void PlatformGl::init_window(uint32_t p_width, uint32_t p_height) {
+#ifndef __ANDROID__
         // GLFW: initialize and configure.
         glfwInit();
 
@@ -48,6 +50,7 @@ namespace Pathfinder {
             Logger::error("Failed to initialize GLAD!", "GLAD");
             return;
         }
+#endif
 
         // Print GL version.
         int glMajorVersion, glMinorVersion;
@@ -60,8 +63,10 @@ namespace Pathfinder {
     }
 
     void PlatformGl::cleanup() {
+#ifndef __ANDROID__
         // GLFW: terminate, clearing all previously allocated resources (including windows).
         glfwTerminate();
+#endif
     }
 
     std::shared_ptr<Driver> PlatformGl::create_driver() {
@@ -69,7 +74,8 @@ namespace Pathfinder {
         return driver;
     }
 
-    std::shared_ptr<SwapChain> PlatformGl::create_swap_chain(const std::shared_ptr<Driver>& driver, uint32_t p_width, uint32_t p_height) {
+    std::shared_ptr<SwapChain>
+    PlatformGl::create_swap_chain(const std::shared_ptr<Driver> &driver, uint32_t p_width, uint32_t p_height) {
         auto swap_chain_gl = std::make_shared<SwapChainGl>(p_width, p_height, window);
         return swap_chain_gl;
     }

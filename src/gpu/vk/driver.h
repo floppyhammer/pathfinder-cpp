@@ -2,7 +2,7 @@
 #define PATHFINDER_GPU_DRIVER_VK_H
 
 #include "../driver.h"
-#include "../vertex_input.h"
+#include "../data.h"
 #include "../../common/io.h"
 #include "../../common/global_macros.h"
 #include "render_pass.h"

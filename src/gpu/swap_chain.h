@@ -36,8 +36,7 @@ namespace Pathfinder {
         virtual bool acquire_image() = 0;
 
         /**
-         * Flush command buffers to the image with the index.
-         * @param imageIndex Which image in the swap chain should be used.
+         * Flush command buffers to the current image.
          */
         virtual void flush() = 0;
 

@@ -15,8 +15,9 @@ namespace Pathfinder {
 
     public:
         SwapChainGl(uint32_t p_width, uint32_t p_height, GLFWwindow *p_window) : SwapChain(p_width, p_height) {
-            framebuffer = std::make_shared<FramebufferGl>(p_width, p_height);
             window = p_window;
+
+            framebuffer = std::make_shared<FramebufferGl>(p_width, p_height);
 
             command_buffer = std::make_shared<CommandBufferGl>();
 

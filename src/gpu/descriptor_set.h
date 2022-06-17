@@ -25,7 +25,7 @@ namespace Pathfinder {
     class DescriptorSet {
     public:
         inline void add_or_update_descriptor(const Descriptor &descriptor) {
-            // We might use set as set layout.
+            // We might use set as set layout. So, null buffer/texture is valid here.
             //if (descriptor.buffer == nullptr && descriptor.texture == nullptr) return;
 
             descriptors[descriptor.binding] = descriptor;

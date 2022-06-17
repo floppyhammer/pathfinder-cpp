@@ -12,7 +12,8 @@ namespace Pathfinder {
 
     class Buffer {
     public:
-        Buffer(BufferType p_type, size_t p_size, MemoryProperty p_property) : type(p_type), size(p_size), memory_property(p_property) {}
+        Buffer(BufferType p_type, size_t p_size, MemoryProperty p_property)
+                : type(p_type), size(p_size), memory_property(p_property) {}
 
         inline MemoryProperty get_memory_property() const { return memory_property; }
 

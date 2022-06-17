@@ -52,7 +52,7 @@ namespace Pathfinder {
 
         std::shared_ptr<Driver> create_driver() override;
 
-        VkSurfaceKHR surface;
+        VkSurfaceKHR surface{};
 
         /// The graphics card that we'll end up selecting will be stored in a VkPhysicalDevice handle.
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -138,15 +138,15 @@ namespace Pathfinder {
         void cleanup() override;
 
     private:
-        VkInstance instance;
-        VkDebugUtilsMessengerEXT debugMessenger;
+        VkInstance instance{};
+        VkDebugUtilsMessengerEXT debugMessenger{};
 
         static const bool enableValidationLayers = true;
 
-        VkQueue graphicsQueue;
-        VkQueue presentQueue;
+        VkQueue graphicsQueue{};
+        VkQueue presentQueue{};
 
-        VkCommandPool commandPool;
+        VkCommandPool commandPool{};
 
     private:
         void initWindow(uint32_t window_width, uint32_t window_height);

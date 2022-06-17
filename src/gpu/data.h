@@ -65,6 +65,20 @@ namespace Pathfinder {
         BlendFactor dst_blend_factor;
     };
 
+    enum class VertexInputRate {
+        VERTEX = 0,
+        INSTANCE = 1,
+    };
+
+    struct VertexInputAttributeDescription {
+        uint32_t binding;
+        uint8_t size; // Must be 1, 2, 3, 4.
+        DataType type;
+        uint32_t stride;
+        size_t offset;
+        VertexInputRate vertex_input_rate;
+    };
+
     enum class DescriptorType {
         UniformBuffer = 0,
         Texture,
@@ -98,6 +112,7 @@ namespace Pathfinder {
     inline uint32_t get_pixel_size(TextureFormat format) {
         switch (format) {
             case TextureFormat::RGBA8_UNORM:
+            case TextureFormat::BGRA8_UNORM:
             case TextureFormat::RGBA8_SRGB:
             case TextureFormat::BGRA8_SRGB: {
                 return 4;

@@ -21,8 +21,6 @@ SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/modules/d3d9/data/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/modules/d3dx/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/modules/d3dx/data/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/modules/d3d11/*.cpp)
-SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/modules/vgui/*.cpp)
-SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/modules/vgui/scenes/*.cpp)
 
 LOCAL_MODULE            := pathfinder_static
 LOCAL_MODULE_FILENAME   := libpathfinder # Prefix "lib" is needed.
