@@ -175,8 +175,10 @@ namespace Pathfinder {
 
         bool one_time = false;
 
+        /// Callbacks to call when the commands are flushed.
         std::vector<std::function<void()>> callbacks;
 
+        /// Currently bind pipeline.
         RenderPipeline *render_pipeline{};
         ComputePipeline *compute_pipeline{};
     };

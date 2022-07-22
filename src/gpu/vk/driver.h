@@ -1,12 +1,11 @@
 #ifndef PATHFINDER_GPU_DRIVER_VK_H
 #define PATHFINDER_GPU_DRIVER_VK_H
 
+#include "render_pass.h"
 #include "../driver.h"
 #include "../data.h"
 #include "../../common/io.h"
 #include "../../common/global_macros.h"
-#include "render_pass.h"
-
 
 #ifdef PATHFINDER_USE_VULKAN
 

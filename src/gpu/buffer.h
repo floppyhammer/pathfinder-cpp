@@ -17,8 +17,12 @@ namespace Pathfinder {
 
         inline MemoryProperty get_memory_property() const { return memory_property; }
 
+        /// Buffer size.
         size_t size;
+
         BufferType type;
+
+        /// Device local or shared between host and device.
         MemoryProperty memory_property;
     };
 }

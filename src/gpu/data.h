@@ -106,7 +106,7 @@ namespace Pathfinder {
 
     enum class AttachmentLoadOp {
         LOAD = 0,
-        CLEAR = 1,
+        CLEAR,
     };
 
     inline uint32_t get_pixel_size(TextureFormat format) {

@@ -120,11 +120,13 @@ namespace Pathfinder {
         appInfo.pEngineName = "No Engine"; // Name of the engine (if any) used to create the application.
         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
         appInfo.apiVersion = VK_API_VERSION_1_0;
+        appInfo.pNext = nullptr;
 
         // Structure specifying parameters of a newly created instance.
         VkInstanceCreateInfo createInfo;
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.pApplicationInfo = &appInfo;
+        createInfo.flags = 0;
 
         auto extensions = getRequiredExtensions();
         createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());

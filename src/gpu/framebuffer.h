@@ -12,19 +12,20 @@ namespace Pathfinder {
      */
     class Framebuffer {
     public:
-        /// To screen viewport.
+        /// Render to screen.
         Framebuffer(uint32_t p_width, uint32_t p_height)
                 : width(p_width), height(p_height) {}
 
-        /// To texture.
+        /// Render to a texture.
         Framebuffer(uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type)
                 : width(p_width), height(p_height) {}
 
         inline std::shared_ptr<Texture> get_texture() {
-            assert(texture != nullptr && "No valid texture set to framebuffer!");
+            assert(texture != nullptr && "No valid texture set to the framebuffer!");
             return texture;
         }
 
+        /// Get the unique resource ID for the framebuffer, which is only used for hashing.
         virtual uint32_t get_unique_id() = 0;
 
         inline uint32_t get_width() const {

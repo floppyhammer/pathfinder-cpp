@@ -62,8 +62,6 @@ namespace Pathfinder {
 
         bool framebufferResized = false;
 
-        void swap_buffers_and_poll_events() const;
-
         std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Driver>& driver, uint32_t p_width, uint32_t p_height) override;
 
         static void framebufferResizeCallback(GLFWwindow *window, int width, int height) {

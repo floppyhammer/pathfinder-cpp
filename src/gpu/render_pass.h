@@ -6,6 +6,8 @@
 
 namespace Pathfinder {
     class RenderPass {
+        /// For debugging.
+        std::string name;
     };
 }
 

@@ -21,7 +21,7 @@ namespace Pathfinder {
             return window;
         }
 
-        /// Process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly.
+        /// Process input events: query GLFW whether relevant keys are pressed/released this frame and react accordingly.
         inline void poll_events() {
             glfwPollEvents();
 

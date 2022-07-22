@@ -9,6 +9,7 @@
 namespace Pathfinder {
     class RenderPipeline {
     public:
+        /// For debugging.
         std::string name;
     };
 }
