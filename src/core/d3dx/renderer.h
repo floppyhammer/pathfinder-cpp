@@ -25,7 +25,8 @@ namespace Pathfinder {
                          const std::vector<TextureMetadataEntry> &metadata,
                          const std::shared_ptr<Driver> &driver);
 
-    /// Base for D3D9 and D3D11 renderers.
+    /// Base for D3D9 and D3D11 renderers. In most cases, we have only one renderer set up, while having
+    /// multiple scenes prepared for rendering.
     class Renderer {
     public:
         explicit Renderer(const std::shared_ptr<Driver> &p_driver);

@@ -336,7 +336,7 @@ namespace Pathfinder {
 
     void Canvas::clear() {
         // Create a new scene.
-        scene = std::make_shared<Scene>(scene->id, scene->view_box);
+        scene = std::make_shared<Scene>(scene->id, scene->get_view_box());
 
         // Update scene for scene builder.
         scene_builder.scene = scene;

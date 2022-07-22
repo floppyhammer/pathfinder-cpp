@@ -111,8 +111,6 @@ namespace Pathfinder {
         std::vector<TextureMetadataEntry> texture_metadata;
         texture_metadata.reserve(p_paint_metadata.size());
 
-        int index = 0;
-
         for (const auto &paint_metadata: p_paint_metadata) {
             TextureMetadataEntry entry;
 
@@ -130,8 +128,6 @@ namespace Pathfinder {
             entry.blend_mode = paint_metadata.blend_mode;
 
             texture_metadata.push_back(entry);
-
-            index++;
         }
 
         return texture_metadata;

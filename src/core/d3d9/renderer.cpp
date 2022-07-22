@@ -36,14 +36,17 @@ namespace Pathfinder {
         return z_buffer_texture;
     }
 
-    RendererD3D9::RendererD3D9(const std::shared_ptr<Driver> &p_driver)
-            : Renderer(p_driver) {
-        mask_render_pass = driver->create_render_pass(TextureFormat::RGBA16F, AttachmentLoadOp::CLEAR,
+    RendererD3D9::RendererD3D9(const std::shared_ptr<Driver> &p_driver) : Renderer(p_driver) {
+        mask_render_pass = driver->create_render_pass(TextureFormat::RGBA16F,
+                                                      AttachmentLoadOp::CLEAR,
                                                       ImageLayout::SHADER_READ_ONLY);
 
-        dest_render_pass_clear = driver->create_render_pass(TextureFormat::RGBA8_UNORM, AttachmentLoadOp::CLEAR,
+        dest_render_pass_clear = driver->create_render_pass(TextureFormat::RGBA8_UNORM,
+                                                            AttachmentLoadOp::CLEAR,
                                                             ImageLayout::SHADER_READ_ONLY);
-        dest_render_pass_load = driver->create_render_pass(TextureFormat::RGBA8_UNORM, AttachmentLoadOp::LOAD,
+
+        dest_render_pass_load = driver->create_render_pass(TextureFormat::RGBA8_UNORM,
+                                                           AttachmentLoadOp::LOAD,
                                                            ImageLayout::SHADER_READ_ONLY);
 
         mask_framebuffer = driver->create_framebuffer(MASK_FRAMEBUFFER_WIDTH,
@@ -52,7 +55,8 @@ namespace Pathfinder {
                                                       mask_render_pass);
 
         // Quad vertex buffer. Shared by fills and tiles drawing.
-        quad_vertex_buffer = driver->create_buffer(BufferType::Vertex, 12 * sizeof(uint16_t),
+        quad_vertex_buffer = driver->create_buffer(BufferType::Vertex,
+                                                   12 * sizeof(uint16_t),
                                                    MemoryProperty::DEVICE_LOCAL);
 
         auto cmd_buffer = driver->create_command_buffer(true);
@@ -298,7 +302,8 @@ namespace Pathfinder {
         if (scene_builder.pending_fills.empty()) return;
 
         // We are supposed to do this before the builder finishes building.
-        // But it doesn't improve much performance, so we just leave it as it is for the sake of simplicity.
+        // However, it seems not providing much performance boost.
+        // So, we just leave it as it is for the sake of simplicity.
         {
             auto cmd_buffer = driver->create_command_buffer(true);
 
@@ -431,7 +436,8 @@ namespace Pathfinder {
             // MVP (with only the model matrix).
             auto model_mat = Mat4x4<float>(1.f);
             model_mat = model_mat.translate(Vec3<float>(-1.f, -1.f, 0.f)); // Move to top-left.
-            model_mat = model_mat.scale(Vec3<float>(2.f / target_framebuffer_size.x, 2.f / target_framebuffer_size.y, 1.f));
+            model_mat = model_mat.scale(
+                    Vec3<float>(2.f / target_framebuffer_size.x, 2.f / target_framebuffer_size.y, 1.f));
 
             std::array<float, 6> ubo_data = {
                     (float) z_buffer_texture->get_width(),

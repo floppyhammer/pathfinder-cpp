@@ -16,7 +16,7 @@ namespace Pathfinder {
         // New draw tile batch.
         DrawTileBatch draw_tile_batch;
 
-        auto tile_bounds = round_rect_out_to_tile_bounds(p_scene.view_box);
+        auto tile_bounds = round_rect_out_to_tile_bounds(p_scene.get_view_box());
 
         draw_tile_batch.z_buffer_data = DenseTileMap<uint32_t>::z_builder(tile_bounds);
 
@@ -107,7 +107,7 @@ namespace Pathfinder {
 
                 // Skip invisible draw paths.
                 if (!scene->get_paint(draw_path.paint).is_opaque()
-                    || !draw_path.outline.bounds.intersects(scene->view_box)) {
+                    || !draw_path.outline.bounds.intersects(scene->get_view_box())) {
                     continue;
                 }
 
@@ -133,7 +133,7 @@ namespace Pathfinder {
         const auto &path_object = scene->draw_paths[path_id];
 
         // Create a tiler for the draw path.
-        Tiler tiler(*this, path_id, path_object, path_object.fill_rule, scene->view_box);
+        Tiler tiler(*this, path_id, path_object, path_object.fill_rule, scene->get_view_box());
 
         // Core step.
         tiler.generate_tiles();
@@ -141,9 +141,9 @@ namespace Pathfinder {
         tiler.object_builder.built_path.paint_id = path_object.paint;
 
         // Add generated fills from the tile generation step. Need a lock.
-        write_mutex.lock();
+        fill_write_mutex.lock();
         send_fills(tiler.object_builder.fills);
-        write_mutex.unlock();
+        fill_write_mutex.unlock();
 
         return {tiler.object_builder.built_path, path_object.blend_mode, path_object.fill_rule, true};
     }

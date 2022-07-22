@@ -15,17 +15,20 @@ namespace Pathfinder {
     public:
         std::shared_ptr<Scene> scene;
 
-        // Atomic int. Used when adding fills.
-        std::array<std::atomic<size_t>, ALPHA_TILE_LEVEL_COUNT> next_alpha_tile_indices;
-
-        // Send to renderer to draw fills.
+        // Data sent to a renderer.
+        // ------------------------------------------
+        // Fills to draw.
         std::vector<Fill> pending_fills;
 
-        // Send to renderer to draw tiles.
+        // Tiles to draw.
         std::vector<DrawTileBatch> tile_batches{};
 
         // Data used to set up the metadata texture.
         std::vector<TextureMetadataEntry> metadata;
+        // ------------------------------------------
+
+        /// Atomic integer. Used for adding fills.
+        std::array<std::atomic<size_t>, ALPHA_TILE_LEVEL_COUNT> next_alpha_tile_indices;
 
         /**
          * Build everything we need for rendering.
@@ -33,6 +36,9 @@ namespace Pathfinder {
         void build();
 
     private:
+        /// For inserting fills.
+        std::mutex fill_write_mutex;
+
         /**
          * Assign built paths into batches.
          * @param built_paths
@@ -45,8 +51,8 @@ namespace Pathfinder {
         std::vector<BuiltDrawPath> build_paths_on_cpu();
 
         /**
-         * Run in a thread. Run a tiler on a outline (path).
-         * @param path_id Unique ID of the shape in the scene.
+         * Run in a thread. Run a tiler on a path.
+         * @param path_id Unique ID of the path in the scene.
          * @return A built shape.
          */
         BuiltDrawPath build_draw_path_on_cpu(uint32_t path_id);
@@ -60,8 +66,6 @@ namespace Pathfinder {
          * @param fill_batch A fill batch.
          */
         void send_fills(const std::vector<Fill> &fill_batch);
-
-        std::mutex write_mutex;
     };
 }
 

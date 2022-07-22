@@ -54,24 +54,7 @@ namespace Pathfinder {
         bounds = bounds.union_rect(p_scene.bounds);
     }
 
-    void Scene::transform(Vec2<float> p_position, Vec2<float> p_scale, float p_rotation) {
-        if (position != p_position) {
-            position = p_position;
-            is_dirty = true;
-        }
-
-        if (scale != p_scale) {
-            scale = p_scale;
-            is_dirty = true;
-        }
-
-        if (rotation != p_rotation) {
-            rotation = p_rotation;
-            is_dirty = true;
-        }
-    }
-
-    RenderTarget Scene::push_render_target(const std::shared_ptr<Driver>& driver, Vec2<int> render_target_size) {
+    RenderTarget Scene::push_render_target(const std::shared_ptr<Driver> &driver, Vec2<int> render_target_size) {
         DisplayItem item{};
         item.type = DisplayItem::Type::PushRenderTarget;
         item.render_target = palette.push_render_target(driver, render_target_size);
@@ -85,5 +68,13 @@ namespace Pathfinder {
         DisplayItem item{};
         item.type = DisplayItem::Type::PopRenderTarget;
         display_list.push_back(item);
+    }
+
+    Rect<float> Scene::get_view_box() {
+        return view_box;
+    }
+
+    void Scene::set_view_box(const Rect<float> &new_view_box) {
+        view_box = new_view_box;
     }
 }

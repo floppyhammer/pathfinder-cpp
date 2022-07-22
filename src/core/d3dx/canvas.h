@@ -67,12 +67,15 @@ namespace Pathfinder {
         BlendMode global_composite_operation;
     };
 
+    /// Normally, we only need one canvas to render multiple scenes.
     class Canvas {
     public:
-        Canvas(const std::shared_ptr<Driver> &p_driver, float p_size_x, float p_size_y,
+        Canvas(const std::shared_ptr<Driver> &p_driver,
+               float p_size_x,
+               float p_size_y,
                const std::vector<char> &area_lut_input);
 
-        // Set state.
+        // Brush state.
         // ------------------------------------------------
         Paint fill_paint() const;
 

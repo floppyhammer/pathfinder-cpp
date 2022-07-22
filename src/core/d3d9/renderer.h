@@ -27,6 +27,7 @@ namespace Pathfinder {
 
         void set_up_pipelines(uint32_t canvas_width, uint32_t canvas_height);
 
+        /// We need to call this for each scene.
         void draw(const SceneBuilderD3D9 &scene_builder);
 
         std::shared_ptr<Texture> get_dest_texture() override;
