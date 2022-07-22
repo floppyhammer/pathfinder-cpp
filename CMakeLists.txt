@@ -9,8 +9,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 option(VULKAN_SUPPORT "Render with Vulkan instead of OpenGL")
 set(VULKAN_SUPPORT ON)
 
+option(BUILD_DEMO "Build demo")
+set(BUILD_DEMO OFF)
+
 if (VULKAN_SUPPORT)
-    message("Using Vulkan")
+    message("Will use Vulkan")
 
     add_compile_definitions(PATHFINDER_USE_VULKAN)
 
@@ -24,7 +27,7 @@ if (VULKAN_SUPPORT)
     # We need to include Vulkan headers manually because of the above reason.
     include_directories("C:/VulkanSDK/1.3.204.0/Include")
 else ()
-    message("Using OpenGL")
+    message("Will use OpenGL")
 endif ()
 
 # Include external and third_party headers.
@@ -32,10 +35,16 @@ include_directories(external third_party)
 
 # GLFW library.
 include_directories(external/glfw/include)
-add_subdirectory(external/glfw)
 
 # Core library.
 add_subdirectory(src)
 
-# Demo executable.
-add_subdirectory(demo/native)
+if (BUILD_DEMO)
+    message("Will build demo")
+
+    # Link GLFW.
+    add_subdirectory(external/glfw)
+
+    # Demo executable.
+    add_subdirectory(demo/native)
+endif ()
