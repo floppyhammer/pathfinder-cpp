@@ -1,7 +1,8 @@
 #include "scene.h"
 
 namespace Pathfinder {
-    Scene::Scene(uint32_t p_id, Rect<float> p_view_box) : id(p_id), view_box(p_view_box), palette(Palette(p_id)) {}
+    Scene::Scene(uint32_t p_id, Rect<float> p_view_box)
+            : id(p_id), view_box(p_view_box), palette(Palette(p_id)) {}
 
     uint32_t Scene::push_paint(const Paint &paint) {
         auto paint_id = palette.push_paint(paint);
@@ -14,9 +15,6 @@ namespace Pathfinder {
     }
 
     uint32_t Scene::push_draw_path(const DrawPath &p_path) {
-        // Need to rebuild the scene.
-        is_dirty = true;
-
         // Get the path index in the scene.
         auto draw_path_index = draw_paths.size();
 
@@ -36,6 +34,9 @@ namespace Pathfinder {
             display_list.push_back(item);
         }
 
+        // Need to rebuild the scene.
+        is_dirty = true;
+
         return draw_path_index;
     }
 
@@ -43,15 +44,15 @@ namespace Pathfinder {
         if (p_scene.draw_paths.empty())
             return;
 
-        // Need to rebuild the scene.
-        is_dirty = true;
-
         // Extend paths.
         draw_paths.reserve(draw_paths.size() + p_scene.draw_paths.size());
         draw_paths.insert(std::end(draw_paths), std::begin(p_scene.draw_paths), std::end(p_scene.draw_paths));
 
         // Combine bounds.
         bounds = bounds.union_rect(p_scene.bounds);
+
+        // Need to rebuild the scene.
+        is_dirty = true;
     }
 
     RenderTarget Scene::push_render_target(const std::shared_ptr<Driver> &driver, Vec2<int> render_target_size) {
@@ -75,6 +76,13 @@ namespace Pathfinder {
     }
 
     void Scene::set_view_box(const Rect<float> &new_view_box) {
+        if (new_view_box == view_box) {
+            return;
+        }
+
         view_box = new_view_box;
+
+        // We need rebuild the scene if the view box changes.
+        is_dirty = true;
     }
 }

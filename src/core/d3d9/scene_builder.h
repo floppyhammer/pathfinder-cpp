@@ -11,11 +11,14 @@
 #include <memory>
 
 namespace Pathfinder {
+    /// Builds a scene into rendering data.
+    /// Such data only changes when the scene becomes dirty and is rebuilt.
     class SceneBuilderD3D9 {
     public:
-        std::shared_ptr<Scene> scene;
+        // Use a weak pointer to keep the scene and builder as separate as possible.
+        std::weak_ptr<Scene> scene;
 
-        // Data sent to a renderer.
+        // Data that will be sent to a renderer.
         // ------------------------------------------
         // Fills to draw.
         std::vector<Fill> pending_fills;
@@ -23,20 +26,18 @@ namespace Pathfinder {
         // Tiles to draw.
         std::vector<DrawTileBatch> tile_batches{};
 
-        // Data used to set up the metadata texture.
+        // Metadata texture data.
         std::vector<TextureMetadataEntry> metadata;
         // ------------------------------------------
 
         /// Atomic integer. Used for adding fills.
         std::array<std::atomic<size_t>, ALPHA_TILE_LEVEL_COUNT> next_alpha_tile_indices;
 
-        /**
-         * Build everything we need for rendering.
-         */
+        /// Build everything we need for rendering.
         void build();
 
     private:
-        /// For inserting fills.
+        /// For parallel fill insertion.
         std::mutex fill_write_mutex;
 
         /**

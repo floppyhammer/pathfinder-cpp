@@ -347,6 +347,10 @@ namespace Pathfinder {
     }
 
     void Canvas::resize(float p_size_x, float p_size_y) {
+        if (p_size_x <= 0 || p_size_y <= 0) {
+            return;
+        }
+
         if (dest_texture->get_width() == p_size_x && dest_texture->get_height() == p_size_y) {
             return;
         }
@@ -358,7 +362,11 @@ namespace Pathfinder {
         return scene;
     }
 
-    void Canvas::set_dest_texture(const std::shared_ptr<Texture>& texture) {
+    void Canvas::set_scene(const std::shared_ptr<Scene> &p_scene) {
+        scene = p_scene;
+    }
+
+    void Canvas::set_dest_texture(const std::shared_ptr<Texture> &texture) {
         dest_texture = texture;
         renderer->set_dest_texture(texture);
     }

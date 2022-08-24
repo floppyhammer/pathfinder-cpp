@@ -68,6 +68,11 @@ namespace Pathfinder {
             bottom *= v.y;
         }
 
+        template<typename U>
+        inline bool operator==(const Rect<U> &r) const {
+            return left == r.left && top == r.top && right == r.right && bottom == r.bottom;
+        }
+
         friend std::ostream &operator<<(std::ostream &os, const Rect &r) {
             os << "Rect(" << r.left << ", " << r.top << ", " << r.right << ", " << r.bottom << ')';
             return os;

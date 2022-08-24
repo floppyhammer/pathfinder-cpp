@@ -19,7 +19,10 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
     canvas->load_svg(p_svg_input);
 
     // Set viewport texture to a texture rect.
-    texture_rect = std::make_shared<TextureRect>(driver, swap_chain->get_render_pass(), window_width, window_height);
+    texture_rect = std::make_shared<TextureRect>(driver,
+                                                 swap_chain->get_render_pass(),
+                                                 window_width,
+                                                 window_height);
 
     // Timers.
     start_time = std::chrono::steady_clock::now();

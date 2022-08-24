@@ -55,13 +55,13 @@ namespace Pathfinder {
     void SceneBuilderD3D9::build() {
         // No need to rebuild the scene if it hasn't changed.
         // Comment this to do benchmark more precisely.
-//        if (!scene->is_dirty)
-//            return;
+        if (!scene.lock()->is_dirty)
+            return;
 
         Timestamp timestamp;
 
         // Build paint data.
-        metadata = scene->palette.build_paint_info();
+        metadata = scene.lock()->palette.build_paint_info();
 
         timestamp.record("Build paint info");
 
@@ -76,7 +76,7 @@ namespace Pathfinder {
         timestamp.print();
 
         // Mark the scene as clean, so we don't need to rebuild it the next frame.
-        scene->is_dirty = false;
+        scene.lock()->is_dirty = false;
     }
 
     void SceneBuilderD3D9::finish_building(const std::vector<BuiltDrawPath> &built_paths) {
@@ -96,18 +96,18 @@ namespace Pathfinder {
             next_alpha_tile_index = 0;
         // ------------------------------
 
-        auto draw_paths_count = scene->draw_paths.size();
+        auto draw_paths_count = scene.lock()->draw_paths.size();
 
         std::vector<BuiltDrawPath> built_paths(draw_paths_count);
 
         // Parallel.
         auto task = [this, &built_paths, &draw_paths_count](int begin) {
             for (int path_index = begin; path_index < draw_paths_count; path_index += PATHFINDER_THREADS) {
-                auto &draw_path = scene->draw_paths[path_index];
+                auto &draw_path = scene.lock()->draw_paths[path_index];
 
                 // Skip invisible draw paths.
-                if (!scene->get_paint(draw_path.paint).is_opaque()
-                    || !draw_path.outline.bounds.intersects(scene->get_view_box())) {
+                if (!scene.lock()->get_paint(draw_path.paint).is_opaque()
+                    || !draw_path.outline.bounds.intersects(scene.lock()->get_view_box())) {
                     continue;
                 }
 
@@ -130,10 +130,10 @@ namespace Pathfinder {
 
     BuiltDrawPath SceneBuilderD3D9::build_draw_path_on_cpu(uint32_t path_id) {
         // Get the draw path (a thin wrapper over outline).
-        const auto &path_object = scene->draw_paths[path_id];
+        const auto &path_object = scene.lock()->draw_paths[path_id];
 
         // Create a tiler for the draw path.
-        Tiler tiler(*this, path_id, path_object, path_object.fill_rule, scene->get_view_box());
+        Tiler tiler(*this, path_id, path_object, path_object.fill_rule, scene.lock()->get_view_box());
 
         // Core step.
         tiler.generate_tiles();
@@ -145,7 +145,10 @@ namespace Pathfinder {
         send_fills(tiler.object_builder.fills);
         fill_write_mutex.unlock();
 
-        return {tiler.object_builder.built_path, path_object.blend_mode, path_object.fill_rule, true};
+        return {tiler.object_builder.built_path,
+                path_object.blend_mode,
+                path_object.fill_rule,
+                true};
     }
 
     void SceneBuilderD3D9::build_tile_batches(const std::vector<BuiltDrawPath> &built_paths) {
@@ -155,7 +158,7 @@ namespace Pathfinder {
         std::vector<RenderTarget> render_target_stack;
 
         // Build batches using the display items.
-        for (const auto &display_item: scene->display_list) {
+        for (const auto &display_item: scene.lock()->display_list) {
             switch (display_item.type) {
                 case DisplayItem::Type::PushRenderTarget: {
                     render_target_stack.push_back(display_item.render_target);
@@ -168,13 +171,13 @@ namespace Pathfinder {
                 case DisplayItem::Type::DrawPaths: {
                     // Create a new batch.
                     auto tile_batch = build_tile_batches_for_draw_path_display_item(
-                            *scene,
+                            *scene.lock(),
                             built_paths,
                             display_item.path_range);
 
                     // Get paint.
                     auto paint_id = built_paths[display_item.path_range.start].path.paint_id;
-                    Paint paint = scene->palette.get_paint(paint_id);
+                    Paint paint = scene.lock()->palette.get_paint(paint_id);
 
                     // Set color texture.
                     auto overlay = paint.get_overlay();

@@ -143,6 +143,8 @@ namespace Pathfinder {
 
         std::shared_ptr<Scene> get_scene() const;
 
+        void set_scene(const std::shared_ptr<Scene> &p_scene);
+
         void set_dest_texture(const std::shared_ptr<Texture>& texture);
 
         std::shared_ptr<Texture> get_dest_texture();

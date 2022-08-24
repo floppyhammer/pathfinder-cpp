@@ -40,7 +40,7 @@ namespace Pathfinder {
         std::vector<Range> draw_segment_ranges;
     };
 
-    /// The vector scene to be rendered.
+    /// The scene of paths to be rendered.
     class Scene {
     public:
         explicit Scene(uint32_t p_id, Rect<float> p_view_box);
@@ -109,6 +109,7 @@ namespace Pathfinder {
         Rect<float> bounds;
 
         /// Scene clipping box.
+        /// This can be used to make scrollable elements and clipped text.
         Rect<float> view_box;
     };
 }
