@@ -346,11 +346,15 @@ namespace Pathfinder {
     }
 
     void Canvas::build() {
-        scene_builder->build();
+        if (scene_builder) {
+            scene_builder->build();
+        }
     }
 
     void Canvas::render() {
-        renderer->draw(scene_builder);
+        if (scene_builder) {
+            renderer->draw(scene_builder);
+        }
     }
 
     void Canvas::build_and_render() {
