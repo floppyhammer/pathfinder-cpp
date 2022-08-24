@@ -73,7 +73,7 @@ namespace Pathfinder {
         Canvas(const std::shared_ptr<Driver> &p_driver,
                const std::vector<char> &area_lut_input);
 
-        void set_empty_scene(float p_size_x, float p_size_y);
+        void set_empty_scene(const Rect<float> &view_box);
 
         void set_empty_dest_texture(float p_size_x, float p_size_y);
 

@@ -132,7 +132,7 @@ namespace Pathfinder {
 
     }
 
-    void Canvas::set_empty_scene(float size_x, float size_y) {
+    void Canvas::set_empty_scene(const Rect<float> &view_box) {
         // Set up a scene builder.
 #ifndef PATHFINDER_USE_D3D11
         scene_builder = std::make_shared<SceneBuilderD3D9>();
@@ -141,8 +141,7 @@ namespace Pathfinder {
 #endif
 
         // Assign a scene to scene builder.
-        scene_builder->set_scene(std::make_shared<Scene>(0,
-                                                         Rect<float>(0, 0, size_x, size_y)));
+        scene_builder->set_scene(std::make_shared<Scene>(0, view_box));
     }
 
     void Canvas::set_empty_dest_texture(float size_x, float size_y) {
