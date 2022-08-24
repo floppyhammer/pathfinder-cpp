@@ -71,9 +71,9 @@ namespace Pathfinder {
     class Canvas {
     public:
         Canvas(const std::shared_ptr<Driver> &p_driver,
-               float p_size_x,
-               float p_size_y,
                const std::vector<char> &area_lut_input);
+
+        void add_empty_scene_and_dest_texture(float p_size_x, float p_size_y);
 
         // Brush state.
         // ------------------------------------------------

@@ -115,9 +115,24 @@ namespace Pathfinder {
         scene.push_draw_path(path_y);
     }
 
-    Canvas::Canvas(const std::shared_ptr<Driver> &p_driver, float size_x, float size_y,
+    Canvas::Canvas(const std::shared_ptr<Driver> &p_driver,
                    const std::vector<char> &area_lut_input) {
         driver = p_driver;
+
+        // Set up a renderer.
+#ifndef PATHFINDER_USE_D3D11
+        renderer = std::make_shared<RendererD3D9>(p_driver);
+#else
+        renderer = std::make_shared<RendererD3D11>(p_driver);
+#endif
+
+        renderer->set_up(area_lut_input);
+
+        renderer->set_up_pipelines();
+
+    }
+
+    void Canvas::add_empty_scene_and_dest_texture(float size_x, float size_y) {
 
         // Set up a scene builder.
 #ifndef PATHFINDER_USE_D3D11
@@ -131,17 +146,6 @@ namespace Pathfinder {
                                                          Rect<float>(0, 0, size_x, size_y)));
 
         dest_texture = driver->create_texture(size_x, size_y, TextureFormat::BGRA8_UNORM);
-
-        // Set up a renderer.
-#ifndef PATHFINDER_USE_D3D11
-        renderer = std::make_shared<RendererD3D9>(p_driver);
-#else
-        renderer = std::make_shared<RendererD3D11>(p_driver);
-#endif
-
-        renderer->set_up(area_lut_input);
-
-        renderer->set_up_pipelines();
 
         renderer->set_dest_texture(dest_texture);
     }
@@ -356,7 +360,8 @@ namespace Pathfinder {
 
     void Canvas::clear() {
         // Create a new scene but keep the ID and the view box.
-        auto new_scene = std::make_shared<Scene>(scene_builder->get_scene()->id, scene_builder->get_scene()->get_view_box());
+        auto new_scene = std::make_shared<Scene>(scene_builder->get_scene()->id,
+                                                 scene_builder->get_scene()->get_view_box());
 
         // Update scene for scene builder.
         scene_builder->set_scene(new_scene);
