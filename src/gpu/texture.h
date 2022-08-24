@@ -28,7 +28,8 @@ namespace Pathfinder {
         }
 
     protected:
-        uint32_t width, height;
+        uint32_t width;
+        uint32_t height;
 
         TextureFormat format;
     };

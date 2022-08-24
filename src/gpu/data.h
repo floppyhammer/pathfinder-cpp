@@ -49,8 +49,8 @@ namespace Pathfinder {
     };
 
     enum class DeviceType {
-        GL3, // Or ES 3.0
-        GL4, // Or ES 3.1
+        OpenGl3, // Or ES 3.0
+        OpenGl4, // Or ES 3.1
         Vulkan,
     };
 
