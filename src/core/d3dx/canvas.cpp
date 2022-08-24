@@ -119,11 +119,16 @@ namespace Pathfinder {
                    const std::vector<char> &area_lut_input) {
         driver = p_driver;
 
-        // Set up a scene.
-        scene = std::make_shared<Scene>(0, Rect<float>(0, 0, size_x, size_y));
+        // Set up a scene builder.
+#ifndef PATHFINDER_USE_D3D11
+        scene_builder = std::make_shared<SceneBuilderD3D9>();
+#else
+        scene_builder = std::make_shared<SceneBuilderD3D11>();
+#endif
 
-        // Assign the scene to scene builder.
-        scene_builder.scene = scene;
+        // Assign a scene to scene builder.
+        scene_builder->set_scene(std::make_shared<Scene>(0,
+                                                         Rect<float>(0, 0, size_x, size_y)));
 
         dest_texture = driver->create_texture(size_x, size_y, TextureFormat::BGRA8_UNORM);
 
@@ -148,7 +153,7 @@ namespace Pathfinder {
         Paint paint = p_path_op == PathOp::Fill ? fill_paint() : stroke_paint();
 
         // Push to the scene's palette.
-        auto paint_id = scene->push_paint(paint);
+        auto paint_id = scene_builder->get_scene()->push_paint(paint);
 
         auto transform = current_state.transform;
         auto blend_mode = current_state.global_composite_operation;
@@ -164,8 +169,11 @@ namespace Pathfinder {
             // Set shadow offset.
             shadow_outline.transform(Transform2::from_translation(current_state.shadow_offset));
 
-            auto shadow_blur_info = push_shadow_blur_render_targets(driver, *scene, current_state,
-                                                                    shadow_outline.bounds);
+            auto shadow_blur_info = push_shadow_blur_render_targets(
+                    driver,
+                    *scene_builder->get_scene(),
+                    current_state,
+                    shadow_outline.bounds);
 
             shadow_outline.transform(Transform2::from_translation(-shadow_blur_info.bounds.origin().to_f32()));
 
@@ -182,7 +190,7 @@ namespace Pathfinder {
                 overlay->composite_op = PaintCompositeOp::DestIn;
             }
 
-            auto shadow_paint_id = scene->push_paint(shadow_paint);
+            auto shadow_paint_id = scene_builder->get_scene()->push_paint(shadow_paint);
 
             // Create a new draw path from the outline.
             DrawPath path;
@@ -192,9 +200,9 @@ namespace Pathfinder {
             path.blend_mode = blend_mode;
 
             // This path goes to the blur viewport x.
-            scene->push_draw_path(path);
+            scene_builder->get_scene()->push_draw_path(path);
 
-            composite_shadow_blur_render_targets(*scene, shadow_blur_info);
+            composite_shadow_blur_render_targets(*scene_builder->get_scene(), shadow_blur_info);
         }
 
         DrawPath path;
@@ -203,7 +211,7 @@ namespace Pathfinder {
         path.fill_rule = p_fill_rule;
         path.blend_mode = blend_mode;
 
-        scene->push_draw_path(path);
+        scene_builder->get_scene()->push_draw_path(path);
     }
 
     void Canvas::fill_path(Outline outline, FillRule fill_rule) {
@@ -333,17 +341,25 @@ namespace Pathfinder {
         current_state.transform = p_transform;
     }
 
-    void Canvas::build_and_render() {
-        scene_builder.build();
+    void Canvas::build() {
+        scene_builder->build();
+    }
+
+    void Canvas::render() {
         renderer->draw(scene_builder);
     }
 
+    void Canvas::build_and_render() {
+        build();
+        render();
+    }
+
     void Canvas::clear() {
-        // Create a new scene.
-        scene = std::make_shared<Scene>(scene->id, scene->get_view_box());
+        // Create a new scene but keep the ID and the view box.
+        auto new_scene = std::make_shared<Scene>(scene_builder->get_scene()->id, scene_builder->get_scene()->get_view_box());
 
         // Update scene for scene builder.
-        scene_builder.scene = scene;
+        scene_builder->set_scene(new_scene);
     }
 
     void Canvas::resize(float p_size_x, float p_size_y) {
@@ -358,12 +374,16 @@ namespace Pathfinder {
         set_dest_texture(driver->create_texture(p_size_x, p_size_y, TextureFormat::BGRA8_UNORM));
     }
 
-    std::shared_ptr<Scene> Canvas::get_scene() const {
-        return scene;
+    void Canvas::set_view_box(const Rect<float> &view_box) {
+        scene_builder->get_scene()->set_view_box(view_box);
     }
 
-    void Canvas::set_scene(const std::shared_ptr<Scene> &p_scene) {
-        scene = p_scene;
+    std::shared_ptr<SceneBuilder> Canvas::get_scene_builder() const {
+        return scene_builder;
+    }
+
+    void Canvas::set_scene_builder(const std::shared_ptr<SceneBuilder> &p_scene_builder) {
+        scene_builder = p_scene_builder;
     }
 
     void Canvas::set_dest_texture(const std::shared_ptr<Texture> &texture) {

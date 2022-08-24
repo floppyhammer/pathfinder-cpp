@@ -74,9 +74,9 @@ namespace Pathfinder {
     public:
         explicit RendererD3D11(const std::shared_ptr<Pathfinder::Driver> &driver);
 
-        void set_up_pipelines();
+        void set_up_pipelines() override;
 
-        void draw(SceneBuilderD3D11 &scene_builder);
+        void draw(const std::shared_ptr<SceneBuilder> &scene_builder) override;
 
         std::shared_ptr<Texture> get_dest_texture() override;
 

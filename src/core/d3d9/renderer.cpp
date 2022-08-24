@@ -298,8 +298,10 @@ namespace Pathfinder {
         }
     }
 
-    void RendererD3D9::draw(const SceneBuilderD3D9 &scene_builder) {
-        if (scene_builder.pending_fills.empty()) return;
+    void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &p_scene_builder) {
+        auto *scene_builder = dynamic_cast<SceneBuilderD3D9 *>(p_scene_builder.get());
+
+        if (scene_builder->pending_fills.empty()) return;
 
         // We are supposed to do this before the builder finishes building.
         // However, it seems not providing much performance boost.
@@ -308,16 +310,16 @@ namespace Pathfinder {
             auto cmd_buffer = driver->create_command_buffer(true);
 
             // Upload fills to buffer.
-            upload_fills(scene_builder.pending_fills, cmd_buffer);
+            upload_fills(scene_builder->pending_fills, cmd_buffer);
 
             // We can do fill drawing as soon as the fill vertex buffer is ready.
-            draw_fills(scene_builder.pending_fills.size(), cmd_buffer);
+            draw_fills(scene_builder->pending_fills.size(), cmd_buffer);
 
             cmd_buffer->submit(driver);
         }
 
         // Tiles need to be drawn after fill drawing and after tile batches are prepared.
-        upload_and_draw_tiles(scene_builder.tile_batches, scene_builder.metadata);
+        upload_and_draw_tiles(scene_builder->tile_batches, scene_builder->metadata);
     }
 
     void RendererD3D9::upload_fills(const std::vector<Fill> &fills, const std::shared_ptr<CommandBuffer> &cmd_buffer) {

@@ -2,7 +2,7 @@
 #define PATHFINDER_D3D11_SCENE_BUILDER_H
 
 #include "gpu_data.h"
-#include "../d3dx/scene.h"
+#include "../d3dx/scene_builder.h"
 
 #include <vector>
 
@@ -29,21 +29,14 @@ namespace Pathfinder {
         }
     };
 
-    class SceneBuilderD3D11 {
+    class SceneBuilderD3D11 : public SceneBuilder {
     public:
-        std::shared_ptr<Scene> scene;
-
         BuiltSegments built_segments;
 
         // Sent to renderer to draw tiles.
         std::vector<DrawTileBatchD3D11> tile_batches;
 
-        std::vector<TextureMetadataEntry> metadata;
-
-        /**
-         * Build everything we need for rendering.
-         */
-        void build();
+        void build() override;
 
     private:
         void finish_building(LastSceneInfo &last_scene);

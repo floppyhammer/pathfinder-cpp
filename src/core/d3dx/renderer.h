@@ -1,6 +1,7 @@
 #ifndef PATHFINDER_RENDERER_H
 #define PATHFINDER_RENDERER_H
 
+#include "scene_builder.h"
 #include "data/data.h"
 #include "../../gpu/driver.h"
 
@@ -21,7 +22,7 @@ namespace Pathfinder {
     const int32_t TEXTURE_METADATA_TEXTURE_WIDTH = TEXTURE_METADATA_ENTRIES_PER_ROW * 10;
     const int32_t TEXTURE_METADATA_TEXTURE_HEIGHT = 65536 / TEXTURE_METADATA_ENTRIES_PER_ROW;
 
-    void upload_metadata(const std::shared_ptr<Texture>& metadata_texture,
+    void upload_metadata(const std::shared_ptr<Texture> &metadata_texture,
                          const std::vector<TextureMetadataEntry> &metadata,
                          const std::shared_ptr<Driver> &driver);
 
@@ -34,9 +35,13 @@ namespace Pathfinder {
         /// Set up.
         void set_up(const std::vector<char> &area_lut_input);
 
+        virtual void set_up_pipelines() = 0;
+
         virtual std::shared_ptr<Texture> get_dest_texture() = 0;
 
         virtual void set_dest_texture(const std::shared_ptr<Texture> &texture) = 0;
+
+        virtual void draw(const std::shared_ptr<SceneBuilder> &p_scene_builder) = 0;
 
     protected:
         std::shared_ptr<Driver> driver;

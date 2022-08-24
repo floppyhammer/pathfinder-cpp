@@ -97,7 +97,8 @@ namespace Pathfinder {
         //driver->free_general_buffer(draw.point_indices_buffer);
     }
 
-    void SceneBuffers::upload(const std::shared_ptr<Pathfinder::Driver> &driver, SegmentsD3D11 &draw_segments, SegmentsD3D11 &clip_segments) {
+    void SceneBuffers::upload(const std::shared_ptr<Pathfinder::Driver> &driver, SegmentsD3D11 &draw_segments,
+                              SegmentsD3D11 &clip_segments) {
         draw.upload(driver, draw_segments);
         //clip.upload(clip_segments);
     }
@@ -107,15 +108,24 @@ namespace Pathfinder {
         allocated_fill_count = INITIAL_ALLOCATED_FILL_COUNT;
 
         // Create uniform buffers.
-        bin_ub = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
-        bound_ub = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
-        dice_ub0 = driver->create_buffer(BufferType::Uniform, 12 * sizeof(float), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
-        dice_ub1 = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
-        fill_ub = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
-        propagate_ub = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
-        sort_ub = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
-        tile_ub0 = driver->create_buffer(BufferType::Uniform, 8 * sizeof(float), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
-        tile_ub1 = driver->create_buffer(BufferType::Uniform, 8 * sizeof(float), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
+        bin_ub = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t),
+                                       MemoryProperty::HOST_VISIBLE_AND_COHERENT);
+        bound_ub = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t),
+                                         MemoryProperty::HOST_VISIBLE_AND_COHERENT);
+        dice_ub0 = driver->create_buffer(BufferType::Uniform, 12 * sizeof(float),
+                                         MemoryProperty::HOST_VISIBLE_AND_COHERENT);
+        dice_ub1 = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t),
+                                         MemoryProperty::HOST_VISIBLE_AND_COHERENT);
+        fill_ub = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t),
+                                        MemoryProperty::HOST_VISIBLE_AND_COHERENT);
+        propagate_ub = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t),
+                                             MemoryProperty::HOST_VISIBLE_AND_COHERENT);
+        sort_ub = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t),
+                                        MemoryProperty::HOST_VISIBLE_AND_COHERENT);
+        tile_ub0 = driver->create_buffer(BufferType::Uniform, 8 * sizeof(float),
+                                         MemoryProperty::HOST_VISIBLE_AND_COHERENT);
+        tile_ub1 = driver->create_buffer(BufferType::Uniform, 8 * sizeof(float),
+                                         MemoryProperty::HOST_VISIBLE_AND_COHERENT);
 
         // Unlike D3D9, we use RGBA8 here instead of RGBA16F.
         mask_texture = driver->create_texture(MASK_FRAMEBUFFER_WIDTH,
@@ -136,22 +146,26 @@ namespace Pathfinder {
         {
             bound_descriptor_set = std::make_shared<DescriptorSet>();
 
-            bound_descriptor_set->add_or_update_descriptor({DescriptorType::UniformBuffer, ShaderType::Compute, 2, "bUniform", bound_ub, nullptr});
+            bound_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::UniformBuffer, ShaderType::Compute, 2, "bUniform", bound_ub, nullptr});
         }
 
         // Dice pipeline.
         {
             dice_descriptor_set = std::make_shared<DescriptorSet>();
 
-            dice_descriptor_set->add_or_update_descriptor({DescriptorType::UniformBuffer, ShaderType::Compute, 5, "bUniform0", dice_ub0, nullptr});
-            dice_descriptor_set->add_or_update_descriptor({DescriptorType::UniformBuffer, ShaderType::Compute, 6, "bUniform1", dice_ub1, nullptr});
+            dice_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::UniformBuffer, ShaderType::Compute, 5, "bUniform0", dice_ub0, nullptr});
+            dice_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::UniformBuffer, ShaderType::Compute, 6, "bUniform1", dice_ub1, nullptr});
         }
 
         // Bin pipeline.
         {
             bin_descriptor_set = std::make_shared<DescriptorSet>();
 
-            bin_descriptor_set->add_or_update_descriptor({DescriptorType::UniformBuffer, ShaderType::Compute, 6, "bUniform", bin_ub, nullptr});
+            bin_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::UniformBuffer, ShaderType::Compute, 6, "bUniform", bin_ub, nullptr});
         }
 
         // Propagate pipeline.
@@ -166,15 +180,19 @@ namespace Pathfinder {
         {
             sort_descriptor_set = std::make_shared<DescriptorSet>();
 
-            sort_descriptor_set->add_or_update_descriptor({DescriptorType::UniformBuffer, ShaderType::Compute, 3, "bUniform", sort_ub, nullptr});
+            sort_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::UniformBuffer, ShaderType::Compute, 3, "bUniform", sort_ub, nullptr});
         }
 
         // Fill pipeline.
         {
             fill_descriptor_set = std::make_shared<DescriptorSet>();
-            fill_descriptor_set->add_or_update_descriptor({DescriptorType::Image, ShaderType::Compute, 3, "uDest", nullptr, mask_texture});
-            fill_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Compute, 4, "uAreaLUT", nullptr, area_lut_texture});
-            fill_descriptor_set->add_or_update_descriptor({DescriptorType::UniformBuffer, ShaderType::Compute, 5, "bUniform", fill_ub, nullptr});
+            fill_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::Image, ShaderType::Compute, 3, "uDest", nullptr, mask_texture});
+            fill_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::Texture, ShaderType::Compute, 4, "uAreaLUT", nullptr, area_lut_texture});
+            fill_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::UniformBuffer, ShaderType::Compute, 5, "bUniform", fill_ub, nullptr});
         }
 
         // Tile pipeline.
@@ -249,17 +267,19 @@ namespace Pathfinder {
         tile_pipeline = driver->create_compute_pipeline(tile_source, tile_descriptor_set); // 7
     }
 
-    void RendererD3D11::draw(SceneBuilderD3D11 &scene_builder) {
-        if (scene_builder.built_segments.draw_segments.points.empty()) return;
+    void RendererD3D11::draw(const std::shared_ptr<SceneBuilder> &p_scene_builder) {
+        auto *scene_builder = dynamic_cast<SceneBuilderD3D11 *>(p_scene_builder.get());
+
+        if (scene_builder->built_segments.draw_segments.points.empty()) return;
 
         // RenderCommand::UploadSceneD3D11
-        upload_scene(scene_builder.built_segments.draw_segments, scene_builder.built_segments.clip_segments);
+        upload_scene(scene_builder->built_segments.draw_segments, scene_builder->built_segments.clip_segments);
 
         alpha_tile_count = 0;
         need_to_clear_dest = true;
 
-        for (auto &batch: scene_builder.tile_batches) {
-            prepare_and_draw_tiles(batch, scene_builder.metadata);
+        for (auto &batch: scene_builder->tile_batches) {
+            prepare_and_draw_tiles(batch, scene_builder->metadata);
         }
     }
 
@@ -329,7 +349,8 @@ namespace Pathfinder {
         {
             std::array<float, 8> ubo_data0 = {0, 0, 0, 0, // uClearColor
                                               color_texture ? (float) color_texture->get_width() : 0,
-                                              color_texture ? (float) color_texture->get_height() : 0, // uColorTextureSize0
+                                              color_texture ? (float) color_texture->get_height()
+                                                            : 0, // uColorTextureSize0
                                               (float) target_size.x, (float) target_size.y}; // uFramebufferSize
 
 
@@ -346,13 +367,22 @@ namespace Pathfinder {
 
         // Update descriptor set.
         {
-            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Compute, 3, "uZBuffer", nullptr, mask_texture});
-            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Compute, 4, "uColorTexture0", nullptr, color_texture ? color_texture : metadata_texture});
-            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Texture, ShaderType::Compute, 6, "uGammaLUT", nullptr, metadata_texture});
-            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Image, ShaderType::Compute, 7, "", nullptr, target_texture});
+            tile_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::Texture, ShaderType::Compute, 3, "uZBuffer", nullptr, mask_texture});
+            tile_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::Texture, ShaderType::Compute, 4, "uColorTexture0", nullptr,
+                     color_texture ? color_texture : metadata_texture});
+            tile_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::Texture, ShaderType::Compute, 6, "uGammaLUT", nullptr, metadata_texture});
+            tile_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::Image, ShaderType::Compute, 7, "", nullptr, target_texture});
 
-            tile_descriptor_set->add_or_update_descriptor({DescriptorType::GeneralBuffer, ShaderType::Compute, 0, "", tiles_d3d11_buffer_id, nullptr}); // Read only.
-            tile_descriptor_set->add_or_update_descriptor({DescriptorType::GeneralBuffer, ShaderType::Compute, 1, "", first_tile_map_buffer_id, nullptr}); // Read only.
+            tile_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 0, "", tiles_d3d11_buffer_id,
+                     nullptr}); // Read only.
+            tile_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 1, "", first_tile_map_buffer_id,
+                     nullptr}); // Read only.
         }
 
         auto cmd_buffer = driver->create_command_buffer(true);
@@ -380,20 +410,23 @@ namespace Pathfinder {
         // SSBOs to 8 (#373).
         // Add FILL_INDIRECT_DRAW_PARAMS_SIZE in case tile size is zero.
         auto size = tile_size().area() + FILL_INDIRECT_DRAW_PARAMS_SIZE;
-        auto buffer_id = driver->create_buffer(BufferType::General, size * sizeof(int32_t), MemoryProperty::DEVICE_LOCAL);
+        auto buffer_id = driver->create_buffer(BufferType::General, size * sizeof(int32_t),
+                                               MemoryProperty::DEVICE_LOCAL);
 
         return buffer_id;
     }
 
     std::shared_ptr<Buffer> RendererD3D11::allocate_first_tile_map() {
         auto size = tile_size().area();
-        auto buffer_id = driver->create_buffer(BufferType::General, size * sizeof(FirstTileD3D11), MemoryProperty::DEVICE_LOCAL);
+        auto buffer_id = driver->create_buffer(BufferType::General, size * sizeof(FirstTileD3D11),
+                                               MemoryProperty::DEVICE_LOCAL);
 
         return buffer_id;
     }
 
     std::shared_ptr<Buffer> RendererD3D11::allocate_alpha_tile_info(uint32_t index_count) {
-        auto buffer_id = driver->create_buffer(BufferType::General, index_count * sizeof(AlphaTileD3D11), MemoryProperty::DEVICE_LOCAL);
+        auto buffer_id = driver->create_buffer(BufferType::General, index_count * sizeof(AlphaTileD3D11),
+                                               MemoryProperty::DEVICE_LOCAL);
 
         return buffer_id;
     }
@@ -592,15 +625,20 @@ namespace Pathfinder {
         // Bind storage buffers.
         {
             dice_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 0, "", indirect_draw_params_buffer_id, nullptr}); // Read write.
+                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 0, "", indirect_draw_params_buffer_id,
+                     nullptr}); // Read write.
             dice_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 1, "", dice_metadata_buffer_id, nullptr}); // Read only.
+                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 1, "", dice_metadata_buffer_id,
+                     nullptr}); // Read only.
             dice_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 2, "", points_buffer_id, nullptr}); // Read only.
+                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 2, "", points_buffer_id,
+                     nullptr}); // Read only.
             dice_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 3, "", point_indices_buffer_id, nullptr}); // Read only.
+                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 3, "", point_indices_buffer_id,
+                     nullptr}); // Read only.
             dice_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 4, "", microlines_buffer_id, nullptr}); // Write only.
+                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 4, "", microlines_buffer_id,
+                     nullptr}); // Write only.
         }
 
         cmd_buffer = driver->create_command_buffer(true);
@@ -620,9 +658,9 @@ namespace Pathfinder {
         // Read indirect draw params back to CPU memory.
         cmd_buffer = driver->create_command_buffer(true);
         cmd_buffer->read_buffer(indirect_draw_params_buffer_id,
-                                         0,
-                                         8 * sizeof(uint32_t),
-                                         indirect_compute_params);
+                                0,
+                                8 * sizeof(uint32_t),
+                                indirect_compute_params);
         cmd_buffer->submit(driver);
 
         // Free some general buffers which are no longer useful.
@@ -655,9 +693,9 @@ namespace Pathfinder {
                                                          tile_path_info.size() * sizeof(TilePathInfoD3D11),
                                                          MemoryProperty::DEVICE_LOCAL);
         cmd_buffer->upload_to_buffer(path_info_buffer_id,
-                                              0,
-                                              tile_path_info.size() * sizeof(TilePathInfoD3D11),
-                                              tile_path_info.data());
+                                     0,
+                                     tile_path_info.size() * sizeof(TilePathInfoD3D11),
+                                     tile_path_info.data());
 
         // Update uniform buffers.
         std::array<int32_t, 2> ubo_data = {static_cast<int32_t>(tile_path_info.size()),
@@ -669,9 +707,11 @@ namespace Pathfinder {
         // Bind storage buffers.
         {
             bound_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 0, "", path_info_buffer_id, nullptr}); // Read only.
+                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 0, "", path_info_buffer_id,
+                     nullptr}); // Read only.
             bound_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 1, "", tiles_d3d11_buffer_id, nullptr}); // Write only.
+                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 1, "", tiles_d3d11_buffer_id,
+                     nullptr}); // Write only.
         }
 
         cmd_buffer = driver->create_command_buffer(true);
@@ -709,9 +749,9 @@ namespace Pathfinder {
         uint32_t indirect_draw_params[8] = {6, 0, 0, 0, 0, microlines_storage.count, 0, 0};
 
         cmd_buffer->upload_to_buffer(z_buffer_id,
-                                              0,
-                                              8 * sizeof(uint32_t),
-                                              indirect_draw_params);
+                                     0,
+                                     8 * sizeof(uint32_t),
+                                     indirect_draw_params);
 
         // Update uniform buffers.
         std::array<int32_t, 2> ubo_data = {(int32_t) microlines_storage.count, (int32_t) allocated_fill_count};
@@ -722,16 +762,20 @@ namespace Pathfinder {
         // Bind storage buffers.
         {
             bin_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 0, "", microlines_storage.buffer_id, nullptr}); // Read only.
+                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 0, "", microlines_storage.buffer_id,
+                     nullptr}); // Read only.
             bin_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 1, "", propagate_metadata_buffer_ids.propagate_metadata,
+                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 1, "",
+                     propagate_metadata_buffer_ids.propagate_metadata,
                      nullptr}); // Read only.
             bin_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, ShaderType::Compute, 2, "", z_buffer_id, nullptr}); // Read write.
             bin_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 3, "", fill_vertex_buffer_id, nullptr}); // Write only.
+                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 3, "", fill_vertex_buffer_id,
+                     nullptr}); // Write only.
             bin_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 4, "", tiles_d3d11_buffer_id, nullptr}); // Read write.
+                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 4, "", tiles_d3d11_buffer_id,
+                     nullptr}); // Read write.
             bin_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, ShaderType::Compute, 5, "", propagate_metadata_buffer_ids.backdrops,
                      nullptr}); // Read write.
@@ -745,7 +789,7 @@ namespace Pathfinder {
 
         cmd_buffer->bind_descriptor_set(bin_descriptor_set);
 
-        cmd_buffer->dispatch((microlines_storage.count + BIN_WORKGROUP_SIZE - 1) / BIN_WORKGROUP_SIZE , 1, 1);
+        cmd_buffer->dispatch((microlines_storage.count + BIN_WORKGROUP_SIZE - 1) / BIN_WORKGROUP_SIZE, 1, 1);
 
         cmd_buffer->end_compute_pass();
 
@@ -753,9 +797,9 @@ namespace Pathfinder {
 
         cmd_buffer = driver->create_command_buffer(true);
         cmd_buffer->read_buffer(z_buffer_id,
-                                         0,
-                                         8 * sizeof(uint32_t),
-                                         indirect_draw_params);
+                                0,
+                                8 * sizeof(uint32_t),
+                                indirect_draw_params);
         cmd_buffer->submit(driver);
 
         // How many fills we need.
@@ -788,16 +832,16 @@ namespace Pathfinder {
         auto tile_area = z_buffer_size.area();
         auto z_buffer_data = std::vector<int32_t>(tile_area, 0);
         cmd_buffer->upload_to_buffer(z_buffer_id,
-                                              0,
-                                              tile_area * sizeof(int32_t),
-                                              z_buffer_data.data());
+                                     0,
+                                     tile_area * sizeof(int32_t),
+                                     z_buffer_data.data());
 
         // TODO(pcwalton): Initialize the first tiles buffer on GPU?
         auto first_tile_map = std::vector<FirstTileD3D11>(tile_area, FirstTileD3D11());
         cmd_buffer->upload_to_buffer(first_tile_map_buffer_id,
-                                              0,
-                                              tile_area * sizeof(FirstTileD3D11),
-                                              first_tile_map.data());
+                                     0,
+                                     tile_area * sizeof(FirstTileD3D11),
+                                     first_tile_map.data());
 
         // Update uniform buffers.
         auto framebuffer_tile_size0 = framebuffer_tile_size();
@@ -812,23 +856,29 @@ namespace Pathfinder {
         // Bind storage buffers.
         {
             propagate_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 0, "", propagate_metadata_buffer_ids.propagate_metadata,
+                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 0, "",
+                     propagate_metadata_buffer_ids.propagate_metadata,
                      nullptr}); // Read only.
             propagate_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 1, "", propagate_metadata_buffer_ids.propagate_metadata, nullptr}); // Clip metadata, read only.
+                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 1, "",
+                     propagate_metadata_buffer_ids.propagate_metadata, nullptr}); // Clip metadata, read only.
             propagate_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, ShaderType::Compute, 2, "", propagate_metadata_buffer_ids.backdrops,
                      nullptr}); // Read only.
             propagate_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 3, "", tiles_d3d11_buffer_id, nullptr}); // Read write.
+                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 3, "", tiles_d3d11_buffer_id,
+                     nullptr}); // Read write.
             propagate_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 4, "", tiles_d3d11_buffer_id, nullptr}); // Clip tiles, read write.
+                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 4, "", tiles_d3d11_buffer_id,
+                     nullptr}); // Clip tiles, read write.
             propagate_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, ShaderType::Compute, 5, "", z_buffer_id, nullptr}); // Read write.
             propagate_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 6, "", first_tile_map_buffer_id, nullptr}); // Read write.
+                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 6, "", first_tile_map_buffer_id,
+                     nullptr}); // Read write.
             propagate_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 7, "", alpha_tiles_buffer_id, nullptr}); // Write only.
+                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 7, "", alpha_tiles_buffer_id,
+                     nullptr}); // Write only.
         }
 
         cmd_buffer = driver->create_command_buffer(true);
@@ -849,9 +899,9 @@ namespace Pathfinder {
 
         uint32_t fill_indirect_draw_params[8];
         cmd_buffer->read_buffer(z_buffer_id,
-                                         0,
-                                         8 * sizeof(uint32_t),
-                                         fill_indirect_draw_params);
+                                0,
+                                8 * sizeof(uint32_t),
+                                fill_indirect_draw_params);
 
         cmd_buffer->submit(driver);
 
@@ -893,9 +943,11 @@ namespace Pathfinder {
                     {DescriptorType::GeneralBuffer, ShaderType::Compute, 0, "", fill_storage_info.fill_vertex_buffer_id,
                      nullptr}); // Read only.
             fill_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 1, "", tiles_d3d11_buffer_id, nullptr}); // Read only.
+                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 1, "", tiles_d3d11_buffer_id,
+                     nullptr}); // Read only.
             fill_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 2, "", alpha_tiles_buffer_id, nullptr}); // Read only.
+                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 2, "", alpha_tiles_buffer_id,
+                     nullptr}); // Read only.
         }
 
         cmd_buffer = driver->create_command_buffer(true);
@@ -930,9 +982,11 @@ namespace Pathfinder {
         // Update descriptor set.
         {
             sort_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 0, "", tiles_d3d11_buffer_id, nullptr}); // Read write.
+                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 0, "", tiles_d3d11_buffer_id,
+                     nullptr}); // Read write.
             sort_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 1, "", first_tile_map_buffer_id, nullptr}); // Read write.
+                    {DescriptorType::GeneralBuffer, ShaderType::Compute, 1, "", first_tile_map_buffer_id,
+                     nullptr}); // Read write.
             sort_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::GeneralBuffer, ShaderType::Compute, 2, "", z_buffer_id, nullptr}); // Read only.
         }

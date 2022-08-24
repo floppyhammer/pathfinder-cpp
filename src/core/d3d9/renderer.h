@@ -28,7 +28,7 @@ namespace Pathfinder {
         void set_up_pipelines();
 
         /// We need to call this for each scene.
-        void draw(const SceneBuilderD3D9 &scene_builder);
+        void draw(const std::shared_ptr<SceneBuilder> &p_scene_builder) override;
 
         std::shared_ptr<Texture> get_dest_texture() override;
 
@@ -59,19 +59,21 @@ namespace Pathfinder {
                                    const std::vector<TextureMetadataEntry> &metadata);
 
         /// Upload fills data to GPU.
-        void upload_fills(const std::vector<Fill> &fills, const std::shared_ptr<CommandBuffer>& cmd_buffer);
+        void upload_fills(const std::vector<Fill> &fills, const std::shared_ptr<CommandBuffer> &cmd_buffer);
 
         /// Upload tiles data to GPU.
-        void upload_tiles(const std::vector<TileObjectPrimitive> &tiles, const std::shared_ptr<CommandBuffer> &cmd_buffer);
+        void
+        upload_tiles(const std::vector<TileObjectPrimitive> &tiles, const std::shared_ptr<CommandBuffer> &cmd_buffer);
 
         /// Draw tiles.
         void draw_tiles(uint32_t tile_count,
                         const RenderTarget &target_viewport,
                         const std::shared_ptr<Texture> &color_texture,
-                        const std::shared_ptr<Texture> &z_buffer_texture, const std::shared_ptr<CommandBuffer> &cmd_buffer);
+                        const std::shared_ptr<Texture> &z_buffer_texture,
+                        const std::shared_ptr<CommandBuffer> &cmd_buffer);
 
         /// Draw the mask texture. Use Renderer::buffered_fills.
-        void draw_fills(uint32_t fills_count, const std::shared_ptr<CommandBuffer>& cmd_buffer);
+        void draw_fills(uint32_t fills_count, const std::shared_ptr<CommandBuffer> &cmd_buffer);
     };
 }
 

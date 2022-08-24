@@ -113,7 +113,7 @@ namespace Pathfinder {
         // Clip the line segment if it intersects the view box bounds.
         {
             // Clip by the view box.
-            auto clip_box = p_scene_builder.scene.lock()->get_view_box();
+            auto clip_box = p_scene_builder.get_scene()->get_view_box();
 
             // Clipping doesn't happen to the top bound as the ray goes from that direction.
             clip_box.top = -std::numeric_limits<float>::infinity();

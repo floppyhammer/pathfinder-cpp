@@ -133,7 +133,11 @@ namespace Pathfinder {
         void stroke_path(Outline p_outline);
         // ------------------------------------------------
 
-        /// Rebuild and redraw the scene.
+        void build();
+
+        void render();
+
+        /// A convenience method to build and render a scene.
         void build_and_render();
 
         /// Clear the scene.
@@ -141,11 +145,13 @@ namespace Pathfinder {
 
         void resize(float p_size_x, float p_size_y);
 
-        std::shared_ptr<Scene> get_scene() const;
+        void set_view_box(const Rect<float> &view_box);
 
-        void set_scene(const std::shared_ptr<Scene> &p_scene);
+        std::shared_ptr<SceneBuilder> get_scene_builder() const;
 
-        void set_dest_texture(const std::shared_ptr<Texture>& texture);
+        void set_scene_builder(const std::shared_ptr<SceneBuilder> &p_scene_builder);
+
+        void set_dest_texture(const std::shared_ptr<Texture> &texture);
 
         std::shared_ptr<Texture> get_dest_texture();
 
@@ -171,19 +177,13 @@ namespace Pathfinder {
         State current_state;
         std::vector<State> saved_states;
 
-        /// Scene
-        std::shared_ptr<Scene> scene;
-
         std::shared_ptr<Texture> dest_texture;
 
-        /// Scene builder and renderer.
-#ifndef PATHFINDER_USE_D3D11
-        SceneBuilderD3D9 scene_builder;
-        std::shared_ptr<RendererD3D9> renderer;
-#else
-        SceneBuilderD3D11 scene_builder;
-        std::shared_ptr<RendererD3D11> renderer;
-#endif
+        /// Scene builder.
+        std::shared_ptr<SceneBuilder> scene_builder;
+
+        /// Scene renderer.
+        std::shared_ptr<Renderer> renderer;
 
         /**
          * Adds a path.

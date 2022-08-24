@@ -4,7 +4,7 @@
 #include "data/alpha_tile_id.h"
 #include "data/gpu_data.h"
 #include "data/draw_tile_batch.h"
-#include "../d3dx/scene.h"
+#include "../d3dx/scene_builder.h"
 #include "../d3dx/data/built_path.h"
 
 #include <mutex>
@@ -13,11 +13,8 @@
 namespace Pathfinder {
     /// Builds a scene into rendering data.
     /// Such data only changes when the scene becomes dirty and is rebuilt.
-    class SceneBuilderD3D9 {
+    class SceneBuilderD3D9 : public SceneBuilder {
     public:
-        // Use a weak pointer to keep the scene and builder as separate as possible.
-        std::weak_ptr<Scene> scene;
-
         // Data that will be sent to a renderer.
         // ------------------------------------------
         // Fills to draw.
@@ -34,7 +31,7 @@ namespace Pathfinder {
         std::array<std::atomic<size_t>, ALPHA_TILE_LEVEL_COUNT> next_alpha_tile_indices;
 
         /// Build everything we need for rendering.
-        void build();
+        void build() override;
 
     private:
         /// For parallel fill insertion.
