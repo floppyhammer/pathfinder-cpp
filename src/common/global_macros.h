@@ -14,8 +14,8 @@
 #define PATHFINDER_SIMD_ENABLED
 
 // Resource directories.
-#define PATHFINDER_SHADER_DIR "../external/pathfinder-cpp/src/shaders/"
-#define PATHFINDER_ASSET_DIR "../external/pathfinder-cpp/assets/"
+#define PATHFINDER_SHADER_DIR "../src/shaders/"
+#define PATHFINDER_ASSET_DIR "../assets/"
 
 #ifdef PATHFINDER_USE_VULKAN
 #define GLFW_INCLUDE_VULKAN
