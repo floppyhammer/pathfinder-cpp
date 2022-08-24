@@ -73,11 +73,12 @@ namespace Pathfinder {
                                                       ImageLayout::SHADER_READ_ONLY);
 
         // Create a new framebuffer.
-        auto framebuffer = driver->create_framebuffer(
+        auto target_texture = driver->create_texture(
                 render_target_size.x,
                 render_target_size.y,
-                TextureFormat::RGBA8_UNORM,
-                render_pass);
+                TextureFormat::RGBA8_UNORM
+        );
+        auto framebuffer = driver->create_framebuffer(render_pass, target_texture);
 
         RenderTarget render_target;
         render_target.id = render_targets.size();
@@ -160,7 +161,7 @@ namespace Pathfinder {
                 } else if (overlay->contents.pattern) {
                     const auto pattern = overlay->contents.pattern;
                     auto border = Vec2<uint32_t>(pattern->repeat_x() ? 0 : 1,
-                                            pattern->repeat_y() ? 0 : 1);
+                                                 pattern->repeat_y() ? 0 : 1);
 
                     PaintFilter paint_filter;
                     paint_filter.type = PaintFilter::Type::PatternFilter;

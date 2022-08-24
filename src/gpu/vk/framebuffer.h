@@ -12,9 +12,8 @@ namespace Pathfinder {
     class FramebufferVk : public Framebuffer {
         friend class DriverVk;
     public:
-        /// Normal framebuffer.
-        FramebufferVk(VkDevice device, VkRenderPass render_pass, std::shared_ptr<Texture> texture,
-                      uint32_t p_width, uint32_t p_height, TextureFormat p_format);
+        /// Texture framebuffer.
+        FramebufferVk(VkDevice device, VkRenderPass render_pass, const std::shared_ptr<Texture> &p_texture);
 
         /// Swap chain framebuffer.
         FramebufferVk(VkDevice device,

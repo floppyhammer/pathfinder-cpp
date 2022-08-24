@@ -12,13 +12,13 @@ namespace Pathfinder {
      */
     class Framebuffer {
     public:
-        /// Render to screen.
+        /// Render to screen or swap chain.
         Framebuffer(uint32_t p_width, uint32_t p_height)
                 : width(p_width), height(p_height) {}
 
         /// Render to a texture.
-        Framebuffer(uint32_t p_width, uint32_t p_height, TextureFormat p_format, DataType p_type)
-                : width(p_width), height(p_height) {}
+        explicit Framebuffer(const std::shared_ptr<Texture> &p_texture)
+                : texture(p_texture), width(p_texture->get_width()), height(p_texture->get_height()) {}
 
         inline std::shared_ptr<Texture> get_texture() {
             assert(texture != nullptr && "No valid texture set to the framebuffer!");
@@ -41,7 +41,8 @@ namespace Pathfinder {
         }
 
     protected:
-        uint32_t width, height;
+        uint32_t width;
+        uint32_t height;
 
         std::shared_ptr<Texture> texture;
     };

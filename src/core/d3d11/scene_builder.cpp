@@ -13,7 +13,7 @@ namespace Pathfinder {
             uint32_t draw_path_id,
             Transform2 &transform,
             const std::vector<TextureMetadataEntry> &paint_metadata) {
-        auto effective_view_box = scene.view_box;
+        auto effective_view_box = scene.get_view_box();
 
         auto &draw_path = scene.draw_paths[draw_path_id];
 

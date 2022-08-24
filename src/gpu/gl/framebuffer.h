@@ -11,8 +11,8 @@
 namespace Pathfinder {
     class FramebufferGl : public Framebuffer {
     public:
-        /// Normal framebuffer.
-        FramebufferGl(uint32_t p_width, uint32_t p_height, TextureFormat p_format);
+        /// Texture framebuffer.
+        FramebufferGl(const std::shared_ptr<Texture> &p_texture);
 
         /// Swap chain framebuffer.
         FramebufferGl(uint32_t p_width, uint32_t p_height);

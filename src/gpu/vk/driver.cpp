@@ -271,20 +271,14 @@ namespace Pathfinder {
         return render_pass_vk;
     }
 
-    std::shared_ptr<Framebuffer> DriverVk::create_framebuffer(uint32_t width, uint32_t height,
-                                                              TextureFormat format,
-                                                              const std::shared_ptr<RenderPass> &render_pass) {
+    std::shared_ptr<Framebuffer> DriverVk::create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
+                                                              const std::shared_ptr<Texture> &texture) {
         auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
-
-        auto texture = create_texture(width, height, format);
 
         auto framebuffer_vk = std::make_shared<FramebufferVk>(
                 device,
                 render_pass_vk->vk_render_pass,
-                texture,
-                width,
-                height,
-                format);
+                texture);
 
         return framebuffer_vk;
     }

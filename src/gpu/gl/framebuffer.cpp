@@ -11,10 +11,7 @@ namespace Pathfinder {
         gl_framebuffer = 0;
     }
 
-    FramebufferGl::FramebufferGl(uint32_t p_width, uint32_t p_height, TextureFormat p_format)
-            : Framebuffer(p_width, p_height) {
-        // Create a color texture.
-        texture = std::make_shared<TextureGl>(p_width, p_height, p_format);
+    FramebufferGl::FramebufferGl(const std::shared_ptr<Texture> &p_texture) : Framebuffer(p_texture) {
         auto texture_gl = static_cast<TextureGl *>(texture.get());
 
         // Set up framebuffer.

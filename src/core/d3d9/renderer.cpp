@@ -49,10 +49,12 @@ namespace Pathfinder {
                                                            AttachmentLoadOp::LOAD,
                                                            ImageLayout::SHADER_READ_ONLY);
 
-        mask_framebuffer = driver->create_framebuffer(MASK_FRAMEBUFFER_WIDTH,
-                                                      MASK_FRAMEBUFFER_HEIGHT,
-                                                      TextureFormat::RGBA16F,
-                                                      mask_render_pass);
+        auto mask_texture = driver->create_texture(
+                MASK_FRAMEBUFFER_WIDTH,
+                MASK_FRAMEBUFFER_HEIGHT,
+                TextureFormat::RGBA16F
+        );
+        mask_framebuffer = driver->create_framebuffer(mask_render_pass, mask_texture);
 
         // Quad vertex buffer. Shared by fills and tiles drawing.
         quad_vertex_buffer = driver->create_buffer(BufferType::Vertex,
@@ -65,10 +67,12 @@ namespace Pathfinder {
     }
 
     void RendererD3D9::resize_dest_texture(uint32_t width, uint32_t height) {
-        dest_framebuffer = driver->create_framebuffer(width,
-                                                      height,
-                                                      TextureFormat::RGBA8_UNORM,
-                                                      dest_render_pass_clear);
+        auto dest_texture = driver->create_texture(
+                width,
+                height,
+                TextureFormat::RGBA8_UNORM
+        );
+        dest_framebuffer = driver->create_framebuffer(dest_render_pass_clear, dest_texture);
     }
 
     void RendererD3D9::set_up_pipelines(uint32_t canvas_width, uint32_t canvas_height) {

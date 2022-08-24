@@ -17,10 +17,8 @@
 namespace Pathfinder {
     class DriverGl : public Driver {
     public:
-        std::shared_ptr<Framebuffer> create_framebuffer(uint32_t p_width,
-                                                        uint32_t p_height,
-                                                        TextureFormat p_format,
-                                                        const std::shared_ptr<RenderPass> &render_pass) override;
+        std::shared_ptr<Framebuffer> create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
+                                                        const std::shared_ptr<Texture> &texture) override;
 
         std::shared_ptr<Buffer> create_buffer(BufferType type, size_t size, MemoryProperty property) override;
 

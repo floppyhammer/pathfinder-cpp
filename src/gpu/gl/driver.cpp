@@ -11,10 +11,9 @@
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    std::shared_ptr<Framebuffer> DriverGl::create_framebuffer(uint32_t p_width, uint32_t p_height,
-                                                              TextureFormat p_format,
-                                                              const std::shared_ptr<RenderPass> &render_pass) {
-        auto framebuffer_gl = std::make_shared<FramebufferGl>(p_width, p_height, p_format);
+    std::shared_ptr<Framebuffer> DriverGl::create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
+                                                              const std::shared_ptr<Texture> &texture) {
+        auto framebuffer_gl = std::make_shared<FramebufferGl>(texture);
 
         check_error("create_framebuffer");
         return framebuffer_gl;

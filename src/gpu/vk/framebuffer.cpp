@@ -9,14 +9,8 @@
 namespace Pathfinder {
     FramebufferVk::FramebufferVk(VkDevice device,
                                  VkRenderPass render_pass,
-                                 std::shared_ptr<Texture> p_texture,
-                                 uint32_t p_width,
-                                 uint32_t p_height,
-                                 TextureFormat p_format) : Framebuffer(p_width, p_height) {
+                                 const std::shared_ptr<Texture> &p_texture) : Framebuffer(p_texture) {
         vk_device = device;
-
-        // Set color texture.
-        texture = std::move(p_texture);
 
         auto texture_vk = static_cast<TextureVk *>(texture.get());
 
