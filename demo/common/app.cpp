@@ -13,7 +13,8 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
 
     // Set up a canvas.
     canvas = std::make_shared<Pathfinder::Canvas>(driver, area_lut_input);
-    canvas->add_empty_scene_and_dest_texture(window_width, window_height);
+    canvas->set_empty_scene(window_width, window_height);
+    canvas->set_empty_dest_texture(window_width, window_height);
     canvas->load_svg(p_svg_input);
 
     // Set viewport texture to a texture rect.

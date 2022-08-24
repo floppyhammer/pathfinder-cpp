@@ -132,8 +132,7 @@ namespace Pathfinder {
 
     }
 
-    void Canvas::add_empty_scene_and_dest_texture(float size_x, float size_y) {
-
+    void Canvas::set_empty_scene(float size_x, float size_y) {
         // Set up a scene builder.
 #ifndef PATHFINDER_USE_D3D11
         scene_builder = std::make_shared<SceneBuilderD3D9>();
@@ -144,10 +143,10 @@ namespace Pathfinder {
         // Assign a scene to scene builder.
         scene_builder->set_scene(std::make_shared<Scene>(0,
                                                          Rect<float>(0, 0, size_x, size_y)));
+    }
 
-        dest_texture = driver->create_texture(size_x, size_y, TextureFormat::BGRA8_UNORM);
-
-        renderer->set_dest_texture(dest_texture);
+    void Canvas::set_empty_dest_texture(float size_x, float size_y) {
+        set_dest_texture(driver->create_texture(size_x, size_y, TextureFormat::BGRA8_UNORM));
     }
 
     void Canvas::push_path(Outline &p_outline,
