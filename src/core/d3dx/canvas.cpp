@@ -125,6 +125,8 @@ namespace Pathfinder {
         // Assign the scene to scene builder.
         scene_builder.scene = scene;
 
+        dest_texture = driver->create_texture(size_x, size_y, TextureFormat::BGRA8_UNORM);
+
         // Set up a renderer.
 #ifndef PATHFINDER_USE_D3D11
         renderer = std::make_shared<RendererD3D9>(p_driver);
@@ -134,7 +136,9 @@ namespace Pathfinder {
 
         renderer->set_up(area_lut_input);
 
-        renderer->set_up_pipelines(size_x, size_y);
+        renderer->set_up_pipelines();
+
+        renderer->set_dest_texture(dest_texture);
     }
 
     void Canvas::push_path(Outline &p_outline,
@@ -343,15 +347,24 @@ namespace Pathfinder {
     }
 
     void Canvas::resize(float p_size_x, float p_size_y) {
-        renderer->resize_dest_texture(p_size_x, p_size_y);
+        if (dest_texture->get_width() == p_size_x && dest_texture->get_height() == p_size_y) {
+            return;
+        }
+
+        set_dest_texture(driver->create_texture(p_size_x, p_size_y, TextureFormat::BGRA8_UNORM));
     }
 
     std::shared_ptr<Scene> Canvas::get_scene() const {
         return scene;
     }
 
+    void Canvas::set_dest_texture(const std::shared_ptr<Texture>& texture) {
+        dest_texture = texture;
+        renderer->set_dest_texture(texture);
+    }
+
     std::shared_ptr<Texture> Canvas::get_dest_texture() {
-        return renderer->get_dest_texture();
+        return dest_texture;
     }
 
     /**

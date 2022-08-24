@@ -36,7 +36,7 @@ namespace Pathfinder {
 
         virtual std::shared_ptr<Texture> get_dest_texture() = 0;
 
-        virtual void resize_dest_texture(uint32_t width, uint32_t height) = 0;
+        virtual void set_dest_texture(const std::shared_ptr<Texture> &texture) = 0;
 
     protected:
         std::shared_ptr<Driver> driver;

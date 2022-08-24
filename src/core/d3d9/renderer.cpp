@@ -66,18 +66,16 @@ namespace Pathfinder {
         cmd_buffer->submit(driver);
     }
 
-    void RendererD3D9::resize_dest_texture(uint32_t width, uint32_t height) {
-        auto dest_texture = driver->create_texture(
-                width,
-                height,
-                TextureFormat::RGBA8_UNORM
-        );
-        dest_framebuffer = driver->create_framebuffer(dest_render_pass_clear, dest_texture);
+    void RendererD3D9::set_dest_texture(const std::shared_ptr<Texture> &texture) {
+//        auto dest_texture = driver->create_texture(
+//                width,
+//                height,
+//                TextureFormat::RGBA8_UNORM
+//        );
+        dest_framebuffer = driver->create_framebuffer(dest_render_pass_clear, texture);
     }
 
-    void RendererD3D9::set_up_pipelines(uint32_t canvas_width, uint32_t canvas_height) {
-        resize_dest_texture(canvas_width, canvas_height);
-
+    void RendererD3D9::set_up_pipelines() {
         // Fill pipeline.
         {
 #ifdef PATHFINDER_USE_VULKAN
@@ -146,7 +144,6 @@ namespace Pathfinder {
                                                            fill_frag_source,
                                                            attribute_descriptions,
                                                            blend_state,
-                                                           {MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT},
                                                            fill_descriptor_set,
                                                            mask_render_pass);
         }
@@ -296,7 +293,6 @@ namespace Pathfinder {
                                                            tile_frag_source,
                                                            attribute_descriptions,
                                                            blend_state,
-                                                           {canvas_width, canvas_height},
                                                            tile_descriptor_set,
                                                            dest_render_pass_clear);
         }

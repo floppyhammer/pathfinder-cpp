@@ -123,9 +123,7 @@ namespace Pathfinder {
                                               TextureFormat::RGBA8_UNORM);
     }
 
-    void RendererD3D11::set_up_pipelines(uint32_t canvas_width, uint32_t canvas_height) {
-        resize_dest_texture(canvas_width, canvas_height);
-
+    void RendererD3D11::set_up_pipelines() {
         const auto dice_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/dice.comp");
         const auto bound_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/bound.comp");
         const auto bin_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/bin.comp");
@@ -269,10 +267,8 @@ namespace Pathfinder {
         return dest_texture;
     }
 
-    void RendererD3D11::resize_dest_texture(uint32_t width, uint32_t height) {
-        dest_texture = driver->create_texture(width,
-                                              height,
-                                              TextureFormat::RGBA8_UNORM);
+    void RendererD3D11::set_dest_texture(const std::shared_ptr<Texture> &texture) {
+        dest_texture = texture;
     }
 
     void RendererD3D11::upload_scene(SegmentsD3D11 &draw_segments, SegmentsD3D11 &clip_segments) {

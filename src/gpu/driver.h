@@ -33,7 +33,6 @@ namespace Pathfinder {
                                                                        const std::vector<char> &frag_source,
                                                                        const std::vector<VertexInputAttributeDescription> &p_attribute_descriptions,
                                                                        ColorBlendState p_blend_state,
-                                                                       Vec2<uint32_t> viewport_size,
                                                                        const std::shared_ptr<DescriptorSet> &descriptor_set,
                                                                        const std::shared_ptr<RenderPass> &render_pass) = 0;
 

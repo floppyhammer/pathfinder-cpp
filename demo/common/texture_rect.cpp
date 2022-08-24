@@ -98,7 +98,6 @@ TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
                                                   {frag_source.begin(), frag_source.end()},
                                                   attribute_descriptions,
                                                   blend_state,
-                                                  {width, height},
                                                   descriptor_set,
                                                   render_pass);
     }

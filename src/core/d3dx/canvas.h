@@ -143,6 +143,8 @@ namespace Pathfinder {
 
         std::shared_ptr<Scene> get_scene() const;
 
+        void set_dest_texture(const std::shared_ptr<Texture>& texture);
+
         std::shared_ptr<Texture> get_dest_texture();
 
         /**
@@ -169,6 +171,8 @@ namespace Pathfinder {
 
         /// Scene
         std::shared_ptr<Scene> scene;
+
+        std::shared_ptr<Texture> dest_texture;
 
         /// Scene builder and renderer.
 #ifndef PATHFINDER_USE_D3D11

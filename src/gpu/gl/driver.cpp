@@ -55,7 +55,6 @@ namespace Pathfinder {
                                                                      const std::vector<char> &frag_source,
                                                                      const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
                                                                      ColorBlendState blend_state,
-                                                                     Vec2<uint32_t> viewport_size,
                                                                      const std::shared_ptr<DescriptorSet> &descriptor_set,
                                                                      const std::shared_ptr<RenderPass> &render_pass) {
         auto pipeline_gl = std::make_shared<RenderPipelineGl>(vert_source,

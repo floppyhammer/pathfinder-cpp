@@ -25,14 +25,14 @@ namespace Pathfinder {
 
         explicit RendererD3D9(const std::shared_ptr<Driver> &p_driver);
 
-        void set_up_pipelines(uint32_t canvas_width, uint32_t canvas_height);
+        void set_up_pipelines();
 
         /// We need to call this for each scene.
         void draw(const SceneBuilderD3D9 &scene_builder);
 
         std::shared_ptr<Texture> get_dest_texture() override;
 
-        void resize_dest_texture(uint32_t width, uint32_t height) override;
+        void set_dest_texture(const std::shared_ptr<Texture> &texture) override;
 
     private:
         /// Vertex buffers.

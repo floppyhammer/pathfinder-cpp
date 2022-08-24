@@ -46,7 +46,6 @@ namespace Pathfinder {
             const std::vector<char> &frag_source,
             const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
             ColorBlendState blend_state,
-            Vec2<uint32_t> viewport_size,
             const std::shared_ptr<DescriptorSet> &descriptor_set,
             const std::shared_ptr<RenderPass> &render_pass) {
         auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
@@ -159,18 +158,6 @@ namespace Pathfinder {
         inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
         inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         inputAssembly.primitiveRestartEnable = VK_FALSE;
-
-//        VkViewport viewport{};
-//        viewport.x = 0.0f;
-//        viewport.y = 0.0f;
-//        viewport.width = (float) viewport_size.x;
-//        viewport.height = (float) viewport_size.y;
-//        viewport.minDepth = 0.0f; // The depth range for the viewport.
-//        viewport.maxDepth = 1.0f;
-//
-//        VkRect2D scissor{};
-//        scissor.offset = {0, 0};
-//        scissor.extent = {viewport_size.x, viewport_size.y};
 
         // Specify that these states will be dynamic, i.e. not part of pipeline state object.
         std::array<VkDynamicState, 2> dynamics{VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
