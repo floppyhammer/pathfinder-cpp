@@ -8,7 +8,7 @@
 #undef min
 #undef max
 
-#ifdef PATHFINDER_SIMD_ENABLED
+#ifdef PATHFINDER_ENABLE_SIMD
 
 #ifdef __ANDROID__
 // A C/C++ header file that converts Intel SSE intrinsics to Arm/Aarch64 NEON intrinsics.
@@ -286,6 +286,6 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_SIMD_ENABLED
+#endif //PATHFINDER_ENABLE_SIMD
 
 #endif //PATHFINDER_F32X4_H

@@ -3,6 +3,26 @@
 
 #include <cstdint>
 
+// // Vulkan headers.
+#ifdef PATHFINDER_USE_VULKAN
+#define GLFW_INCLUDE_VULKAN
+
+#include <GLFW/glfw3.h>
+
+#else
+// OpenGL headers.
+#ifdef __ANDROID__
+#ifdef PATHFINDER_USE_D3D11
+#include <GLES3/gl31.h>
+#else
+#include <GLES3/gl3.h>
+#endif
+#else
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#endif
+#endif
+
 namespace Pathfinder {
     enum class DataType {
         // Integers.
