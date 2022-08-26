@@ -3,7 +3,7 @@
 
 #include "scene_builder.h"
 #include "data/data.h"
-#include "../../gpu/driver.h"
+#include "../gpu/driver.h"
 
 #include <cstdint>
 

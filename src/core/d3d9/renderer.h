@@ -2,7 +2,7 @@
 #define PATHFINDER_D3D9_RENDERER_H
 
 #include "object_builder.h"
-#include "../d3dx/renderer.h"
+#include "../renderer.h"
 #include "../../common/global_macros.h"
 #include "../../gpu/framebuffer.h"
 #include "../../gpu/texture.h"

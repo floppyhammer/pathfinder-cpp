@@ -2,9 +2,9 @@
 #define PATHFINDER_D3D9_DRAW_TILE_BATCH_H
 
 #include "gpu_data.h"
-#include "../../d3dx/effects.h"
-#include "../../d3dx/paint.h"
-#include "../../d3dx/data/dense_tile_map.h"
+#include "../../effects.h"
+#include "../../paint.h"
+#include "../../data/dense_tile_map.h"
 #include "../../../gpu/gl/texture.h"
 #include "../../../gpu/gl/framebuffer.h"
 

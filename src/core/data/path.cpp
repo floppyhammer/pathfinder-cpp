@@ -1,6 +1,6 @@
 #include "path.h"
 
-#include "../../../common/math/basic.h"
+#include "../../common/math/basic.h"
 
 namespace Pathfinder {
     const float RATIO = 0.552284749831; // 4.0f * (sqrt(2.0f) - 1.0f) / 3.0f

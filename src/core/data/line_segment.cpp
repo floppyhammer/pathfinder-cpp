@@ -1,7 +1,7 @@
 #include "line_segment.h"
 
-#include "../../../common/math/basic.h"
-#include "../../../common/math/mat2x2.h"
+#include "../../common/math/basic.h"
+#include "../../common/math/mat2x2.h"
 
 #include <cassert>
 #include <cmath>

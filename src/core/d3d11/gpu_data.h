@@ -1,10 +1,10 @@
 #ifndef PATHFINDER_D3D11_GPU_DATA_H
 #define PATHFINDER_D3D11_GPU_DATA_H
 
-#include "../d3dx/paint.h"
-#include "../d3dx/scene.h"
-#include "../d3dx/data/line_segment.h"
-#include "../d3dx/data/built_path.h"
+#include "../paint.h"
+#include "../scene.h"
+#include "../data/line_segment.h"
+#include "../data/built_path.h"
 #include "../../common/math/transform2.h"
 #include "../../common/math/rect.h"
 

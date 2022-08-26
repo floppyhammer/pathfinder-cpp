@@ -1,9 +1,9 @@
 #include "renderer.h"
 
-#include "../../gpu/platform.h"
-#include "../../gpu/command_buffer.h"
-#include "../../common/io.h"
-#include "../../common/math/basic.h"
+#include "../gpu/platform.h"
+#include "../gpu/command_buffer.h"
+#include "../common/io.h"
+#include "../common/math/basic.h"
 
 #include <umHalf.h>
 #include <array>

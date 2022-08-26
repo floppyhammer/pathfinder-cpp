@@ -1,6 +1,7 @@
 #ifndef PATHFINDER_GPU_PROGRAM_H
 #define PATHFINDER_GPU_PROGRAM_H
 
+#include "../data.h"
 #include "../../common/math/mat2x2.h"
 #include "../../common/math/mat4x4.h"
 #include "../../common/logger.h"

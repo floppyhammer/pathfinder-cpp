@@ -1,8 +1,8 @@
-#ifndef PATHFINDER_D3D9_LINE_SEGMENT_H
-#define PATHFINDER_D3D9_LINE_SEGMENT_H
+#ifndef PATHFINDER_LINE_SEGMENT_H
+#define PATHFINDER_LINE_SEGMENT_H
 
-#include "../../../common/math/vec2.h"
-#include "../../../common/f32x4.h"
+#include "../../common/math/vec2.h"
+#include "../../common/f32x4.h"
 
 namespace Pathfinder {
     /// Various flags that specify the relation of this segment to other segments in a contour.
@@ -94,4 +94,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_D3D9_LINE_SEGMENT_H
+#endif //PATHFINDER_LINE_SEGMENT_H

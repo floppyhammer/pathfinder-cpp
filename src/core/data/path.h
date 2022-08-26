@@ -2,7 +2,7 @@
 #define PATHFINDER_PATH_H
 
 #include "contour.h"
-#include "../../../common/color.h"
+#include "../../common/color.h"
 
 #include <vector>
 

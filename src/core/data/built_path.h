@@ -3,8 +3,8 @@
 
 #include "data.h"
 #include "dense_tile_map.h"
-#include "../../d3d9/data/gpu_data.h"
-#include "../../../common/math/rect.h"
+#include "../d3d9/data/gpu_data.h"
+#include "../../common/math/rect.h"
 
 #include <cstdint>
 #include <utility>

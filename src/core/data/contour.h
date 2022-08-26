@@ -3,9 +3,9 @@
 
 #include "segment.h"
 #include "data.h"
-#include "../../../common/math/vec2.h"
-#include "../../../common/math/rect.h"
-#include "../../../common/math/transform2.h"
+#include "../../common/math/vec2.h"
+#include "../../common/math/rect.h"
+#include "../../common/math/transform2.h"
 
 #include <vector>
 

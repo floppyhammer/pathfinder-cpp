@@ -1,7 +1,5 @@
 #include "paint.h"
 
-#include "../../gpu/platform.h"
-
 #include <stdexcept>
 
 namespace Pathfinder {

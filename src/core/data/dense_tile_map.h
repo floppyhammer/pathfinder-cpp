@@ -1,8 +1,8 @@
 #ifndef PATHFINDER_DENSE_TILE_MAP_H
 #define PATHFINDER_DENSE_TILE_MAP_H
 
-#include "../../../common/math/rect.h"
-#include "../../../common/color.h"
+#include "../../common/math/rect.h"
+#include "../../common/color.h"
 
 #include <vector>
 

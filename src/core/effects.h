@@ -2,7 +2,7 @@
 #define PATHFINDER_EFFECTS_H
 
 #include "data/line_segment.h"
-#include "../../common/color.h"
+#include "../common/color.h"
 
 namespace Pathfinder {
     /// The axis a Gaussian blur is applied to.

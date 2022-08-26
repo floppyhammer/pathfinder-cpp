@@ -1,7 +1,7 @@
 #include "scene_builder.h"
 
 #include "gpu_data.h"
-#include "../d3dx/data/built_path.h"
+#include "../data/built_path.h"
 #include "../../common/timestamp.h"
 #include "../../common/logger.h"
 

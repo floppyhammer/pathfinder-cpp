@@ -2,7 +2,7 @@
 #define PATHFINDER_D3D9_TILER_H
 
 #include "object_builder.h"
-#include "../d3dx/data/data.h"
+#include "../data/data.h"
 
 namespace Pathfinder {
     struct Outcode {

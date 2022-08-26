@@ -1,7 +1,7 @@
 #include "renderer.h"
 
 #include "gpu_data.h"
-#include "../d3dx/data/data.h"
+#include "../data/data.h"
 #include "../d3d9/data/draw_tile_batch.h"
 #include "../../common/math/basic.h"
 #include "../../common/io.h"

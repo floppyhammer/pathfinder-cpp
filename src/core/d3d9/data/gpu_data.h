@@ -2,7 +2,7 @@
 #define PATHFINDER_D3D9_GPU_DATA_H
 
 #include "alpha_tile_id.h"
-#include "../../d3dx/data/line_segment.h"
+#include "../../data/line_segment.h"
 
 namespace Pathfinder {
     /// These data will be sent to GPU directly.

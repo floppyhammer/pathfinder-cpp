@@ -1,12 +1,12 @@
-#ifndef PATHFINDER_D3DX_DATA_H
-#define PATHFINDER_D3DX_DATA_H
+#ifndef PATHFINDER_DATA_H
+#define PATHFINDER_DATA_H
 
 #include "../effects.h"
-#include "../../../common/math/vec2.h"
-#include "../../../common/math/mat2x2.h"
-#include "../../../common/math/rect.h"
-#include "../../../common/color.h"
-#include "../../../common/math/transform2.h"
+#include "../../common/math/vec2.h"
+#include "../../common/math/mat2x2.h"
+#include "../../common/math/rect.h"
+#include "../../common/color.h"
+#include "../../common/math/transform2.h"
 
 #include <vector>
 
@@ -146,4 +146,4 @@ namespace Pathfinder {
     };
 }
 
-#endif //PATHFINDER_D3DX_DATA_H
+#endif //PATHFINDER_DATA_H

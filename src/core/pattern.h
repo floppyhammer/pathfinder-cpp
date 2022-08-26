@@ -2,11 +2,11 @@
 #define PATHFINDER_PATTERN_H
 
 #include "effects.h"
-#include "../../common/math/vec2.h"
-#include "../../common/math/transform2.h"
-#include "../../common/color.h"
-#include "../../gpu/framebuffer.h"
-#include "../../gpu/render_pass.h"
+#include "../common/math/vec2.h"
+#include "../common/math/transform2.h"
+#include "../common/color.h"
+#include "../gpu/framebuffer.h"
+#include "../gpu/render_pass.h"
 
 #include <cstdint>
 #include <utility>

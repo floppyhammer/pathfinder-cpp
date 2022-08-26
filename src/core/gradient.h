@@ -2,8 +2,8 @@
 #define PATHFINDER_GRADIENT_H
 
 #include "data/line_segment.h"
-#include "../../common/color.h"
-#include "../../common/math/transform2.h"
+#include "../common/color.h"
+#include "../common/math/transform2.h"
 
 #include <vector>
 
