@@ -58,7 +58,7 @@ layout(location = 7) in vec4 vFilterParams3;
 layout(location = 8) in vec4 vFilterParams4;
 layout(location = 9) in float vCtrl;
 
-layout(location=0) out vec4 oFragColor;
+layout(location = 0) out vec4 oFragColor;
 #else
 uniform sampler2D uColorTexture0; // Pattern image.
 uniform sampler2D uMaskTexture0;

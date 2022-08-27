@@ -55,24 +55,24 @@ layout(std140) uniform bFixedSizes {
     vec2 pad1;
 };
 
-layout(location=0) in uvec2 aTileOffset; // Tile local coordinates
-layout(location=1) in ivec2 aTileOrigin; // Tile index
-layout(location=2) in uvec4 aMaskTexCoord0;
-layout(location=3) in ivec2 aCtrlBackdrop;
-layout(location=4) in int aPathIndex;
-layout(location=5) in uint aMetadataIndex;
+layout(location = 0) in uvec2 aTileOffset; // Tile local coordinates
+layout(location = 1) in ivec2 aTileOrigin; // Tile index
+layout(location = 2) in uvec4 aMaskTexCoord0;
+layout(location = 3) in ivec2 aCtrlBackdrop;
+layout(location = 4) in int aPathIndex;
+layout(location = 5) in uint aMetadataIndex;
 
 #ifdef VULKAN
-layout(location=0) out vec3 vMaskTexCoord0;
-layout(location=1) out vec2 vColorTexCoord0;
-layout(location=2) out vec4 vBaseColor;
-layout(location=3) out float vTileCtrl;
-layout(location=4) out vec4 vFilterParams0;
-layout(location=5) out vec4 vFilterParams1;
-layout(location=6) out vec4 vFilterParams2;
-layout(location=7) out vec4 vFilterParams3;
-layout(location=8) out vec4 vFilterParams4;
-layout(location=9) out float vCtrl;
+layout(location = 0) out vec3 vMaskTexCoord0;
+layout(location = 1) out vec2 vColorTexCoord0;
+layout(location = 2) out vec4 vBaseColor;
+layout(location = 3) out float vTileCtrl;
+layout(location = 4) out vec4 vFilterParams0;
+layout(location = 5) out vec4 vFilterParams1;
+layout(location = 6) out vec4 vFilterParams2;
+layout(location = 7) out vec4 vFilterParams3;
+layout(location = 8) out vec4 vFilterParams4;
+layout(location = 9) out float vCtrl;
 #else
 out vec3 vMaskTexCoord0;
 out vec2 vColorTexCoord0;
