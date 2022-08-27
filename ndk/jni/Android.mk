@@ -16,14 +16,14 @@ SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/common/math/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/gpu/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/gpu/gl/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/gpu/vk/*.cpp)
-SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/modules/d3d9/*.cpp)
-SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/modules/d3d9/data/*.cpp)
-SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/modules/d3dx/*.cpp)
-SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/modules/d3dx/data/*.cpp)
-SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/modules/d3d11/*.cpp)
+SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/core/*.cpp)
+SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/core/data/*.cpp)
+SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/core/d3d9/*.cpp)
+SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/core/d3d9/data/*.cpp)
+SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/core/d3d11/*.cpp)
 
 LOCAL_MODULE            := pathfinder_static
-LOCAL_MODULE_FILENAME   := libpathfinder # Prefix "lib" is needed.
+LOCAL_MODULE_FILENAME   := libpathfinder # Prefix "lib" is necessary.
 LOCAL_SRC_FILES         := $(SRC_LIST:$(LOCAL_PATH)/%=%)
 LOCAL_ARM_MODE          := arm
 LOCAL_C_INCLUDES        := $(INCLUDE_PATH)
