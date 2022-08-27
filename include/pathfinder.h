@@ -9,5 +9,7 @@
 #include "../src/core/canvas.h"
 #include "../src/common/global_macros.h"
 #include "../src/common/io.h"
+#include "../src/common/math/vec2.h"
+#include "../src/common/math/vec3.h"
 
 #endif //PATHFINDER_API_H
