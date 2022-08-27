@@ -6,8 +6,8 @@
 #include "../../common/math/vec3.h"
 #include "../../common/math/mat4x4.h"
 #include "../../common/io.h"
-#include "../../gpu/gl/driver.h"
-#include "../../gpu/gl/command_buffer.h"
+#include "../../gpu/driver.h"
+#include "../../gpu/command_buffer.h"
 #include "../../gpu/platform.h"
 
 #include <array>

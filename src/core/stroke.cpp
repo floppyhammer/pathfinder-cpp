@@ -1,7 +1,5 @@
 #include "stroke.h"
 
-#include "../common/math/unit_vector.h"
-
 #include <utility>
 #include <algorithm>
 

@@ -5,8 +5,8 @@
 #include "../../effects.h"
 #include "../../paint.h"
 #include "../../data/dense_tile_map.h"
-#include "../../../gpu/gl/texture.h"
-#include "../../../gpu/gl/framebuffer.h"
+#include "../../../gpu/texture.h"
+#include "../../../gpu/framebuffer.h"
 
 #include <cstdint>
 #include <vector>

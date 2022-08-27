@@ -4,7 +4,7 @@
 #include "paint.h"
 #include "data/path.h"
 #include "data/data.h"
-#include "../gpu/gl/framebuffer.h"
+#include "../gpu/framebuffer.h"
 
 #include <vector>
 #include <limits>
