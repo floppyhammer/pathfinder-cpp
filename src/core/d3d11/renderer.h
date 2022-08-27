@@ -5,9 +5,8 @@
 #include "scene_builder.h"
 #include "../scene.h"
 #include "../renderer.h"
-#include "../d3d9/data/draw_tile_batch.h"
-#include "../../gpu/gl/compute_pipeline.h"
-#include "../../gpu/gl/buffer.h"
+#include "../../gpu/compute_pipeline.h"
+#include "../../gpu/buffer.h"
 #include "../../gpu/descriptor_set.h"
 
 #ifdef PATHFINDER_USE_D3D11
