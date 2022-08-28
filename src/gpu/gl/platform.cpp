@@ -10,7 +10,7 @@
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    void PlatformGl::init(uint32_t p_width, uint32_t p_height) {
+    PlatformGl::PlatformGl(uint32_t p_width, uint32_t p_height) {
         // Get a GLFW window.
         init_window(p_width, p_height);
     }

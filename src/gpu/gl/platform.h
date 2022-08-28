@@ -13,13 +13,12 @@
 namespace Pathfinder {
     class PlatformGl : public Platform {
     public:
+        PlatformGl(uint32_t p_width, uint32_t p_height);
+
         static std::shared_ptr<Platform> create(uint32_t p_width, uint32_t p_height) {
-            auto platform_gl = std::make_shared<PlatformGl>();
-            platform_gl->init(p_width, p_height);
+            auto platform_gl = std::make_shared<PlatformGl>(p_width, p_height);
             return platform_gl;
         }
-
-        void init(uint32_t p_width, uint32_t p_height);
 
         std::shared_ptr<Driver> create_driver() override;
 

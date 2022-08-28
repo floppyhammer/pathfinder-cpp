@@ -42,13 +42,12 @@ namespace Pathfinder {
 
     class PlatformVk : public Platform {
     public:
+        PlatformVk(uint32_t window_width, uint32_t window_height);
+
         static std::shared_ptr<Platform> create(uint32_t p_width, uint32_t p_height) {
-            auto platform_vk = std::make_shared<PlatformVk>();
-            platform_vk->init(p_width, p_height);
+            auto platform_vk = std::make_shared<PlatformVk>(p_width, p_height);
             return platform_vk;
         }
-
-        void init(uint32_t window_width, uint32_t window_height);
 
         std::shared_ptr<Driver> create_driver() override;
 

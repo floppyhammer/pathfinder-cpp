@@ -31,7 +31,7 @@ namespace Pathfinder {
         }
     }
 
-    void PlatformVk::init(uint32_t window_width, uint32_t window_height) {
+    PlatformVk::PlatformVk(uint32_t window_width, uint32_t window_height) {
         // Get a GLFW window.
         initWindow(window_width, window_height);
 
