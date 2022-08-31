@@ -425,7 +425,7 @@ namespace Pathfinder {
                     auto pixel_size = get_pixel_size(texture_vk->get_format()); // Bytes of one pixel.
                     VkDeviceSize dataSize = args.width * args.height * pixel_size;
 
-                    // Temporary buffer and CPU memory.
+                    // Temporary buffer and device memory.
                     VkBuffer stagingBuffer;
                     VkDeviceMemory stagingBufferMemory;
 

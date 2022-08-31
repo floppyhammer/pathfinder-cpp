@@ -23,10 +23,10 @@ namespace Pathfinder {
         VkSampler get_sampler() const;
 
     private:
-        /// GPU memory.
+        /// Handle.
         VkImage image{};
 
-        /// CPU memory.
+        /// Device memory.
         VkDeviceMemory image_memory{};
 
         /// Thin wrapper over image.

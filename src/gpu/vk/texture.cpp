@@ -17,10 +17,10 @@ namespace Pathfinder {
         // Should be right before destroying the image itself.
         vkDestroyImageView(device, image_view, nullptr);
 
-        // Release GPU memory.
+        // Destroy handle.
         vkDestroyImage(device, image, nullptr);
 
-        // Release CPU memory.
+        // Release device memory.
         vkFreeMemory(device, image_memory, nullptr);
     }
 
