@@ -12,10 +12,12 @@
 namespace Pathfinder {
     class CommandBufferVk : public CommandBuffer {
         friend class DriverVk;
+
         friend class SwapChainVk;
+
     public:
         /// We have to provide these two to create a valid command buffer.
-        CommandBufferVk(VkCommandBuffer command_buffer, VkDevice device);
+        CommandBufferVk(VkCommandBuffer p_command_buffer, VkDevice p_device);
 
         // Render pass
 
@@ -23,7 +25,6 @@ namespace Pathfinder {
                                const std::shared_ptr<Framebuffer> &framebuffer,
                                ColorF clear_color) override;
 
-        /// Bind pipeline.
         void bind_render_pipeline(const std::shared_ptr<RenderPipeline> &pipeline) override;
 
         void bind_vertex_buffers(std::vector<std::shared_ptr<Buffer>> vertex_buffers) override;
@@ -31,10 +32,8 @@ namespace Pathfinder {
         /// Bind uniform buffers and samplers.
         void bind_descriptor_set(const std::shared_ptr<DescriptorSet> &descriptor_set) override;
 
-        /// Draw call.
         void draw(uint32_t first_vertex, uint32_t vertex_count) override;
 
-        /// Instanced draw call.
         void draw_instanced(uint32_t vertex_count, uint32_t instance_count) override;
 
         void end_render_pass() override;
@@ -77,7 +76,7 @@ namespace Pathfinder {
     private:
         VkCommandBuffer vk_command_buffer;
 
-        VkDevice vk_device;
+        VkDevice device;
     };
 }
 

@@ -12,12 +12,15 @@
 namespace Pathfinder {
     class DriverVk : public Driver {
         friend class PlatformVk;
+
         friend class SwapChainVk;
+
     public:
         DriverVk(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue graphicsQueue, VkQueue presentQueue,
                  VkCommandPool commandPool);
 
-        std::shared_ptr<RenderPass> create_render_pass(TextureFormat format, AttachmentLoadOp load_op, ImageLayout final_layout) override;
+        std::shared_ptr<RenderPass>
+        create_render_pass(TextureFormat format, AttachmentLoadOp load_op, ImageLayout final_layout) override;
 
         std::shared_ptr<Framebuffer> create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
                                                         const std::shared_ptr<Texture> &texture) override;
@@ -65,11 +68,12 @@ namespace Pathfinder {
                                    VkImageLayout oldLayout,
                                    VkImageLayout newLayout) const;
 
-        void copyVkBuffer(VkCommandBuffer commandBuffer, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) const;
+        void
+        copyVkBuffer(VkCommandBuffer commandBuffer, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) const;
 
     private:
         /// The graphics card that we'll end up selecting will be stored in a VkPhysicalDevice handle.
-        VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+        VkPhysicalDevice physicalDevice{};
 
         VkDevice device{};
 
@@ -85,7 +89,7 @@ namespace Pathfinder {
 
         VkImageView createVkImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags) const;
 
-        void createVkTextureSampler(VkSampler &textureSampler) const;
+        VkSampler createVkSampler() const;
 
         void createVkRenderPass(VkFormat format, VkRenderPass &renderPass);
 

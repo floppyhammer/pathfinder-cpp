@@ -11,9 +11,12 @@
 namespace Pathfinder {
     class TextureVk : public Texture {
         friend class DriverVk;
+
     public:
+        // Actual construction is done by DriverVk.
         TextureVk(VkDevice p_device, uint32_t p_width, uint32_t p_height, TextureFormat p_format);
 
+        // Actual deconstruction is done by itself.
         ~TextureVk();
 
         VkImage get_image() const;

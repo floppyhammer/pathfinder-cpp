@@ -11,12 +11,13 @@
 namespace Pathfinder {
     class FramebufferVk : public Framebuffer {
         friend class DriverVk;
+
     public:
         /// Texture framebuffer.
-        FramebufferVk(VkDevice device, VkRenderPass render_pass, const std::shared_ptr<Texture> &p_texture);
+        FramebufferVk(VkDevice p_device, VkRenderPass render_pass, const std::shared_ptr<Texture> &p_texture);
 
         /// Swap chain framebuffer.
-        FramebufferVk(VkDevice device,
+        FramebufferVk(VkDevice p_device,
                       VkRenderPass render_pass,
                       uint32_t p_width,
                       uint32_t p_height,
@@ -34,7 +35,7 @@ namespace Pathfinder {
         /// For using the color attachment of this framebuffer as a sampler.
         VkDescriptorImageInfo descriptor;
 
-        VkDevice vk_device;
+        VkDevice device;
     };
 }
 

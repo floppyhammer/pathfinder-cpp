@@ -236,7 +236,7 @@ namespace Pathfinder {
                                       1,
                                       &pipelineInfo,
                                       nullptr,
-                                      &render_pipeline_vk->id) != VK_SUCCESS) {
+                                      &render_pipeline_vk->vk_pipeline) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create graphics pipeline!");
         }
 
@@ -303,7 +303,12 @@ namespace Pathfinder {
 
     std::shared_ptr<Texture> DriverVk::create_texture(uint32_t width, uint32_t height,
                                                       TextureFormat format) {
-        auto texture_vk = std::make_shared<TextureVk>(device, width, height, format);
+        auto texture_vk = std::make_shared<TextureVk>(
+                device,
+                width,
+                height,
+                format
+        );
 
         createVkImage(width,
                       height,
@@ -321,7 +326,7 @@ namespace Pathfinder {
                                                    VK_IMAGE_ASPECT_COLOR_BIT);
 
         // Create sampler.
-        createVkTextureSampler(texture_vk->sampler);
+        texture_vk->sampler = createVkSampler();
 
         return texture_vk;
     }
@@ -422,7 +427,7 @@ namespace Pathfinder {
         return imageView;
     }
 
-    void DriverVk::createVkTextureSampler(VkSampler &textureSampler) const {
+    VkSampler DriverVk::createVkSampler() const {
         VkSamplerCreateInfo samplerInfo{};
         samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
         samplerInfo.magFilter = VK_FILTER_LINEAR;
@@ -453,9 +458,12 @@ namespace Pathfinder {
         samplerInfo.minLod = 0.0f;
         samplerInfo.maxLod = 0.0f;
 
-        if (vkCreateSampler(device, &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
+        VkSampler sampler;
+        if (vkCreateSampler(device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create texture sampler!");
         }
+
+        return sampler;
     }
 
     void DriverVk::createVkBuffer(VkDeviceSize size,

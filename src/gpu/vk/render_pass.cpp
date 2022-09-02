@@ -3,27 +3,34 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    Pathfinder::RenderPassVk::RenderPassVk(VkDevice device,
+    Pathfinder::RenderPassVk::RenderPassVk(VkDevice p_device,
                                            TextureFormat texture_format,
                                            AttachmentLoadOp load_op,
                                            ImageLayout final_layout) {
-        vk_device = device;
+        device = p_device;
 
         // Color attachment.
         // ----------------------------------------
         VkAttachmentDescription colorAttachment{};
-        colorAttachment.format = to_vk_texture_format(texture_format); // Specifying the format of the image view that will be used for the attachment.
+        // Specifying the format of the image view that will be used for the attachment.
+        colorAttachment.format = to_vk_texture_format(texture_format);
         colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT; // Specifying the number of samples of the image.
-        colorAttachment.loadOp = to_vk_attachment_load_op(load_op); // Specifying how the contents of color and depth components of the attachment are treated at the beginning of the subpass where it is first used.
-        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // Specifying how the contents of color and depth components of the attachment are treated at the end of the subpass where it is last used.
+        // Specifying how the contents of color and depth components of the attachment are treated at the beginning of the sub-pass where it is first used.
+        colorAttachment.loadOp = to_vk_attachment_load_op(load_op);
+        // Specifying how the contents of color and depth components of the attachment are treated at the end of the sub-pass where it is last used.
+        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        colorAttachment.initialLayout = load_op == AttachmentLoadOp::CLEAR ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; // The layout the attachment image subresource will be in when a render pass instance begins.
-        colorAttachment.finalLayout = to_vk_layout(final_layout); // The layout the attachment image subresource will be transitioned to when a render pass instance ends.
+        // The layout the attachment image subresource will be in when a render pass instance begins.
+        colorAttachment.initialLayout = load_op == AttachmentLoadOp::CLEAR ? VK_IMAGE_LAYOUT_UNDEFINED
+                                                                           : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        // The layout the attachment image subresource will be transitioned to when a render pass instance ends.
+        colorAttachment.finalLayout = to_vk_layout(final_layout);
 
         VkAttachmentReference colorAttachmentRef{};
         colorAttachmentRef.attachment = 0;
-        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // Specifying the layout the attachment uses during the subpass.
+        // Specifying the layout the attachment uses during the sub-pass.
+        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         // ----------------------------------------
 
         VkSubpassDescription subpass{};
@@ -50,13 +57,13 @@ namespace Pathfinder {
         renderPassInfo.dependencyCount = 1;
         renderPassInfo.pDependencies = &dependency;
 
-        if (vkCreateRenderPass(vk_device, &renderPassInfo, nullptr, &vk_render_pass) != VK_SUCCESS) {
+        if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &vk_render_pass) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create render pass!");
         }
     }
 
     RenderPassVk::~RenderPassVk() {
-        vkDestroyRenderPass(vk_device, vk_render_pass, nullptr);
+        vkDestroyRenderPass(device, vk_render_pass, nullptr);
     }
 
     VkRenderPass RenderPassVk::get_vk_render_pass() {

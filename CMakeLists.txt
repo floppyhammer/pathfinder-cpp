@@ -6,11 +6,9 @@ set(CMAKE_CXX_STANDARD 17)
 # Set binary output directory. Using CMAKE_CURRENT_SOURCE_DIR is necessary.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
-option(VULKAN_SUPPORT "Render with Vulkan instead of OpenGL")
-set(VULKAN_SUPPORT ON)
-
-option(BUILD_DEMO "Build demo")
-set(BUILD_DEMO OFF)
+# Reset CMake cache for these to take effect.
+option(VULKAN_SUPPORT "Vulkan over OpenGL" ON)
+option(BUILD_DEMO "Build demo" ON)
 
 if (VULKAN_SUPPORT)
     message("Will use Vulkan")

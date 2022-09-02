@@ -17,8 +17,8 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    CommandBufferVk::CommandBufferVk(VkCommandBuffer command_buffer, VkDevice device)
-            : vk_command_buffer(command_buffer), vk_device(device) {}
+    CommandBufferVk::CommandBufferVk(VkCommandBuffer p_command_buffer, VkDevice p_device)
+            : vk_command_buffer(p_command_buffer), device(p_device) {}
 
     void CommandBufferVk::begin_render_pass(const std::shared_ptr<RenderPass> &render_pass,
                                             const std::shared_ptr<Framebuffer> &framebuffer,
@@ -137,7 +137,9 @@ namespace Pathfinder {
 
     }
 
-    void CommandBufferVk::upload_to_buffer(const std::shared_ptr<Buffer> &buffer, uint32_t offset, uint32_t data_size,
+    void CommandBufferVk::upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
+                                           uint32_t offset,
+                                           uint32_t data_size,
                                            void *data) {
         if (data_size == 0 || data == nullptr) {
             Logger::error("Tried to upload invalid data to buffer!");
@@ -148,9 +150,9 @@ namespace Pathfinder {
             auto buffer_vk = static_cast<BufferVk *>(buffer.get());
 
             void *mapped_data;
-            auto res = vkMapMemory(vk_device, buffer_vk->get_vk_device_memory(), offset, data_size, 0, &mapped_data);
+            auto res = vkMapMemory(device, buffer_vk->get_vk_device_memory(), offset, data_size, 0, &mapped_data);
             memcpy(mapped_data, data, data_size);
-            vkUnmapMemory(vk_device, buffer_vk->get_vk_device_memory());
+            vkUnmapMemory(device, buffer_vk->get_vk_device_memory());
 
             if (res != VK_SUCCESS) {
                 Logger::error("Failed to map memory!", "Vulkan");
@@ -273,7 +275,7 @@ namespace Pathfinder {
                     vkCmdSetViewport(vk_command_buffer, 0, 1, &viewport);
 
                     VkRect2D scissor{};
-                    scissor.extent.width  = framebuffer_vk->get_width();
+                    scissor.extent.width = framebuffer_vk->get_width();
                     scissor.extent.height = framebuffer_vk->get_height();
                     vkCmdSetScissor(vk_command_buffer, 0, 1, &scissor);
                 }

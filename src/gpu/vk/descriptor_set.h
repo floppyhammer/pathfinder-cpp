@@ -12,7 +12,10 @@
 namespace Pathfinder {
     class DescriptorSetVk : public DescriptorSet {
         friend class DriverVk;
+
     public:
+        DescriptorSetVk() = default;
+
         ~DescriptorSetVk();
 
         void update_vk_descriptor_set(VkDevice p_device, VkDescriptorSetLayout descriptor_set_layout);
@@ -20,8 +23,6 @@ namespace Pathfinder {
         VkDescriptorSet &get_vk_descriptor_set();
 
     private:
-        DescriptorSetVk() = default;
-
         VkDescriptorPool descriptor_pool{};
         VkDescriptorSet descriptor_set{};
 

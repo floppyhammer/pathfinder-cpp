@@ -7,10 +7,10 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    FramebufferVk::FramebufferVk(VkDevice device,
+    FramebufferVk::FramebufferVk(VkDevice p_device,
                                  VkRenderPass render_pass,
                                  const std::shared_ptr<Texture> &p_texture) : Framebuffer(p_texture) {
-        vk_device = device;
+        device = p_device;
 
         auto texture_vk = static_cast<TextureVk *>(texture.get());
 
@@ -25,7 +25,7 @@ namespace Pathfinder {
         framebufferInfo.height = height;
         framebufferInfo.layers = 1;
 
-        if (vkCreateFramebuffer(vk_device, &framebufferInfo, nullptr, &vk_framebuffer) != VK_SUCCESS) {
+        if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &vk_framebuffer) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create framebuffer!");
         }
 
@@ -35,13 +35,13 @@ namespace Pathfinder {
         descriptor.sampler = texture_vk->get_sampler();
     }
 
-    FramebufferVk::FramebufferVk(VkDevice device,
+    FramebufferVk::FramebufferVk(VkDevice p_device,
                                  VkRenderPass render_pass,
                                  uint32_t p_width,
                                  uint32_t p_height,
                                  VkImageView image_view)
             : Framebuffer(p_width, p_height) {
-        vk_device = device;
+        device = p_device;
 
         std::array<VkImageView, 1> attachments = {image_view};
 
@@ -54,13 +54,13 @@ namespace Pathfinder {
         framebufferInfo.height = height;
         framebufferInfo.layers = 1;
 
-        if (vkCreateFramebuffer(vk_device, &framebufferInfo, nullptr, &vk_framebuffer) != VK_SUCCESS) {
+        if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &vk_framebuffer) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create framebuffer!");
         }
     }
 
     FramebufferVk::~FramebufferVk() {
-        vkDestroyFramebuffer(vk_device, vk_framebuffer, nullptr);
+        vkDestroyFramebuffer(device, vk_framebuffer, nullptr);
     }
 
     VkFramebuffer FramebufferVk::get_vk_framebuffer() const {
