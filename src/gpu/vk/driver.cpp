@@ -438,9 +438,6 @@ namespace Pathfinder {
         samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
         samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 
-        VkPhysicalDeviceProperties properties{};
-        vkGetPhysicalDeviceProperties(physicalDevice, &properties);
-
         // Has to be disabled to prevent artifacts.
         samplerInfo.anisotropyEnable = VK_FALSE;
 
