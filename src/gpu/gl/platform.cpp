@@ -10,9 +10,19 @@
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    PlatformGl::PlatformGl(uint32_t p_width, uint32_t p_height) {
+    std::shared_ptr<Platform> Platform::new_impl(DeviceType device_type,
+                                                 uint32_t window_width,
+                                                 uint32_t window_height) {
+        if (device_type == DeviceType::OpenGl4) {
+            return std::make_shared<PlatformGl>(window_width, window_height);
+        }
+
+        abort();
+    }
+
+    PlatformGl::PlatformGl(uint32_t window_width, uint32_t window_height) {
         // Get a GLFW window.
-        init_window(p_width, p_height);
+        init_window(window_width, window_height);
     }
 
     void PlatformGl::init_window(uint32_t p_width, uint32_t p_height) {

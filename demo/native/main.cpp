@@ -1,18 +1,19 @@
 #include "../common/app.h"
-#include "../src/gpu/gl/platform.h"
-#include "../src/gpu/vk/platform.h"
-#include "../src/gpu/vk/swap_chain.h"
+
+#include "../src/gpu/platform.h"
 
 uint32_t WINDOW_WIDTH = 1920;
 uint32_t WINDOW_HEIGHT = 1080;
 
 int main() {
-    // Create platform.
 #ifdef PATHFINDER_USE_VULKAN
-    auto platform = Pathfinder::PlatformVk::create(WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto device_type = Pathfinder::DeviceType::Vulkan;
 #else
-    auto platform = Pathfinder::PlatformGl::create(WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto device_type = Pathfinder::DeviceType::OpenGl4;
 #endif
+
+    // Create platform.
+    auto platform = Pathfinder::Platform::new_impl(device_type, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     // Create driver via platform.
     auto driver = platform->create_driver();

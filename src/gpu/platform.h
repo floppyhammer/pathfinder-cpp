@@ -7,11 +7,15 @@ namespace Pathfinder {
     /// GLFW platform.
     class Platform {
     public:
+        static std::shared_ptr<Platform> new_impl(DeviceType device_type,
+                                                  uint32_t window_width,
+                                                  uint32_t window_height);
+
         virtual std::shared_ptr<Driver> create_driver() = 0;
 
         virtual std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Driver> &driver,
-                                                             uint32_t p_width,
-                                                             uint32_t p_height) = 0;
+                                                             uint32_t window_width,
+                                                             uint32_t window_height) = 0;
 
         virtual void cleanup() = 0;
 

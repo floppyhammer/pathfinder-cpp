@@ -13,17 +13,13 @@
 namespace Pathfinder {
     class PlatformGl : public Platform {
     public:
-        PlatformGl(uint32_t p_width, uint32_t p_height);
-
-        static std::shared_ptr<Platform> create(uint32_t p_width, uint32_t p_height) {
-            auto platform_gl = std::make_shared<PlatformGl>(p_width, p_height);
-            return platform_gl;
-        }
+        explicit PlatformGl(uint32_t window_width, uint32_t window_height);
 
         std::shared_ptr<Driver> create_driver() override;
 
-        std::shared_ptr<SwapChain>
-        create_swap_chain(const std::shared_ptr<Driver> &driver, uint32_t p_width, uint32_t p_height) override;
+        std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Driver> &driver,
+                                                     uint32_t p_width,
+                                                     uint32_t p_height) override;
 
         bool framebuffer_resized = false;
 

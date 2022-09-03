@@ -1,11 +1,11 @@
 #ifndef PATHFINDER_DEMO_TEXTURE_RECT_H
 #define PATHFINDER_DEMO_TEXTURE_RECT_H
 
-#include "../../src/gpu/gl/framebuffer.h"
-#include "../../src/gpu/gl/texture.h"
-#include "../../src/gpu/gl/render_pipeline.h"
+#include "../../src/gpu/framebuffer.h"
+#include "../../src/gpu/texture.h"
+#include "../../src/gpu/render_pipeline.h"
 #include "../../src/gpu/descriptor_set.h"
-#include "../../src/gpu/gl/command_buffer.h"
+#include "../../src/gpu/command_buffer.h"
 #include "pathfinder.h"
 
 #include <memory>

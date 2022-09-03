@@ -9,6 +9,16 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+    std::shared_ptr<Platform> Platform::new_impl(DeviceType device_type,
+                                                 uint32_t window_width,
+                                                 uint32_t window_height) {
+        if (device_type == DeviceType::Vulkan) {
+            return std::make_shared<PlatformVk>(window_width, window_height);
+        }
+
+        abort();
+    }
+
     VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
                                           const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
                                           const VkAllocationCallbacks *pAllocator,
@@ -441,9 +451,14 @@ namespace Pathfinder {
         glfwTerminate();
     }
 
-    std::shared_ptr<SwapChain> PlatformVk::create_swap_chain(const std::shared_ptr<Driver>& driver, uint32_t p_width, uint32_t p_height) {
+    std::shared_ptr<SwapChain> PlatformVk::create_swap_chain(const std::shared_ptr<Driver> &driver,
+                                                             uint32_t width,
+                                                             uint32_t height) {
         auto driver_vk = static_cast<DriverVk *>(driver.get());
-        auto swap_chain_vk = std::make_shared<SwapChainVk>(p_width, p_height, this, driver_vk);
+        auto swap_chain_vk = std::make_shared<SwapChainVk>(width,
+                                                           height,
+                                                           this,
+                                                           driver_vk);
         return swap_chain_vk;
     }
 }

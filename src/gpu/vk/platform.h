@@ -42,12 +42,7 @@ namespace Pathfinder {
 
     class PlatformVk : public Platform {
     public:
-        PlatformVk(uint32_t window_width, uint32_t window_height);
-
-        static std::shared_ptr<Platform> create(uint32_t p_width, uint32_t p_height) {
-            auto platform_vk = std::make_shared<PlatformVk>(p_width, p_height);
-            return platform_vk;
-        }
+        explicit PlatformVk(uint32_t window_width, uint32_t window_height);
 
         std::shared_ptr<Driver> create_driver() override;
 
@@ -61,7 +56,9 @@ namespace Pathfinder {
 
         bool framebufferResized = false;
 
-        std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Driver>& driver, uint32_t p_width, uint32_t p_height) override;
+        std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Driver> &driver,
+                                                     uint32_t width,
+                                                     uint32_t height) override;
 
         static void framebufferResizeCallback(GLFWwindow *window, int width, int height) {
             auto platform = reinterpret_cast<PlatformVk *>(glfwGetWindowUserPointer(window));
