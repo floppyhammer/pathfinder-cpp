@@ -54,12 +54,6 @@ namespace Pathfinder {
         TRANSFER_DST,
     };
 
-    /// Texture format in CPU memory.
-    enum class PixelDataFormat {
-        RED,
-        RGBA,
-    };
-
     enum class ShaderType {
         Vertex,
         Fragment,
@@ -114,6 +108,7 @@ namespace Pathfinder {
 
     enum class BufferType {
         Vertex,
+        Index,
         Uniform,
         General,
     };

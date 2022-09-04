@@ -58,7 +58,7 @@ namespace Pathfinder {
             } bind_render_pipeline;
             struct {
                 uint32_t buffer_count;
-                std::array<Buffer *, 10> buffers;
+                std::array<Buffer *, MAX_VERTEX_BUFFER_BINDINGS> buffers;
             } bind_vertex_buffers;
             struct {
                 Buffer *buffer;
@@ -110,34 +110,34 @@ namespace Pathfinder {
     public:
         // RENDER PASS
 
-        virtual void begin_render_pass(const std::shared_ptr<RenderPass> &render_pass,
-                                       const std::shared_ptr<Framebuffer> &framebuffer,
-                                       ColorF clear_color) = 0;
+        void begin_render_pass(const std::shared_ptr<RenderPass> &render_pass,
+                               const std::shared_ptr<Framebuffer> &framebuffer,
+                               ColorF clear_color);
 
         /// Bind pipeline.
-        virtual void bind_render_pipeline(const std::shared_ptr<RenderPipeline> &pipeline) = 0;
+        void bind_render_pipeline(const std::shared_ptr<RenderPipeline> &pipeline);
 
-        virtual void bind_vertex_buffers(std::vector<std::shared_ptr<Buffer>> vertex_buffers) = 0;
+        void bind_vertex_buffers(std::vector<std::shared_ptr<Buffer>> vertex_buffers);
 
         /// Bind uniform buffers and texture samplers.
-        virtual void bind_descriptor_set(const std::shared_ptr<DescriptorSet> &descriptor_set) = 0;
+        void bind_descriptor_set(const std::shared_ptr<DescriptorSet> &descriptor_set);
 
         /// Draw call.
-        virtual void draw(uint32_t first_vertex, uint32_t vertex_count) = 0;
+        void draw(uint32_t first_vertex, uint32_t vertex_count);
 
-        virtual void draw_instanced(uint32_t vertex_count, uint32_t instance_count) = 0;
+        void draw_instanced(uint32_t vertex_count, uint32_t instance_count);
 
-        virtual void end_render_pass() = 0;
+        void end_render_pass();
 
         // COMPUTE PASS
 
-        virtual void begin_compute_pass() = 0;
+        void begin_compute_pass();
 
-        virtual void bind_compute_pipeline(const std::shared_ptr<ComputePipeline> &pipeline) = 0;
+        void bind_compute_pipeline(const std::shared_ptr<ComputePipeline> &pipeline);
 
-        virtual void dispatch(uint32_t group_size_x, uint32_t group_size_y, uint32_t group_size_z) = 0;
+        void dispatch(uint32_t group_size_x, uint32_t group_size_y, uint32_t group_size_z);
 
-        virtual void end_compute_pass() = 0;
+        void end_compute_pass();
 
         // COPY PASS
 
@@ -153,14 +153,14 @@ namespace Pathfinder {
                                       uint32_t data_size,
                                       void *data) = 0;
 
-        virtual void upload_to_texture(const std::shared_ptr<Texture> &texture,
-                                       Rect<uint32_t> region,
-                                       const void *data) = 0;
+        void upload_to_texture(const std::shared_ptr<Texture> &texture,
+                               Rect<uint32_t> region,
+                               const void *data);
 
-        virtual void read_buffer(const std::shared_ptr<Buffer> &buffer,
-                                 uint32_t offset,
-                                 uint32_t data_size,
-                                 void *data) = 0;
+        void read_buffer(const std::shared_ptr<Buffer> &buffer,
+                         uint32_t offset,
+                         uint32_t data_size,
+                         void *data);
 
         // SUBMIT
 

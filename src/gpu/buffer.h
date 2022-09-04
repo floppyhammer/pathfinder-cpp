@@ -10,19 +10,20 @@ namespace Pathfinder {
     // Everything above 16 MB is allocated exactly for general buffer.
     const uint64_t MAX_BUFFER_SIZE_CLASS = 16 * 1024 * 1024;
 
+    // Maximum binding number of vertex buffers during a draw call.
+    const uint32_t MAX_VERTEX_BUFFER_BINDINGS = 8;
+
     class Buffer {
     public:
         Buffer(BufferType p_type, size_t p_size, MemoryProperty p_property)
                 : type(p_type), size(p_size), memory_property(p_property) {}
 
-        inline MemoryProperty get_memory_property() const { return memory_property; }
+        MemoryProperty get_memory_property() const { return memory_property; }
 
-        /// Buffer size.
         size_t size;
 
         BufferType type;
 
-        /// Device local or shared between host and device.
         MemoryProperty memory_property;
     };
 }
