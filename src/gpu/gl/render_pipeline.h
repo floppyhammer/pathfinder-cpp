@@ -14,14 +14,11 @@ namespace Pathfinder {
         RenderPipelineGl(const std::vector<char> &vert_source,
                          const std::vector<char> &frag_source,
                          const std::vector<VertexInputAttributeDescription> &p_attribute_descriptions,
-                         ColorBlendState p_blend_state) {
+                         ColorBlendState p_blend_state)
+                : RenderPipeline(p_attribute_descriptions, p_blend_state) {
             program = std::make_shared<RasterProgram>(vert_source, frag_source);
 
             glGenVertexArrays(1, &vao);
-
-            attribute_descriptions = p_attribute_descriptions;
-
-            blend_state = p_blend_state;
         };
 
         ~RenderPipelineGl() {
@@ -36,22 +33,10 @@ namespace Pathfinder {
             return vao;
         }
 
-        inline const std::vector<VertexInputAttributeDescription> &get_attribute_descriptions() const {
-            return attribute_descriptions;
-        }
-
-        inline ColorBlendState get_blend_state() const {
-            return blend_state;
-        }
-
     private:
         std::shared_ptr<RasterProgram> program;
 
         uint32_t vao{};
-
-        std::vector<VertexInputAttributeDescription> attribute_descriptions;
-
-        ColorBlendState blend_state{};
     };
 }
 

@@ -54,6 +54,7 @@ namespace Pathfinder {
         TRANSFER_DST,
     };
 
+    // TODO(floppyhammer): Make this bits.
     enum class ShaderType {
         Vertex,
         Fragment,

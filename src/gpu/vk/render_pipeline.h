@@ -16,22 +16,12 @@ namespace Pathfinder {
         RenderPipelineVk(VkDevice p_device,
                          std::vector<VertexInputAttributeDescription> p_attribute_descriptions,
                          ColorBlendState p_blend_state)
-                : device(p_device),
-                  attribute_descriptions(std::move(p_attribute_descriptions)),
-                  blend_state(p_blend_state) {}
+                : RenderPipeline(p_attribute_descriptions, p_blend_state), device(p_device) {}
 
         ~RenderPipelineVk() {
             vkDestroyDescriptorSetLayout(device, descriptor_set_layout, nullptr);
             vkDestroyPipeline(device, vk_pipeline, nullptr);
             vkDestroyPipelineLayout(device, layout, nullptr);
-        }
-
-        inline const std::vector<VertexInputAttributeDescription> &get_attribute_descriptions() const {
-            return attribute_descriptions;
-        }
-
-        inline ColorBlendState get_blend_state() const {
-            return blend_state;
         }
 
         inline VkPipeline get_pipeline() const {
@@ -52,10 +42,6 @@ namespace Pathfinder {
         VkDescriptorSetLayout descriptor_set_layout{};
 
         VkPipelineLayout layout{};
-
-        std::vector<VertexInputAttributeDescription> attribute_descriptions;
-
-        ColorBlendState blend_state{};
 
         VkDevice device{};
     };

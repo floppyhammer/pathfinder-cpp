@@ -18,7 +18,7 @@ namespace Pathfinder {
         uint32_t binding{};
         std::string binding_name; // For compatibility with lower versions of OpenGL.
 
-        // Only one is valid.
+        // Only one is used.
         std::shared_ptr<Buffer> buffer;
         std::shared_ptr<Texture> texture;
     };
