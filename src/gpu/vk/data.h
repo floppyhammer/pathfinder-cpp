@@ -64,7 +64,7 @@ namespace Pathfinder {
                 return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
             case DescriptorType::Texture:
                 return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            case DescriptorType::GeneralBuffer:
+            case DescriptorType::StorageBuffer:
                 return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             case DescriptorType::Image:
                 return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;

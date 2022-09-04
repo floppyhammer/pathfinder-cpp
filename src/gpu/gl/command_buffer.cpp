@@ -215,7 +215,7 @@ namespace Pathfinder {
                             }
                                 break;
 #ifdef PATHFINDER_USE_D3D11
-                                case DescriptorType::GeneralBuffer: {
+                                case DescriptorType::StorageBuffer: {
                                     auto buffer_gl = static_cast<BufferGl *>(descriptor.buffer.get());
 
                                     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding_point, buffer_gl->id);

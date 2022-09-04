@@ -96,7 +96,7 @@ namespace Pathfinder {
     enum class DescriptorType {
         UniformBuffer = 0,
         Texture,
-        GeneralBuffer,
+        StorageBuffer,
         Image,
         Max,
     };
@@ -113,7 +113,7 @@ namespace Pathfinder {
         General,
     };
 
-    enum class GeneralBufferUsage {
+    enum class StorageBufferUsage {
         Read,
         Write,
         ReadWrite,

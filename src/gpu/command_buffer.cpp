@@ -102,7 +102,7 @@ namespace Pathfinder {
                                  uint32_t group_size_y,
                                  uint32_t group_size_z) {
         if (group_size_x == 0 || group_size_y == 0 || group_size_z == 0) {
-            Logger::error("Compute group size cannot be zero!", "CommandBufferVk");
+            Logger::error("Compute group size cannot be zero!", "Command Buffer");
             return;
         }
 
@@ -127,10 +127,19 @@ namespace Pathfinder {
     void CommandBuffer::upload_to_texture(const std::shared_ptr<Texture> &texture,
                                           Rect<uint32_t> p_region,
                                           const void *data) {
+        auto whole_region = Rect<uint32_t>(0,
+                                           0,
+                                           texture->get_width(),
+                                           texture->get_height());
+
         // Invalid region represents the whole texture.
-        auto region = p_region.is_valid() ?
-                      p_region : Rect<uint32_t>(0, 0, texture->get_width(),
-                                                texture->get_height());
+        auto region = p_region.is_valid() ? p_region : whole_region;
+
+        // Check if the region is a subset of the whole texture region.
+        if (!region.union_rect(whole_region).is_valid()) {
+            Logger::error("Invalid texture region when uploading data to texture!", "Command Buffer");
+            return;
+        }
 
         Command cmd;
         cmd.type = CommandType::UploadToTexture;
@@ -151,12 +160,6 @@ namespace Pathfinder {
                                     uint32_t data_size,
                                     void *data) {
         switch (buffer->type) {
-            case BufferType::Vertex:
-            case BufferType::Index:
-            case BufferType::Uniform: {
-                Logger::error("It's not possible to read data from non-storage buffers!", "Command Buffer");
-            }
-                break;
             case BufferType::General: {
                 Command cmd;
                 cmd.type = CommandType::ReadBuffer;
@@ -168,6 +171,10 @@ namespace Pathfinder {
                 args.data = data;
 
                 commands.push(cmd);
+            }
+                break;
+            default: {
+                Logger::error("Impossible to read data from non-storage buffers!", "Command Buffer");
             }
                 break;
         }
