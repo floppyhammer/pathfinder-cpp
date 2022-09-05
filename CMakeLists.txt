@@ -20,10 +20,10 @@ if (VULKAN_SUPPORT)
     # look for a pre-existing binary of the package, while add_subdirectory isn't designed to
     # just swallow entire existing external CMake projects.
     # Cf. https://stackoverflow.com/questions/56795645/how-can-i-add-vulkan-to-a-cross-platform-cmake-project
-    find_package(Vulkan REQUIRED FATAL_ERROR)
+    find_package(Vulkan REQUIRED)
 
     # We need to include Vulkan headers manually because of the above reason.
-    include_directories("C:/VulkanSDK/1.3.204.0/Include")
+    include_directories(${Vulkan_INCLUDE_DIRS})
 else ()
     message("Will use OpenGL")
 endif ()
