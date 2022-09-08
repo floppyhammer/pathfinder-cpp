@@ -111,7 +111,7 @@ namespace Pathfinder {
         Vertex,
         Index,
         Uniform,
-        General,
+        Storage,
     };
 
     enum class StorageBufferUsage {

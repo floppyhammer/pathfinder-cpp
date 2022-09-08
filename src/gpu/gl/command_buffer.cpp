@@ -45,7 +45,7 @@ namespace Pathfinder {
             }
                 break;
 #ifdef PATHFINDER_USE_D3D11
-                case BufferType::General: {
+                case BufferType::Storage: {
                                 gl_buffer_type = GL_SHADER_STORAGE_BUFFER;
                             }
                                 break;
@@ -297,7 +297,7 @@ namespace Pathfinder {
                     auto &args = cmd.args.read_buffer;
 
                     // We can only read from general buffers.
-                    if (args.buffer->type != BufferType::General) {
+                    if (args.buffer->type != BufferType::Storage) {
                         Logger::error("Tried to read from a non-general buffer!", "Command Buffer");
                         break;
                     }

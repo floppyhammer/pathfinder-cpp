@@ -54,7 +54,7 @@ namespace Pathfinder {
         // Reallocate if capacity is not enough.
         if (points_capacity < needed_points_capacity) {
             // Old buffer will be dropped automatically.
-            points_buffer = driver->create_buffer(BufferType::General,
+            points_buffer = driver->create_buffer(BufferType::Storage,
                                                   needed_points_capacity * sizeof(Vec2<float>),
                                                   MemoryProperty::DEVICE_LOCAL);
 
@@ -64,7 +64,7 @@ namespace Pathfinder {
         // Reallocate if capacity is not enough.
         if (point_indices_capacity < needed_point_indices_capacity) {
             // Old buffer will be dropped automatically.
-            point_indices_buffer = driver->create_buffer(BufferType::General,
+            point_indices_buffer = driver->create_buffer(BufferType::Storage,
                                                          needed_point_indices_capacity * sizeof(SegmentIndicesD3D11),
                                                          MemoryProperty::DEVICE_LOCAL);
 
@@ -146,28 +146,54 @@ namespace Pathfinder {
         const auto sort_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/sort.comp" + postfix);
         const auto tile_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/tile.comp" + postfix);
 
-        // Bound pipeline.
-        {
-            bound_descriptor_set = std::make_shared<DescriptorSet>();
-
-            bound_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::UniformBuffer, ShaderType::Compute, 2, "bUniform", bound_ub, nullptr});
-        }
-
         // Dice pipeline.
         {
             dice_descriptor_set = std::make_shared<DescriptorSet>();
 
+            dice_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 0, "", nullptr, nullptr});
+            dice_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 1, "", nullptr, nullptr});
+            dice_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 2, "", nullptr, nullptr});
+            dice_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 3, "", nullptr, nullptr});
+            dice_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 4, "", nullptr, nullptr});
             dice_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::UniformBuffer, ShaderType::Compute, 5, "bUniform0", dice_ub0, nullptr});
             dice_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::UniformBuffer, ShaderType::Compute, 6, "bUniform1", dice_ub1, nullptr});
         }
 
+        // Bound pipeline.
+        {
+            bound_descriptor_set = std::make_shared<DescriptorSet>();
+
+            bound_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 0, "", nullptr, nullptr});
+            bound_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 1, "", nullptr, nullptr});
+            bound_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::UniformBuffer, ShaderType::Compute, 2, "bUniform", bound_ub, nullptr});
+        }
+
         // Bin pipeline.
         {
             bin_descriptor_set = std::make_shared<DescriptorSet>();
 
+            bin_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 0, "", nullptr, nullptr});
+            bin_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 1, "", nullptr, nullptr});
+            bin_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 2, "", nullptr, nullptr});
+            bin_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 3, "", nullptr, nullptr});
+            bin_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 4, "", nullptr, nullptr});
+            bin_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 5, "", nullptr, nullptr});
             bin_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::UniformBuffer, ShaderType::Compute, 6, "bUniform", bin_ub, nullptr});
         }
@@ -177,6 +203,28 @@ namespace Pathfinder {
             propagate_descriptor_set = std::make_shared<DescriptorSet>();
 
             propagate_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 0, "", nullptr, nullptr});
+            propagate_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 1, "", nullptr,
+                     nullptr}); // Clip metadata, read only.
+            propagate_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 2, "", nullptr,
+                     nullptr}); // Read only.
+            propagate_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 3, "", nullptr,
+                     nullptr}); // Read write.
+            propagate_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 4, "", nullptr,
+                     nullptr}); // Clip tiles, read write.
+            propagate_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 5, "", nullptr, nullptr});
+            propagate_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 6, "", nullptr,
+                     nullptr}); // Read write.
+            propagate_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 7, "", nullptr,
+                     nullptr}); // Write only.
+            propagate_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::UniformBuffer, ShaderType::Compute, 8, "bUniform", propagate_ub, nullptr});
         }
 
@@ -185,12 +233,28 @@ namespace Pathfinder {
             sort_descriptor_set = std::make_shared<DescriptorSet>();
 
             sort_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 0, "", nullptr, nullptr});
+            sort_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 1, "", nullptr, nullptr});
+            sort_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 2, "", nullptr, nullptr});
+            sort_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::UniformBuffer, ShaderType::Compute, 3, "bUniform", sort_ub, nullptr});
         }
 
         // Fill pipeline.
         {
             fill_descriptor_set = std::make_shared<DescriptorSet>();
+
+            fill_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 0, "", nullptr,
+                     nullptr}); // Read only.
+            fill_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 1, "", nullptr,
+                     nullptr}); // Read only.
+            fill_descriptor_set->add_or_update_descriptor(
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 2, "", nullptr,
+                     nullptr}); // Read only.
             fill_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::Image, ShaderType::Compute, 3, "uDest", nullptr, mask_texture});
             fill_descriptor_set->add_or_update_descriptor(
@@ -204,6 +268,19 @@ namespace Pathfinder {
             // Set descriptor set.
             {
                 tile_descriptor_set = std::make_shared<DescriptorSet>();
+
+                tile_descriptor_set->add_or_update_descriptor(
+                        {DescriptorType::StorageBuffer, ShaderType::Compute, 0, "", nullptr, nullptr});
+                tile_descriptor_set->add_or_update_descriptor(
+                        {DescriptorType::StorageBuffer, ShaderType::Compute, 1, "", nullptr, nullptr});
+                tile_descriptor_set->add_or_update_descriptor(
+                        {DescriptorType::Texture, ShaderType::Compute, 3, "uZBuffer", nullptr, nullptr});
+                tile_descriptor_set->add_or_update_descriptor(
+                        {DescriptorType::Texture, ShaderType::Compute, 4, "uColorTexture0", nullptr, nullptr});
+                tile_descriptor_set->add_or_update_descriptor(
+                        {DescriptorType::Texture, ShaderType::Compute, 6, "uGammaLUT", nullptr, nullptr});
+                tile_descriptor_set->add_or_update_descriptor(
+                        {DescriptorType::Image, ShaderType::Compute, 7, "", nullptr, nullptr});
 
                 {
                     Descriptor descriptor;
@@ -414,7 +491,7 @@ namespace Pathfinder {
         // SSBOs to 8 (#373).
         // Add FILL_INDIRECT_DRAW_PARAMS_SIZE in case tile size is zero.
         auto size = tile_size().area() + FILL_INDIRECT_DRAW_PARAMS_SIZE;
-        auto buffer_id = driver->create_buffer(BufferType::General, size * sizeof(int32_t),
+        auto buffer_id = driver->create_buffer(BufferType::Storage, size * sizeof(int32_t),
                                                MemoryProperty::DEVICE_LOCAL);
 
         return buffer_id;
@@ -422,14 +499,14 @@ namespace Pathfinder {
 
     std::shared_ptr<Buffer> RendererD3D11::allocate_first_tile_map() {
         auto size = tile_size().area();
-        auto buffer_id = driver->create_buffer(BufferType::General, size * sizeof(FirstTileD3D11),
+        auto buffer_id = driver->create_buffer(BufferType::Storage, size * sizeof(FirstTileD3D11),
                                                MemoryProperty::DEVICE_LOCAL);
 
         return buffer_id;
     }
 
     std::shared_ptr<Buffer> RendererD3D11::allocate_alpha_tile_info(uint32_t index_count) {
-        auto buffer_id = driver->create_buffer(BufferType::General, index_count * sizeof(AlphaTileD3D11),
+        auto buffer_id = driver->create_buffer(BufferType::Storage, index_count * sizeof(AlphaTileD3D11),
                                                MemoryProperty::DEVICE_LOCAL);
 
         return buffer_id;
@@ -439,7 +516,7 @@ namespace Pathfinder {
             std::vector<PropagateMetadataD3D11> &propagate_metadata,
             std::vector<BackdropInfoD3D11> &backdrops) {
         auto propagate_metadata_storage_id =
-                driver->create_buffer(BufferType::General,
+                driver->create_buffer(BufferType::Storage,
                                       propagate_metadata.size() * sizeof(PropagateMetadataD3D11),
                                       MemoryProperty::DEVICE_LOCAL);
 
@@ -450,7 +527,7 @@ namespace Pathfinder {
                                      propagate_metadata.data());
         cmd_buffer->submit(driver);
 
-        auto backdrops_storage_id = driver->create_buffer(BufferType::General,
+        auto backdrops_storage_id = driver->create_buffer(BufferType::Storage,
                                                           backdrops.size() * sizeof(BackdropInfoD3D11),
                                                           MemoryProperty::DEVICE_LOCAL);
 
@@ -469,7 +546,7 @@ namespace Pathfinder {
 
     void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
         // Upload tiles to GPU or allocate them as appropriate.
-        auto tiles_d3d11_buffer_id = driver->create_buffer(BufferType::General,
+        auto tiles_d3d11_buffer_id = driver->create_buffer(BufferType::Storage,
                                                            batch.tile_count * sizeof(TileD3D11),
                                                            MemoryProperty::DEVICE_LOCAL);
 
@@ -577,13 +654,13 @@ namespace Pathfinder {
             PathSource path_source,
             Transform2 transform) {
         // Allocate some general buffers.
-        auto microlines_buffer_id = driver->create_buffer(BufferType::General,
+        auto microlines_buffer_id = driver->create_buffer(BufferType::Storage,
                                                           allocated_microline_count * sizeof(MicrolineD3D11),
                                                           MemoryProperty::DEVICE_LOCAL);
-        auto dice_metadata_buffer_id = driver->create_buffer(BufferType::General,
+        auto dice_metadata_buffer_id = driver->create_buffer(BufferType::Storage,
                                                              dice_metadata.size() * sizeof(DiceMetadataD3D11),
                                                              MemoryProperty::DEVICE_LOCAL);
-        auto indirect_draw_params_buffer_id = driver->create_buffer(BufferType::General,
+        auto indirect_draw_params_buffer_id = driver->create_buffer(BufferType::Storage,
                                                                     8 * sizeof(uint32_t),
                                                                     MemoryProperty::DEVICE_LOCAL);
 
@@ -693,7 +770,7 @@ namespace Pathfinder {
         auto cmd_buffer = driver->create_command_buffer(true);
 
         // This is a staging buffer, which will be freed in the end of this function.
-        auto path_info_buffer_id = driver->create_buffer(BufferType::General,
+        auto path_info_buffer_id = driver->create_buffer(BufferType::Storage,
                                                          tile_path_info.size() * sizeof(TilePathInfoD3D11),
                                                          MemoryProperty::DEVICE_LOCAL);
         cmd_buffer->upload_to_buffer(path_info_buffer_id,
@@ -743,7 +820,7 @@ namespace Pathfinder {
         auto cmd_buffer = driver->create_command_buffer(true);
 
         // What will be the output of this function.
-        auto fill_vertex_buffer_id = driver->create_buffer(BufferType::General,
+        auto fill_vertex_buffer_id = driver->create_buffer(BufferType::Storage,
                                                            allocated_fill_count * sizeof(Fill),
                                                            MemoryProperty::DEVICE_LOCAL);
 

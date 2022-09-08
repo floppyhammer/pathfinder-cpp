@@ -13,13 +13,30 @@ namespace Pathfinder {
 
         if (!descriptor_set_allocated) {
             std::vector<VkDescriptorPoolSize> poolSizes{};
+
             for (auto &d: descriptors) {
                 VkDescriptorPoolSize pool_size{};
 
-                if (d.second.type == DescriptorType::UniformBuffer) {
-                    pool_size.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                } else {
-                    pool_size.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                switch (d.second.type) {
+                    case DescriptorType::UniformBuffer: {
+                        pool_size.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                    }
+                        break;
+                    case DescriptorType::Texture: {
+                        pool_size.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    }
+                        break;
+                    case DescriptorType::StorageBuffer: {
+                        pool_size.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                    }
+                        break;
+                    case DescriptorType::Image: {
+                        pool_size.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                    }
+                        break;
+                    case DescriptorType::Max: {
+                        abort();
+                    }
                 }
 
                 pool_size.descriptorCount = 1;
@@ -86,6 +103,24 @@ namespace Pathfinder {
                 imageInfo.sampler = texture_vk->get_sampler();
 
                 descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                descriptor_write.pImageInfo = &imageInfo;
+            } else if (descriptor.type == DescriptorType::StorageBuffer) {
+                auto buffer_vk = static_cast<BufferVk *>(descriptor.buffer.get());
+
+                bufferInfo.buffer = buffer_vk->get_vk_buffer();
+                bufferInfo.offset = 0;
+                bufferInfo.range = buffer_vk->size;
+
+                descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                descriptor_write.pBufferInfo = &bufferInfo;
+            } else if (descriptor.type == DescriptorType::Image) {
+                auto texture_vk = static_cast<TextureVk *>(descriptor.texture.get());
+
+                imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+                imageInfo.imageView = texture_vk->get_image_view();
+                imageInfo.sampler = texture_vk->get_sampler();
+
+                descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
                 descriptor_write.pImageInfo = &imageInfo;
             } else {
                 abort();

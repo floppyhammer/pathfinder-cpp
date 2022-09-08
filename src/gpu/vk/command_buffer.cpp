@@ -203,7 +203,6 @@ namespace Pathfinder {
                 }
                     break;
                 case CommandType::BeginComputePass: {
-                    compute_pipeline = nullptr;
                 }
                     break;
                 case CommandType::BindComputePipeline: {

@@ -160,7 +160,7 @@ namespace Pathfinder {
                                     uint32_t data_size,
                                     void *data) {
         switch (buffer->type) {
-            case BufferType::General: {
+            case BufferType::Storage: {
                 Command cmd;
                 cmd.type = CommandType::ReadBuffer;
 

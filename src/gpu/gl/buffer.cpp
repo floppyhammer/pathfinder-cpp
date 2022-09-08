@@ -26,7 +26,7 @@ namespace Pathfinder {
                 glBindBuffer(GL_ARRAY_BUFFER, 0); // Unbind.
             }
                 break;
-            case BufferType::General: {
+            case BufferType::Storage: {
 #ifdef PATHFINDER_USE_D3D11
                 if (size < MAX_BUFFER_SIZE_CLASS) {
                     size = upper_power_of_two(size);
