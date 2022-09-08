@@ -6,10 +6,10 @@
 #include "render_pass.h"
 #include "framebuffer.h"
 #include "render_pipeline.h"
+#include "compute_pipeline.h"
 #include "descriptor_set.h"
-#include "../../common/logger.h"
 #include "../command_buffer.h"
-
+#include "../../common/logger.h"
 
 #include <cassert>
 #include <functional>
@@ -149,20 +149,41 @@ namespace Pathfinder {
                 case CommandType::BindDescriptorSet: {
                     auto &args = cmd.args.bind_descriptor_set;
                     auto descriptor_set_vk = static_cast<DescriptorSetVk *>(args.descriptor_set);
-                    auto render_pipeline_vk = static_cast<RenderPipelineVk *>(render_pipeline);
 
-                    descriptor_set_vk->update_vk_descriptor_set(driver->get_device(),
-                                                                render_pipeline_vk->get_descriptor_set_layout());
+                    if (render_pipeline) {
+                        auto render_pipeline_vk = static_cast<RenderPipelineVk *>(render_pipeline);
 
-                    // Bind uniform buffers and samplers.
-                    vkCmdBindDescriptorSets(vk_command_buffer,
-                                            VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                            render_pipeline_vk->get_layout(),
-                                            0,
-                                            1,
-                                            &descriptor_set_vk->get_vk_descriptor_set(),
-                                            0,
-                                            nullptr);
+                        descriptor_set_vk->update_vk_descriptor_set(driver->get_device(),
+                                                                    render_pipeline_vk->get_descriptor_set_layout());
+
+                        // Bind uniform buffers and samplers.
+                        vkCmdBindDescriptorSets(vk_command_buffer,
+                                                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                                render_pipeline_vk->get_layout(),
+                                                0,
+                                                1,
+                                                &descriptor_set_vk->get_vk_descriptor_set(),
+                                                0,
+                                                nullptr);
+                    } else if (compute_pipeline) {
+                        auto compute_pipeline_vk = static_cast<ComputePipelineVk *>(compute_pipeline);
+
+                        descriptor_set_vk->update_vk_descriptor_set(driver->get_device(),
+                                                                    compute_pipeline_vk->get_descriptor_set_layout());
+
+                        // Bind uniform buffers and samplers.
+                        vkCmdBindDescriptorSets(vk_command_buffer,
+                                                VK_PIPELINE_BIND_POINT_COMPUTE,
+                                                compute_pipeline_vk->get_layout(),
+                                                0,
+                                                1,
+                                                &descriptor_set_vk->get_vk_descriptor_set(),
+                                                0,
+                                                nullptr);
+                    } else {
+                        Logger::error("No valid pipeline bound when binding descriptor set!", "Command Buffer");
+                        abort();
+                    }
                 }
                     break;
                 case CommandType::Draw: {
@@ -182,14 +203,26 @@ namespace Pathfinder {
                 }
                     break;
                 case CommandType::BeginComputePass: {
+                    compute_pipeline = nullptr;
                 }
                     break;
                 case CommandType::BindComputePipeline: {
                     auto &args = cmd.args.bind_compute_pipeline;
+
+                    auto pipeline_vk = static_cast<ComputePipelineVk *>(args.pipeline);
+
+                    compute_pipeline = pipeline_vk;
+
+                    vkCmdBindPipeline(vk_command_buffer,
+                                      VK_PIPELINE_BIND_POINT_COMPUTE,
+                                      pipeline_vk->get_pipeline());
                 }
                     break;
                 case CommandType::Dispatch: {
                     auto &args = cmd.args.dispatch;
+
+                    // Dispatch compute job.
+                    vkCmdDispatch(vk_command_buffer, args.group_size_x, args.group_size_y, args.group_size_z);
                 }
                     break;
                 case CommandType::EndComputePass: {

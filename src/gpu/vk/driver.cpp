@@ -6,6 +6,7 @@
 #include "render_pass.h"
 #include "command_buffer.h"
 #include "render_pipeline.h"
+#include "compute_pipeline.h"
 #include "descriptor_set.h"
 #include "swap_chain.h"
 #include "data.h"
@@ -247,9 +248,87 @@ namespace Pathfinder {
         return render_pipeline_vk;
     }
 
-    std::shared_ptr<ComputePipeline> DriverVk::create_compute_pipeline(const std::vector<char> &comp_shader_code,
+    std::shared_ptr<ComputePipeline> DriverVk::create_compute_pipeline(const std::vector<char> &comp_source,
                                                                        const std::shared_ptr<DescriptorSet> &descriptor_set) {
-        return std::make_shared<ComputePipeline>();
+        auto compute_pipeline_vk = std::make_shared<ComputePipelineVk>(device);
+
+        // Create descriptor set layout.
+        {
+            std::vector<VkDescriptorSetLayoutBinding> bindings;
+
+            for (auto &pair: descriptor_set->get_descriptors()) {
+                auto &d = pair.second;
+
+                VkDescriptorSetLayoutBinding binding;
+                binding.binding = d.binding;
+                binding.descriptorCount = 1;
+                binding.descriptorType = to_vk_descriptor_type(d.type);
+                binding.pImmutableSamplers = nullptr;
+                binding.stageFlags = to_vk_shader_stage(d.stage);
+
+                bindings.push_back(binding);
+            }
+
+            VkDescriptorSetLayoutCreateInfo layoutInfo{};
+            layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            layoutInfo.bindingCount = bindings.size();
+            layoutInfo.pBindings = bindings.data();
+
+            if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr,
+                                            &compute_pipeline_vk->descriptor_set_layout) != VK_SUCCESS) {
+                throw std::runtime_error("Failed to create descriptor set layout!");
+            }
+        }
+
+        // Create pipeline layout.
+        {
+            VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+            pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+            pipelineLayoutInfo.setLayoutCount = 1;
+            pipelineLayoutInfo.pSetLayouts = &compute_pipeline_vk->descriptor_set_layout;
+            pipelineLayoutInfo.pushConstantRangeCount = 0;
+
+            // Create pipeline layout.
+            if (vkCreatePipelineLayout(device,
+                                       &pipelineLayoutInfo,
+                                       nullptr,
+                                       &compute_pipeline_vk->layout) != VK_SUCCESS) {
+                throw std::runtime_error("Failed to create compute pipeline layout!");
+            }
+        }
+
+        VkShaderModule compShaderModule = createShaderModule(comp_source);
+
+        // Specify shader stages.
+        VkPipelineShaderStageCreateInfo compShaderStageInfo{};
+        compShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        compShaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+        compShaderStageInfo.module = compShaderModule;
+        compShaderStageInfo.pName = "main";
+
+        VkComputePipelineCreateInfo pipeline_create_info = {};
+        pipeline_create_info.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+        pipeline_create_info.pNext = nullptr;
+        pipeline_create_info.flags = 0;
+        pipeline_create_info.stage = compShaderStageInfo;
+        pipeline_create_info.layout = compute_pipeline_vk->layout;
+        pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
+        pipeline_create_info.basePipelineIndex = 0;
+
+        // Create pipeline.
+        if (vkCreateComputePipelines(device,
+                                     VK_NULL_HANDLE,
+                                     1,
+                                     &pipeline_create_info,
+                                     nullptr,
+                                     &compute_pipeline_vk->vk_pipeline) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to create compute pipeline!");
+        }
+
+        // Clean up shader module.
+        vkDestroyShaderModule(device, compShaderModule, nullptr);
+
+        return compute_pipeline_vk;
     }
 
     std::shared_ptr<RenderPass> DriverVk::create_render_pass(TextureFormat format,

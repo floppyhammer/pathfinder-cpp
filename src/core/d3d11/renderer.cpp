@@ -133,13 +133,18 @@ namespace Pathfinder {
     }
 
     void RendererD3D11::set_up_pipelines() {
-        const auto dice_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/dice.comp");
-        const auto bound_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/bound.comp");
-        const auto bin_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/bin.comp");
-        const auto propagate_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/propagate.comp");
-        const auto fill_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/fill.comp");
-        const auto sort_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/sort.comp");
-        const auto tile_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/tile.comp");
+        std::string postfix;
+#ifdef PATHFINDER_USE_VULKAN
+        postfix = ".spv";
+#endif
+
+        const auto dice_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/dice.comp" + postfix);
+        const auto bound_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/bound.comp" + postfix);
+        const auto bin_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/bin.comp" + postfix);
+        const auto propagate_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/propagate.comp" + postfix);
+        const auto fill_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/fill.comp" + postfix);
+        const auto sort_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/sort.comp" + postfix);
+        const auto tile_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/tile.comp" + postfix);
 
         // Bound pipeline.
         {

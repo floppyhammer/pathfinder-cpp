@@ -47,6 +47,17 @@ namespace Pathfinder {
         return bytes;
     }
 
+    std::vector<char> load_file_as_bytes(const std::string &file_path) {
+        std::ifstream input(file_path, std::ios::binary);
+
+        std::vector<char> bytes((std::istreambuf_iterator<char>(input)),
+                                (std::istreambuf_iterator<char>()));
+
+        input.close();
+
+        return bytes;
+    }
+
     std::shared_ptr<ImageData> ImageData::from_memory(const std::vector<char> &bytes, bool flip_y) {
         stbi_set_flip_vertically_on_load(flip_y);
 

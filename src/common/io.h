@@ -11,6 +11,8 @@ namespace Pathfinder {
 
     std::vector<char> load_file_as_bytes(const char *file_path);
 
+    std::vector<char> load_file_as_bytes(const std::string &file_path);
+
     struct ImageData {
         ~ImageData();
 
