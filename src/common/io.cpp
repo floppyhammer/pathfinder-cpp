@@ -9,7 +9,7 @@
 #include <stdexcept>
 
 namespace Pathfinder {
-    std::string load_file_as_string(const char *file_path) {
+    std::string load_file_as_string(const std::string &file_path) {
         std::string output;
         std::ifstream file;
 
@@ -34,17 +34,6 @@ namespace Pathfinder {
         }
 
         return output;
-    }
-
-    std::vector<char> load_file_as_bytes(const char *file_path) {
-        std::ifstream input(file_path, std::ios::binary);
-
-        std::vector<char> bytes((std::istreambuf_iterator<char>(input)),
-                                (std::istreambuf_iterator<char>()));
-
-        input.close();
-
-        return bytes;
     }
 
     std::vector<char> load_file_as_bytes(const std::string &file_path) {

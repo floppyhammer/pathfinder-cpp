@@ -76,15 +76,15 @@ namespace Pathfinder {
     }
 
     void RendererD3D9::set_up_pipelines() {
+        std::string postfix;
+#ifdef PATHFINDER_USE_VULKAN
+        postfix = ".spv";
+#endif
+
         // Fill pipeline.
         {
-#ifdef PATHFINDER_USE_VULKAN
-            const auto fill_vert_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/fill_vert.spv");
-            const auto fill_frag_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/fill_frag.spv");
-#else
-            const auto fill_vert_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/fill.vert");
-            const auto fill_frag_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/fill.frag");
-#endif
+            const auto fill_vert_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/fill.vert" + postfix);
+            const auto fill_frag_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/fill.frag" + postfix);
 
             // Set vertex attributes.
             std::vector<VertexInputAttributeDescription> attribute_descriptions;
@@ -150,13 +150,8 @@ namespace Pathfinder {
 
         // Tile pipeline.
         {
-#ifdef PATHFINDER_USE_VULKAN
-            const auto tile_vert_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/tile_vert.spv");
-            const auto tile_frag_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/tile_frag.spv");
-#else
-            const auto tile_vert_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/tile.vert");
-            const auto tile_frag_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/tile.frag");
-#endif
+            const auto tile_vert_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/tile.vert" + postfix);
+            const auto tile_frag_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/tile.frag" + postfix);
 
             // Set vertex attributes.
             std::vector<VertexInputAttributeDescription> attribute_descriptions;

@@ -1,12 +1,12 @@
 New-Variable -Name "GLSLC" -Visibility Public -Value "C:/VulkanSDK/1.3.224.1/Bin/glslc.exe"
 
-& $GLSLC blit.vert -o blit_vert.spv
-& $GLSLC blit.frag -o blit_frag.spv
+& $GLSLC blit.vert -o blit.vert.spv
+& $GLSLC blit.frag -o blit.frag.spv
 
-& $GLSLC d3d9/fill.vert -o d3d9/fill_vert.spv
-& $GLSLC d3d9/fill.frag -o d3d9/fill_frag.spv
-& $GLSLC d3d9/tile.vert -o d3d9/tile_vert.spv
-& $GLSLC d3d9/tile.frag -o d3d9/tile_frag.spv
+& $GLSLC d3d9/fill.vert -o d3d9/fill.vert.spv
+& $GLSLC d3d9/fill.frag -o d3d9/fill.frag.spv
+& $GLSLC d3d9/tile.vert -o d3d9/tile.vert.spv
+& $GLSLC d3d9/tile.frag -o d3d9/tile.frag.spv
 
 & $GLSLC d3d11/bin.comp -o d3d11/bin.comp.spv
 & $GLSLC d3d11/bound.comp -o d3d11/bound.comp.spv
