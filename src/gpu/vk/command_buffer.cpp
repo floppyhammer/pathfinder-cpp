@@ -284,7 +284,33 @@ namespace Pathfinder {
                     break;
                 case CommandType::ReadBuffer: {
                     auto &args = cmd.args.read_buffer;
+                    auto buffer_vk = static_cast<BufferVk *>(args.buffer);
 
+                    // Create a host visible buffer and copy data to it by memory mapping.
+                    // ---------------------------------
+                    VkBuffer staging_buffer;
+                    VkDeviceMemory staging_buffer_memory;
+
+                    driver->createVkBuffer(args.data_size,
+                                           VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                                           VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                           staging_buffer,
+                                           staging_buffer_memory);
+                    // ---------------------------------
+
+                    driver->copyVkBuffer(vk_command_buffer, buffer_vk->get_vk_buffer(), staging_buffer, args.data_size);
+
+                    // Callback to clean up staging resources.
+                    auto callback = [driver, staging_buffer, staging_buffer_memory, args] {
+                        // Wait for the data transfer to complete before memory mapping.
+                        driver->copyDataFromMemory(args.data,
+                                                   staging_buffer_memory,
+                                                   args.data_size);
+
+                        vkDestroyBuffer(driver->get_device(), staging_buffer, nullptr);
+                        vkFreeMemory(driver->get_device(), staging_buffer_memory, nullptr);
+                    };
+                    add_callback(callback);
                 }
                     break;
                 case CommandType::UploadToTexture: {

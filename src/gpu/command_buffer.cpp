@@ -174,7 +174,7 @@ namespace Pathfinder {
             }
                 break;
             default: {
-                Logger::error("Impossible to read data from non-storage buffers!", "Command Buffer");
+                Logger::error("Cannot read data from non-storage buffers!", "Command Buffer");
             }
                 break;
         }

@@ -62,6 +62,8 @@ namespace Pathfinder {
 
         void copyDataToMemory(const void *src, VkDeviceMemory bufferMemory, size_t dataSize) const;
 
+        void copyDataFromMemory(void *dst, VkDeviceMemory buffer_memory, size_t data_size) const;
+
         void transitionImageLayout(VkCommandBuffer commandBuffer,
                                    VkImage image,
                                    VkFormat format,

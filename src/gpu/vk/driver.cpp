@@ -375,7 +375,7 @@ namespace Pathfinder {
                 break;
             case BufferType::Storage: {
                 createVkBuffer(size,
-                               VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+                               VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
                                vk_memory_property,
                                buffer_vk->vk_buffer,
                                buffer_vk->vk_device_memory);
@@ -817,6 +817,13 @@ namespace Pathfinder {
         vkMapMemory(device, bufferMemory, 0, dataSize, 0, &data);
         memcpy(data, src, dataSize);
         vkUnmapMemory(device, bufferMemory);
+    }
+
+    void DriverVk::copyDataFromMemory(void *dst, VkDeviceMemory buffer_memory, size_t data_size) const {
+        void *data;
+        vkMapMemory(device, buffer_memory, 0, data_size, 0, &data);
+        memcpy(dst, data, data_size);
+        vkUnmapMemory(device, buffer_memory);
     }
 }
 
