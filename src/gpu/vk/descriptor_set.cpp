@@ -11,11 +11,14 @@ namespace Pathfinder {
     void DescriptorSetVk::update_vk_descriptor_set(VkDevice p_device, VkDescriptorSetLayout descriptor_set_layout) {
         device = p_device;
 
+        // Create descriptor pool and allocate descriptor sets.
         if (!descriptor_set_allocated) {
+            // Get pool sizes.
             std::vector<VkDescriptorPoolSize> poolSizes{};
 
             for (auto &d: descriptors) {
                 VkDescriptorPoolSize pool_size{};
+                pool_size.descriptorCount = 1;
 
                 switch (d.second.type) {
                     case DescriptorType::UniformBuffer: {
@@ -39,28 +42,26 @@ namespace Pathfinder {
                     }
                 }
 
-                pool_size.descriptorCount = 1;
-
                 poolSizes.push_back(pool_size);
             }
 
-            VkDescriptorPoolCreateInfo poolInfo{};
-            poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-            poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-            poolInfo.pPoolSizes = poolSizes.data();
-            poolInfo.maxSets = 1;
+            VkDescriptorPoolCreateInfo pool_info{};
+            pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+            pool_info.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+            pool_info.pPoolSizes = poolSizes.data();
+            pool_info.maxSets = 1;
 
-            if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptor_pool) != VK_SUCCESS) {
+            if (vkCreateDescriptorPool(device, &pool_info, nullptr, &descriptor_pool) != VK_SUCCESS) {
                 throw std::runtime_error("Failed to create descriptor pool!");
             }
 
-            VkDescriptorSetAllocateInfo allocInfo{};
-            allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-            allocInfo.descriptorPool = descriptor_pool;
-            allocInfo.descriptorSetCount = 1;
-            allocInfo.pSetLayouts = &descriptor_set_layout;
+            VkDescriptorSetAllocateInfo alloc_info{};
+            alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+            alloc_info.descriptorPool = descriptor_pool;
+            alloc_info.descriptorSetCount = 1;
+            alloc_info.pSetLayouts = &descriptor_set_layout;
 
-            if (vkAllocateDescriptorSets(device, &allocInfo, &descriptor_set) != VK_SUCCESS) {
+            if (vkAllocateDescriptorSets(device, &alloc_info, &descriptor_set) != VK_SUCCESS) {
                 throw std::runtime_error("Failed to allocate descriptor sets!");
             }
 

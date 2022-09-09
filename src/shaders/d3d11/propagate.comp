@@ -21,7 +21,7 @@ layout(local_size_x = 64) in;
 
 #define TILE_CTRL_MASK_0_SHIFT                  0
 
-layout (std140, binding = 8) uniform bUniform {
+layout(std140, binding = 8) uniform bUniform {
     ivec2 uFramebufferTileSize;
     int uColumnCount;
     int uFirstAlphaTileIndex;

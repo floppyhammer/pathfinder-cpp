@@ -148,7 +148,7 @@ namespace Pathfinder {
 
         // Dice pipeline.
         {
-            dice_descriptor_set = std::make_shared<DescriptorSet>();
+            dice_descriptor_set = driver->create_descriptor_set();
 
             dice_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::StorageBuffer, ShaderType::Compute, 0, "", nullptr, nullptr});
@@ -168,7 +168,7 @@ namespace Pathfinder {
 
         // Bound pipeline.
         {
-            bound_descriptor_set = std::make_shared<DescriptorSet>();
+            bound_descriptor_set = driver->create_descriptor_set();
 
             bound_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::StorageBuffer, ShaderType::Compute, 0, "", nullptr, nullptr});
@@ -180,7 +180,7 @@ namespace Pathfinder {
 
         // Bin pipeline.
         {
-            bin_descriptor_set = std::make_shared<DescriptorSet>();
+            bin_descriptor_set = driver->create_descriptor_set();
 
             bin_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::StorageBuffer, ShaderType::Compute, 0, "", nullptr, nullptr});
@@ -200,37 +200,37 @@ namespace Pathfinder {
 
         // Propagate pipeline.
         {
-            propagate_descriptor_set = std::make_shared<DescriptorSet>();
+            propagate_descriptor_set = driver->create_descriptor_set();
 
             propagate_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::StorageBuffer, ShaderType::Compute, 0, "", nullptr, nullptr});
             propagate_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::StorageBuffer, ShaderType::Compute, 1, "", nullptr,
-                     nullptr}); // Clip metadata, read only.
+                     nullptr});
             propagate_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::StorageBuffer, ShaderType::Compute, 2, "", nullptr,
-                     nullptr}); // Read only.
+                     nullptr});
             propagate_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::StorageBuffer, ShaderType::Compute, 3, "", nullptr,
-                     nullptr}); // Read write.
+                     nullptr});
             propagate_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::StorageBuffer, ShaderType::Compute, 4, "", nullptr,
-                     nullptr}); // Clip tiles, read write.
+                     nullptr});
             propagate_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::StorageBuffer, ShaderType::Compute, 5, "", nullptr, nullptr});
             propagate_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::StorageBuffer, ShaderType::Compute, 6, "", nullptr,
-                     nullptr}); // Read write.
+                     nullptr});
             propagate_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::StorageBuffer, ShaderType::Compute, 7, "", nullptr,
-                     nullptr}); // Write only.
+                     nullptr});
             propagate_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::UniformBuffer, ShaderType::Compute, 8, "bUniform", propagate_ub, nullptr});
         }
 
         // Sort pipeline.
         {
-            sort_descriptor_set = std::make_shared<DescriptorSet>();
+            sort_descriptor_set = driver->create_descriptor_set();
 
             sort_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::StorageBuffer, ShaderType::Compute, 0, "", nullptr, nullptr});
@@ -244,7 +244,7 @@ namespace Pathfinder {
 
         // Fill pipeline.
         {
-            fill_descriptor_set = std::make_shared<DescriptorSet>();
+            fill_descriptor_set = driver->create_descriptor_set();
 
             fill_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::StorageBuffer, ShaderType::Compute, 0, "", nullptr,
@@ -267,7 +267,7 @@ namespace Pathfinder {
         {
             // Set descriptor set.
             {
-                tile_descriptor_set = std::make_shared<DescriptorSet>();
+                tile_descriptor_set = driver->create_descriptor_set();
 
                 tile_descriptor_set->add_or_update_descriptor(
                         {DescriptorType::StorageBuffer, ShaderType::Compute, 0, "", nullptr, nullptr});
@@ -339,6 +339,7 @@ namespace Pathfinder {
             }
         }
 
+        // These pipelines will be called by order.
         dice_pipeline = driver->create_compute_pipeline(dice_source, dice_descriptor_set); // 1
         bound_pipeline = driver->create_compute_pipeline(bound_source, bound_descriptor_set); // 2
         bin_pipeline = driver->create_compute_pipeline(bin_source, bin_descriptor_set); // 3
