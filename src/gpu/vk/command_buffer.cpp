@@ -339,7 +339,6 @@ namespace Pathfinder {
                     // Transition the texture image to VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
                     driver->transitionImageLayout(vk_command_buffer,
                                                   texture_vk->get_image(),
-                                                  to_vk_texture_format(texture_vk->get_format()),
                                                   VK_IMAGE_LAYOUT_UNDEFINED,
                                                   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
@@ -383,7 +382,6 @@ namespace Pathfinder {
                     // To be able to start sampling from the texture image in the shader, we need one last transition to prepare it for shader access.
                     driver->transitionImageLayout(vk_command_buffer,
                                                   texture_vk->get_image(),
-                                                  to_vk_texture_format(texture_vk->get_format()),
                                                   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                                   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 

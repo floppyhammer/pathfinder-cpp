@@ -16,8 +16,11 @@ namespace Pathfinder {
         friend class SwapChainVk;
 
     public:
-        DriverVk(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue graphicsQueue, VkQueue presentQueue,
-                 VkCommandPool commandPool);
+        DriverVk(VkDevice device,
+                 VkPhysicalDevice physical_device,
+                 VkQueue graphics_queue,
+                 VkQueue present_queue,
+                 VkCommandPool command_pool);
 
         std::shared_ptr<RenderPass>
         create_render_pass(TextureFormat format, AttachmentLoadOp load_op, ImageLayout final_layout) override;
@@ -37,7 +40,7 @@ namespace Pathfinder {
 
         std::shared_ptr<RenderPipeline> create_render_pipeline(const std::vector<char> &vert_source,
                                                                const std::vector<char> &frag_source,
-                                                               const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
+                                                               const std::vector<VertexInputAttributeDescription> &p_attribute_descriptions,
                                                                ColorBlendState blend_state,
                                                                const std::shared_ptr<DescriptorSet> &descriptor_set,
                                                                const std::shared_ptr<RenderPass> &render_pass) override;
@@ -54,24 +57,27 @@ namespace Pathfinder {
 
         VkCommandPool get_command_pool() const;
 
-        uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
+        uint32_t findMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties) const;
 
-        void createVkBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
-                            VkMemoryPropertyFlags properties, VkBuffer &buffer,
-                            VkDeviceMemory &bufferMemory);
+        void createVkBuffer(VkDeviceSize size,
+                            VkBufferUsageFlags usage,
+                            VkMemoryPropertyFlags properties,
+                            VkBuffer &buffer,
+                            VkDeviceMemory &buffer_memory);
 
-        void copyDataToMemory(const void *src, VkDeviceMemory bufferMemory, size_t dataSize) const;
+        void copyDataToMemory(const void *src, VkDeviceMemory buffer_memory, size_t data_size) const;
 
         void copyDataFromMemory(void *dst, VkDeviceMemory buffer_memory, size_t data_size) const;
 
-        void transitionImageLayout(VkCommandBuffer commandBuffer,
+        void transitionImageLayout(VkCommandBuffer command_buffer,
                                    VkImage image,
-                                   VkFormat format,
-                                   VkImageLayout oldLayout,
-                                   VkImageLayout newLayout) const;
+                                   VkImageLayout old_layout,
+                                   VkImageLayout new_layout) const;
 
-        void
-        copyVkBuffer(VkCommandBuffer commandBuffer, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) const;
+        void copyVkBuffer(VkCommandBuffer command_buffer,
+                          VkBuffer src_buffer,
+                          VkBuffer dst_buffer,
+                          VkDeviceSize size) const;
 
     private:
         /// The graphics card that we'll end up selecting will be stored in a VkPhysicalDevice handle.
@@ -79,29 +85,31 @@ namespace Pathfinder {
 
         VkDevice device{};
 
-        VkQueue graphicsQueue, presentQueue;
+        VkQueue graphicsQueue{};
 
-        VkCommandPool commandPool;
+        VkQueue presentQueue{};
 
-        VkShaderModule createShaderModule(const std::vector<char> &code);
+        VkCommandPool commandPool{};
+
+        VkShaderModule create_shader_module(const std::vector<char> &code);
 
         void createVkImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
                            VkImageUsageFlags usage, VkMemoryPropertyFlags properties,
-                           VkImage &image, VkDeviceMemory &imageMemory) const;
+                           VkImage &image, VkDeviceMemory &image_memory) const;
 
-        VkImageView createVkImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags) const;
+        VkImageView createVkImageView(VkImage image, VkFormat format, VkImageAspectFlags aspect_flags) const;
 
         VkSampler createVkSampler() const;
 
-        void createVkRenderPass(VkFormat format, VkRenderPass &renderPass);
+        void createVkRenderPass(VkFormat format, VkRenderPass &render_pass);
 
-        VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates,
-                                     VkImageTiling tiling,
-                                     VkFormatFeatureFlags features) const;
+        VkFormat find_supported_format(const std::vector<VkFormat> &candidates,
+                                       VkImageTiling tiling,
+                                       VkFormatFeatureFlags features) const;
 
-        VkFormat findDepthFormat() const;
+        VkFormat find_depth_format() const;
 
-        void copyBufferToImage(VkCommandBuffer commandBuffer,
+        void copyBufferToImage(VkCommandBuffer command_buffer,
                                VkBuffer buffer,
                                VkImage image,
                                uint32_t width,
