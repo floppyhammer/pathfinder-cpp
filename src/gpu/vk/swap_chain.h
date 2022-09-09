@@ -21,7 +21,7 @@ namespace Pathfinder {
 
         std::shared_ptr<RenderPass> get_render_pass() override;
 
-        inline std::shared_ptr<Framebuffer> get_framebuffer() override;
+        std::shared_ptr<Framebuffer> get_framebuffer() override;
 
         std::shared_ptr<CommandBuffer> get_command_buffer() override;
 
@@ -34,43 +34,43 @@ namespace Pathfinder {
         PlatformVk *platform;
         DriverVk *driver;
 
-        void initSwapChain();
+        void init_swapchain();
 
-        VkSwapchainKHR swapChain;
+        VkSwapchainKHR swapchain;
 
         /// Swap chain images are allocated differently than normal images.
         /// Number of images doesn't necessarily equal to MAX_FRAMES_IN_FLIGHT (One is expected, the other is what we actually get considering device capacity).
-        std::vector<VkImage> swapChainImages;
+        std::vector<VkImage> swapchain_images;
 
         /// VkImageView defines which part of VkImage to use.
-        std::vector<VkImageView> swapChainImageViews;
+        std::vector<VkImageView> swapchain_image_views;
 
         /// Store the format and extent we've chosen for the swap chain images.
-        VkFormat swapChainImageFormat; // Default is VK_FORMAT_B8G8R8A8_SRGB.
-        VkExtent2D swapChainExtent;
+        VkFormat swapchain_image_format; // Default is VK_FORMAT_B8G8R8A8_SRGB.
+        VkExtent2D swapchain_extent;
 
-        std::vector<VkCommandBuffer> commandBuffers;
+        std::vector<VkCommandBuffer> command_buffers;
 
         /// Each frame should have its own set of semaphores, so a list is used.
-        std::vector<VkSemaphore> imageAvailableSemaphores;
-        std::vector<VkSemaphore> renderFinishedSemaphores;
+        std::vector<VkSemaphore> image_available_semaphores;
+        std::vector<VkSemaphore> render_finished_semaphores;
 
         /// To perform CPU-GPU synchronization using fences.
-        std::vector<VkFence> inFlightFences;
-        std::vector<VkFence> imagesInFlight;
+        std::vector<VkFence> in_flight_fences;
+        std::vector<VkFence> images_in_flight;
 
         /// To use the right pair of semaphores every time,
         /// we need to keep track of the current frame.
-        size_t currentFrame = 0;
+        size_t current_frame = 0;
 
-        uint32_t currentImage = 0;
+        uint32_t current_image = 0;
 
-        void recreateSwapChain();
+        void recreate_swapchain();
 
         /**
          * What have been created in createSwapChainRelatedResources() have to be destroyed in here.
          */
-        void cleanupSwapChain();
+        void cleanup_swapchain();
 
         /**
          * Vulkan does not use the idea of a "back buffer". So, we need a place to render into
@@ -80,9 +80,9 @@ namespace Pathfinder {
          * form a sequence of images that can be drawn into and then given to
          * the Surface to be presented to the user for viewing.
          */
-        void createSwapChain();
+        void create_swapchain();
 
-        void createImageViews();
+        void create_image_views();
 
         /**
          * We need to tell Vulkan about the framebuffer attachments that
@@ -95,23 +95,23 @@ namespace Pathfinder {
          * we can bind framebuffers with any size to it.
          * @dependency Swap chain image format.
          */
-        void createRenderPass();
+        void create_render_pass();
 
         /**
          *
          * @dependency Swap chain extent, render pass, swap chain image views.
          */
-        void createFramebuffers();
+        void create_framebuffers();
 
-        void createSyncObjects();
+        void create_sync_objects();
 
-        bool acquireSwapChainImage(uint32_t &imageIndex);
+        bool acquire_swapchain_image(uint32_t &image_index);
 
         /**
          * Set up command queues.
          * @dependency None.
          */
-        void createCommandBuffers();
+        void create_command_buffers();
 
         void flush() override;
 

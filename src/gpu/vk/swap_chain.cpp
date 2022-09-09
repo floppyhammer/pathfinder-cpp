@@ -5,7 +5,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <array>
 
 #ifdef PATHFINDER_USE_VULKAN
 
@@ -18,9 +17,9 @@ namespace Pathfinder {
         driver = p_driver;
 
         // Swap chain related resources.
-        initSwapChain();
+        init_swapchain();
 
-        createSyncObjects();
+        create_sync_objects();
     }
 
     std::shared_ptr<RenderPass> SwapChainVk::get_render_pass() {
@@ -28,34 +27,34 @@ namespace Pathfinder {
     }
 
     std::shared_ptr<Framebuffer> SwapChainVk::get_framebuffer() {
-        return framebuffers[currentImage];
+        return framebuffers[current_image];
     }
 
     std::shared_ptr<CommandBuffer> SwapChainVk::get_command_buffer() {
-        auto command_buffer_vk = std::make_shared<CommandBufferVk>(commandBuffers[current_image], driver->device);
+        auto command_buffer_vk = std::make_shared<CommandBufferVk>(command_buffers[current_image], driver->device);
         return command_buffer_vk;
     }
 
     bool SwapChainVk::acquire_image() {
-        return acquireSwapChainImage(current_image);
+        return acquire_swapchain_image(current_image);
     }
 
-    void SwapChainVk::initSwapChain() {
+    void SwapChainVk::init_swapchain() {
         // Create a swap chain and corresponding swap chain images.
-        createSwapChain();
+        create_swapchain();
 
         // Create views for swap chain images.
-        createImageViews();
+        create_image_views();
 
-        createRenderPass();
+        create_render_pass();
 
-        createFramebuffers();
+        create_framebuffers();
 
         // Create a command buffer for each swap chain image.
-        createCommandBuffers();
+        create_command_buffers();
     }
 
-    void SwapChainVk::recreateSwapChain() {
+    void SwapChainVk::recreate_swapchain() {
         // Handling window minimization.
 //        int width = 0, height = 0;
 //        glfwGetFramebufferSize(window, &width, &height);
@@ -64,133 +63,134 @@ namespace Pathfinder {
 //            glfwWaitEvents();
 //        }
 
-        cleanupSwapChain();
+        cleanup_swapchain();
 
-        initSwapChain();
+        init_swapchain();
 
-        imagesInFlight.resize(swapChainImages.size(), VK_NULL_HANDLE);
+        images_in_flight.resize(swapchain_images.size(), VK_NULL_HANDLE);
     }
 
-    void SwapChainVk::cleanupSwapChain() {
+    void SwapChainVk::cleanup_swapchain() {
         auto device = driver->get_device();
-        auto commandPool = driver->get_command_pool();
+        auto command_pool = driver->get_command_pool();
 
         // Wait on the host for the completion of outstanding queue operations for all queues on a given logical device.
         vkDeviceWaitIdle(device);
 
         // Only command buffers are freed but not the pool.
         vkFreeCommandBuffers(device,
-                             commandPool,
-                             static_cast<uint32_t>(commandBuffers.size()),
-                             commandBuffers.data());
+                             command_pool,
+                             static_cast<uint32_t>(command_buffers.size()),
+                             command_buffers.data());
 
         // We don't actually have to do this.
         framebuffers.clear();
 
         render_pass.reset();
 
-        for (auto imageView: swapChainImageViews) {
+        for (auto imageView: swapchain_image_views) {
             vkDestroyImageView(device, imageView, nullptr);
         }
 
-        vkDestroySwapchainKHR(device, swapChain, nullptr);
+        vkDestroySwapchainKHR(device, swapchain, nullptr);
     }
 
     void SwapChainVk::cleanup() {
         auto device = driver->get_device();
 
         // Clean up swap chain related resources.
-        cleanupSwapChain();
+        cleanup_swapchain();
 
         // Clean up sync objects.
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-            vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
-            vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
-            vkDestroyFence(device, inFlightFences[i], nullptr);
+            vkDestroySemaphore(device, render_finished_semaphores[i], nullptr);
+            vkDestroySemaphore(device, image_available_semaphores[i], nullptr);
+            vkDestroyFence(device, in_flight_fences[i], nullptr);
         }
     }
 
-    void SwapChainVk::createSwapChain() {
+    void SwapChainVk::create_swapchain() {
         auto device = driver->get_device();
 
-        SwapChainSupportDetails swapChainSupport = platform->querySwapChainSupport(platform->physicalDevice);
+        SwapchainSupportDetails swapchain_support = platform->query_swapchain_support(platform->physical_device);
 
-        VkSurfaceFormatKHR surfaceFormat = platform->chooseSwapSurfaceFormat(swapChainSupport.formats);
-        VkPresentModeKHR presentMode = platform->chooseSwapPresentMode(swapChainSupport.presentModes);
-        VkExtent2D extent = platform->chooseSwapExtent(swapChainSupport.capabilities);
+        VkSurfaceFormatKHR surface_format = platform->choose_swap_surface_format(swapchain_support.formats);
+        VkPresentModeKHR present_mode = platform->choose_swap_present_mode(swapchain_support.present_modes);
+        VkExtent2D extent = platform->choose_swap_extent(swapchain_support.capabilities);
 
-        uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
-        if (swapChainSupport.capabilities.maxImageCount > 0 &&
-            imageCount > swapChainSupport.capabilities.maxImageCount) {
-            imageCount = swapChainSupport.capabilities.maxImageCount;
+        uint32_t image_count = swapchain_support.capabilities.minImageCount + 1;
+        if (swapchain_support.capabilities.maxImageCount > 0 &&
+            image_count > swapchain_support.capabilities.maxImageCount) {
+            image_count = swapchain_support.capabilities.maxImageCount;
         }
 
-        VkSwapchainCreateInfoKHR createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        createInfo.surface = platform->surface;
+        VkSwapchainCreateInfoKHR create_info{};
+        create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+        create_info.surface = platform->surface;
 
-        createInfo.minImageCount = imageCount;
-        createInfo.imageFormat = surfaceFormat.format;
-        createInfo.imageColorSpace = surfaceFormat.colorSpace;
-        createInfo.imageExtent = extent;
-        createInfo.imageArrayLayers = 1;
-        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+        create_info.minImageCount = image_count;
+        create_info.imageFormat = surface_format.format;
+        create_info.imageColorSpace = surface_format.colorSpace;
+        create_info.imageExtent = extent;
+        create_info.imageArrayLayers = 1;
+        create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-        QueueFamilyIndices qfIndices = platform->findQueueFamilies(
-                platform->physicalDevice);
-        uint32_t queueFamilyIndices[] = {qfIndices.graphicsFamily.value(), qfIndices.presentFamily.value()};
+        QueueFamilyIndices qf_indices = platform->find_queue_families(platform->physical_device);
+        uint32_t queueFamilyIndices[] = {qf_indices.graphics_family.value(), qf_indices.present_family.value()};
 
-        if (qfIndices.graphicsFamily != qfIndices.presentFamily) {
-            createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-            createInfo.queueFamilyIndexCount = 2;
-            createInfo.pQueueFamilyIndices = queueFamilyIndices;
+        if (qf_indices.graphics_family != qf_indices.present_family) {
+            create_info.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+            create_info.queueFamilyIndexCount = 2;
+            create_info.pQueueFamilyIndices = queueFamilyIndices;
         } else {
-            createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
         }
 
-        createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
-        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-        createInfo.presentMode = presentMode;
-        createInfo.clipped = VK_TRUE;
+        create_info.preTransform = swapchain_support.capabilities.currentTransform;
+        create_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+        create_info.presentMode = present_mode;
+        create_info.clipped = VK_TRUE;
 
-        createInfo.oldSwapchain = VK_NULL_HANDLE;
+        create_info.oldSwapchain = VK_NULL_HANDLE;
 
         // Create a swap chain.
-        if (vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
+        if (vkCreateSwapchainKHR(device, &create_info, nullptr, &swapchain) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create swap chain!");
         }
 
         // Get the number of presentable images for swap chain.
-        vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
-        swapChainImages.resize(imageCount);
+        vkGetSwapchainImagesKHR(device, swapchain, &image_count, nullptr);
+        swapchain_images.resize(image_count);
 
         // Obtain the array of presentable images associated with a swap chain.
-        vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages.data());
+        vkGetSwapchainImagesKHR(device, swapchain, &image_count, swapchain_images.data());
 
-        swapChainImageFormat = surfaceFormat.format;
-        swapChainExtent = extent;
+        swapchain_image_format = surface_format.format;
+        swapchain_extent = extent;
     }
 
-    void SwapChainVk::createImageViews() {
-        swapChainImageViews.resize(swapChainImages.size());
+    void SwapChainVk::create_image_views() {
+        swapchain_image_views.resize(swapchain_images.size());
 
-        for (uint32_t i = 0; i < swapChainImages.size(); i++) {
-            swapChainImageViews[i] = driver->createVkImageView(swapChainImages[i],
-                                                               swapChainImageFormat,
-                                                               VK_IMAGE_ASPECT_COLOR_BIT);
+        for (uint32_t i = 0; i < swapchain_images.size(); i++) {
+            swapchain_image_views[i] = driver->create_vk_image_view(swapchain_images[i],
+                                                                    swapchain_image_format,
+                                                                    VK_IMAGE_ASPECT_COLOR_BIT);
         }
     }
 
-    void SwapChainVk::createRenderPass() {
-        render_pass = driver->create_render_pass(vk_to_texture_format(swapChainImageFormat), AttachmentLoadOp::CLEAR, ImageLayout::PRESENT_SRC);
+    void SwapChainVk::create_render_pass() {
+        render_pass = driver->create_render_pass(vk_to_texture_format(swapchain_image_format),
+                                                 AttachmentLoadOp::CLEAR,
+                                                 ImageLayout::PRESENT_SRC);
     }
 
-    void SwapChainVk::createFramebuffers() {
+    void SwapChainVk::create_framebuffers() {
         auto device = driver->get_device();
 
         framebuffers.clear();
 
-        for (size_t i = 0; i < swapChainImages.size(); i++) {
+        for (size_t i = 0; i < swapchain_images.size(); i++) {
             auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
 
             // No texture for swap chain framebuffer.
@@ -199,55 +199,55 @@ namespace Pathfinder {
                     render_pass_vk->get_vk_render_pass(),
                     extent.x,
                     extent.y,
-                    swapChainImageViews[i]);
+                    swapchain_image_views[i]);
 
             framebuffers.push_back(framebuffer_vk);
         }
     }
 
-    void SwapChainVk::createSyncObjects() {
+    void SwapChainVk::create_sync_objects() {
         auto device = driver->get_device();
 
-        imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-        renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-        inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-        imagesInFlight.resize(swapChainImages.size(), VK_NULL_HANDLE);
+        image_available_semaphores.resize(MAX_FRAMES_IN_FLIGHT);
+        render_finished_semaphores.resize(MAX_FRAMES_IN_FLIGHT);
+        in_flight_fences.resize(MAX_FRAMES_IN_FLIGHT);
+        images_in_flight.resize(swapchain_images.size(), VK_NULL_HANDLE);
 
-        VkSemaphoreCreateInfo semaphoreInfo{};
-        semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+        VkSemaphoreCreateInfo semaphore_info{};
+        semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-        VkFenceCreateInfo fenceInfo{};
-        fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; // Initialize it in the signaled state
+        VkFenceCreateInfo fence_info{};
+        fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT; // Initialize it in the signaled state
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-            if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
-                vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
-                vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
+            if (vkCreateSemaphore(device, &semaphore_info, nullptr, &image_available_semaphores[i]) != VK_SUCCESS ||
+                vkCreateSemaphore(device, &semaphore_info, nullptr, &render_finished_semaphores[i]) != VK_SUCCESS ||
+                vkCreateFence(device, &fence_info, nullptr, &in_flight_fences[i]) != VK_SUCCESS) {
                 throw std::runtime_error("Failed to create synchronization objects for a frame!");
             }
         }
     }
 
-    bool SwapChainVk::acquireSwapChainImage(uint32_t &imageIndex) {
+    bool SwapChainVk::acquire_swapchain_image(uint32_t &image_index) {
         auto device = driver->get_device();
 
         // Wait for the frame to be finished.
-        vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+        vkWaitForFences(device, 1, &in_flight_fences[current_frame], VK_TRUE, UINT64_MAX);
 
         // Retrieve the index of the next available presentable image.
         VkResult result = vkAcquireNextImageKHR(device,
-                                                swapChain,
+                                                swapchain,
                                                 UINT64_MAX,
-                                                imageAvailableSemaphores[currentFrame],
+                                                image_available_semaphores[current_frame],
                                                 VK_NULL_HANDLE,
-                                                &imageIndex);
+                                                &image_index);
 
-        currentImage = imageIndex;
+        current_image = image_index;
 
         // Recreate swap chains if necessary.
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-            recreateSwapChain();
+            recreate_swapchain();
             return false;
         } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
             throw std::runtime_error("Failed to acquire swap chain image!");
@@ -256,58 +256,58 @@ namespace Pathfinder {
         return true;
     }
 
-    void SwapChainVk::createCommandBuffers() {
+    void SwapChainVk::create_command_buffers() {
         auto device = driver->get_device();
-        auto commandPool = driver->get_command_pool();
+        auto command_pool = driver->get_command_pool();
 
-        commandBuffers.resize(framebuffers.size());
+        command_buffers.resize(framebuffers.size());
 
         // Allocate command buffers.
-        VkCommandBufferAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocInfo.commandPool = commandPool;
-        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandBufferCount = (uint32_t) commandBuffers.size();
+        VkCommandBufferAllocateInfo alloc_info{};
+        alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        alloc_info.commandPool = command_pool;
+        alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        alloc_info.commandBufferCount = (uint32_t) command_buffers.size();
 
-        if (vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
+        if (vkAllocateCommandBuffers(device, &alloc_info, command_buffers.data()) != VK_SUCCESS) {
             throw std::runtime_error("Failed to allocate command buffers!");
         }
     }
 
     void SwapChainVk::flush() {
         auto device = driver->get_device();
-        auto graphicsQueue = driver->get_graphics_queue();
-        auto presentQueue = driver->get_present_queue();
+        auto graphics_queue = driver->get_graphics_queue();
+        auto present_queue = driver->get_present_queue();
 
-        auto imageIndex = currentImage;
+        auto imageIndex = current_image;
 
-        if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
-            vkWaitForFences(device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
+        if (images_in_flight[imageIndex] != VK_NULL_HANDLE) {
+            vkWaitForFences(device, 1, &images_in_flight[imageIndex], VK_TRUE, UINT64_MAX);
         }
-        imagesInFlight[imageIndex] = inFlightFences[currentFrame];
+        images_in_flight[imageIndex] = in_flight_fences[current_frame];
 
         // Submit command buffer.
         // -------------------------------------
-        VkSubmitInfo submitInfo{};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        VkSubmitInfo submit_info{};
+        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-        VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
-        VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-        submitInfo.waitSemaphoreCount = 1;
-        submitInfo.pWaitSemaphores = waitSemaphores;
-        submitInfo.pWaitDstStageMask = waitStages;
+        VkSemaphore wait_semaphores[] = {image_available_semaphores[current_frame]};
+        VkPipelineStageFlags wait_stages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+        submit_info.waitSemaphoreCount = 1;
+        submit_info.pWaitSemaphores = wait_semaphores;
+        submit_info.pWaitDstStageMask = wait_stages;
 
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
+        submit_info.commandBufferCount = 1;
+        submit_info.pCommandBuffers = &command_buffers[imageIndex];
 
         // The semaphores to signal after all commands in the buffer are finished.
-        VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
-        submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores = signalSemaphores;
+        VkSemaphore signal_semaphores[] = {render_finished_semaphores[current_frame]};
+        submit_info.signalSemaphoreCount = 1;
+        submit_info.pSignalSemaphores = signal_semaphores;
 
-        vkResetFences(device, 1, &inFlightFences[currentFrame]);
+        vkResetFences(device, 1, &in_flight_fences[current_frame]);
 
-        if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) !=
+        if (vkQueueSubmit(graphics_queue, 1, &submit_info, in_flight_fences[current_frame]) !=
             VK_SUCCESS) {
             throw std::runtime_error("Failed to submit draw command buffer!");
         }
@@ -315,31 +315,31 @@ namespace Pathfinder {
 
         // Queue an image for presentation after queueing all rendering commands and transitioning the image to the correct layout.
         // -------------------------------------
-        VkPresentInfoKHR presentInfo{};
-        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        VkPresentInfoKHR present_info{};
+        present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
         // Specifies the semaphores to wait for before issuing the present request.
-        presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pWaitSemaphores = signalSemaphores;
+        present_info.waitSemaphoreCount = 1;
+        present_info.pWaitSemaphores = signal_semaphores;
 
-        VkSwapchainKHR swapChains[] = {swapChain};
-        presentInfo.swapchainCount = 1;
-        presentInfo.pSwapchains = swapChains;
+        VkSwapchainKHR swapChains[] = {swapchain};
+        present_info.swapchainCount = 1;
+        present_info.pSwapchains = swapChains;
 
         // Array of each swap chain’s presentable images.
-        presentInfo.pImageIndices = &imageIndex;
+        present_info.pImageIndices = &imageIndex;
 
-        VkResult result = vkQueuePresentKHR(presentQueue, &presentInfo);
+        VkResult result = vkQueuePresentKHR(present_queue, &present_info);
         // -------------------------------------
 
-        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || platform->framebufferResized) {
-            platform->framebufferResized = false;
-            recreateSwapChain();
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || platform->framebuffer_resized) {
+            platform->framebuffer_resized = false;
+            recreate_swapchain();
         } else if (result != VK_SUCCESS) {
             throw std::runtime_error("Failed to present swap chain image!");
         }
 
-        currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+        current_frame = (current_frame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 }
 

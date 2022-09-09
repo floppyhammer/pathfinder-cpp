@@ -16,28 +16,28 @@ namespace Pathfinder {
     const int MAX_FRAMES_IN_FLIGHT = 2;
 
     /// List of required validation layers.
-    const std::vector<const char *> validationLayers = {
+    const std::vector<const char *> VALIDATION_LAYERS = {
             "VK_LAYER_KHRONOS_validation"
     };
 
     /// List of required device extensions.
-    const std::vector<const char *> deviceExtensions = {
+    const std::vector<const char *> DEVICE_EXTENSIONS = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
 
     struct QueueFamilyIndices {
-        std::optional<uint32_t> graphicsFamily;
-        std::optional<uint32_t> presentFamily;
+        std::optional<uint32_t> graphics_family;
+        std::optional<uint32_t> present_family;
 
-        [[nodiscard]] bool isComplete() const {
-            return graphicsFamily.has_value() && presentFamily.has_value();
+        [[nodiscard]] bool is_complete() const {
+            return graphics_family.has_value() && present_family.has_value();
         }
     };
 
-    struct SwapChainSupportDetails {
+    struct SwapchainSupportDetails {
         VkSurfaceCapabilitiesKHR capabilities;
         std::vector<VkSurfaceFormatKHR> formats;
-        std::vector<VkPresentModeKHR> presentModes;
+        std::vector<VkPresentModeKHR> present_modes;
     };
 
     class PlatformVk : public Platform {
@@ -46,72 +46,62 @@ namespace Pathfinder {
 
         std::shared_ptr<Driver> create_driver() override;
 
-        VkSurfaceKHR surface{};
-
-        /// The graphics card that we'll end up selecting will be stored in a VkPhysicalDevice handle.
-        VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-
-        /// Logical device.
-        VkDevice device{};
-
-        bool framebufferResized = false;
-
         std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Driver> &driver,
                                                      uint32_t width,
                                                      uint32_t height) override;
 
-        static void framebufferResizeCallback(GLFWwindow *window, int width, int height) {
+        static void framebuffer_resize_callback(GLFWwindow *window, int width, int height) {
             auto platform = reinterpret_cast<PlatformVk *>(glfwGetWindowUserPointer(window));
-            platform->framebufferResized = true;
+            platform->framebuffer_resized = true;
         }
 
-        VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) const;
+        VkExtent2D choose_swap_extent(const VkSurfaceCapabilitiesKHR &capabilities) const;
 
-        VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
+        VkSurfaceFormatKHR choose_swap_surface_format(const std::vector<VkSurfaceFormatKHR> &available_formats);
 
-        VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
+        VkPresentModeKHR choose_swap_present_mode(const std::vector<VkPresentModeKHR> &available_present_modes);
 
-        static std::vector<const char *> getRequiredExtensions() {
-            uint32_t glfwExtensionCount = 0;
-            const char **glfwExtensions;
-            glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+        static std::vector<const char *> get_required_extensions() {
+            uint32_t glfw_extension_count = 0;
+            const char **glfw_extensions;
+            glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
 
-            std::vector<const char *> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+            std::vector<const char *> extensions(glfw_extensions, glfw_extensions + glfw_extension_count);
 
-            if (enableValidationLayers) {
+            if (enable_validation_layers) {
                 extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
             }
 
             return extensions;
         }
 
-        static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                                                            VkDebugUtilsMessageTypeFlagsEXT messageType,
-                                                            const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
-                                                            void *pUserData) {
-            std::cerr << "Validation layer: " << pCallbackData->pMessage << std::endl;
+        static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
+                                                             VkDebugUtilsMessageTypeFlagsEXT message_type,
+                                                             const VkDebugUtilsMessengerCallbackDataEXT *callback_data,
+                                                             void *user_data) {
+            std::cerr << "Validation layer: " << callback_data->pMessage << std::endl;
 
             return VK_FALSE;
         }
 
-        static bool checkValidationLayerSupport() {
-            uint32_t layerCount;
-            vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+        static bool check_validation_layer_support() {
+            uint32_t layer_count;
+            vkEnumerateInstanceLayerProperties(&layer_count, nullptr);
 
-            std::vector<VkLayerProperties> availableLayers(layerCount);
-            vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+            std::vector<VkLayerProperties> available_layers(layer_count);
+            vkEnumerateInstanceLayerProperties(&layer_count, available_layers.data());
 
-            for (const char *layerName: validationLayers) {
-                bool layerFound = false;
+            for (const char *layer_name: VALIDATION_LAYERS) {
+                bool layer_found = false;
 
-                for (const auto &layerProperties: availableLayers) {
-                    if (strcmp(layerName, layerProperties.layerName) == 0) {
-                        layerFound = true;
+                for (const auto &layer_properties: available_layers) {
+                    if (strcmp(layer_name, layer_properties.layerName) == 0) {
+                        layer_found = true;
                         break;
                     }
                 }
 
-                if (!layerFound) {
+                if (!layer_found) {
                     return false;
                 }
             }
@@ -119,54 +109,65 @@ namespace Pathfinder {
             return true;
         }
 
-        QueueFamilyIndices findQueueFamilies(VkPhysicalDevice pPhysicalDevice) const;
+        QueueFamilyIndices find_queue_families(VkPhysicalDevice p_physical_device) const;
 
-        SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice pPhysicalDevice) const;
+        SwapchainSupportDetails query_swapchain_support(VkPhysicalDevice p_physical_device) const;
 
-        [[nodiscard]] VkFormat findDepthFormat() const;
+        [[nodiscard]] VkFormat find_depth_format() const;
 
-        [[nodiscard]] VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates,
-                                                   VkImageTiling tiling,
-                                                   VkFormatFeatureFlags features) const;
+        [[nodiscard]] VkFormat find_supported_format(const std::vector<VkFormat> &candidates,
+                                                     VkImageTiling tiling,
+                                                     VkFormatFeatureFlags features) const;
 
         void cleanup() override;
 
+    public:
+        VkSurfaceKHR surface{};
+
+        /// The graphics card that we'll end up selecting will be stored in a VkPhysicalDevice handle.
+        VkPhysicalDevice physical_device{};
+
+        /// Logical device.
+        VkDevice device{};
+
+        bool framebuffer_resized = false;
+
     private:
         VkInstance instance{};
-        VkDebugUtilsMessengerEXT debugMessenger{};
+        VkDebugUtilsMessengerEXT debug_messenger{};
 
-        static const bool enableValidationLayers = true;
+        static const bool enable_validation_layers = true;
 
-        VkQueue graphicsQueue{};
-        VkQueue presentQueue{};
+        VkQueue graphics_queue{};
+        VkQueue present_queue{};
 
-        VkCommandPool commandPool{};
+        VkCommandPool command_pool{};
 
     private:
-        void initWindow(uint32_t window_width, uint32_t window_height);
+        void init_window(uint32_t window_width, uint32_t window_height);
 
-        void setupDebugMessenger();
+        void setup_debug_messenger();
 
-        void createInstance();
+        void create_instance();
 
-        void createSurface();
+        void create_surface();
 
-        bool checkDeviceExtensionSupport(VkPhysicalDevice pPhysicalDevice) const;
+        bool check_device_extension_support(VkPhysicalDevice p_physical_device) const;
 
         /**
          * Check if a physical device is suitable.
          * @param pPhysicalDevice
          * @return
          */
-        bool isDeviceSuitable(VkPhysicalDevice pPhysicalDevice) const;
+        bool is_device_suitable(VkPhysicalDevice p_physical_device) const;
 
-        void pickPhysicalDevice();
+        void pick_physical_device();
 
-        void createLogicalDevice();
+        void create_logical_device();
 
-        void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
+        void populate_debug_messenger_create_info(VkDebugUtilsMessengerCreateInfoEXT &create_info);
 
-        void createCommandPool();
+        void create_command_pool();
     };
 }
 

@@ -237,13 +237,13 @@ namespace Pathfinder {
                     VkBuffer stagingBuffer;
                     VkDeviceMemory stagingBufferMemory;
 
-                    driver->createVkBuffer(args.data_size,
+                    driver->create_vk_buffer(args.data_size,
                                            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                            stagingBuffer,
                                            stagingBufferMemory);
 
-                    driver->copyDataToMemory(args.data,
+                    driver->copy_data_to_memory(args.data,
                                              stagingBufferMemory,
                                              args.data_size);
                     // ---------------------------------
@@ -264,7 +264,7 @@ namespace Pathfinder {
 //                                         VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
 //                                         0, nullptr, 1, &barrier, 0, nullptr);
 
-                    driver->copyVkBuffer(vk_command_buffer, stagingBuffer, buffer_vk->get_vk_buffer(), args.data_size);
+                    driver->copy_vk_buffer(vk_command_buffer, stagingBuffer, buffer_vk->get_vk_buffer(), args.data_size);
 
 //                    // Don't read vertex data as we're writing it.
 //                    barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -291,19 +291,19 @@ namespace Pathfinder {
                     VkBuffer staging_buffer;
                     VkDeviceMemory staging_buffer_memory;
 
-                    driver->createVkBuffer(args.data_size,
+                    driver->create_vk_buffer(args.data_size,
                                            VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                            staging_buffer,
                                            staging_buffer_memory);
                     // ---------------------------------
 
-                    driver->copyVkBuffer(vk_command_buffer, buffer_vk->get_vk_buffer(), staging_buffer, args.data_size);
+                    driver->copy_vk_buffer(vk_command_buffer, buffer_vk->get_vk_buffer(), staging_buffer, args.data_size);
 
                     // Callback to clean up staging resources.
                     auto callback = [driver, staging_buffer, staging_buffer_memory, args] {
                         // Wait for the data transfer to complete before memory mapping.
-                        driver->copyDataFromMemory(args.data,
+                        driver->copy_data_from_memory(args.data,
                                                    staging_buffer_memory,
                                                    args.data_size);
 
@@ -326,7 +326,7 @@ namespace Pathfinder {
                     VkBuffer stagingBuffer;
                     VkDeviceMemory stagingBufferMemory;
 
-                    driver->createVkBuffer(dataSize,
+                    driver->create_vk_buffer(dataSize,
                                            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                                            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -334,10 +334,10 @@ namespace Pathfinder {
                                            stagingBufferMemory);
 
                     // Copy the pixel values that we got from the image loading library to the buffer.
-                    driver->copyDataToMemory(args.data, stagingBufferMemory, dataSize);
+                    driver->copy_data_to_memory(args.data, stagingBufferMemory, dataSize);
 
                     // Transition the texture image to VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL.
-                    driver->transitionImageLayout(vk_command_buffer,
+                    driver->transition_image_layout(vk_command_buffer,
                                                   texture_vk->get_image(),
                                                   VK_IMAGE_LAYOUT_UNDEFINED,
                                                   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -380,7 +380,7 @@ namespace Pathfinder {
                     }
 
                     // To be able to start sampling from the texture image in the shader, we need one last transition to prepare it for shader access.
-                    driver->transitionImageLayout(vk_command_buffer,
+                    driver->transition_image_layout(vk_command_buffer,
                                                   texture_vk->get_image(),
                                                   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                                   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);

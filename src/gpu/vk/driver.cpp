@@ -18,8 +18,8 @@
 namespace Pathfinder {
     DriverVk::DriverVk(VkDevice p_device, VkPhysicalDevice p_physical_device, VkQueue p_graphics_queue,
                        VkQueue p_present_queue, VkCommandPool p_command_pool)
-            : device(p_device), physicalDevice(p_physical_device), graphicsQueue(p_graphics_queue),
-              presentQueue(p_present_queue), commandPool(p_command_pool) {
+            : device(p_device), physical_device(p_physical_device), graphics_queue(p_graphics_queue),
+              present_queue(p_present_queue), command_pool(p_command_pool) {
     }
 
     VkDevice DriverVk::get_device() const {
@@ -27,15 +27,15 @@ namespace Pathfinder {
     }
 
     VkQueue DriverVk::get_graphics_queue() const {
-        return graphicsQueue;
+        return graphics_queue;
     }
 
     VkQueue DriverVk::get_present_queue() const {
-        return presentQueue;
+        return present_queue;
     }
 
     VkCommandPool DriverVk::get_command_pool() const {
-        return commandPool;
+        return command_pool;
     }
 
     std::shared_ptr<DescriptorSet> DriverVk::create_descriptor_set() {
@@ -363,28 +363,28 @@ namespace Pathfinder {
 
         switch (type) {
             case BufferType::Uniform: {
-                createVkBuffer(size,
-                               VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                               vk_memory_property,
-                               buffer_vk->vk_buffer,
-                               buffer_vk->vk_device_memory);
+                create_vk_buffer(size,
+                                 VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                 vk_memory_property,
+                                 buffer_vk->vk_buffer,
+                                 buffer_vk->vk_device_memory);
             }
                 break;
             case BufferType::Vertex: {
-                createVkBuffer(size,
-                               VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                               vk_memory_property,
-                               buffer_vk->vk_buffer,
-                               buffer_vk->vk_device_memory);
+                create_vk_buffer(size,
+                                 VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                                 vk_memory_property,
+                                 buffer_vk->vk_buffer,
+                                 buffer_vk->vk_device_memory);
             }
                 break;
             case BufferType::Storage: {
-                createVkBuffer(size,
-                               VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-                               VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-                               vk_memory_property,
-                               buffer_vk->vk_buffer,
-                               buffer_vk->vk_device_memory);
+                create_vk_buffer(size,
+                                 VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                                 VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+                                 vk_memory_property,
+                                 buffer_vk->vk_buffer,
+                                 buffer_vk->vk_device_memory);
             }
                 break;
         }
@@ -402,23 +402,23 @@ namespace Pathfinder {
         );
 
         // TODO(floppyhammer): Add VK_IMAGE_USAGE_STORAGE_BIT only when necessary.
-        createVkImage(width,
-                      height,
-                      to_vk_texture_format(format),
-                      VK_IMAGE_TILING_OPTIMAL,
-                      VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
-                      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
-                      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                      texture_vk->image,
-                      texture_vk->image_memory);
+        create_vk_image(width,
+                        height,
+                        to_vk_texture_format(format),
+                        VK_IMAGE_TILING_OPTIMAL,
+                        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
+                        VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
+                        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                        texture_vk->image,
+                        texture_vk->image_memory);
 
         // Create image view.
-        texture_vk->image_view = createVkImageView(texture_vk->image,
-                                                   to_vk_texture_format(format),
-                                                   VK_IMAGE_ASPECT_COLOR_BIT);
+        texture_vk->image_view = create_vk_image_view(texture_vk->image,
+                                                      to_vk_texture_format(format),
+                                                      VK_IMAGE_ASPECT_COLOR_BIT);
 
         // Create sampler.
-        texture_vk->sampler = createVkSampler();
+        texture_vk->sampler = create_vk_sampler();
 
         return texture_vk;
     }
@@ -429,7 +429,7 @@ namespace Pathfinder {
         VkCommandBufferAllocateInfo alloc_info{};
         alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        alloc_info.commandPool = commandPool;
+        alloc_info.commandPool = command_pool;
         alloc_info.commandBufferCount = 1;
 
         VkCommandBuffer command_buffer;
@@ -456,9 +456,9 @@ namespace Pathfinder {
         return shader_module;
     }
 
-    void DriverVk::createVkImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
-                                 VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage &image,
-                                 VkDeviceMemory &image_memory) const {
+    void DriverVk::create_vk_image(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
+                                   VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage &image,
+                                   VkDeviceMemory &image_memory) const {
         VkImageCreateInfo image_info{};
         image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         image_info.imageType = VK_IMAGE_TYPE_2D;
@@ -487,7 +487,7 @@ namespace Pathfinder {
         VkMemoryAllocateInfo alloc_info{};
         alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         alloc_info.allocationSize = mem_requirements.size;
-        alloc_info.memoryTypeIndex = findMemoryType(mem_requirements.memoryTypeBits, properties);
+        alloc_info.memoryTypeIndex = find_memory_type(mem_requirements.memoryTypeBits, properties);
 
         if (vkAllocateMemory(device, &alloc_info, nullptr, &image_memory) != VK_SUCCESS) {
             throw std::runtime_error("Failed to allocate image memory!");
@@ -497,9 +497,9 @@ namespace Pathfinder {
         // -------------------------------------
     }
 
-    VkImageView DriverVk::createVkImageView(VkImage image,
-                                            VkFormat format,
-                                            VkImageAspectFlags aspect_flags) const {
+    VkImageView DriverVk::create_vk_image_view(VkImage image,
+                                               VkFormat format,
+                                               VkImageAspectFlags aspect_flags) const {
         VkImageViewCreateInfo view_info{};
         view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         view_info.image = image;
@@ -519,7 +519,7 @@ namespace Pathfinder {
         return image_view;
     }
 
-    VkSampler DriverVk::createVkSampler() const {
+    VkSampler DriverVk::create_vk_sampler() const {
         VkSamplerCreateInfo sampler_info{};
         sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
         sampler_info.magFilter = VK_FILTER_LINEAR;
@@ -555,11 +555,11 @@ namespace Pathfinder {
         return sampler;
     }
 
-    void DriverVk::createVkBuffer(VkDeviceSize size,
-                                  VkBufferUsageFlags usage,
-                                  VkMemoryPropertyFlags properties,
-                                  VkBuffer &buffer,
-                                  VkDeviceMemory &buffer_memory) {
+    void DriverVk::create_vk_buffer(VkDeviceSize size,
+                                    VkBufferUsageFlags usage,
+                                    VkMemoryPropertyFlags properties,
+                                    VkBuffer &buffer,
+                                    VkDeviceMemory &buffer_memory) {
         // Structure specifying the parameters of a newly created buffer object.
         VkBufferCreateInfo buffer_info{};
         buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -579,8 +579,8 @@ namespace Pathfinder {
         VkMemoryAllocateInfo alloc_info{};
         alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         alloc_info.allocationSize = mem_requirements.size;
-        alloc_info.memoryTypeIndex = findMemoryType(mem_requirements.memoryTypeBits,
-                                                    properties); // Index identifying a memory type.
+        alloc_info.memoryTypeIndex = find_memory_type(mem_requirements.memoryTypeBits,
+                                                      properties); // Index identifying a memory type.
 
         // Allocate device memory.
         if (vkAllocateMemory(device, &alloc_info, nullptr, &buffer_memory) != VK_SUCCESS) {
@@ -591,7 +591,7 @@ namespace Pathfinder {
         vkBindBufferMemory(device, buffer, buffer_memory, 0);
     }
 
-    void DriverVk::createVkRenderPass(VkFormat format, VkRenderPass &render_pass) {
+    void DriverVk::create_vk_render_pass(VkFormat format, VkRenderPass &render_pass) {
         // Color attachment.
         // ----------------------------------------
         VkAttachmentDescription color_attachment{};
@@ -670,11 +670,11 @@ namespace Pathfinder {
         }
     }
 
-    uint32_t DriverVk::findMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties) const {
+    uint32_t DriverVk::find_memory_type(uint32_t type_filter, VkMemoryPropertyFlags properties) const {
         VkPhysicalDeviceMemoryProperties mem_properties;
 
         // Reports memory information for the specified physical device.
-        vkGetPhysicalDeviceMemoryProperties(physicalDevice, &mem_properties);
+        vkGetPhysicalDeviceMemoryProperties(physical_device, &mem_properties);
 
         for (uint32_t i = 0; i < mem_properties.memoryTypeCount; i++) {
             if ((type_filter & (1 << i)) && (mem_properties.memoryTypes[i].propertyFlags & properties) == properties) {
@@ -690,7 +690,7 @@ namespace Pathfinder {
                                              VkFormatFeatureFlags features) const {
         for (VkFormat format: candidates) {
             VkFormatProperties props;
-            vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &props);
+            vkGetPhysicalDeviceFormatProperties(physical_device, format, &props);
 
             if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
                 return format;
@@ -710,8 +710,8 @@ namespace Pathfinder {
         );
     }
 
-    void DriverVk::transitionImageLayout(VkCommandBuffer command_buffer, VkImage image,
-                                         VkImageLayout old_layout, VkImageLayout new_layout) const {
+    void DriverVk::transition_image_layout(VkCommandBuffer command_buffer, VkImage image,
+                                           VkImageLayout old_layout, VkImageLayout new_layout) const {
         VkImageMemoryBarrier barrier{};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
         barrier.oldLayout = old_layout;
@@ -779,8 +779,8 @@ namespace Pathfinder {
         );
     }
 
-    void DriverVk::copyVkBuffer(VkCommandBuffer command_buffer, VkBuffer src_buffer, VkBuffer dst_buffer,
-                                VkDeviceSize size) const {
+    void DriverVk::copy_vk_buffer(VkCommandBuffer command_buffer, VkBuffer src_buffer, VkBuffer dst_buffer,
+                                  VkDeviceSize size) const {
         // Send copy command.
         VkBufferCopy copy_region{};
         copy_region.srcOffset = 0;
@@ -790,8 +790,8 @@ namespace Pathfinder {
         vkCmdCopyBuffer(command_buffer, src_buffer, dst_buffer, 1, &copy_region);
     }
 
-    void DriverVk::copyBufferToImage(VkCommandBuffer command_buffer, VkBuffer buffer, VkImage image,
-                                     uint32_t width, uint32_t height) const {
+    void DriverVk::copy_buffer_to_image(VkCommandBuffer command_buffer, VkBuffer buffer, VkImage image,
+                                        uint32_t width, uint32_t height) const {
         // Structure specifying a buffer image copy operation.
         VkBufferImageCopy region{};
         region.bufferOffset = 0; // Offset in bytes from the start of the buffer object where the image data is copied from or to.
@@ -820,14 +820,14 @@ namespace Pathfinder {
         );
     }
 
-    void DriverVk::copyDataToMemory(const void *src, VkDeviceMemory buffer_memory, size_t data_size) const {
+    void DriverVk::copy_data_to_memory(const void *src, VkDeviceMemory buffer_memory, size_t data_size) const {
         void *data;
         vkMapMemory(device, buffer_memory, 0, data_size, 0, &data);
         memcpy(data, src, data_size);
         vkUnmapMemory(device, buffer_memory);
     }
 
-    void DriverVk::copyDataFromMemory(void *dst, VkDeviceMemory buffer_memory, size_t data_size) const {
+    void DriverVk::copy_data_from_memory(void *dst, VkDeviceMemory buffer_memory, size_t data_size) const {
         void *data;
         vkMapMemory(device, buffer_memory, 0, data_size, 0, &data);
         memcpy(dst, data, data_size);
