@@ -1,4 +1,4 @@
-New-Variable -Name "GLSLC" -Visibility Public -Value "C:/VulkanSDK/1.3.224.1/Bin/glslc.exe"
+New-Variable -Name "GLSLC" -Visibility Public -Value $env:VULKAN_SDK"/Bin/glslc.exe"
 
 & $GLSLC blit.vert -o blit.vert.spv
 & $GLSLC blit.frag -o blit.frag.spv
