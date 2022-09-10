@@ -53,11 +53,11 @@ namespace Pathfinder {
             return mat;
         }
 
-        inline Mat4x4 translate(const Vec3<T> &p_translation) const {
+        inline Mat4x4 translate(const Vec3 <T> &p_translation) const {
             return *this * Mat4x4<float>::from_translation(p_translation);
         }
 
-        inline Mat4x4 scale(const Vec3<T> &p_scale) const {
+        inline Mat4x4 scale(const Vec3 <T> &p_scale) const {
             return *this * Mat4x4<float>::from_scale(p_scale);
         }
     };

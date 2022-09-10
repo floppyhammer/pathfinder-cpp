@@ -20,7 +20,7 @@ namespace Pathfinder {
 
         // Compute the upper left corner of the tile.
         auto tile_size = F32x4::splat(TILE_WIDTH);
-        auto tile_upper_left = F32x4(tile_coords.to_float(), Vec2<float>()).xyxy() * tile_size;
+        auto tile_upper_left = F32x4(tile_coords.to_f32(), Vec2<float>()).xyxy() * tile_size;
 
         // To tile's local coordinates.
         F32x4 segment = (p_segment.value - tile_upper_left) * F32x4::splat(256.0);

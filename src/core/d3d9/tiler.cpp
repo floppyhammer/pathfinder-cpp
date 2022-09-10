@@ -143,7 +143,7 @@ namespace Pathfinder {
 
         // Real coordinates of the top left of the first tile crossing.
         // Compute `first_tile_crossing = (from_tile_coords + vec2i(vector.x >= 0 ? 1 : 0, vector.y >= 0 ? 1 : 0)) * tile_size`.
-        const auto first_tile_crossing = (from_tile_coords.to_float()
+        const auto first_tile_crossing = (from_tile_coords.to_f32()
                                           + Vec2<float>(vector.x >= 0 ? 1 : 0, vector.y >= 0 ? 1 : 0)) * tile_size;
 
         // Value of t at which the ray crosses the first vertical/horizontal tile boundary.
@@ -216,11 +216,11 @@ namespace Pathfinder {
             if (step.y < 0 && next_step_direction == StepDirection::Y) {
                 // Leave the current tile through its top boundary.
                 const auto auxiliary_segment = LineSegmentF(clipped_line_segment.to(),
-                                                            tile_coords.to_float() * tile_size);
+                                                            tile_coords.to_f32() * tile_size);
                 p_object_builder.add_fill(p_scene_builder, auxiliary_segment, tile_coords);
             } else if (step.y > 0 && last_step_direction == StepDirection::Y) {
                 // Enter a new tile through its top boundary.
-                const auto auxiliary_segment = LineSegmentF(tile_coords.to_float() * tile_size,
+                const auto auxiliary_segment = LineSegmentF(tile_coords.to_f32() * tile_size,
                                                             clipped_line_segment.from());
                 p_object_builder.add_fill(p_scene_builder, auxiliary_segment, tile_coords);
             }
