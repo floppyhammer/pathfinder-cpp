@@ -15,6 +15,9 @@ if (VULKAN_SUPPORT)
 
     add_compile_definitions(PATHFINDER_USE_VULKAN)
 
+    # In case Vulkan is found but Vulkan_LIBRARY is not.
+#    set(Vulkan_LIBRARY "C:/VulkanSDK/1.3.224.1/Lib/vulkan-1.lib")
+
     # More generally, you are using find_package and then later you're using add_subdirectory
     # to try to incorporate these external projects. That's not how it works. find_package will
     # look for a pre-existing binary of the package, while add_subdirectory isn't designed to
