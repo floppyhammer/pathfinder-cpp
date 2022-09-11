@@ -47,11 +47,14 @@ namespace Pathfinder {
         RGBA16F,
     };
 
-    enum class ImageLayout {
+    enum class TextureLayout {
+        UNDEFINED,
         PRESENT_SRC,
+        COLOR_ATTACHMENT,
         SHADER_READ_ONLY,
         TRANSFER_SRC,
         TRANSFER_DST,
+        GENERAL,
     };
 
     // TODO(floppyhammer): Make this bits.
@@ -98,7 +101,7 @@ namespace Pathfinder {
         UniformBuffer = 0,
         Texture,
         StorageBuffer,
-        Image,
+        StorageTexture,
         Max,
     };
 

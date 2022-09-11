@@ -68,7 +68,7 @@ namespace Pathfinder {
     RenderTarget
     Palette::push_render_target(const std::shared_ptr<Driver> &driver, const Vec2<int> &render_target_size) {
         auto render_pass = driver->create_render_pass(TextureFormat::RGBA8_UNORM, AttachmentLoadOp::CLEAR,
-                                                      ImageLayout::SHADER_READ_ONLY);
+                                                      TextureLayout::SHADER_READ_ONLY);
 
         // Create a new framebuffer.
         auto target_texture = driver->create_texture(

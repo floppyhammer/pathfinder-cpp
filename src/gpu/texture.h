@@ -27,11 +27,21 @@ namespace Pathfinder {
             return format;
         }
 
+        inline TextureLayout get_layout() const {
+            return layout;
+        }
+
+        inline void set_layout(TextureLayout new_layout) {
+            layout = new_layout;
+        }
+
     protected:
         uint32_t width;
         uint32_t height;
 
         TextureFormat format;
+
+        TextureLayout layout = TextureLayout::UNDEFINED;
     };
 }
 

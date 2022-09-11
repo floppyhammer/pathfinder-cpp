@@ -52,7 +52,7 @@ namespace Pathfinder {
         area_lut_texture = driver->create_texture(image_data->width, image_data->height,
                                                   TextureFormat::RGBA8_UNORM);
 
-        cmd_buffer->upload_to_texture(area_lut_texture, {}, image_data->data);
+        cmd_buffer->upload_to_texture(area_lut_texture, {}, image_data->data, TextureLayout::SHADER_READ_ONLY);
 
         cmd_buffer->submit(driver);
     }
@@ -194,7 +194,7 @@ namespace Pathfinder {
 
         auto cmd_buffer = driver->create_command_buffer(true);
         cmd_buffer->add_callback(callback);
-        cmd_buffer->upload_to_texture(metadata_texture, region_rect, raw_texels);
+        cmd_buffer->upload_to_texture(metadata_texture, region_rect, raw_texels, TextureLayout::SHADER_READ_ONLY);
         cmd_buffer->submit(driver);
     }
 }

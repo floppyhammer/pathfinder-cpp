@@ -28,7 +28,7 @@ namespace Pathfinder {
 
         std::shared_ptr<CommandBuffer> create_command_buffer(bool one_time) override;
 
-        std::shared_ptr<RenderPass> create_render_pass(TextureFormat format, AttachmentLoadOp load_op, ImageLayout final_layout) override;
+        std::shared_ptr<RenderPass> create_render_pass(TextureFormat format, AttachmentLoadOp load_op, TextureLayout final_layout) override;
 
         std::shared_ptr<DescriptorSet> create_descriptor_set() override;
 

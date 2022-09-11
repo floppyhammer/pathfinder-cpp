@@ -24,7 +24,7 @@ namespace Pathfinder {
 
         std::shared_ptr<RenderPass> create_render_pass(TextureFormat format,
                                                        AttachmentLoadOp load_op,
-                                                       ImageLayout final_layout) override;
+                                                       TextureLayout final_layout) override;
 
         std::shared_ptr<Framebuffer> create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
                                                         const std::shared_ptr<Texture> &texture) override;
@@ -69,11 +69,6 @@ namespace Pathfinder {
         void copy_data_to_memory(const void *src, VkDeviceMemory buffer_memory, size_t data_size) const;
 
         void copy_data_from_memory(void *dst, VkDeviceMemory buffer_memory, size_t data_size) const;
-
-        void transition_image_layout(VkCommandBuffer command_buffer,
-                                     VkImage image,
-                                     VkImageLayout old_layout,
-                                     VkImageLayout new_layout) const;
 
         void copy_vk_buffer(VkCommandBuffer command_buffer,
                             VkBuffer src_buffer,

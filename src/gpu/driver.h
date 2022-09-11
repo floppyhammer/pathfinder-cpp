@@ -27,7 +27,7 @@ namespace Pathfinder {
 
         virtual std::shared_ptr<RenderPass> create_render_pass(TextureFormat format,
                                                                AttachmentLoadOp load_op,
-                                                               ImageLayout final_layout) = 0;
+                                                               TextureLayout final_layout) = 0;
 
         virtual std::shared_ptr<RenderPipeline> create_render_pipeline(const std::vector<char> &vert_source,
                                                                        const std::vector<char> &frag_source,

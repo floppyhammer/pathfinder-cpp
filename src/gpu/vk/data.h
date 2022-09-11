@@ -66,7 +66,7 @@ namespace Pathfinder {
                 return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
             case DescriptorType::StorageBuffer:
                 return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-            case DescriptorType::Image:
+            case DescriptorType::StorageTexture:
                 return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
             default:
                 abort();
@@ -84,16 +84,18 @@ namespace Pathfinder {
             VK_FORMAT_R16_SFLOAT, VK_FORMAT_R16G16_SFLOAT, VK_FORMAT_R16G16B16_SFLOAT, VK_FORMAT_R16G16B16A16_SFLOAT,
     };
 
-    inline VkImageLayout to_vk_layout(ImageLayout layout) {
+    inline VkImageLayout to_vk_layout(TextureLayout layout) {
         switch (layout) {
-            case ImageLayout::PRESENT_SRC:
+            case TextureLayout::PRESENT_SRC:
                 return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-            case ImageLayout::SHADER_READ_ONLY:
+            case TextureLayout::SHADER_READ_ONLY:
                 return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            case ImageLayout::TRANSFER_SRC:
+            case TextureLayout::TRANSFER_SRC:
                 return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-            case ImageLayout::TRANSFER_DST:
+            case TextureLayout::TRANSFER_DST:
                 return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+            case TextureLayout::GENERAL:
+                return VK_IMAGE_LAYOUT_GENERAL;
         }
     }
 

@@ -256,7 +256,7 @@ namespace Pathfinder {
                     {DescriptorType::StorageBuffer, ShaderType::Compute, 2, "", nullptr,
                      nullptr}); // Read only.
             fill_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::Image, ShaderType::Compute, 3, "uDest", nullptr, mask_texture});
+                    {DescriptorType::StorageTexture, ShaderType::Compute, 3, "uDest", nullptr, mask_texture});
             fill_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::Texture, ShaderType::Compute, 4, "uAreaLUT", nullptr, area_lut_texture});
             fill_descriptor_set->add_or_update_descriptor(
@@ -280,7 +280,7 @@ namespace Pathfinder {
                 tile_descriptor_set->add_or_update_descriptor(
                         {DescriptorType::Texture, ShaderType::Compute, 6, "uGammaLUT", nullptr, nullptr});
                 tile_descriptor_set->add_or_update_descriptor(
-                        {DescriptorType::Image, ShaderType::Compute, 7, "", nullptr, nullptr});
+                        {DescriptorType::StorageTexture, ShaderType::Compute, 7, "", nullptr, nullptr});
 
                 {
                     Descriptor descriptor;
@@ -457,7 +457,7 @@ namespace Pathfinder {
             tile_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::Texture, ShaderType::Compute, 6, "uGammaLUT", nullptr, metadata_texture});
             tile_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::Image, ShaderType::Compute, 7, "", nullptr, target_texture});
+                    {DescriptorType::StorageTexture, ShaderType::Compute, 7, "", nullptr, target_texture});
 
             tile_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::StorageBuffer, ShaderType::Compute, 0, "", tiles_d3d11_buffer_id,
@@ -468,6 +468,10 @@ namespace Pathfinder {
         }
 
         auto cmd_buffer = driver->create_command_buffer(true);
+
+        cmd_buffer->transition_layout(mask_texture, TextureLayout::SHADER_READ_ONLY);
+
+        cmd_buffer->transition_layout(dest_texture, TextureLayout::GENERAL);
 
         cmd_buffer->begin_compute_pass();
 
@@ -1033,6 +1037,8 @@ namespace Pathfinder {
         }
 
         cmd_buffer = driver->create_command_buffer(true);
+
+        cmd_buffer->transition_layout(mask_texture, TextureLayout::GENERAL);
 
         cmd_buffer->begin_compute_pass();
 

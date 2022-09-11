@@ -31,7 +31,7 @@ namespace Pathfinder {
                 z_buffer_map.rect.height(),
                 TextureFormat::RGBA8_UNORM);
 
-        cmd_buffer->upload_to_texture(z_buffer_texture, {}, z_buffer_map.data.data());
+        cmd_buffer->upload_to_texture(z_buffer_texture, {}, z_buffer_map.data.data(), TextureLayout::SHADER_READ_ONLY);
 
         return z_buffer_texture;
     }
@@ -39,15 +39,15 @@ namespace Pathfinder {
     RendererD3D9::RendererD3D9(const std::shared_ptr<Driver> &p_driver) : Renderer(p_driver) {
         mask_render_pass = driver->create_render_pass(TextureFormat::RGBA16F,
                                                       AttachmentLoadOp::CLEAR,
-                                                      ImageLayout::SHADER_READ_ONLY);
+                                                      TextureLayout::SHADER_READ_ONLY);
 
         dest_render_pass_clear = driver->create_render_pass(TextureFormat::RGBA8_UNORM,
                                                             AttachmentLoadOp::CLEAR,
-                                                            ImageLayout::SHADER_READ_ONLY);
+                                                            TextureLayout::SHADER_READ_ONLY);
 
         dest_render_pass_load = driver->create_render_pass(TextureFormat::RGBA8_UNORM,
                                                            AttachmentLoadOp::LOAD,
-                                                           ImageLayout::SHADER_READ_ONLY);
+                                                           TextureLayout::SHADER_READ_ONLY);
 
         auto mask_texture = driver->create_texture(
                 MASK_FRAMEBUFFER_WIDTH,

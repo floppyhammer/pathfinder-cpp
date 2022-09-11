@@ -14,7 +14,7 @@ namespace Pathfinder {
         RenderPassVk(VkDevice p_device,
                      TextureFormat texture_format,
                      AttachmentLoadOp load_op,
-                     ImageLayout final_layout);
+                     TextureLayout final_layout);
 
         ~RenderPassVk();
 

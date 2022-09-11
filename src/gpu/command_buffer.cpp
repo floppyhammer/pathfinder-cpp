@@ -126,7 +126,8 @@ namespace Pathfinder {
 
     void CommandBuffer::upload_to_texture(const std::shared_ptr<Texture> &texture,
                                           Rect<uint32_t> p_region,
-                                          const void *data) {
+                                          const void *data,
+                                          TextureLayout dst_layout) {
         auto whole_region = Rect<uint32_t>(0,
                                            0,
                                            texture->get_width(),
@@ -151,6 +152,7 @@ namespace Pathfinder {
         args.width = region.width();
         args.height = region.height();
         args.data = data;
+        args.dst_layout = dst_layout;
 
         commands.push(cmd);
     }
@@ -177,6 +179,31 @@ namespace Pathfinder {
                 Logger::error("Cannot read data from non-storage buffers!", "Command Buffer");
             }
                 break;
+        }
+    }
+
+    void CommandBuffer::transition_layout(std::shared_ptr<Texture> &texture, TextureLayout new_layout) {
+        auto old_layout = texture->get_layout();
+
+        if (old_layout == new_layout) {
+            return;
+        }
+
+        if (texture->get_layout() == old_layout) {
+            Command cmd;
+            cmd.type = CommandType::TransitionLayout;
+
+            auto &args = cmd.args.transition_layout;
+            args.texture = texture.get();
+            args.src_layout = old_layout;
+            args.dst_layout = new_layout;
+
+            commands.push(cmd);
+
+            texture->set_layout(new_layout);
+        } else {
+            Logger::error("Current texture layout doesn't match the transition src layout!", "CommandBufferVk");
+            abort();
         }
     }
 }

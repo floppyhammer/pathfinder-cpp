@@ -337,7 +337,7 @@ namespace Pathfinder {
     std::shared_ptr<RenderPass> DriverVk::create_render_pass(
             TextureFormat format,
             AttachmentLoadOp load_op,
-            ImageLayout final_layout) {
+            TextureLayout final_layout) {
         auto render_pass_vk = std::make_shared<RenderPassVk>(device, format, load_op, final_layout);
 
         return render_pass_vk;
@@ -392,8 +392,7 @@ namespace Pathfinder {
         return buffer_vk;
     }
 
-    std::shared_ptr<Texture> DriverVk::create_texture(uint32_t width, uint32_t height,
-                                                      TextureFormat format) {
+    std::shared_ptr<Texture> DriverVk::create_texture(uint32_t width, uint32_t height, TextureFormat format) {
         auto texture_vk = std::make_shared<TextureVk>(
                 device,
                 width,
@@ -401,7 +400,6 @@ namespace Pathfinder {
                 format
         );
 
-        // TODO(floppyhammer): Add VK_IMAGE_USAGE_STORAGE_BIT only when necessary.
         create_vk_image(width,
                         height,
                         to_vk_texture_format(format),
@@ -410,7 +408,8 @@ namespace Pathfinder {
                         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
                         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                         texture_vk->image,
-                        texture_vk->image_memory);
+                        texture_vk->image_memory
+        );
 
         // Create image view.
         texture_vk->image_view = create_vk_image_view(texture_vk->image,
@@ -707,75 +706,6 @@ namespace Pathfinder {
                 {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
                 VK_IMAGE_TILING_OPTIMAL,
                 VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
-        );
-    }
-
-    void DriverVk::transition_image_layout(VkCommandBuffer command_buffer, VkImage image,
-                                           VkImageLayout old_layout, VkImageLayout new_layout) const {
-        VkImageMemoryBarrier barrier{};
-        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        barrier.oldLayout = old_layout;
-        barrier.newLayout = new_layout;
-
-        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-
-        barrier.image = image;
-        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        barrier.subresourceRange.baseMipLevel = 0;
-        barrier.subresourceRange.levelCount = 1;
-        barrier.subresourceRange.baseArrayLayer = 0;
-        barrier.subresourceRange.layerCount = 1;
-
-        VkPipelineStageFlags src_stage;
-        VkPipelineStageFlags dst_stage;
-
-        if (new_layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
-//            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-//
-//            if (hasStencilComponent(format)) {
-//                barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-//            }
-        } else {
-            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        }
-
-        if (old_layout == VK_IMAGE_LAYOUT_UNDEFINED && new_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-            barrier.srcAccessMask = 0;
-            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-
-            src_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-            dst_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        } else if (old_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
-                   new_layout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-            src_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-            dst_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        } else if (old_layout == VK_IMAGE_LAYOUT_UNDEFINED &&
-                   new_layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
-            barrier.srcAccessMask = 0;
-            barrier.dstAccessMask =
-                    VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-            src_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-            dst_stage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-        } else {
-            throw std::invalid_argument("Unsupported layout transition!");
-        }
-
-        vkCmdPipelineBarrier(
-                command_buffer,
-                src_stage,
-                dst_stage,
-                0,
-                0,
-                nullptr,
-                0,
-                nullptr,
-                1,
-                &barrier
         );
     }
 

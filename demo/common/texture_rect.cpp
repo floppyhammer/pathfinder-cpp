@@ -139,6 +139,7 @@ void TextureRect::draw(const std::shared_ptr<Pathfinder::Driver> &driver,
 
     auto one_time_cmd_buffer = driver->create_command_buffer(true);
     one_time_cmd_buffer->upload_to_buffer(uniform_buffer, 0, 16 * sizeof(float), &mvp_mat);
+    one_time_cmd_buffer->transition_layout(texture, Pathfinder::TextureLayout::SHADER_READ_ONLY);
     one_time_cmd_buffer->submit(driver);
 
     cmd_buffer->bind_render_pipeline(pipeline);

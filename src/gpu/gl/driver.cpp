@@ -44,7 +44,7 @@ namespace Pathfinder {
 
     std::shared_ptr<RenderPass> DriverGl::create_render_pass(TextureFormat format,
                                                              AttachmentLoadOp load_op,
-                                                             ImageLayout final_layout) {
+                                                             TextureLayout final_layout) {
         auto render_pass_gl = std::make_shared<RenderPassGl>(load_op);
 
         check_error("create_render_pass");
