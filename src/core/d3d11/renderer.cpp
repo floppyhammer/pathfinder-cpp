@@ -256,9 +256,9 @@ namespace Pathfinder {
                     {DescriptorType::StorageBuffer, ShaderType::Compute, 2, "", nullptr,
                      nullptr}); // Read only.
             fill_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageTexture, ShaderType::Compute, 3, "uDest", nullptr, mask_texture});
+                    {DescriptorType::Image, ShaderType::Compute, 3, "uDest", nullptr, mask_texture});
             fill_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::Texture, ShaderType::Compute, 4, "uAreaLUT", nullptr, area_lut_texture});
+                    {DescriptorType::Sampler, ShaderType::Compute, 4, "uAreaLUT", nullptr, area_lut_texture});
             fill_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::UniformBuffer, ShaderType::Compute, 5, "bUniform", fill_ub, nullptr});
         }
@@ -274,13 +274,13 @@ namespace Pathfinder {
                 tile_descriptor_set->add_or_update_descriptor(
                         {DescriptorType::StorageBuffer, ShaderType::Compute, 1, "", nullptr, nullptr});
                 tile_descriptor_set->add_or_update_descriptor(
-                        {DescriptorType::Texture, ShaderType::Compute, 3, "uZBuffer", nullptr, nullptr});
+                        {DescriptorType::Sampler, ShaderType::Compute, 3, "uZBuffer", nullptr, nullptr});
                 tile_descriptor_set->add_or_update_descriptor(
-                        {DescriptorType::Texture, ShaderType::Compute, 4, "uColorTexture0", nullptr, nullptr});
+                        {DescriptorType::Sampler, ShaderType::Compute, 4, "uColorTexture0", nullptr, nullptr});
                 tile_descriptor_set->add_or_update_descriptor(
-                        {DescriptorType::Texture, ShaderType::Compute, 6, "uGammaLUT", nullptr, nullptr});
+                        {DescriptorType::Sampler, ShaderType::Compute, 6, "uGammaLUT", nullptr, nullptr});
                 tile_descriptor_set->add_or_update_descriptor(
-                        {DescriptorType::StorageTexture, ShaderType::Compute, 7, "", nullptr, nullptr});
+                        {DescriptorType::Image, ShaderType::Compute, 7, "", nullptr, nullptr});
 
                 {
                     Descriptor descriptor;
@@ -317,7 +317,7 @@ namespace Pathfinder {
 
                 {
                     Descriptor descriptor;
-                    descriptor.type = DescriptorType::Texture;
+                    descriptor.type = DescriptorType::Sampler;
                     descriptor.stage = ShaderType::Compute;
                     descriptor.binding = 2;
                     descriptor.binding_name = "uTextureMetadata";
@@ -328,7 +328,7 @@ namespace Pathfinder {
 
                 {
                     Descriptor descriptor;
-                    descriptor.type = DescriptorType::Texture;
+                    descriptor.type = DescriptorType::Sampler;
                     descriptor.stage = ShaderType::Compute;
                     descriptor.binding = 5;
                     descriptor.binding_name = "uMaskTexture0";
@@ -450,14 +450,14 @@ namespace Pathfinder {
         // Update descriptor set.
         {
             tile_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::Texture, ShaderType::Compute, 3, "uZBuffer", nullptr, mask_texture});
+                    {DescriptorType::Sampler, ShaderType::Compute, 3, "uZBuffer", nullptr, mask_texture});
             tile_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::Texture, ShaderType::Compute, 4, "uColorTexture0", nullptr,
+                    {DescriptorType::Sampler, ShaderType::Compute, 4, "uColorTexture0", nullptr,
                      color_texture ? color_texture : metadata_texture});
             tile_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::Texture, ShaderType::Compute, 6, "uGammaLUT", nullptr, metadata_texture});
+                    {DescriptorType::Sampler, ShaderType::Compute, 6, "uGammaLUT", nullptr, metadata_texture});
             tile_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageTexture, ShaderType::Compute, 7, "", nullptr, target_texture});
+                    {DescriptorType::Image, ShaderType::Compute, 7, "", nullptr, target_texture});
 
             tile_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::StorageBuffer, ShaderType::Compute, 0, "", tiles_d3d11_buffer_id,

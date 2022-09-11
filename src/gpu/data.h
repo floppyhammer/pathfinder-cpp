@@ -99,9 +99,9 @@ namespace Pathfinder {
 
     enum class DescriptorType {
         UniformBuffer = 0,
-        Texture,
+        Sampler,
         StorageBuffer,
-        StorageTexture,
+        Image,
         Max,
     };
 

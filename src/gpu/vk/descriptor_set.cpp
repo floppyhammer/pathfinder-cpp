@@ -25,7 +25,7 @@ namespace Pathfinder {
                         pool_size.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
                     }
                         break;
-                    case DescriptorType::Texture: {
+                    case DescriptorType::Sampler: {
                         pool_size.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                     }
                         break;
@@ -33,7 +33,7 @@ namespace Pathfinder {
                         pool_size.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                     }
                         break;
-                    case DescriptorType::StorageTexture: {
+                    case DescriptorType::Image: {
                         pool_size.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
                     }
                         break;
@@ -96,7 +96,7 @@ namespace Pathfinder {
 
                 descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
                 descriptor_write.pBufferInfo = &bufferInfo;
-            } else if (descriptor.type == DescriptorType::Texture) {
+            } else if (descriptor.type == DescriptorType::Sampler) {
                 auto texture_vk = static_cast<TextureVk *>(descriptor.texture.get());
 
                 imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -114,7 +114,7 @@ namespace Pathfinder {
 
                 descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                 descriptor_write.pBufferInfo = &bufferInfo;
-            } else if (descriptor.type == DescriptorType::StorageTexture) {
+            } else if (descriptor.type == DescriptorType::Image) {
                 auto texture_vk = static_cast<TextureVk *>(descriptor.texture.get());
 
                 imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;

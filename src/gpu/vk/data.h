@@ -62,11 +62,11 @@ namespace Pathfinder {
         switch (descriptor_type) {
             case DescriptorType::UniformBuffer:
                 return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            case DescriptorType::Texture:
+            case DescriptorType::Sampler:
                 return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
             case DescriptorType::StorageBuffer:
                 return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-            case DescriptorType::StorageTexture:
+            case DescriptorType::Image:
                 return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
             default:
                 abort();

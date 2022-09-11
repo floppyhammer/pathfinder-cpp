@@ -204,7 +204,7 @@ namespace Pathfinder {
                                 glBindBufferBase(GL_UNIFORM_BUFFER, binding_point, buffer_gl->id);
                             }
                                 break;
-                            case DescriptorType::Texture: {
+                            case DescriptorType::Sampler: {
                                 auto texture_gl = static_cast<TextureGl *>(descriptor.texture.get());
 
                                 if (!binding_name.empty()) {

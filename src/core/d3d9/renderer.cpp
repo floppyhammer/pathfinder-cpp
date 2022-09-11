@@ -132,7 +132,7 @@ namespace Pathfinder {
                                                                       fixed_sizes_ub,
                                                                       nullptr});
                 fill_descriptor_set->add_or_update_descriptor({
-                                                                      DescriptorType::Texture,
+                                                                      DescriptorType::Sampler,
                                                                       ShaderType::Fragment,
                                                                       1,
                                                                       "uAreaLUT",
@@ -253,7 +253,7 @@ namespace Pathfinder {
 
                 {
                     Descriptor descriptor;
-                    descriptor.type = DescriptorType::Texture;
+                    descriptor.type = DescriptorType::Sampler;
                     descriptor.stage = ShaderType::Vertex,
                             descriptor.binding = 0;
                     descriptor.binding_name = "uTextureMetadata";
@@ -264,7 +264,7 @@ namespace Pathfinder {
 
                 {
                     Descriptor descriptor;
-                    descriptor.type = DescriptorType::Texture;
+                    descriptor.type = DescriptorType::Sampler;
                     descriptor.stage = ShaderType::Fragment,
                             descriptor.binding = 6;
                     descriptor.binding_name = "uMaskTexture0";
@@ -275,13 +275,13 @@ namespace Pathfinder {
 
                 // Placeholders.
                 tile_descriptor_set->add_or_update_descriptor(
-                        {DescriptorType::Texture, ShaderType::Fragment, 7, "uDestTexture", nullptr, nullptr});
+                        {DescriptorType::Sampler, ShaderType::Fragment, 7, "uDestTexture", nullptr, nullptr});
                 tile_descriptor_set->add_or_update_descriptor(
-                        {DescriptorType::Texture, ShaderType::Fragment, 8, "uGammaLUT", nullptr, nullptr});
+                        {DescriptorType::Sampler, ShaderType::Fragment, 8, "uGammaLUT", nullptr, nullptr});
                 tile_descriptor_set->add_or_update_descriptor(
-                        {DescriptorType::Texture, ShaderType::Vertex, 1, "uZBuffer", nullptr, nullptr});
+                        {DescriptorType::Sampler, ShaderType::Vertex, 1, "uZBuffer", nullptr, nullptr});
                 tile_descriptor_set->add_or_update_descriptor(
-                        {DescriptorType::Texture, ShaderType::Fragment, 5, "uColorTexture0", nullptr, nullptr});
+                        {DescriptorType::Sampler, ShaderType::Fragment, 5, "uColorTexture0", nullptr, nullptr});
             }
 
             tile_pipeline = driver->create_render_pipeline(tile_vert_source,
@@ -454,15 +454,15 @@ namespace Pathfinder {
         // Update descriptor set.
         {
             tile_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::Texture, ShaderType::Fragment, 7, "uDestTexture", nullptr,
+                    {DescriptorType::Sampler, ShaderType::Fragment, 7, "uDestTexture", nullptr,
                      z_buffer_texture}); // Unused
             tile_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::Texture, ShaderType::Vertex, 1, "uZBuffer", nullptr, z_buffer_texture});
+                    {DescriptorType::Sampler, ShaderType::Vertex, 1, "uZBuffer", nullptr, z_buffer_texture});
             tile_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::Texture, ShaderType::Fragment, 5, "uColorTexture0", nullptr,
+                    {DescriptorType::Sampler, ShaderType::Fragment, 5, "uColorTexture0", nullptr,
                      color_texture ? color_texture : z_buffer_texture});
             tile_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::Texture, ShaderType::Fragment, 8, "uGammaLUT", nullptr,
+                    {DescriptorType::Sampler, ShaderType::Fragment, 8, "uGammaLUT", nullptr,
                      z_buffer_texture}); // Unused
         }
 
