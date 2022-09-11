@@ -179,8 +179,15 @@ namespace Pathfinder {
             return {origin().min(other.origin()), lower_right().max(other.lower_right())};
         }
 
-        inline bool contains_point(const Vec2 <T> &point) {
+        // The containment check is a bit different for int and float.
+        inline bool contains_point(const Vec2<float> &point) {
+            // self.origin <= point && point <= self.lower_right
             return (left <= point.x && point.x <= right && top <= point.y && point.y <= bottom);
+        }
+
+        inline bool contains_point(const Vec2<int> &point) {
+            // self.origin <= point && point <= self.lower_right - 1
+            return (left <= point.x && point.x <= right - 1 && top <= point.y && point.y <= bottom - 1);
         }
     };
 
