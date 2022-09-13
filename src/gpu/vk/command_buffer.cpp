@@ -234,17 +234,17 @@ namespace Pathfinder {
 
                     // Create a host visible buffer and copy data to it by memory mapping.
                     // ---------------------------------
-                    VkBuffer stagingBuffer;
-                    VkDeviceMemory stagingBufferMemory;
+                    VkBuffer staging_buffer;
+                    VkDeviceMemory staging_buffer_memory;
 
                     driver->create_vk_buffer(args.data_size,
                                              VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                              VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                             stagingBuffer,
-                                             stagingBufferMemory);
+                                             staging_buffer,
+                                             staging_buffer_memory);
 
                     driver->copy_data_to_memory(args.data,
-                                                stagingBufferMemory,
+                                                staging_buffer_memory,
                                                 args.data_size);
                     // ---------------------------------
 
@@ -264,7 +264,9 @@ namespace Pathfinder {
 //                                         VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
 //                                         0, nullptr, 1, &barrier, 0, nullptr);
 
-                    driver->copy_vk_buffer(vk_command_buffer, stagingBuffer, buffer_vk->get_vk_buffer(),
+                    driver->copy_vk_buffer(vk_command_buffer,
+                                           staging_buffer,
+                                           buffer_vk->get_vk_buffer(),
                                            args.data_size);
 
 //                    // Don't read vertex data as we're writing it.
@@ -276,9 +278,9 @@ namespace Pathfinder {
 //                                         0, nullptr, 1, &barrier, 0, nullptr);
 
                     // Callback to clean up staging resources.
-                    auto callback = [driver, stagingBuffer, stagingBufferMemory] {
-                        vkDestroyBuffer(driver->get_device(), stagingBuffer, nullptr);
-                        vkFreeMemory(driver->get_device(), stagingBufferMemory, nullptr);
+                    auto callback = [driver, staging_buffer, staging_buffer_memory] {
+                        vkDestroyBuffer(driver->get_device(), staging_buffer, nullptr);
+                        vkFreeMemory(driver->get_device(), staging_buffer_memory, nullptr);
                     };
                     add_callback(callback);
                 }
@@ -364,7 +366,7 @@ namespace Pathfinder {
                             region.imageSubresource.mipLevel = 0;
                             region.imageSubresource.baseArrayLayer = 0;
                             region.imageSubresource.layerCount = 1;
-                            // Selects the initial x, y, z offsets in texels of the sub-region of the source or destination image data.
+                            // Selects the initial x, y, z offsets in texels of the subregion of the source or destination image data.
                             region.imageOffset = {static_cast<int32_t>(args.offset_x),
                                                   static_cast<int32_t>(args.offset_y),
                                                   0};
