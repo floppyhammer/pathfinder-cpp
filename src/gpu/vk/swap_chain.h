@@ -49,7 +49,6 @@ namespace Pathfinder {
 
         /// Store the format and extent we've chosen for the swap chain images.
         VkFormat swapchain_image_format; // Default is VK_FORMAT_B8G8R8A8_SRGB.
-        VkExtent2D swapchain_extent;
 
         std::vector<VkCommandBuffer> command_buffers;
 

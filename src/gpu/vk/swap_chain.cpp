@@ -116,7 +116,7 @@ namespace Pathfinder {
 
         VkSurfaceFormatKHR surface_format = platform->choose_swap_surface_format(swapchain_support.formats);
         VkPresentModeKHR present_mode = platform->choose_swap_present_mode(swapchain_support.present_modes);
-        VkExtent2D extent = platform->choose_swap_extent(swapchain_support.capabilities);
+        VkExtent2D vk_extent = platform->choose_swap_extent(swapchain_support.capabilities);
 
         uint32_t image_count = swapchain_support.capabilities.minImageCount + 1;
         if (swapchain_support.capabilities.maxImageCount > 0 &&
@@ -131,7 +131,7 @@ namespace Pathfinder {
         create_info.minImageCount = image_count;
         create_info.imageFormat = surface_format.format;
         create_info.imageColorSpace = surface_format.colorSpace;
-        create_info.imageExtent = extent;
+        create_info.imageExtent = vk_extent;
         create_info.imageArrayLayers = 1;
         create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
@@ -166,7 +166,7 @@ namespace Pathfinder {
         vkGetSwapchainImagesKHR(device, swapchain, &image_count, swapchain_images.data());
 
         swapchain_image_format = surface_format.format;
-        swapchain_extent = extent;
+        extent = {vk_extent.width, vk_extent.height};
     }
 
     void SwapChainVk::create_image_views() {
