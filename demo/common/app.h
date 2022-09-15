@@ -12,8 +12,8 @@ public:
         const std::shared_ptr<Pathfinder::SwapChain> &swap_chain,
         uint32_t window_width,
         uint32_t window_height,
-        std::vector<char> &area_lut_input,
-        const std::string &p_svg_input);
+        const std::vector<char> &area_lut_input,
+        const std::vector<char> &p_svg_input);
 
     void loop(const std::shared_ptr<Pathfinder::SwapChain> &swap_chain);
 

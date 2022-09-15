@@ -23,7 +23,7 @@ int main() {
 
     // Create app.
     auto area_lut_input = Pathfinder::load_file_as_bytes(PATHFINDER_ASSET_DIR"area-lut.png");
-    auto svg_input = Pathfinder::load_file_as_string(PATHFINDER_ASSET_DIR"tiger.svg");
+    auto svg_input = Pathfinder::load_file_as_bytes(PATHFINDER_ASSET_DIR"tiger.svg");
 
     App app(driver, swap_chain, WINDOW_WIDTH, WINDOW_HEIGHT, area_lut_input, svg_input);
 

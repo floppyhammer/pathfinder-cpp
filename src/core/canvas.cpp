@@ -449,27 +449,19 @@ namespace Pathfinder {
         }
     }
 
-    void Canvas::load_svg(const std::string &input) {
-        Timestamp timestamp;
-
-        // Load the SVG image via NanoSVG.
-        NSVGimage *image;
-
-        // Make a copy as nsvgParse() will empty the string.
-        auto input_copy = input;
-        char *string_c = const_cast<char *>(input_copy.c_str());
-        image = nsvgParse(string_c, "px", 96);
+    void Canvas::load_svg(std::vector<char> input) {
+        // Load the SVG image.
+        NSVGimage *image = nsvgParse(input.data(), "px", 96);
 
         // Check if image loading is successful.
         if (image == nullptr) {
-            throw std::runtime_error(std::string("NanoSVG loading image failed."));
+            Logger::error("NanoSVG loading image failed!", "Canvas");
+            return;
         }
 
         char buffer[100];
-        snprintf(buffer, sizeof(buffer), "SVG image size: (%.1f, %.1f)", image->width, image->height);
-        Logger::info(std::string(buffer), "load_svg_from_file");
-
-        timestamp.record("load nsvg image from file");
+        snprintf(buffer, sizeof(buffer), "Loaded SVG image size: (%.1f, %.1f)", image->width, image->height);
+        Logger::info(std::string(buffer), "Canvas");
 
         // Extract paths, contours and points from the SVG image.
         // Notable: NSVGshape equals to Path, and NSVGpath equals to Contour (Sub-Path).
@@ -514,11 +506,8 @@ namespace Pathfinder {
             stroke_path(outline);
         }
 
-        // Clean up NanoSVG.
+        // Clean up NanoSVG image.
         nsvgDelete(image);
-
-        timestamp.record("add path to canvas");
-        timestamp.print();
     }
 
     void Canvas::draw_image() {

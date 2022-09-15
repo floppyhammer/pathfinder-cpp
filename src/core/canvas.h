@@ -44,7 +44,7 @@ namespace Pathfinder {
         Luminosity,
     };
 
-    /// Pen state.
+    /// Canvas state.
     struct State {
         Transform2 transform;
 
@@ -70,14 +70,13 @@ namespace Pathfinder {
     /// Normally, we only need one canvas to render multiple scenes.
     class Canvas {
     public:
-        Canvas(const std::shared_ptr<Driver> &p_driver,
-               const std::vector<char> &area_lut_input);
+        Canvas(const std::shared_ptr<Driver> &p_driver, const std::vector<char> &area_lut_input);
 
         void set_empty_scene(const Rect<float> &view_box);
 
         void set_empty_dest_texture(float p_size_x, float p_size_y);
 
-        // Brush state.
+        // Change state.
         // ------------------------------------------------
         Paint fill_paint() const;
 
@@ -135,8 +134,10 @@ namespace Pathfinder {
         void stroke_path(Outline p_outline);
         // ------------------------------------------------
 
+        /// Build the scene by SceneBuilder.
         void build();
 
+        /// Render the scene by Renderer.
         void render();
 
         /// A convenience method to build and render a scene.
@@ -158,11 +159,11 @@ namespace Pathfinder {
         std::shared_ptr<Texture> get_dest_texture();
 
         /**
-         * @brief Load a SVG file into cubic Bezier curves.
-         * @param canvas Target canvas.
+         * @brief Load a SVG file into the scene.
+         * @note We need a copy of the input vector as its content will be modified.
          * @param input SVG file content.
          */
-        void load_svg(const std::string &input);
+        void load_svg(std::vector<char> input);
 
         // TODO
         void draw_image();
@@ -172,6 +173,17 @@ namespace Pathfinder {
         void save_state();
 
         void restore_state();
+
+    private:
+        /**
+         * Adds a path.
+         * @param p_outline Path to add.
+         * @param p_path_op Fill/Stroke.
+         * @param p_fill_rule Winding/Even-Odd.
+         */
+        void push_path(Outline &p_outline,
+                       PathOp p_path_op,
+                       FillRule p_fill_rule);
 
     private:
         std::shared_ptr<Driver> driver;
@@ -186,16 +198,6 @@ namespace Pathfinder {
 
         /// Scene renderer.
         std::shared_ptr<Renderer> renderer;
-
-        /**
-         * Adds a path.
-         * @param p_outline Path to add.
-         * @param p_path_op Fill/Stroke.
-         * @param p_fill_rule Winding/Even-Odd.
-         */
-        void push_path(Outline &p_outline,
-                       PathOp p_path_op,
-                       FillRule p_fill_rule);
     };
 }
 #endif //PATHFINDER_CANVAS_H
