@@ -126,7 +126,7 @@ namespace Pathfinder {
         tile_ub1 = driver->create_buffer(BufferType::Uniform, 8 * sizeof(float),
                                          MemoryProperty::HOST_VISIBLE_AND_COHERENT);
 
-        // Unlike D3D9, we use RGBA8 here instead of RGBA16F.
+        // Unlike D3D9, we use RGBA8 instead of RGBA16F for the mask texture.
         mask_texture = driver->create_texture(MASK_FRAMEBUFFER_WIDTH,
                                               MASK_FRAMEBUFFER_HEIGHT,
                                               TextureFormat::RGBA8_UNORM);
@@ -581,7 +581,7 @@ namespace Pathfinder {
                 break;
         }
         if (microlines_storage.buffer_id == nullptr) {
-            Logger::error("Ran out of space for microlines when dicing!", "D3D9");
+            Logger::error("Ran out of space for microlines when dicing!", "D3D11");
         }
 
         // Initialize tiles, bin segments. We might have to do this twice if our first
@@ -611,7 +611,7 @@ namespace Pathfinder {
             }
         }
         if (fill_buffer_info.fill_vertex_buffer_id == nullptr) {
-            Logger::error("Ran out of space for fills when binning!", "D3D9");
+            Logger::error("Ran out of space for fills when binning!", "D3D11");
         }
 
         // Free microlines storage as it's not needed anymore.
