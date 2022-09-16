@@ -294,7 +294,7 @@ namespace Pathfinder {
     }
 
     void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &p_scene_builder) {
-        auto *scene_builder = dynamic_cast<SceneBuilderD3D9 *>(p_scene_builder.get());
+        auto *scene_builder = static_cast<SceneBuilderD3D9 *>(p_scene_builder.get());
 
         if (scene_builder->pending_fills.empty()) return;
 

@@ -1,7 +1,6 @@
 #include "app.h"
 
 App::App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
-         const std::shared_ptr<Pathfinder::SwapChain> &swap_chain,
          uint32_t window_width,
          uint32_t window_height,
          const std::vector<char> &area_lut_input,
@@ -17,19 +16,13 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
     canvas->set_empty_dest_texture(window_width, window_height);
     canvas->load_svg(p_svg_input);
 
-    // Set viewport texture to a texture rect.
-    texture_rect = std::make_shared<TextureRect>(driver,
-                                                 swap_chain->get_render_pass(),
-                                                 window_width,
-                                                 window_height);
-
     // Timers.
     start_time = std::chrono::steady_clock::now();
     last_time = start_time;
     last_time_updated_fps = start_time;
 }
 
-void App::loop(const std::shared_ptr<Pathfinder::SwapChain> &swap_chain) {
+void App::update() {
     // Timing.
     // ----------------------------------------
     auto current_time = std::chrono::steady_clock::now();
@@ -57,24 +50,7 @@ void App::loop(const std::shared_ptr<Pathfinder::SwapChain> &swap_chain) {
 
     canvas->build_and_render();
 
-    auto cmd_buffer = swap_chain->get_command_buffer();
-
-    auto framebuffer = swap_chain->get_framebuffer();
-
-    // Swap chain render pass.
-    {
-        cmd_buffer->begin_render_pass(swap_chain->get_render_pass(),
-                                      framebuffer,
-                                      Pathfinder::ColorF(0.2, 0.2, 0.2, 1.0));
-
-        // Draw canvas to screen.
-        texture_rect->set_texture(canvas->get_dest_texture());
-        texture_rect->draw(driver, cmd_buffer, framebuffer->get_size());
-
-        cmd_buffer->end_render_pass();
-    }
-
-    cmd_buffer->submit(driver);
+    texture_rect->set_texture(canvas->get_dest_texture());
 }
 
 void App::cleanup() {

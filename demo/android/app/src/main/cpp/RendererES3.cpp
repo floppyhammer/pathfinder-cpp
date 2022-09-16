@@ -23,40 +23,40 @@
 #include <iostream>
 #include <chrono>
 
-class RendererES3: public Renderer {
+class RendererES3 : public Renderer {
 public:
-    RendererES3(AAssetManager *pAssetManager);
+    explicit RendererES3(AAssetManager *p_asset_manager);
+
     ~RendererES3() override;
-    bool init(int width, int height);
+
+    void init(int width, int height);
 
 private:
     void draw() override;
 
-    const EGLContext mEglContext;
+    EGLContext mEglContext;
 
     std::shared_ptr<App> app;
 };
 
-Renderer* createES3Renderer(int width, int height, AAssetManager *p_asset_manager) {
-    auto* renderer = new RendererES3(p_asset_manager);
-    if (!renderer->init(width, height)) {
-        delete renderer;
-        return nullptr;
-    }
+Renderer *createES3Renderer(int width, int height, AAssetManager *p_asset_manager) {
+    auto *renderer = new RendererES3(p_asset_manager);
+    renderer->init(width, height);
+
     return renderer;
 }
 
-std::vector<char> getAssetFile(AAssetManager *asset_manager, const char* p_filename) {
-    AAssetDir* assetDir = AAssetManager_openDir(asset_manager, "");
+std::vector<char> get_asset_file(AAssetManager *asset_manager, const char *p_filename) {
+    AAssetDir *asset_dir = AAssetManager_openDir(asset_manager, "");
 
     std::vector<char> buffer;
-    const char* filename;
+    const char *filename;
 
-    while ((filename = AAssetDir_getNextFileName(assetDir)) != nullptr) {
+    while ((filename = AAssetDir_getNextFileName(asset_dir)) != nullptr) {
         ALOGV("Found asset file: %s", filename);
 
         // Search for desired file.
-        if(!strcmp(filename, p_filename)) {
+        if (!strcmp(filename, p_filename)) {
             ALOGV("Read asset file: %s", filename);
 
             AAsset *asset = AAssetManager_open(asset_manager, filename, AASSET_MODE_STREAMING);
@@ -66,24 +66,24 @@ std::vector<char> getAssetFile(AAssetManager *asset_manager, const char* p_filen
             //keeps track of remaining bytes to read
             off64_t remaining = AAsset_getRemainingLength64(asset);
             size_t Mb = 1000 * 1024; // 1Mb is maximum chunk size for compressed assets
-            size_t currChunk;
+            size_t curr_chunk;
             buffer.reserve(length);
 
             //while we have still some data to read
             while (remaining != 0) {
                 //set proper size for our next chunk
                 if (remaining >= Mb) {
-                    currChunk = Mb;
+                    curr_chunk = Mb;
                 } else {
-                    currChunk = remaining;
+                    curr_chunk = remaining;
                 }
-                char chunk[currChunk];
+                char chunk[curr_chunk];
 
                 //read data chunk
                 // returns less than 0 on error
-                if (AAsset_read(asset, chunk, currChunk) > 0) {
+                if (AAsset_read(asset, chunk, curr_chunk) > 0) {
                     //and append it to our vector
-                    buffer.insert(buffer.end(),chunk, chunk + currChunk);
+                    buffer.insert(buffer.end(), chunk, chunk + curr_chunk);
                     remaining = AAsset_getRemainingLength64(asset);
                 }
             }
@@ -97,16 +97,15 @@ std::vector<char> getAssetFile(AAssetManager *asset_manager, const char* p_filen
 RendererES3::RendererES3(AAssetManager *p_asset_manager)
         : Renderer(p_asset_manager), mEglContext(eglGetCurrentContext()) {}
 
-bool RendererES3::init(int width, int height) {
+void RendererES3::init(int width, int height) {
     ALOGV("Using OpenGL ES 3.0 renderer");
 
-    auto area_lut_input = getAssetFile(asset_manager, "area-lut.png");
-    auto svg_input = getAssetFile(asset_manager, "tiger.svg");
-    auto font_input = getAssetFile(asset_manager, "OpenSans-Regular.ttf");
+    auto area_lut_input = get_asset_file(asset_manager, "area-lut.png");
+    auto svg_input = get_asset_file(asset_manager, "tiger.svg");
 
-    app = std::make_shared<App>(width, height, area_lut_input, font_input, std::string(svg_input.begin(), svg_input.end()));
+    auto driver = std::make_shared<Pathfinder::DriverGl>();
 
-    return true;
+    app = std::make_shared<App>(driver, width, height, area_lut_input, svg_input);
 }
 
 RendererES3::~RendererES3() {
@@ -116,10 +115,11 @@ RendererES3::~RendererES3() {
      * If the context exists, it must be current. This only happens when we're
      * cleaning up after a failed init().
      */
-    if (eglGetCurrentContext() != mEglContext)
+    if (eglGetCurrentContext() != mEglContext) {
         return;
+    }
 }
 
 void RendererES3::draw() {
-    app->loop();
+    app->update();
 }

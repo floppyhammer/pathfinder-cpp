@@ -20,12 +20,13 @@ namespace Pathfinder {
         abort();
     }
 
-    PlatformGl::PlatformGl(uint32_t window_width, uint32_t window_height) {
+    PlatformGl::PlatformGl(uint32_t window_width, uint32_t window_height)
+            : Platform(window_width, window_height) {
         // Get a GLFW window.
-        init_window(window_width, window_height);
+        init_window();
     }
 
-    void PlatformGl::init_window(uint32_t p_width, uint32_t p_height) {
+    void PlatformGl::init_window() {
 #ifndef __ANDROID__
         // GLFW: initialize and configure.
         glfwInit();
@@ -37,6 +38,7 @@ namespace Pathfinder {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 #endif
+
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 #ifdef __APPLE__
@@ -44,31 +46,30 @@ namespace Pathfinder {
 #endif
 
         // GLFW: window creation.
-        window = glfwCreateWindow(p_width, p_height, "Pathfinder Demo (OpenGL)", nullptr, nullptr);
+        window = glfwCreateWindow((int) width, (int) height, "Pathfinder (OpenGL)", nullptr, nullptr);
 
         if (window == nullptr) {
-            Logger::error("Failed to create GLFW window!", "GLFW");
-            glfwTerminate();
-            return;
+            throw std::runtime_error("Failed to create GLFW window!");
         }
 
         glfwMakeContextCurrent(window);
-        //glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+        // Set window resize callback.
+        glfwSetFramebufferSizeCallback(window, framebuffer_resize_callback);
 
         // GLAD: load all OpenGL function pointers.
         if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
-            Logger::error("Failed to initialize GLAD!", "GLAD");
-            return;
+            throw std::runtime_error("Failed to initialize GLAD!");
         }
 #endif
 
         // Print GL version.
-        int glMajorVersion, glMinorVersion;
-        glGetIntegerv(GL_MAJOR_VERSION, &glMajorVersion);
-        glGetIntegerv(GL_MINOR_VERSION, &glMinorVersion);
+        int gl_major_version, gl_minor_version;
+        glGetIntegerv(GL_MAJOR_VERSION, &gl_major_version);
+        glGetIntegerv(GL_MINOR_VERSION, &gl_minor_version);
 
         std::ostringstream string_stream;
-        string_stream << "Version: " << glMajorVersion << '.' << glMinorVersion;
+        string_stream << "Version: " << gl_major_version << '.' << gl_minor_version;
         Logger::info(string_stream.str(), "OpenGL");
     }
 
@@ -80,14 +81,11 @@ namespace Pathfinder {
     }
 
     std::shared_ptr<Driver> PlatformGl::create_driver() {
-        auto driver = std::make_shared<Pathfinder::DriverGl>();
-        return driver;
+        return std::make_shared<Pathfinder::DriverGl>();
     }
 
-    std::shared_ptr<SwapChain>
-    PlatformGl::create_swap_chain(const std::shared_ptr<Driver> &driver, uint32_t p_width, uint32_t p_height) {
-        auto swap_chain_gl = std::make_shared<SwapChainGl>(p_width, p_height, window);
-        return swap_chain_gl;
+    std::shared_ptr<SwapChain> PlatformGl::create_swap_chain(const std::shared_ptr<Driver> &driver) {
+        return std::make_shared<SwapChainGl>(width, height, window);
     }
 }
 

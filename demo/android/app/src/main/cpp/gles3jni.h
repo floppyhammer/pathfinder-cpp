@@ -41,7 +41,7 @@
 #define ALOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, __VA_ARGS__)
 
 // ----------------------------------------------------------------------------
-// Interface to the ES2 and ES3 renderers, used by JNI code.
+// Interface to the ES3 renderers, used by JNI code.
 
 class Renderer {
 public:
@@ -60,7 +60,6 @@ private:
     void step();
 };
 
-extern Renderer* createES2Renderer(int width, int height, AAssetManager* p_asset_manager);
 extern Renderer* createES3Renderer(int width, int height, AAssetManager* p_asset_manager);
 
 #endif // GLES3JNI_H

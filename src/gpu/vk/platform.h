@@ -46,9 +46,7 @@ namespace Pathfinder {
 
         std::shared_ptr<Driver> create_driver() override;
 
-        std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Driver> &driver,
-                                                     uint32_t width,
-                                                     uint32_t height) override;
+        std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Driver> &driver) override;
 
         static void framebuffer_resize_callback(GLFWwindow *window, int width, int height) {
             auto platform = reinterpret_cast<PlatformVk *>(glfwGetWindowUserPointer(window));
@@ -144,7 +142,7 @@ namespace Pathfinder {
         VkCommandPool command_pool{};
 
     private:
-        void init_window(uint32_t window_width, uint32_t window_height);
+        void init_window();
 
         void setup_debug_messenger();
 

@@ -15,12 +15,18 @@ SRC_LIST := $(wildcard $(LOCAL_PATH)/../../src/common/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/common/math/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/gpu/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/gpu/gl/*.cpp)
-SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/gpu/vk/*.cpp)
+# SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/gpu/vk/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/core/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/core/data/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/core/d3d9/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/core/d3d9/data/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/core/d3d11/*.cpp)
+
+# We don't need Platform and SwapChain on Android.
+SRC_LIST := $(filter-out $(LOCAL_PATH)/../../src/gpu/gl/platform.cpp, $(SRC_LIST))
+SRC_LIST := $(filter-out $(LOCAL_PATH)/../../src/gpu/gl/swap_chain.cpp, $(SRC_LIST))
+SRC_LIST := $(filter-out $(LOCAL_PATH)/../../src/gpu/vk/platform.cpp, $(SRC_LIST))
+SRC_LIST := $(filter-out $(LOCAL_PATH)/../../src/gpu/vk/swap_chain.cpp, $(SRC_LIST))
 
 LOCAL_MODULE            := pathfinder_static
 LOCAL_MODULE_FILENAME   := libpathfinder # Prefix "lib" is necessary.
@@ -37,7 +43,7 @@ endif
 
 # C++ flags.
 LOCAL_CPPFLAGS          := $(LOCAL_CFLAGS) -O3 -pipe -w -fno-exceptions -fno-rtti
-LOCAL_CPPFLAGS          += -std=c++11 -fexceptions
+LOCAL_CPPFLAGS          += -std=c++14 -fexceptions
 
 # Set this variable to true when your module has a very high number of
 # sources and/or dependent static or shared libraries.

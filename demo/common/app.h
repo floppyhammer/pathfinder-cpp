@@ -9,22 +9,21 @@
 class App {
 public:
     App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
-        const std::shared_ptr<Pathfinder::SwapChain> &swap_chain,
         uint32_t window_width,
         uint32_t window_height,
         const std::vector<char> &area_lut_input,
         const std::vector<char> &p_svg_input);
 
-    void loop(const std::shared_ptr<Pathfinder::SwapChain> &swap_chain);
+    void update();
 
     void cleanup();
+
+    std::shared_ptr<TextureRect> texture_rect;
 
 private:
     std::shared_ptr<Pathfinder::Driver> driver;
 
     std::shared_ptr<Pathfinder::Canvas> canvas;
-
-    std::shared_ptr<TextureRect> texture_rect;
 
     std::chrono::time_point<std::chrono::steady_clock> start_time;
     std::chrono::time_point<std::chrono::steady_clock> last_time;

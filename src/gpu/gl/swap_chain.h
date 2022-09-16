@@ -14,6 +14,8 @@ namespace Pathfinder {
         friend class DriverGl;
 
     public:
+#ifndef __ANDROID__
+
         SwapChainGl(uint32_t p_width, uint32_t p_height, GLFWwindow *p_window) : SwapChain(p_width, p_height) {
             window = p_window;
 
@@ -23,6 +25,8 @@ namespace Pathfinder {
 
             render_pass = std::make_shared<RenderPassGl>(AttachmentLoadOp::CLEAR);
         }
+
+#endif
 
         inline std::shared_ptr<RenderPass> get_render_pass() override {
             return render_pass;
@@ -38,12 +42,18 @@ namespace Pathfinder {
 
         inline bool acquire_image() override { return true; }
 
-        inline void flush() override { glfwSwapBuffers(window); }
+        inline void flush() override {
+#ifndef __ANDROID__
+            glfwSwapBuffers(window);
+#endif
+        }
 
         inline void cleanup() override {}
 
     private:
+#ifndef __ANDROID__
         GLFWwindow *window;
+#endif
         std::shared_ptr<RenderPass> render_pass;
         std::shared_ptr<Framebuffer> framebuffer;
         std::shared_ptr<CommandBuffer> command_buffer;

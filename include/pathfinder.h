@@ -1,7 +1,7 @@
 #ifndef PATHFINDER_API_H
 #define PATHFINDER_API_H
 
-#include "../src/gpu/driver.h"
+#include "../src/gpu/gl/driver.h"
 #include "../src/gpu/vk/driver.h"
 #include "../src/gpu/vk/texture.h"
 #include "../src/gpu/framebuffer.h"

@@ -57,7 +57,7 @@ namespace Pathfinder {
     }
 
     void CommandBufferVk::submit(const std::shared_ptr<Driver> &p_driver) {
-        auto driver = dynamic_cast<DriverVk *>(p_driver.get());
+        auto driver = static_cast<DriverVk *>(p_driver.get());
 
         // Begin recording.
         VkCommandBufferBeginInfo beginInfo{};

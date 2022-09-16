@@ -17,22 +17,12 @@ namespace Pathfinder {
 
         std::shared_ptr<Driver> create_driver() override;
 
-        std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Driver> &driver,
-                                                     uint32_t p_width,
-                                                     uint32_t p_height) override;
-
-        bool framebuffer_resized = false;
-
-        /// GLFW: whenever the window size changed (by OS or user) this callback function executes.
-        static void framebuffer_resize_callback(GLFWwindow *window, int width, int height) {
-            auto platform = reinterpret_cast<PlatformGl *>(glfwGetWindowUserPointer(window));
-            platform->framebuffer_resized = true;
-        }
+        std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Driver> &driver) override;
 
         void cleanup() override;
 
     private:
-        void init_window(uint32_t p_width, uint32_t p_height);
+        void init_window();
     };
 }
 

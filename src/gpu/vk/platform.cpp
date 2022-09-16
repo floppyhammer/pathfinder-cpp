@@ -42,9 +42,10 @@ namespace Pathfinder {
         }
     }
 
-    PlatformVk::PlatformVk(uint32_t window_width, uint32_t window_height) {
+    PlatformVk::PlatformVk(uint32_t window_width, uint32_t window_height)
+            : Platform(window_width, window_height) {
         // Get a GLFW window.
-        init_window(window_width, window_height);
+        init_window();
 
         // Initialize the Vulkan library by creating an instance.
         create_instance();
@@ -80,7 +81,7 @@ namespace Pathfinder {
         }
     }
 
-    void PlatformVk::init_window(uint32_t p_width, uint32_t p_height) {
+    void PlatformVk::init_window() {
         // Initializes the GLFW library.
         glfwInit();
 
@@ -96,19 +97,19 @@ namespace Pathfinder {
         // Get monitor position (used to correctly center the window in a multi-monitor scenario).
         int monitors_count, monitor_x, monitor_y;
         GLFWmonitor **monitors = glfwGetMonitors(&monitors_count);
-        const GLFWvidmode *videoMode = glfwGetVideoMode(monitors[0]);
+        const GLFWvidmode *video_mode = glfwGetVideoMode(monitors[0]);
         glfwGetMonitorPos(monitors[0], &monitor_x, &monitor_y);
 
         // Get DPI scale.
         float dpi_scale_x, dpi_scale_y;
         glfwGetMonitorContentScale(monitors[0], &dpi_scale_x, &dpi_scale_y);
 
-        window = glfwCreateWindow(p_width, p_height, "Pathfinder Demo (Vulkan)", nullptr, nullptr);
+        window = glfwCreateWindow(width, height, "Pathfinder (Vulkan)", nullptr, nullptr);
 
         // Center window.
         glfwSetWindowPos(window,
-                         monitor_x + (videoMode->width - p_width) / 2,
-                         monitor_y + (videoMode->height - p_height) / 2);
+                         monitor_x + (video_mode->width - width) / 2,
+                         monitor_y + (video_mode->height - height) / 2);
 
         // Show window.
         glfwShowWindow(window);
@@ -456,9 +457,7 @@ namespace Pathfinder {
         glfwTerminate();
     }
 
-    std::shared_ptr<SwapChain> PlatformVk::create_swap_chain(const std::shared_ptr<Driver> &driver,
-                                                             uint32_t width,
-                                                             uint32_t height) {
+    std::shared_ptr<SwapChain> PlatformVk::create_swap_chain(const std::shared_ptr<Driver> &driver) {
         auto driver_vk = static_cast<DriverVk *>(driver.get());
         auto swap_chain_vk = std::make_shared<SwapChainVk>(width,
                                                            height,

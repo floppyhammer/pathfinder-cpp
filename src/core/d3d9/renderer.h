@@ -25,7 +25,7 @@ namespace Pathfinder {
 
         explicit RendererD3D9(const std::shared_ptr<Driver> &p_driver);
 
-        void set_up_pipelines();
+        void set_up_pipelines() override;
 
         /// We need to call this for each scene.
         void draw(const std::shared_ptr<SceneBuilder> &p_scene_builder) override;

@@ -19,22 +19,47 @@ int main() {
     auto driver = platform->create_driver();
 
     // Create swap chain via platform.
-    auto swap_chain = platform->create_swap_chain(driver, WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto swap_chain = platform->create_swap_chain(driver);
 
     // Create app.
-    auto area_lut_input = Pathfinder::load_file_as_bytes(PATHFINDER_ASSET_DIR"area-lut.png");
-    auto svg_input = Pathfinder::load_file_as_bytes(PATHFINDER_ASSET_DIR"tiger.svg");
+    App app(driver,
+            WINDOW_WIDTH,
+            WINDOW_HEIGHT,
+            Pathfinder::load_file_as_bytes(PATHFINDER_ASSET_DIR"area-lut.png"),
+            Pathfinder::load_file_as_bytes(PATHFINDER_ASSET_DIR"tiger.svg"));
 
-    App app(driver, swap_chain, WINDOW_WIDTH, WINDOW_HEIGHT, area_lut_input, svg_input);
+    // Set viewport texture to a texture rect.
+    app.texture_rect = std::make_shared<TextureRect>(driver,
+                                                     swap_chain->get_render_pass(),
+                                                     WINDOW_WIDTH,
+                                                     WINDOW_HEIGHT);
 
     // Main loop.
     while (!glfwWindowShouldClose(platform->get_glfw_window())) {
         platform->poll_events();
 
-        // Acquire next image.
+        // Acquire next swap chain image.
         if (!swap_chain->acquire_image()) continue;
 
-        app.loop(swap_chain);
+        app.update();
+
+        auto cmd_buffer = swap_chain->get_command_buffer();
+
+        auto framebuffer = swap_chain->get_framebuffer();
+
+        // Swap chain render pass.
+        {
+            cmd_buffer->begin_render_pass(swap_chain->get_render_pass(),
+                                          framebuffer,
+                                          Pathfinder::ColorF(0.2, 0.2, 0.2, 1.0));
+
+            // Draw canvas to screen.
+            app.texture_rect->draw(driver, cmd_buffer, framebuffer->get_size());
+
+            cmd_buffer->end_render_pass();
+        }
+
+        cmd_buffer->submit(driver);
 
         swap_chain->flush();
     }

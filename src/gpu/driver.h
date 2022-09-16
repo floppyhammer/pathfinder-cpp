@@ -10,6 +10,8 @@
 #include "compute_pipeline.h"
 
 namespace Pathfinder {
+    /// We only need to provide a Driver to Canvas for Pathfinder rendering,
+    /// which means Platform and SwapChain aren't needed for platforms like Android.
     class Driver {
     public:
         virtual std::shared_ptr<Framebuffer> create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,

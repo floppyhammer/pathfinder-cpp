@@ -9,29 +9,35 @@
 namespace Pathfinder {
     class SwapChain {
     public:
-        SwapChain(uint32_t p_width, uint32_t p_height) : extent({p_width, p_height}) {}
+        SwapChain(uint32_t width, uint32_t height) : extent({width, height}) {}
 
+        /// Swap chain framebuffer size.
         Vec2<uint32_t> extent;
 
         /// Currently available image in the chain.
         uint32_t current_image{};
 
+        /**
+         * Get a swap chain render pass.
+         * @return Render pass
+         */
         virtual std::shared_ptr<RenderPass> get_render_pass() = 0;
 
         /**
          * Get current framebuffer.
-         * @return
+         * @return Framebuffer
          */
         virtual std::shared_ptr<Framebuffer> get_framebuffer() = 0;
 
         /**
          * Get current command buffer.
-         * @return
+         * @return Command buffer
          */
         virtual std::shared_ptr<CommandBuffer> get_command_buffer() = 0;
 
         /**
          * Acquire an image in the swap chain.
+         * @return Successful
          */
         virtual bool acquire_image() = 0;
 
@@ -40,6 +46,7 @@ namespace Pathfinder {
          */
         virtual void flush() = 0;
 
+        /// Clean up swap chain resources.
         virtual void cleanup() = 0;
     };
 }

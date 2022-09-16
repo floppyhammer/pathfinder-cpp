@@ -22,14 +22,14 @@
 
 #include "gles3jni.h"
 
-static void printGlString(const char* name, GLenum s) {
-    const char* v = (const char*)glGetString(s);
+static void printGlString(const char *name, GLenum s) {
+    const char *v = (const char *) glGetString(s);
     ALOGV("GL %s: %s\n", name, v);
 }
 
 // ----------------------------------------------------------------------------
 
-Renderer::Renderer(AAssetManager* p_asset_manager) {
+Renderer::Renderer(AAssetManager *p_asset_manager) {
     asset_manager = p_asset_manager;
 }
 
@@ -47,22 +47,28 @@ void Renderer::render() {
 
 // ----------------------------------------------------------------------------
 
-static Renderer* g_renderer = nullptr;
+static Renderer *g_renderer = nullptr;
 
 extern "C" {
-    JNIEXPORT void JNICALL Java_com_android_gles3jni_GLES3JNILib_init(JNIEnv* env, jobject obj, jint width, jint height, jobject asset_manager);
-    JNIEXPORT void JNICALL Java_com_android_gles3jni_GLES3JNILib_resize(JNIEnv* env, jobject obj, jint width, jint height);
-    JNIEXPORT void JNICALL Java_com_android_gles3jni_GLES3JNILib_step(JNIEnv* env, jobject obj);
+JNIEXPORT void JNICALL
+Java_com_android_gles3jni_GLES3JNILib_init(JNIEnv *env, jobject obj, jint width, jint height,
+                                           jobject asset_manager);
+JNIEXPORT void JNICALL
+Java_com_android_gles3jni_GLES3JNILib_resize(JNIEnv *env, jobject obj, jint width, jint height);
+JNIEXPORT void JNICALL Java_com_android_gles3jni_GLES3JNILib_step(JNIEnv *env, jobject obj);
 };
 
 #if !defined(DYNAMIC_ES3)
+
 static GLboolean gl3stubInit() {
     return GL_TRUE;
 }
+
 #endif
 
 JNIEXPORT void JNICALL
-Java_com_android_gles3jni_GLES3JNILib_init(JNIEnv* env, jobject obj, jint width, jint height, jobject asset_manager) {
+Java_com_android_gles3jni_GLES3JNILib_init(JNIEnv *env, jobject obj, jint width, jint height,
+                                           jobject asset_manager) {
     if (g_renderer) {
         delete g_renderer;
         g_renderer = nullptr;
@@ -73,27 +79,28 @@ Java_com_android_gles3jni_GLES3JNILib_init(JNIEnv* env, jobject obj, jint width,
     printGlString("Renderer", GL_RENDERER);
     printGlString("Extensions", GL_EXTENSIONS);
 
-    AAssetManager* asset_manager0 = AAssetManager_fromJava(env, asset_manager);
+    AAssetManager *asset_manager0 = AAssetManager_fromJava(env, asset_manager);
 
-    const char* versionStr = (const char*)glGetString(GL_VERSION);
+    const char *versionStr = (const char *) glGetString(GL_VERSION);
+
     if (strstr(versionStr, "OpenGL ES 3.") && gl3stubInit()) {
         g_renderer = createES3Renderer(width, height, asset_manager0);
     } else if (strstr(versionStr, "OpenGL ES 2.")) {
-        g_renderer = createES2Renderer(width, height, asset_manager0);
+        ALOGE("OpenGL ES 2 is not supported");
     } else {
         ALOGE("Unsupported OpenGL ES version");
     }
 }
 
 JNIEXPORT void JNICALL
-Java_com_android_gles3jni_GLES3JNILib_resize(JNIEnv* env, jobject obj, jint width, jint height) {
+Java_com_android_gles3jni_GLES3JNILib_resize(JNIEnv *env, jobject obj, jint width, jint height) {
     if (g_renderer) {
         g_renderer->resize(width, height);
     }
 }
 
 JNIEXPORT void JNICALL
-Java_com_android_gles3jni_GLES3JNILib_step(JNIEnv* env, jobject obj) {
+Java_com_android_gles3jni_GLES3JNILib_step(JNIEnv *env, jobject obj) {
     if (g_renderer) {
         g_renderer->render();
     }
