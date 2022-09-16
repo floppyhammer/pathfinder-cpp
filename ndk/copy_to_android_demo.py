@@ -23,12 +23,15 @@ if os.path.exists(android_src_path + "/lib"):
     shutil.rmtree(android_src_path + "/lib")
 if os.path.exists(android_src_path + "/third_party"):
     shutil.rmtree(android_src_path + "/third_party")
+if os.path.exists(android_src_path + "/../assets"):
+    shutil.rmtree(android_src_path + "/../assets")
 
 # Copy new headers and sources.
 shutil.copytree("../demo/common", android_src_path + "/demo/common")
 shutil.copytree("../src", android_src_path + "/src")
 shutil.copytree("../include", android_src_path + "/include")
 shutil.copytree("../third_party", android_src_path + "/third_party")
+shutil.copytree("../assets", android_src_path + "/../assets")
 
 # Except for the demo directory, delete sources in other directories.
 delete_cpp_files(android_src_path + "/src")

@@ -13,6 +13,28 @@
 
 #ifdef PATHFINDER_USE_D3D11
 
+#ifdef PATHFINDER_USE_VULKAN
+
+#include "../../shaders/generated/dice_comp_spv.h"
+#include "../../shaders/generated/bound_comp_spv.h"
+#include "../../shaders/generated/bin_comp_spv.h"
+#include "../../shaders/generated/propagate_comp_spv.h"
+#include "../../shaders/generated/fill_comp_spv.h"
+#include "../../shaders/generated/sort_comp_spv.h"
+#include "../../shaders/generated/tile_comp_spv.h"
+
+#else
+
+#include "../../shaders/generated/dice_comp.h"
+#include "../../shaders/generated/bound_comp.h"
+#include "../../shaders/generated/bin_comp.h"
+#include "../../shaders/generated/propagate_comp.h"
+#include "../../shaders/generated/fill_comp.h"
+#include "../../shaders/generated/sort_comp.h"
+#include "../../shaders/generated/tile_comp.h"
+
+#endif
+
 namespace Pathfinder {
     const size_t FILL_INDIRECT_DRAW_PARAMS_INSTANCE_COUNT_INDEX = 1;
     const size_t FILL_INDIRECT_DRAW_PARAMS_ALPHA_TILE_COUNT_INDEX = 4;
@@ -133,18 +155,38 @@ namespace Pathfinder {
     }
 
     void RendererD3D11::set_up_pipelines() {
-        std::string postfix;
 #ifdef PATHFINDER_USE_VULKAN
-        postfix = ".spv";
-#endif
+        const auto dice_source = std::vector<char>(std::begin(dice_comp_spv),
+                                                   std::end(dice_comp_spv));
+        const auto bound_source = std::vector<char>(std::begin(bound_comp_spv),
+                                                    std::end(bound_comp_spv));
+        const auto bin_source = std::vector<char>(std::begin(bin_comp_spv),
+                                                  std::end(bin_comp_spv));
+        const auto propagate_source = std::vector<char>(std::begin(propagate_comp_spv),
+                                                        std::end(propagate_comp_spv));
+        const auto fill_source = std::vector<char>(std::begin(fill_comp_spv),
+                                                   std::end(fill_comp_spv));
+        const auto sort_source = std::vector<char>(std::begin(sort_comp_spv),
+                                                   std::end(sort_comp_spv));
+        const auto tile_source = std::vector<char>(std::begin(tile_comp_spv),
+                                                   std::end(tile_comp_spv));
+#else
 
-        const auto dice_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/dice.comp" + postfix);
-        const auto bound_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/bound.comp" + postfix);
-        const auto bin_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/bin.comp" + postfix);
-        const auto propagate_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/propagate.comp" + postfix);
-        const auto fill_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/fill.comp" + postfix);
-        const auto sort_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/sort.comp" + postfix);
-        const auto tile_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d11/tile.comp" + postfix);
+        const auto dice_source = std::vector<char>(std::begin(dice_comp),
+                                                   std::end(dice_comp));
+        const auto bound_source = std::vector<char>(std::begin(bound_comp),
+                                                    std::end(bound_comp));
+        const auto bin_source = std::vector<char>(std::begin(bin_comp),
+                                                  std::end(bin_comp));
+        const auto propagate_source = std::vector<char>(std::begin(propagate_comp),
+                                                        std::end(propagate_comp));
+        const auto fill_source = std::vector<char>(std::begin(fill_comp),
+                                                   std::end(fill_comp));
+        const auto sort_source = std::vector<char>(std::begin(sort_comp),
+                                                   std::end(sort_comp));
+        const auto tile_source = std::vector<char>(std::begin(tile_comp),
+                                                   std::end(tile_comp));
+#endif
 
         // Dice pipeline.
         {

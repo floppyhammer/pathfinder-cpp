@@ -33,7 +33,7 @@ namespace Pathfinder {
         explicit Renderer(const std::shared_ptr<Driver> &p_driver);
 
         /// Set up.
-        void set_up(const std::vector<char> &area_lut_input);
+        void set_up();
 
         virtual void set_up_pipelines() = 0;
 

@@ -7,6 +7,16 @@
 #include "../../src/common/global_macros.h"
 #include "../../src/gpu/platform.h"
 
+#ifdef PATHFINDER_USE_VULKAN
+#include "../../src/shaders/generated/blit_vert_spv.h"
+#include "../../src/shaders/generated/blit_frag_spv.h"
+#else
+
+#include "../../src/shaders/generated/blit_vert.h"
+#include "../../src/shaders/generated/blit_frag.h"
+
+#endif
+
 TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
                          const std::shared_ptr<Pathfinder::RenderPass> &render_pass,
                          uint32_t width,
@@ -42,13 +52,13 @@ TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
 
     // Pipeline.
     {
-        std::string postfix;
 #ifdef PATHFINDER_USE_VULKAN
-        postfix = ".spv";
+        const auto vert_source = std::vector<char>(std::begin(Pathfinder::blit_vert_spv), std::end(Pathfinder::blit_vert_spv));
+        const auto frag_source = std::vector<char>(std::begin(Pathfinder::blit_frag_spv), std::end(Pathfinder::blit_frag_spv));
+#else
+        const auto vert_source = std::vector<char>(std::begin(Pathfinder::blit_vert), std::end(Pathfinder::blit_vert));
+        const auto frag_source = std::vector<char>(std::begin(Pathfinder::blit_frag), std::end(Pathfinder::blit_frag));
 #endif
-
-        const auto vert_source = Pathfinder::load_file_as_bytes(PATHFINDER_SHADER_DIR"blit.vert" + postfix);
-        const auto frag_source = Pathfinder::load_file_as_bytes(PATHFINDER_SHADER_DIR"blit.frag" + postfix);
 
         std::vector<Pathfinder::VertexInputAttributeDescription> attribute_descriptions;
         attribute_descriptions.reserve(3);
@@ -96,8 +106,8 @@ TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
                                                              nullptr, nullptr});
         }
 
-        pipeline = driver->create_render_pipeline({vert_source.begin(), vert_source.end()},
-                                                  {frag_source.begin(), frag_source.end()},
+        pipeline = driver->create_render_pipeline(vert_source,
+                                                  frag_source,
                                                   attribute_descriptions,
                                                   blend_state,
                                                   descriptor_set,

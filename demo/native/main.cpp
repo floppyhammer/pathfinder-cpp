@@ -25,7 +25,6 @@ int main() {
     App app(driver,
             WINDOW_WIDTH,
             WINDOW_HEIGHT,
-            Pathfinder::load_file_as_bytes(PATHFINDER_ASSET_DIR"area-lut.png"),
             Pathfinder::load_file_as_bytes(PATHFINDER_ASSET_DIR"tiger.svg"));
 
     // Set viewport texture to a texture rect.

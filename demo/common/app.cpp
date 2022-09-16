@@ -3,7 +3,6 @@
 App::App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
          uint32_t window_width,
          uint32_t window_height,
-         const std::vector<char> &area_lut_input,
          const std::vector<char> &p_svg_input) {
     // Set logger level.
     Pathfinder::Logger::set_level(Pathfinder::Logger::Level::DEBUG);
@@ -11,7 +10,7 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
     driver = p_driver;
 
     // Set up a canvas.
-    canvas = std::make_shared<Pathfinder::Canvas>(driver, area_lut_input);
+    canvas = std::make_shared<Pathfinder::Canvas>(driver);
     canvas->set_empty_scene({0, 0, (float) window_width, (float) window_height});
     canvas->set_empty_dest_texture(window_width, window_height);
     canvas->load_svg(p_svg_input);

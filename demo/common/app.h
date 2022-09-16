@@ -11,7 +11,6 @@ public:
     App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
         uint32_t window_width,
         uint32_t window_height,
-        const std::vector<char> &area_lut_input,
         const std::vector<char> &p_svg_input);
 
     void update();

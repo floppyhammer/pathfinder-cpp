@@ -13,7 +13,7 @@ cmake-build-relwithdebinfo
 ndk/obj
 
 # Generated shaders
-src/shaders/minified
+src/shaders/generated
 
 # Android demo
 demo/android/app/src/main/cpp/demo

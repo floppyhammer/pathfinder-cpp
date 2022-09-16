@@ -115,8 +115,7 @@ namespace Pathfinder {
         scene.push_draw_path(path_y);
     }
 
-    Canvas::Canvas(const std::shared_ptr<Driver> &p_driver,
-                   const std::vector<char> &area_lut_input) {
+    Canvas::Canvas(const std::shared_ptr<Driver> &p_driver) {
         driver = p_driver;
 
         // Set up a renderer.
@@ -126,7 +125,7 @@ namespace Pathfinder {
         renderer = std::make_shared<RendererD3D11>(p_driver);
 #endif
 
-        renderer->set_up(area_lut_input);
+        renderer->set_up();
 
         renderer->set_up_pipelines();
 

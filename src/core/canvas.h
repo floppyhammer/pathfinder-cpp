@@ -70,7 +70,7 @@ namespace Pathfinder {
     /// Normally, we only need one canvas to render multiple scenes.
     class Canvas {
     public:
-        Canvas(const std::shared_ptr<Driver> &p_driver, const std::vector<char> &area_lut_input);
+        Canvas(const std::shared_ptr<Driver> &p_driver);
 
         void set_empty_scene(const Rect<float> &view_box);
 

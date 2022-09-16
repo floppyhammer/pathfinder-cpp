@@ -22,7 +22,7 @@
 
 #include "gles3jni.h"
 
-static void printGlString(const char *name, GLenum s) {
+static void print_gl_string(const char *name, GLenum s) {
     const char *v = (const char *) glGetString(s);
     ALOGV("GL %s: %s\n", name, v);
 }
@@ -74,10 +74,10 @@ Java_com_android_gles3jni_GLES3JNILib_init(JNIEnv *env, jobject obj, jint width,
         g_renderer = nullptr;
     }
 
-    printGlString("Version", GL_VERSION);
-    printGlString("Vendor", GL_VENDOR);
-    printGlString("Renderer", GL_RENDERER);
-    printGlString("Extensions", GL_EXTENSIONS);
+    print_gl_string("Version", GL_VERSION);
+    print_gl_string("Vendor", GL_VENDOR);
+    print_gl_string("Renderer", GL_RENDERER);
+    print_gl_string("Extensions", GL_EXTENSIONS);
 
     AAssetManager *asset_manager0 = AAssetManager_fromJava(env, asset_manager);
 

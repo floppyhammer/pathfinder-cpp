@@ -10,6 +10,20 @@
 #include "../../gpu/command_buffer.h"
 #include "../../gpu/platform.h"
 
+#ifdef PATHFINDER_USE_VULKAN
+#include "../../shaders/generated/fill_vert_spv.h"
+#include "../../shaders/generated/fill_frag_spv.h"
+#include "../../shaders/generated/tile_vert_spv.h"
+#include "../../shaders/generated/tile_frag_spv.h"
+#else
+
+#include "../../shaders/generated/fill_vert.h"
+#include "../../shaders/generated/fill_frag.h"
+#include "../../shaders/generated/tile_vert.h"
+#include "../../shaders/generated/tile_frag.h"
+
+#endif
+
 #include <array>
 
 namespace Pathfinder {
@@ -83,8 +97,17 @@ namespace Pathfinder {
 
         // Fill pipeline.
         {
-            const auto fill_vert_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/fill.vert" + postfix);
-            const auto fill_frag_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/fill.frag" + postfix);
+#ifdef PATHFINDER_USE_VULKAN
+            const auto fill_vert_source = std::vector<char>(std::begin(fill_vert_spv),
+                                                            std::end(fill_vert_spv));
+            const auto fill_frag_source = std::vector<char>(std::begin(fill_frag_spv),
+                                                            std::end(fill_frag_spv));
+#else
+            const auto fill_vert_source = std::vector<char>(std::begin(fill_vert),
+                                                            std::end(fill_vert));
+            const auto fill_frag_source = std::vector<char>(std::begin(fill_frag),
+                                                            std::end(fill_frag));
+#endif
 
             // Set vertex attributes.
             std::vector<VertexInputAttributeDescription> attribute_descriptions;
@@ -150,8 +173,17 @@ namespace Pathfinder {
 
         // Tile pipeline.
         {
-            const auto tile_vert_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/tile.vert" + postfix);
-            const auto tile_frag_source = load_file_as_bytes(PATHFINDER_SHADER_DIR"d3d9/tile.frag" + postfix);
+#ifdef PATHFINDER_USE_VULKAN
+            const auto tile_vert_source = std::vector<char>(std::begin(tile_vert_spv),
+                                                            std::end(tile_vert_spv));
+            const auto tile_frag_source = std::vector<char>(std::begin(tile_frag_spv),
+                                                            std::end(tile_frag_spv));
+#else
+            const auto tile_vert_source = std::vector<char>(std::begin(tile_vert),
+                                                            std::end(tile_vert));
+            const auto tile_frag_source = std::vector<char>(std::begin(tile_frag),
+                                                            std::end(tile_frag));
+#endif
 
             // Set vertex attributes.
             std::vector<VertexInputAttributeDescription> attribute_descriptions;
