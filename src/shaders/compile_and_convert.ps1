@@ -16,6 +16,10 @@ New-Variable -Name "GLSLC" -Visibility Public -Value $env:VULKAN_SDK"/Bin/glslc.
 & $GLSLC d3d11/sort.comp -o generated/sort_comp.spv
 & $GLSLC d3d11/tile.comp -o generated/tile_comp.spv
 
+Copy-Item "area_lut.png" "generated"
+Copy-Item "blit.frag" "generated"
+Copy-Item "blit.vert" "generated"
+
 Set-Location "generated"
 
 python ../convert_files_to_header.py vert
