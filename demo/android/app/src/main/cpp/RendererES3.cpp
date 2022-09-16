@@ -100,12 +100,11 @@ RendererES3::RendererES3(AAssetManager *p_asset_manager)
 void RendererES3::init(int width, int height) {
     ALOGV("Using OpenGL ES 3.0 renderer");
 
-    auto area_lut_input = get_asset_file(asset_manager, "area-lut.png");
     auto svg_input = get_asset_file(asset_manager, "tiger.svg");
 
     auto driver = std::make_shared<Pathfinder::DriverGl>();
 
-    app = std::make_shared<App>(driver, width, height, area_lut_input, svg_input);
+    app = std::make_shared<App>(driver, width, height, svg_input);
 }
 
 RendererES3::~RendererES3() {
@@ -121,5 +120,7 @@ RendererES3::~RendererES3() {
 }
 
 void RendererES3::draw() {
+
+
     app->update();
 }
