@@ -47,17 +47,12 @@ class Renderer {
 public:
     virtual ~Renderer();
     void resize(int w, int h);
-    void render();
+    virtual void render();
 
     AAssetManager* asset_manager;
 
 protected:
     Renderer(AAssetManager* p_asset_manager);
-
-    virtual void draw() = 0;
-
-private:
-    void step();
 };
 
 extern Renderer* createES3Renderer(int width, int height, AAssetManager* p_asset_manager);

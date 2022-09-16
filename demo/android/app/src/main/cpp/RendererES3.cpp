@@ -31,12 +31,13 @@ public:
 
     void init(int width, int height);
 
-private:
-    void draw() override;
+    void render() override;
 
+private:
     EGLContext mEglContext;
 
     std::shared_ptr<App> app;
+    std::shared_ptr<Pathfinder::Driver> driver;
 };
 
 Renderer *createES3Renderer(int width, int height, AAssetManager *p_asset_manager) {
@@ -102,9 +103,15 @@ void RendererES3::init(int width, int height) {
 
     auto svg_input = get_asset_file(asset_manager, "tiger.svg");
 
-    auto driver = std::make_shared<Pathfinder::DriverGl>();
+    driver = std::make_shared<Pathfinder::DriverGl>();
 
     app = std::make_shared<App>(driver, width, height, svg_input);
+
+    // Set viewport texture to a texture rect.
+    app->texture_rect = std::make_shared<TextureRect>(driver,
+                                                      nullptr,
+                                                      width,
+                                                      height);
 }
 
 RendererES3::~RendererES3() {
@@ -119,8 +126,14 @@ RendererES3::~RendererES3() {
     }
 }
 
-void RendererES3::draw() {
-
-
+void RendererES3::render() {
     app->update();
+
+    auto cmd_buffer = driver->create_command_buffer(true);
+
+//    app->texture_rect->draw(driver, cmd_buffer,
+//                            {(uint32_t) app->texture_rect->size.x,
+//                             (uint32_t) app->texture_rect->size.y});
+
+    cmd_buffer->submit(driver);
 }

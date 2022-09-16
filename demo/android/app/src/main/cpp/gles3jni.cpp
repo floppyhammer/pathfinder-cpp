@@ -38,11 +38,7 @@ Renderer::~Renderer() = default;
 void Renderer::resize(int w, int h) {
 }
 
-void Renderer::step() {
-}
-
 void Renderer::render() {
-    draw();
 }
 
 // ----------------------------------------------------------------------------
