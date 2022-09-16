@@ -19,6 +19,8 @@ New-Variable -Name "GLSLC" -Visibility Public -Value $env:VULKAN_SDK"/Bin/glslc.
 Copy-Item "area_lut.png" "generated"
 Copy-Item "blit.frag" "generated"
 Copy-Item "blit.vert" "generated"
+Copy-Item "d3d9/*.*" "generated"
+Copy-Item "d3d11/*.*" "generated"
 
 Set-Location "generated"
 
