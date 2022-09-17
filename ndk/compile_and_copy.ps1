@@ -4,7 +4,7 @@
 Set-Location "./jni"
 
 # Compile using 4 threads
-D:/Env/android-ndk-r23b/ndk-build -j4
+C:/Users/tannh/AppData/Local/Android/Sdk/ndk/23.1.7779620/ndk-build -j4
 # ------------------------
 
 # Go back to current directory.

@@ -22,3 +22,11 @@ demo/android/app/src/main/cpp/src
 demo/android/app/src/main/cpp/include
 demo/android/app/src/main/cpp/thrid_party
 demo/android/app/src/main/assets
+
+# Android demo (Vulkan)
+demo/android-vulkan/app/src/main/cpp/demo
+demo/android-vulkan/app/src/main/cpp/lib
+demo/android-vulkan/app/src/main/cpp/src
+demo/android-vulkan/app/src/main/cpp/include
+demo/android-vulkan/app/src/main/cpp/thrid_party
+demo/android-vulkan/app/src/main/assets
