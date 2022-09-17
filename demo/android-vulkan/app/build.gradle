@@ -47,7 +47,6 @@ android {
     }
     buildTypes.release.minifyEnabled = false
     buildFeatures.prefab  = true
-    namespace 'com.android.example.vulkan.tutorials.five'
 }
 
 dependencies {
