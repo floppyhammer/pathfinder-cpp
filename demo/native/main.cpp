@@ -28,10 +28,11 @@ int main() {
             Pathfinder::load_file_as_bytes("../assets/tiger.svg"));
 
     // Set viewport texture to a texture rect.
-    app.texture_rect = std::make_shared<TextureRect>(driver,
-                                                     swap_chain->get_render_pass(),
-                                                     WINDOW_WIDTH,
-                                                     WINDOW_HEIGHT);
+    auto texture_rect = std::make_shared<TextureRect>(driver,
+                                                      swap_chain->get_render_pass(),
+                                                      WINDOW_WIDTH,
+                                                      WINDOW_HEIGHT);
+    texture_rect->set_texture(app.canvas->get_dest_texture());
 
     // Main loop.
     while (!glfwWindowShouldClose(platform->get_glfw_window())) {
@@ -53,7 +54,7 @@ int main() {
                                           Pathfinder::ColorF(0.2, 0.2, 0.2, 1.0));
 
             // Draw canvas to screen.
-            app.texture_rect->draw(driver, cmd_buffer, framebuffer->get_size());
+            texture_rect->draw(driver, cmd_buffer, framebuffer->get_size());
 
             cmd_buffer->end_render_pass();
         }
@@ -67,6 +68,7 @@ int main() {
 
     // Do this after swap chain cleanup.
     app.cleanup();
+    texture_rect.reset();
 
     platform->cleanup();
 

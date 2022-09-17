@@ -48,11 +48,8 @@ void App::update() {
     // ----------------------------------------
 
     canvas->build_and_render();
-
-    texture_rect->set_texture(canvas->get_dest_texture());
 }
 
 void App::cleanup() {
-    texture_rect.reset();
     canvas.reset();
 }

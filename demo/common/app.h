@@ -17,8 +17,6 @@ public:
 
     void cleanup();
 
-    std::shared_ptr<TextureRect> texture_rect;
-
     std::shared_ptr<Pathfinder::Canvas> canvas;
 
 private:
