@@ -3,23 +3,28 @@
 
 #include <cstdint>
 
-// // Vulkan headers.
+#ifndef __ANDROID__
+
 #ifdef PATHFINDER_USE_VULKAN
+// Vulkan headers.
 #define GLFW_INCLUDE_VULKAN
-
 #include <GLFW/glfw3.h>
-
 #else
 // OpenGL headers.
-#ifdef __ANDROID__
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#endif
+#else
+#ifdef PATHFINDER_USE_VULKAN
+
+#include <vulkan/vulkan.h>
+
+#else
 #ifdef PATHFINDER_USE_D3D11
 #include <GLES3/gl31.h>
 #else
 #include <GLES3/gl3.h>
 #endif
-#else
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #endif
 #endif
 

@@ -6,6 +6,7 @@ include $(CLEAR_VARS)
 
 # Some global macros.
 LOCAL_MACRO := -D_LINUX_ANDROID_ -D__ANDROID__ -D_LINUX_ -D_SUPPORT_64BITS_ -D_CUST_PLAT_
+LOCAL_MACRO += -DPATHFINDER_USE_VULKAN
 
 # Additional include path.
 INCLUDE_PATH := $(LOCAL_PATH)/../../third_party
@@ -15,7 +16,7 @@ SRC_LIST := $(wildcard $(LOCAL_PATH)/../../src/common/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/common/math/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/gpu/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/gpu/gl/*.cpp)
-# SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/gpu/vk/*.cpp)
+SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/gpu/vk/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/core/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/core/data/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/core/d3d9/*.cpp)
