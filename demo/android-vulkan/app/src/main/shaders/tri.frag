@@ -10,6 +10,5 @@ layout (location = 0) out vec4 oFragColor;
 layout (binding = 0) uniform sampler2D uTexture;
 
 void main() {
-   //oFragColor = texture(uTexture, vUv);
-   oFragColor = vec4(vUv.y, 0.0, 0.0, 1.0);
+   oFragColor = texture(uTexture, vUv);
 }

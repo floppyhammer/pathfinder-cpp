@@ -477,6 +477,7 @@ VkResult CreateGraphicsPipeline(void) {
 
         VkDescriptorSetLayoutCreateInfo layout_info{};
         layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        layout_info.pNext = nullptr;
         layout_info.bindingCount = 1;
         layout_info.pBindings = bindings;
 
@@ -486,9 +487,9 @@ VkResult CreateGraphicsPipeline(void) {
         }
     }
 
-    memset(&gfxPipeline,
-           0, sizeof(gfxPipeline));
-// Create pipeline layout (empty)
+    memset(&gfxPipeline, 0, sizeof(gfxPipeline));
+
+    // Create pipeline layout (empty)
     VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{
             .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
             .pNext = nullptr,
