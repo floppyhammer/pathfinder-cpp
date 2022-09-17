@@ -11,6 +11,8 @@
 
 #ifdef PATHFINDER_USE_VULKAN
 
+#ifndef __ANDROID__
+
 namespace Pathfinder {
     /// How many frames should be processed concurrently.
     const int MAX_FRAMES_IN_FLIGHT = 2;
@@ -26,11 +28,11 @@ namespace Pathfinder {
     };
 
     struct QueueFamilyIndices {
-        std::optional<uint32_t> graphics_family;
-        std::optional<uint32_t> present_family;
+        std::shared_ptr<uint32_t> graphics_family;
+        std::shared_ptr<uint32_t> present_family;
 
         [[nodiscard]] bool is_complete() const {
-            return graphics_family.has_value() && present_family.has_value();
+            return graphics_family && present_family;
         }
     };
 
@@ -168,6 +170,8 @@ namespace Pathfinder {
         void create_command_pool();
     };
 }
+
+#endif
 
 #endif
 

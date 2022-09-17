@@ -11,6 +11,8 @@
 
 #ifdef PATHFINDER_USE_VULKAN
 
+#ifndef __ANDROID__
+
 namespace Pathfinder {
     class SwapChainVk : public SwapChain {
         friend class DriverVk;
@@ -119,6 +121,8 @@ namespace Pathfinder {
         void cleanup() override;
     };
 }
+
+#endif
 
 #endif
 

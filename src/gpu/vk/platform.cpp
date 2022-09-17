@@ -73,7 +73,7 @@ namespace Pathfinder {
 
         VkCommandPoolCreateInfo pool_info{};
         pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        pool_info.queueFamilyIndex = qf_indices.graphics_family.value();
+        pool_info.queueFamilyIndex = *qf_indices.graphics_family;
         pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // So we can reset command buffers.
 
         if (vkCreateCommandPool(device, &pool_info, nullptr, &command_pool) != VK_SUCCESS) {
@@ -338,7 +338,7 @@ namespace Pathfinder {
         for (const auto &queue_family: queue_families) {
             // queueFlags is a bitmask of VkQueueFlagBits indicating capabilities of the queues in this queue family.
             if (queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-                qf_indices.graphics_family = i;
+                qf_indices.graphics_family = std::make_shared<uint32_t>(i);
             }
 
             // Query if presentation is supported.
@@ -346,7 +346,7 @@ namespace Pathfinder {
             vkGetPhysicalDeviceSurfaceSupportKHR(p_physical_device, i, surface, &present_support);
 
             if (present_support) {
-                qf_indices.present_family = i;
+                qf_indices.present_family = std::make_shared<uint32_t>(i);
             }
 
             // If both graphics family and present family acquired.
@@ -366,8 +366,8 @@ namespace Pathfinder {
         // Structure specifying parameters of a newly created device queue.
         std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
 
-        std::set<uint32_t> unique_queue_families = {qf_indices.graphics_family.value(),
-                                                    qf_indices.present_family.value()};
+        std::set<uint32_t> unique_queue_families = {*qf_indices.graphics_family,
+                                                    *qf_indices.present_family};
 
         float queue_priority = 1.0f;
         for (uint32_t queue_family: unique_queue_families) {
@@ -410,8 +410,8 @@ namespace Pathfinder {
         }
 
         // Get a queue handle from a device.
-        vkGetDeviceQueue(device, qf_indices.graphics_family.value(), 0, &graphics_queue);
-        vkGetDeviceQueue(device, qf_indices.present_family.value(), 0, &present_queue);
+        vkGetDeviceQueue(device, *qf_indices.graphics_family, 0, &graphics_queue);
+        vkGetDeviceQueue(device, *qf_indices.present_family, 0, &present_queue);
     }
 
     VkFormat PlatformVk::find_supported_format(const std::vector<VkFormat> &candidates,
