@@ -13,8 +13,4 @@
 // Enable SIMD.
 #define PATHFINDER_ENABLE_SIMD
 
-// Resource directories.
-#define PATHFINDER_SHADER_DIR "../src/shaders/"
-#define PATHFINDER_ASSET_DIR "../assets/"
-
 #endif //PATHFINDER_GLOBAL_MACROS_H
