@@ -33,7 +33,7 @@ namespace Pathfinder {
         return gl_framebuffer;
     }
 
-    size_t FramebufferGl::get_unique_id() {
+    unsigned long long FramebufferGl::get_unique_id() {
         return gl_framebuffer;
     }
 }

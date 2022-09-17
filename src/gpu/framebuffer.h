@@ -26,7 +26,7 @@ namespace Pathfinder {
         }
 
         /// Get the unique resource ID for the framebuffer, which is only used for hashing.
-        virtual size_t get_unique_id() = 0;
+        virtual unsigned long long get_unique_id() = 0;
 
         inline uint32_t get_width() const {
             return width;

@@ -25,7 +25,7 @@ namespace Pathfinder {
 
         ~FramebufferVk();
 
-        size_t get_unique_id() override;
+        unsigned long long get_unique_id() override;
 
         VkFramebuffer get_vk_framebuffer() const;
 
