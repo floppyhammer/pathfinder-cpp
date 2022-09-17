@@ -17,7 +17,7 @@
 #else
 #ifdef PATHFINDER_USE_VULKAN
 
-#include <vulkan/vulkan.h>
+#include "vulkan_wrapper.h"
 
 #else
 #ifdef PATHFINDER_USE_D3D11
