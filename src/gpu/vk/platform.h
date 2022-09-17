@@ -119,6 +119,8 @@ namespace Pathfinder {
                                                      VkImageTiling tiling,
                                                      VkFormatFeatureFlags features) const;
 
+        VkQueue get_present_queue() const { return present_queue; };
+
         void cleanup() override;
 
     public:

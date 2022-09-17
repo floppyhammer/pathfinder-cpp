@@ -65,7 +65,7 @@ namespace Pathfinder {
     }
 
     std::shared_ptr<Driver> PlatformVk::create_driver() {
-        return std::make_shared<DriverVk>(device, physical_device, graphics_queue, present_queue, command_pool);
+        return std::make_shared<DriverVk>(device, physical_device, graphics_queue, command_pool);
     }
 
     void PlatformVk::create_command_pool() {

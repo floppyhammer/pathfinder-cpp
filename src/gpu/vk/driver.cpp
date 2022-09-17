@@ -17,9 +17,9 @@
 
 namespace Pathfinder {
     DriverVk::DriverVk(VkDevice p_device, VkPhysicalDevice p_physical_device, VkQueue p_graphics_queue,
-                       VkQueue p_present_queue, VkCommandPool p_command_pool)
+                       VkCommandPool p_command_pool)
             : device(p_device), physical_device(p_physical_device), graphics_queue(p_graphics_queue),
-              present_queue(p_present_queue), command_pool(p_command_pool) {
+              command_pool(p_command_pool) {
     }
 
     VkDevice DriverVk::get_device() const {
@@ -28,10 +28,6 @@ namespace Pathfinder {
 
     VkQueue DriverVk::get_graphics_queue() const {
         return graphics_queue;
-    }
-
-    VkQueue DriverVk::get_present_queue() const {
-        return present_queue;
     }
 
     VkCommandPool DriverVk::get_command_pool() const {

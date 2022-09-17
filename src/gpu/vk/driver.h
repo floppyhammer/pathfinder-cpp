@@ -19,7 +19,6 @@ namespace Pathfinder {
         DriverVk(VkDevice device,
                  VkPhysicalDevice physical_device,
                  VkQueue graphics_queue,
-                 VkQueue present_queue,
                  VkCommandPool command_pool);
 
         std::shared_ptr<RenderPass> create_render_pass(TextureFormat format,
@@ -54,8 +53,6 @@ namespace Pathfinder {
 
         VkQueue get_graphics_queue() const;
 
-        VkQueue get_present_queue() const;
-
         VkCommandPool get_command_pool() const;
 
         uint32_t find_memory_type(uint32_t type_filter, VkMemoryPropertyFlags properties) const;
@@ -81,9 +78,8 @@ namespace Pathfinder {
 
         VkDevice device{};
 
+        // Note that we don't need the present queue in Driver.
         VkQueue graphics_queue{};
-
-        VkQueue present_queue{};
 
         VkCommandPool command_pool{};
 

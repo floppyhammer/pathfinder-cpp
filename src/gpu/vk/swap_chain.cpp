@@ -277,7 +277,7 @@ namespace Pathfinder {
     void SwapChainVk::flush() {
         auto device = driver->get_device();
         auto graphics_queue = driver->get_graphics_queue();
-        auto present_queue = driver->get_present_queue();
+        auto present_queue = platform->get_present_queue();
 
         auto imageIndex = current_image;
 
