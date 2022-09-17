@@ -803,7 +803,6 @@ bool InitVulkan(android_app *app) {
             device.device_,
             device.gpuDevice_,
             device.queue_,
-            device.queue_,
             render.cmdPool_);
 
     pathfinder_app = std::make_shared<App>(driver,

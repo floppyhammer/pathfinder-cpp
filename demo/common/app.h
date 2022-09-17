@@ -19,10 +19,10 @@ public:
 
     std::shared_ptr<TextureRect> texture_rect;
 
+    std::shared_ptr<Pathfinder::Canvas> canvas;
+
 private:
     std::shared_ptr<Pathfinder::Driver> driver;
-
-    std::shared_ptr<Pathfinder::Canvas> canvas;
 
     std::chrono::time_point<std::chrono::steady_clock> start_time;
     std::chrono::time_point<std::chrono::steady_clock> last_time;
