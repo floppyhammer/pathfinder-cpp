@@ -449,6 +449,11 @@ namespace Pathfinder {
     }
 
     void Canvas::load_svg(std::vector<char> input) {
+        if (input.empty()) {
+            Logger::error("SVG input is empty!", "Canvas");
+            return;
+        }
+
         // Load the SVG image.
         NSVGimage *image = nsvgParse(input.data(), "px", 96);
 
