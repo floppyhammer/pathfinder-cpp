@@ -21,7 +21,7 @@ namespace Pathfinder {
 
         uint32_t get_gl_framebuffer() const;
 
-        uint32_t get_unique_id() override;
+        size_t get_unique_id() override;
 
     private:
         uint32_t gl_framebuffer;

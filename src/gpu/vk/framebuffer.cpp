@@ -67,8 +67,8 @@ namespace Pathfinder {
         return vk_framebuffer;
     }
 
-    uint32_t FramebufferVk::get_unique_id() {
-        return reinterpret_cast<uint32_t>(&vk_framebuffer);;
+     size_t FramebufferVk::get_unique_id() {
+        return reinterpret_cast<size_t>(vk_framebuffer);;
     }
 }
 
