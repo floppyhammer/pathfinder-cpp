@@ -144,7 +144,7 @@ namespace Pathfinder {
     }
 
     void Canvas::set_empty_dest_texture(float size_x, float size_y) {
-        set_dest_texture(driver->create_texture(size_x, size_y, TextureFormat::BGRA8_UNORM));
+        set_dest_texture(driver->create_texture(size_x, size_y, TextureFormat::RGBA8_UNORM));
     }
 
     void Canvas::push_path(Outline &p_outline,
