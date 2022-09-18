@@ -14,7 +14,7 @@ else ()
     set(OPENGL_LIB GLESv3)
 endif (${ANDROID_PLATFORM_LEVEL} LESS 12)
 
-include_directories(include third_party)
+include_directories(third_party)
 
 link_directories(lib/${ANDROID_ABI})
 
@@ -27,7 +27,7 @@ add_library(gles3jni SHARED
 
 target_link_libraries(gles3jni
         ${OPENGL_LIB}
-        pathfinder.a
+        pathfinder
         android
         EGL
         log

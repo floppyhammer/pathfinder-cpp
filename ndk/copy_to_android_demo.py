@@ -11,7 +11,7 @@ def delete_cpp_files(path):
 
 
 # Set Android src path.
-android_src_path = "../demo/android-vulkan/app/src/main/cpp"
+android_src_path = "../demo/android/app/src/main/cpp"
 
 src_dirs = ["/demo/common", "/src", "/lib", "/third_party", "/assets"]
 dst_dirs = ["/demo/common", "/src", "/lib", "/third_party", "/../assets"]

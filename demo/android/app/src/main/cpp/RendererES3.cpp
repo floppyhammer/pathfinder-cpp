@@ -38,6 +38,10 @@ private:
 
     std::shared_ptr<App> app;
     std::shared_ptr<Pathfinder::Driver> driver;
+    std::shared_ptr<TextureRect> texture_rect;
+
+    int width;
+    int height;
 };
 
 Renderer *createES3Renderer(int width, int height, AAssetManager *p_asset_manager) {
@@ -108,10 +112,11 @@ void RendererES3::init(int width, int height) {
     app = std::make_shared<App>(driver, width, height, svg_input);
 
     // Set viewport texture to a texture rect.
-    app->texture_rect = std::make_shared<TextureRect>(driver,
-                                                      nullptr,
-                                                      width,
-                                                      height);
+    texture_rect = std::make_shared<TextureRect>(driver,
+                                                 nullptr,
+                                                 width,
+                                                 height);
+    texture_rect->set_texture(app->canvas->get_dest_texture());
 }
 
 RendererES3::~RendererES3() {
@@ -131,9 +136,9 @@ void RendererES3::render() {
 
     auto cmd_buffer = driver->create_command_buffer(true);
 
-//    app->texture_rect->draw(driver, cmd_buffer,
-//                            {(uint32_t) app->texture_rect->size.x,
-//                             (uint32_t) app->texture_rect->size.y});
+    texture_rect->draw(driver, cmd_buffer,
+                       {(uint32_t) texture_rect->size.x,
+                        (uint32_t) texture_rect->size.y});
 
     cmd_buffer->submit(driver);
 }

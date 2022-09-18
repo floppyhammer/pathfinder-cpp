@@ -19,7 +19,7 @@ android {
     ndkVersion "23.1.7779620"
 
     defaultConfig {
-        applicationId  "graphics.demo.pathfinder.vulkan"
+        applicationId  "graphics.pathfinder.vulkan"
         minSdkVersion    24
         targetSdkVersion 31
         versionCode 272

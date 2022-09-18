@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package graphics.demo.pathfinder.vulkan;
+package graphics.pathfinder.vulkan;
 
 import com.google.androidgamesdk.GameActivity;
 import android.os.Bundle;

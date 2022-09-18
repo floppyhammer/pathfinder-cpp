@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.gles3jni;
+package graphics.pathfinder.opengles;
 
 // Wrapper for native library
 

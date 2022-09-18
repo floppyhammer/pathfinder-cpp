@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.gles3jni;
+package graphics.pathfinder.opengles;
 
 import android.content.Context;
 import android.content.res.AssetManager;

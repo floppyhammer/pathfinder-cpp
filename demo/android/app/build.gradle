@@ -5,13 +5,13 @@ def platformVersion = 24       // openGLES 3.2 min api level
 // def platformVersion = 12    // openGLES 2 min api level
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 32
     ndkVersion '22.1.7171670'
 
     defaultConfig {
-        applicationId 'graphics.pathfinder_cpp.demo'
+        applicationId 'graphics.pathfinder.opengles'
         minSdkVersion "${platformVersion}"
-        targetSdkVersion 30
+        targetSdkVersion 32
         externalNativeBuild {
             cmake {
                 arguments '-DANDROID_STL=c++_static'
@@ -23,7 +23,7 @@ android {
         release {
             minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android.txt'),
-                          'proguard-rules.pro'
+                    'proguard-rules.pro'
         }
     }
     externalNativeBuild {
