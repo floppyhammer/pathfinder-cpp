@@ -6,7 +6,7 @@
 #include "../../src/gpu/render_pipeline.h"
 #include "../../src/gpu/descriptor_set.h"
 #include "../../src/gpu/command_buffer.h"
-#include "pathfinder.h"
+#include "../../src/pathfinder.h"
 
 #include <memory>
 

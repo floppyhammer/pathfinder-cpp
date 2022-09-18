@@ -22,10 +22,6 @@ project(vktuts)
 # for the detailed instructions.
 find_package(game-activity REQUIRED CONFIG)
 
-# build vulkan app
-get_filename_component(REPO_ROOT_DIR
-        ${CMAKE_SOURCE_DIR}/../../../../.. ABSOLUTE)
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall \
                      -DVK_USE_PLATFORM_ANDROID_KHR")
 

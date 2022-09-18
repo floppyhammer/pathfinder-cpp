@@ -1,7 +1,7 @@
 #ifndef PATHFINDER_DEMO_APP_H
 #define PATHFINDER_DEMO_APP_H
 
-#include "pathfinder.h"
+#include "../../src/pathfinder.h"
 #include "texture_rect.h"
 
 #include <chrono>
