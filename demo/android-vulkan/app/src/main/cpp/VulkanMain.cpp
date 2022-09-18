@@ -24,7 +24,7 @@
 #include <vector>
 
 // Android log function wrappers
-static const char *kTAG = "Vulkan-Tutorial05";
+static const char *kTAG = "Pathfinder";
 #define LOGI(...) \
   ((void)__android_log_print(ANDROID_LOG_INFO, kTAG, __VA_ARGS__))
 #define LOGW(...) \
@@ -35,7 +35,7 @@ static const char *kTAG = "Vulkan-Tutorial05";
 // Vulkan call wrapper
 #define CALL_VK(func)                                                 \
   if (VK_SUCCESS != (func)) {                                         \
-    __android_log_print(ANDROID_LOG_ERROR, "Tutorial ",               \
+    __android_log_print(ANDROID_LOG_ERROR, "Pathfinder ",             \
                         "Vulkan error. File[%s], line[%d]", __FILE__, \
                         __LINE__);                                    \
     assert(false);                                                    \
@@ -699,9 +699,9 @@ bool InitVulkan(android_app *app) {
     VkApplicationInfo appInfo = {
             .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
             .pNext = nullptr,
-            .pApplicationName = "tutorial05_triangle_window",
+            .pApplicationName = "pathfinder_demo",
             .applicationVersion = VK_MAKE_VERSION(1, 0, 0),
-            .pEngineName = "tutorial",
+            .pEngineName = "demo",
             .engineVersion = VK_MAKE_VERSION(1, 0, 0),
             .apiVersion = VK_MAKE_VERSION(1, 1, 0),
     };
@@ -791,7 +791,7 @@ bool InitVulkan(android_app *app) {
     // -----------------------------
     assert(androidAppCtx);
     AAsset *file = AAssetManager_open(androidAppCtx->activity->assetManager,
-                                      "shaders/tiger.svg",
+                                      "tiger.svg",
                                       AASSET_MODE_BUFFER);
     size_t fileLength = AAsset_getLength(file);
 

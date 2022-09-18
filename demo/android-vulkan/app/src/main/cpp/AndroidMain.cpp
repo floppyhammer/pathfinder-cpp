@@ -15,41 +15,41 @@
 #include "VulkanMain.hpp"
 
 // Process the next main command.
-void handle_cmd(android_app* app, int32_t cmd) {
-  switch (cmd) {
-    case APP_CMD_INIT_WINDOW:
-      // The window is being shown, get it ready.
-      InitVulkan(app);
-      break;
-    case APP_CMD_TERM_WINDOW:
-      // The window is being hidden or closed, clean it up.
-      DeleteVulkan();
-      break;
-    default:
-      __android_log_print(ANDROID_LOG_INFO, "Vulkan Tutorials",
-                          "event not handled: %d", cmd);
-  }
+void handle_cmd(android_app *app, int32_t cmd) {
+    switch (cmd) {
+        case APP_CMD_INIT_WINDOW:
+            // The window is being shown, get it ready.
+            InitVulkan(app);
+            break;
+        case APP_CMD_TERM_WINDOW:
+            // The window is being hidden or closed, clean it up.
+            DeleteVulkan();
+            break;
+        default:
+            __android_log_print(ANDROID_LOG_INFO, "APP_CMD",
+                                "event not handled: %d", cmd);
+    }
 }
 
-void android_main(struct android_app* app) {
+void android_main(struct android_app *app) {
 
-  // Set the callback to process system events
-  app->onAppCmd = handle_cmd;
+    // Set the callback to process system events
+    app->onAppCmd = handle_cmd;
 
-  // Used to poll the events in the main loop
-  int events;
-  android_poll_source* source;
+    // Used to poll the events in the main loop
+    int events;
+    android_poll_source *source;
 
-  // Main loop
-  do {
-    if (ALooper_pollAll(IsVulkanReady() ? 1 : 0, nullptr,
-                        &events, (void**)&source) >= 0) {
-      if (source != NULL) source->process(app, source);
-    }
+    // Main loop
+    do {
+        if (ALooper_pollAll(IsVulkanReady() ? 1 : 0, nullptr,
+                            &events, (void **) &source) >= 0) {
+            if (source != NULL) source->process(app, source);
+        }
 
-    // render if vulkan is ready
-    if (IsVulkanReady()) {
-      VulkanDrawFrame();
-    }
-  } while (app->destroyRequested == 0);
+        // render if vulkan is ready
+        if (IsVulkanReady()) {
+            VulkanDrawFrame();
+        }
+    } while (app->destroyRequested == 0);
 }
