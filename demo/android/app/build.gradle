@@ -1,16 +1,16 @@
 apply plugin: 'com.android.application'
 
-def platformVersion = 24       // openGLES 3.2 min api level
-// def platformVersion = 18    // openGLES 3 min api level
-// def platformVersion = 12    // openGLES 2 min api level
+def minPlatformVersion = 24       // openGLES 3.2 min api level
+// def minPlatformVersion = 18    // openGLES 3 min api level
+// def minPlatformVersion = 12    // openGLES 2 min api level
 
 android {
     compileSdkVersion 32
     ndkVersion '22.1.7171670'
 
     defaultConfig {
-        applicationId 'graphics.pathfinder.opengles'
-        minSdkVersion "${platformVersion}"
+        applicationId 'com.android.gles3jni'
+        minSdkVersion "${minPlatformVersion}"
         targetSdkVersion 32
         externalNativeBuild {
             cmake {
@@ -32,4 +32,5 @@ android {
             path 'src/main/cpp/CMakeLists.txt'
         }
     }
+    namespace 'com.android.gles3jni'
 }

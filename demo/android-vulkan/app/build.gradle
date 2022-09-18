@@ -15,13 +15,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 32
     ndkVersion "23.1.7779620"
 
     defaultConfig {
         applicationId  "graphics.pathfinder.vulkan"
         minSdkVersion    24
-        targetSdkVersion 31
+        targetSdkVersion 32
         versionCode 272
         versionName "1.1.0"
 
