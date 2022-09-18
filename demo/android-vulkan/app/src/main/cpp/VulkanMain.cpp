@@ -800,11 +800,10 @@ bool InitVulkan(android_app *app) {
     AAsset_read(file, fileContent.data(), fileLength);
     AAsset_close(file);
 
-    driver = std::make_shared<Pathfinder::DriverVk>(
-            device.device_,
-            device.gpuDevice_,
-            device.queue_,
-            render.cmdPool_);
+    driver = std::make_shared<Pathfinder::DriverVk>(device.device_,
+                                                    device.gpuDevice_,
+                                                    device.queue_,
+                                                    render.cmdPool_);
 
     pathfinder_app = std::make_shared<App>(driver,
                                            swapchain.displaySize_.width,
@@ -823,22 +822,24 @@ bool InitVulkan(android_app *app) {
                 }
         };
 
-        VkDescriptorPoolCreateInfo pool_info{};
-        pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        pool_info.poolSizeCount = 1;
-        pool_info.pPoolSizes = poolSizes;
-        pool_info.maxSets = 1;
+        VkDescriptorPoolCreateInfo pool_info{
+                .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+                .maxSets = 1,
+                .poolSizeCount = 1,
+                .pPoolSizes = poolSizes,
+        };
 
         if (vkCreateDescriptorPool(device.device_, &pool_info, nullptr, &descriptors.pool_) !=
             VK_SUCCESS) {
             throw std::runtime_error("Failed to create descriptor pool!");
         }
 
-        VkDescriptorSetAllocateInfo alloc_info{};
-        alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        alloc_info.descriptorPool = descriptors.pool_;
-        alloc_info.descriptorSetCount = 1;
-        alloc_info.pSetLayouts = &descriptors.layout_;
+        VkDescriptorSetAllocateInfo alloc_info{
+                .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+                .descriptorPool = descriptors.pool_,
+                .descriptorSetCount = 1,
+                .pSetLayouts = &descriptors.layout_,
+        };
 
         if (vkAllocateDescriptorSets(device.device_, &alloc_info, &descriptors.set_) !=
             VK_SUCCESS) {
@@ -847,7 +848,6 @@ bool InitVulkan(android_app *app) {
 
         VkWriteDescriptorSet descriptor_writes[1] = {
                 {
-
                         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
                         .dstSet = descriptors.set_,
                         .dstBinding = 0,
@@ -856,11 +856,11 @@ bool InitVulkan(android_app *app) {
                 }
         };
 
-        VkDescriptorImageInfo imageInfo{};
-
-        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo.imageView = texture_vk->get_image_view();
-        imageInfo.sampler = texture_vk->get_sampler();
+        VkDescriptorImageInfo imageInfo{
+                .sampler = texture_vk->get_sampler(),
+                .imageView = texture_vk->get_image_view(),
+                .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        };
 
         descriptor_writes[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         descriptor_writes[0].pImageInfo = &imageInfo;
@@ -874,7 +874,7 @@ bool InitVulkan(android_app *app) {
     // -----------------------------
 
     for (int bufferIndex = 0; bufferIndex < swapchain.swapchainLength_; bufferIndex++) {
-        // We start by creating and declare the "beginning" our command buffer
+        // Begin command buffer recording.
         VkCommandBufferBeginInfo cmdBufferBeginInfo{
                 .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
                 .pNext = nullptr,
@@ -882,7 +882,8 @@ bool InitVulkan(android_app *app) {
                 .pInheritanceInfo = nullptr,
         };
         CALL_VK(vkBeginCommandBuffer(render.cmdBuffer_[bufferIndex], &cmdBufferBeginInfo));
-        // transition the display image to color attachment layout
+
+        // Transition the display image to color attachment layout.
         setImageLayout(render.cmdBuffer_[bufferIndex],
                        swapchain.displayImages_[bufferIndex],
                        VK_IMAGE_LAYOUT_UNDEFINED,
@@ -890,7 +891,8 @@ bool InitVulkan(android_app *app) {
                        VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
                        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 
-        // Now we start a render pass. Any draw command has to be recorded in a render pass
+        // Start a render pass.
+        // Any draw command has to be recorded in a render pass.
         VkClearValue clearVals{.color {.float32 {0.3f, 0.3f, 0.3f, 1.0f}}};
         VkRenderPassBeginInfo renderPassBeginInfo{
                 .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
@@ -903,14 +905,17 @@ bool InitVulkan(android_app *app) {
                 .pClearValues = &clearVals};
         vkCmdBeginRenderPass(render.cmdBuffer_[bufferIndex], &renderPassBeginInfo,
                              VK_SUBPASS_CONTENTS_INLINE);
-        // Bind what is necessary to the command buffer
+
+        // Bind pipeline.
         vkCmdBindPipeline(render.cmdBuffer_[bufferIndex],
                           VK_PIPELINE_BIND_POINT_GRAPHICS, gfxPipeline.pipeline_);
+
+        // Bind vertex buffer.
         VkDeviceSize offset = 0;
         vkCmdBindVertexBuffers(render.cmdBuffer_[bufferIndex], 0, 1,
                                &buffers.vertexBuf_, &offset);
 
-        // Bind uniform buffers and samplers.
+        // Bind sampler.
         vkCmdBindDescriptorSets(render.cmdBuffer_[bufferIndex],
                                 VK_PIPELINE_BIND_POINT_GRAPHICS,
                                 gfxPipeline.layout_,
@@ -920,7 +925,7 @@ bool InitVulkan(android_app *app) {
                                 0,
                                 nullptr);
 
-        // Draw Triangle
+        // Draw 2 triangles.
         vkCmdDraw(render.cmdBuffer_[bufferIndex], 6, 1, 0, 0);
 
         vkCmdEndRenderPass(render.cmdBuffer_[bufferIndex]);
@@ -929,14 +934,13 @@ bool InitVulkan(android_app *app) {
     }
 
     // We need to create a fence to be able, in the main loop, to wait for our
-    // draw command(s) to finish before swapping the framebuffers
+    // draw command(s) to finish before swapping the framebuffers.
     VkFenceCreateInfo fenceCreateInfo{
             .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
             .pNext = nullptr,
             .flags = 0,
     };
-    CALL_VK(
-            vkCreateFence(device.device_, &fenceCreateInfo, nullptr, &render.fence_));
+    CALL_VK(vkCreateFence(device.device_, &fenceCreateInfo, nullptr, &render.fence_));
 
     // We need to create a semaphore to be able to wait, in the main loop, for our
     // framebuffer to be available for us before drawing.
@@ -949,6 +953,7 @@ bool InitVulkan(android_app *app) {
                               &render.semaphore_));
 
     device.initialized_ = true;
+
     return true;
 }
 
@@ -974,7 +979,7 @@ void DeleteVulkan(void) {
 
 bool VulkanDrawFrame(void) {
     uint32_t nextIndex;
-    // Get the framebuffer index we should draw in
+    // Get the framebuffer index we should draw in.
     CALL_VK(vkAcquireNextImageKHR(device.device_, swapchain.swapchain_,
                                   UINT64_MAX, render.semaphore_, VK_NULL_HANDLE,
                                   &nextIndex));
@@ -1011,9 +1016,8 @@ bool VulkanDrawFrame(void) {
     return true;
 }
 
-/*
- * setImageLayout():
- *    Helper function to transition color buffer layout
+/**
+ * Helper function to transition image layout.
  */
 void setImageLayout(VkCommandBuffer cmdBuffer, VkImage image,
                     VkImageLayout oldImageLayout, VkImageLayout newImageLayout,

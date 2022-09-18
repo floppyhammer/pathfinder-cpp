@@ -22,9 +22,8 @@ public:
 private:
     std::shared_ptr<Pathfinder::Driver> driver;
 
-    std::chrono::time_point<std::chrono::steady_clock> start_time;
     std::chrono::time_point<std::chrono::steady_clock> last_time;
-    std::chrono::time_point<std::chrono::steady_clock> last_time_updated_fps;
+    std::chrono::time_point<std::chrono::steady_clock> last_time_printed_fps;
 };
 
 #endif //PATHFINDER_DEMO_APP_H

@@ -16,35 +16,31 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
     canvas->load_svg(p_svg_input);
 
     // Timers.
-    start_time = std::chrono::steady_clock::now();
-    last_time = start_time;
-    last_time_updated_fps = start_time;
+    last_time = std::chrono::steady_clock::now();
+    last_time_printed_fps = last_time;
 }
 
 void App::update() {
     // Timing.
     // ----------------------------------------
-    auto current_time = std::chrono::steady_clock::now();
+    const auto current_time = std::chrono::steady_clock::now();
 
-    // Time between frames in ms.
-    std::chrono::duration<double> duration = current_time - last_time;
-    float delta = (float) duration.count() * 1000.f;
+    std::chrono::duration<double> duration = current_time - last_time_printed_fps;
 
-    // Time since program started in ms.
-    duration = current_time - start_time;
-    float elapsed = (float) duration.count() * 1000.f;
-
-    last_time = current_time;
-
-    duration = current_time - last_time_updated_fps;
     if (duration.count() > 1) {
-        last_time_updated_fps = current_time;
+        last_time_printed_fps = current_time;
+
+        // Time between frames in ms.
+        duration = current_time - last_time;
+        float delta = (float) duration.count() * 1000.f;
 
         // Show frame time.
         std::ostringstream string_stream;
-        string_stream << round(delta * 10.f) * 0.1f << "\n";
-        std::cout << string_stream.str() << std::endl;
+        string_stream << "Frame time: " << round(delta * 10.f) * 0.1f << " s\n";
+        Pathfinder::Logger::info(string_stream.str(), "Benchmark");
     }
+
+    last_time = current_time;
     // ----------------------------------------
 
     canvas->build_and_render();

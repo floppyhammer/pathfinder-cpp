@@ -26,28 +26,27 @@ void handle_cmd(android_app *app, int32_t cmd) {
             DeleteVulkan();
             break;
         default:
-            __android_log_print(ANDROID_LOG_INFO, "APP_CMD",
-                                "event not handled: %d", cmd);
+            __android_log_print(ANDROID_LOG_INFO, "Pathfinder",
+                                "Event not handled: %d", cmd);
     }
 }
 
 void android_main(struct android_app *app) {
-
-    // Set the callback to process system events
+    // Set the callback to process system events.
     app->onAppCmd = handle_cmd;
 
-    // Used to poll the events in the main loop
+    // Used to poll the events in the main loop.
     int events;
     android_poll_source *source;
 
-    // Main loop
+    // Main loop.
     do {
         if (ALooper_pollAll(IsVulkanReady() ? 1 : 0, nullptr,
                             &events, (void **) &source) >= 0) {
             if (source != NULL) source->process(app, source);
         }
 
-        // render if vulkan is ready
+        // Render if Vulkan is ready.
         if (IsVulkanReady()) {
             VulkanDrawFrame();
         }
