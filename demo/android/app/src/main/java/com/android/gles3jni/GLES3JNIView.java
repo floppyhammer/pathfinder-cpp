@@ -82,7 +82,7 @@ class GLES3JNIView extends GLSurfaceView {
 
         public void onSurfaceCreated(GL10 gl, EGLConfig config) {
             // Screen size.
-            int width  = Resources.getSystem().getDisplayMetrics().widthPixels;
+            int width = Resources.getSystem().getDisplayMetrics().widthPixels;
             int height = Resources.getSystem().getDisplayMetrics().heightPixels;
 
             GLES3JNILib.init(width, height, asset_manager);

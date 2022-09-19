@@ -22,11 +22,13 @@ import android.content.res.AssetManager;
 
 public class GLES3JNILib {
 
-     static {
-          System.loadLibrary("gles3jni");
-     }
+    static {
+        System.loadLibrary("gles3jni");
+    }
 
-     public static native void init(int width, int height, AssetManager asset_manager);
-     public static native void resize(int width, int height);
-     public static native void step();
+    public static native void init(int width, int height, AssetManager asset_manager);
+
+    public static native void resize(int width, int height);
+
+    public static native void step();
 }

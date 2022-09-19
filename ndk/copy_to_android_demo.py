@@ -1,4 +1,5 @@
 import os
+import sys
 import shutil
 
 
@@ -10,8 +11,10 @@ def delete_cpp_files(path):
                 os.remove(os.path.join(root, f))
 
 
+which_demo = sys.argv[1]
+
 # Set Android src path.
-android_src_path = "../demo/android/app/src/main/cpp"
+android_src_path = "../demo/" + which_demo + "/app/src/main/cpp"
 
 src_dirs = ["/demo/common", "/src", "/lib", "/third_party", "/assets"]
 dst_dirs = ["/demo/common", "/src", "/lib", "/third_party", "/../assets"]
