@@ -16,19 +16,23 @@ namespace Pathfinder {
 
         /// Binding point.
         uint32_t binding{};
-        std::string binding_name; // For compatibility with lower versions of OpenGL.
 
-        // Only one is used.
+        /// For compatibility with lower versions of OpenGL.
+        std::string binding_name;
+
+        /// Only one is used.
         std::shared_ptr<Buffer> buffer;
         std::shared_ptr<Texture> texture;
     };
 
+    /**
+     * This acts as both `set layout` and `set`.
+     * If any of the contained descriptors has null [buffer]s/[texture]s, we can only use it as a layout.
+     * Otherwise, it's a `set`.
+     */
     class DescriptorSet {
     public:
         inline void add_or_update_descriptor(const Descriptor &descriptor) {
-            // We might use `set` as `set layout`. So, null buffer/texture is valid here.
-            //if (descriptor.buffer == nullptr && descriptor.texture == nullptr) return;
-
             descriptors[descriptor.binding] = descriptor;
         }
 

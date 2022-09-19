@@ -11,10 +11,12 @@
 #include "../../gpu/platform.h"
 
 #ifdef PATHFINDER_USE_VULKAN
+
 #include "../../shaders/generated/fill_vert_spv.h"
 #include "../../shaders/generated/fill_frag_spv.h"
 #include "../../shaders/generated/tile_vert_spv.h"
 #include "../../shaders/generated/tile_frag_spv.h"
+
 #else
 
 #include "../../shaders/generated/fill_vert.h"
@@ -307,13 +309,13 @@ namespace Pathfinder {
 
                 // Placeholders.
                 tile_descriptor_set->add_or_update_descriptor(
-                        {DescriptorType::Sampler, ShaderType::Fragment, 7, "uDestTexture", nullptr, nullptr});
+                        {DescriptorType::Sampler, ShaderType::Fragment, 7, "uDestTexture"});
                 tile_descriptor_set->add_or_update_descriptor(
-                        {DescriptorType::Sampler, ShaderType::Fragment, 8, "uGammaLUT", nullptr, nullptr});
+                        {DescriptorType::Sampler, ShaderType::Fragment, 8, "uGammaLUT"});
                 tile_descriptor_set->add_or_update_descriptor(
-                        {DescriptorType::Sampler, ShaderType::Vertex, 1, "uZBuffer", nullptr, nullptr});
+                        {DescriptorType::Sampler, ShaderType::Vertex, 1, "uZBuffer"});
                 tile_descriptor_set->add_or_update_descriptor(
-                        {DescriptorType::Sampler, ShaderType::Fragment, 5, "uColorTexture0", nullptr, nullptr});
+                        {DescriptorType::Sampler, ShaderType::Fragment, 5, "uColorTexture0"});
             }
 
             tile_pipeline = driver->create_render_pipeline(tile_vert_source,

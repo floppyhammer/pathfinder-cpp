@@ -8,8 +8,6 @@ android {
         applicationId "graphics.pathfinder.vulkan"
         minSdkVersion 24
         targetSdkVersion 32
-        versionCode 272
-        versionName "1.1.0"
 
         // Shader compilation directives, put glsl shaders to app/src/main/shaders.
         // Android Studio will pick them up and compile them into APK/assets/shaders.

@@ -193,15 +193,15 @@ namespace Pathfinder {
             dice_descriptor_set = driver->create_descriptor_set();
 
             dice_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 0, "", nullptr, nullptr});
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 0});
             dice_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 1, "", nullptr, nullptr});
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 1});
             dice_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 2, "", nullptr, nullptr});
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 2});
             dice_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 3, "", nullptr, nullptr});
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 3});
             dice_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 4, "", nullptr, nullptr});
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 4});
             dice_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::UniformBuffer, ShaderType::Compute, 5, "bUniform0", dice_ub0, nullptr});
             dice_descriptor_set->add_or_update_descriptor(
@@ -213,9 +213,9 @@ namespace Pathfinder {
             bound_descriptor_set = driver->create_descriptor_set();
 
             bound_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 0, "", nullptr, nullptr});
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 0});
             bound_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 1, "", nullptr, nullptr});
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 1});
             bound_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::UniformBuffer, ShaderType::Compute, 2, "bUniform", bound_ub, nullptr});
         }
@@ -225,17 +225,17 @@ namespace Pathfinder {
             bin_descriptor_set = driver->create_descriptor_set();
 
             bin_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 0, "", nullptr, nullptr});
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 0});
             bin_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 1, "", nullptr, nullptr});
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 1});
             bin_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 2, "", nullptr, nullptr});
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 2});
             bin_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 3, "", nullptr, nullptr});
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 3});
             bin_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 4, "", nullptr, nullptr});
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 4});
             bin_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 5, "", nullptr, nullptr});
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 5});
             bin_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::UniformBuffer, ShaderType::Compute, 6, "bUniform", bin_ub, nullptr});
         }
@@ -245,27 +245,21 @@ namespace Pathfinder {
             propagate_descriptor_set = driver->create_descriptor_set();
 
             propagate_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 0, "", nullptr, nullptr});
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 0});
             propagate_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 1, "", nullptr,
-                     nullptr});
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 1});
             propagate_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 2, "", nullptr,
-                     nullptr});
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 2});
             propagate_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 3, "", nullptr,
-                     nullptr});
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 3});
             propagate_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 4, "", nullptr,
-                     nullptr});
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 4});
             propagate_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 5, "", nullptr, nullptr});
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 5});
             propagate_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 6, "", nullptr,
-                     nullptr});
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 6});
             propagate_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 7, "", nullptr,
-                     nullptr});
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 7});
             propagate_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::UniformBuffer, ShaderType::Compute, 8, "bUniform", propagate_ub, nullptr});
         }
@@ -275,11 +269,11 @@ namespace Pathfinder {
             sort_descriptor_set = driver->create_descriptor_set();
 
             sort_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 0, "", nullptr, nullptr});
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 0});
             sort_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 1, "", nullptr, nullptr});
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 1});
             sort_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 2, "", nullptr, nullptr});
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 2});
             sort_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::UniformBuffer, ShaderType::Compute, 3, "bUniform", sort_ub, nullptr});
         }
@@ -289,14 +283,11 @@ namespace Pathfinder {
             fill_descriptor_set = driver->create_descriptor_set();
 
             fill_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 0, "", nullptr,
-                     nullptr}); // Read only.
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 0}); // Read only.
             fill_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 1, "", nullptr,
-                     nullptr}); // Read only.
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 1}); // Read only.
             fill_descriptor_set->add_or_update_descriptor(
-                    {DescriptorType::StorageBuffer, ShaderType::Compute, 2, "", nullptr,
-                     nullptr}); // Read only.
+                    {DescriptorType::StorageBuffer, ShaderType::Compute, 2}); // Read only.
             fill_descriptor_set->add_or_update_descriptor(
                     {DescriptorType::Image, ShaderType::Compute, 3, "uDest", nullptr, mask_texture});
             fill_descriptor_set->add_or_update_descriptor(
@@ -312,17 +303,17 @@ namespace Pathfinder {
                 tile_descriptor_set = driver->create_descriptor_set();
 
                 tile_descriptor_set->add_or_update_descriptor(
-                        {DescriptorType::StorageBuffer, ShaderType::Compute, 0, "", nullptr, nullptr});
+                        {DescriptorType::StorageBuffer, ShaderType::Compute, 0});
                 tile_descriptor_set->add_or_update_descriptor(
-                        {DescriptorType::StorageBuffer, ShaderType::Compute, 1, "", nullptr, nullptr});
+                        {DescriptorType::StorageBuffer, ShaderType::Compute, 1});
                 tile_descriptor_set->add_or_update_descriptor(
-                        {DescriptorType::Sampler, ShaderType::Compute, 3, "uZBuffer", nullptr, nullptr});
+                        {DescriptorType::Sampler, ShaderType::Compute, 3, "uZBuffer"});
                 tile_descriptor_set->add_or_update_descriptor(
-                        {DescriptorType::Sampler, ShaderType::Compute, 4, "uColorTexture0", nullptr, nullptr});
+                        {DescriptorType::Sampler, ShaderType::Compute, 4, "uColorTexture0"});
                 tile_descriptor_set->add_or_update_descriptor(
-                        {DescriptorType::Sampler, ShaderType::Compute, 6, "uGammaLUT", nullptr, nullptr});
+                        {DescriptorType::Sampler, ShaderType::Compute, 6, "uGammaLUT"});
                 tile_descriptor_set->add_or_update_descriptor(
-                        {DescriptorType::Image, ShaderType::Compute, 7, "", nullptr, nullptr});
+                        {DescriptorType::Image, ShaderType::Compute, 7});
 
                 {
                     Descriptor descriptor;
