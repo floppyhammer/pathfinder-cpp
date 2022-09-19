@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="gles3jni_activity">Pathfinder OpenGLES</string>
+    <string name="app_name">Pathfinder GLES</string>
 </resources>

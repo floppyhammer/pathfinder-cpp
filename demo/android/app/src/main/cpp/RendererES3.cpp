@@ -34,14 +34,11 @@ public:
     void render() override;
 
 private:
-    EGLContext mEglContext;
+    EGLContext eglContext;
 
     std::shared_ptr<App> app;
     std::shared_ptr<Pathfinder::Driver> driver;
     std::shared_ptr<TextureRect> texture_rect;
-
-    int width;
-    int height;
 };
 
 Renderer *createES3Renderer(int width, int height, AAssetManager *p_asset_manager) {
@@ -100,7 +97,7 @@ std::vector<char> get_asset_file(AAssetManager *asset_manager, const char *p_fil
 }
 
 RendererES3::RendererES3(AAssetManager *p_asset_manager)
-        : Renderer(p_asset_manager), mEglContext(eglGetCurrentContext()) {}
+        : Renderer(p_asset_manager), eglContext(eglGetCurrentContext()) {}
 
 void RendererES3::init(int width, int height) {
     ALOGV("Using OpenGL ES 3.0 renderer");
@@ -126,7 +123,7 @@ RendererES3::~RendererES3() {
      * If the context exists, it must be current. This only happens when we're
      * cleaning up after a failed init().
      */
-    if (eglGetCurrentContext() != mEglContext) {
+    if (eglGetCurrentContext() != eglContext) {
         return;
     }
 }

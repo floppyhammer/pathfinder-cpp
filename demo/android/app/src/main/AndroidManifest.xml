@@ -6,7 +6,7 @@
 
     <application
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/gles3jni_activity">
+        android:label="@string/app_name">
         <activity
             android:name="GLES3JNIActivity"
             android:configChanges="orientation|keyboardHidden"

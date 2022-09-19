@@ -35,11 +35,9 @@ Renderer::Renderer(AAssetManager *p_asset_manager) {
 
 Renderer::~Renderer() = default;
 
-void Renderer::resize(int w, int h) {
-}
+void Renderer::resize(int width, int height) {}
 
-void Renderer::render() {
-}
+void Renderer::render() {}
 
 // ----------------------------------------------------------------------------
 
@@ -47,12 +45,12 @@ static Renderer *g_renderer = nullptr;
 
 extern "C" {
 JNIEXPORT void JNICALL
-Java_com_android_gles3jni_GLES3JNILib_init(JNIEnv *env, jobject obj, jint width, jint height,
-                                           jobject asset_manager);
+Java_graphics_pathfinder_gles_GLES3JNILib_init(JNIEnv *env, jobject obj, jint width, jint height,
+                                               jobject asset_manager);
 JNIEXPORT void JNICALL
-Java_com_android_gles3jni_GLES3JNILib_resize(JNIEnv *env, jobject obj, jint width, jint height);
-JNIEXPORT void JNICALL Java_com_android_gles3jni_GLES3JNILib_step(JNIEnv *env, jobject obj);
-};
+Java_graphics_pathfinder_gles_GLES3JNILib_resize(JNIEnv *env, jobject obj, jint width, jint height);
+JNIEXPORT void JNICALL Java_graphics_pathfinder_gles_GLES3JNILib_step(JNIEnv *env, jobject obj);
+}
 
 #if !defined(DYNAMIC_ES3)
 
@@ -63,8 +61,8 @@ static GLboolean gl3stubInit() {
 #endif
 
 JNIEXPORT void JNICALL
-Java_com_android_gles3jni_GLES3JNILib_init(JNIEnv *env, jobject obj, jint width, jint height,
-                                           jobject asset_manager) {
+Java_graphics_pathfinder_gles_GLES3JNILib_init(JNIEnv *env, jobject obj, jint width, jint height,
+                                               jobject asset_manager) {
     if (g_renderer) {
         delete g_renderer;
         g_renderer = nullptr;
@@ -89,14 +87,15 @@ Java_com_android_gles3jni_GLES3JNILib_init(JNIEnv *env, jobject obj, jint width,
 }
 
 JNIEXPORT void JNICALL
-Java_com_android_gles3jni_GLES3JNILib_resize(JNIEnv *env, jobject obj, jint width, jint height) {
+Java_graphics_pathfinder_gles_GLES3JNILib_resize(JNIEnv *env, jobject obj, jint width,
+                                                 jint height) {
     if (g_renderer) {
         g_renderer->resize(width, height);
     }
 }
 
 JNIEXPORT void JNICALL
-Java_com_android_gles3jni_GLES3JNILib_step(JNIEnv *env, jobject obj) {
+Java_graphics_pathfinder_gles_GLES3JNILib_step(JNIEnv *env, jobject obj) {
     if (g_renderer) {
         g_renderer->render();
     }

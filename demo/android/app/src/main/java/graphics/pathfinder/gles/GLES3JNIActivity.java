@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.gles3jni;
+package graphics.pathfinder.gles;
 
 import android.app.Activity;
 import android.os.Bundle;
