@@ -15,7 +15,7 @@ limitations under the License.
 ]]
 cmake_minimum_required(VERSION 3.4.1)
 
-project(vktuts)
+project(pathfinder_demo)
 
 # Integrate GameActivity, refer to
 #     https://d.android.com/games/agdk/integrate-game-activity

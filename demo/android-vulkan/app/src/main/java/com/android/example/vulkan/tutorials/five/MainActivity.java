@@ -15,6 +15,7 @@
 package graphics.pathfinder.vulkan;
 
 import com.google.androidgamesdk.GameActivity;
+
 import android.os.Bundle;
 
 public class MainActivity extends GameActivity {
@@ -23,8 +24,8 @@ public class MainActivity extends GameActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
+
     static {
-        System.loadLibrary("vktuts");
+        System.loadLibrary("pathfinder_demo");
     }
 }
-
