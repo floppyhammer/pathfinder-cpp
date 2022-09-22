@@ -1,35 +1,35 @@
 #ifndef PATHFINDER_GPU_BUFFER_VK_H
 #define PATHFINDER_GPU_BUFFER_VK_H
 
-#include "../buffer.h"
-#include "../../common/global_macros.h"
-
 #include <cstdint>
 #include <memory>
+
+#include "../../common/global_macros.h"
+#include "../buffer.h"
 
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    class BufferVk : public Buffer {
-        friend class DriverVk;
+class BufferVk : public Buffer {
+    friend class DriverVk;
 
-    public:
-        BufferVk(VkDevice p_device, BufferType p_type, size_t p_size, MemoryProperty property);
+public:
+    BufferVk(VkDevice p_device, BufferType p_type, size_t p_size, MemoryProperty property);
 
-        ~BufferVk();
+    ~BufferVk();
 
-        VkBuffer get_vk_buffer();
+    VkBuffer get_vk_buffer();
 
-        VkDeviceMemory get_vk_device_memory();
+    VkDeviceMemory get_vk_device_memory();
 
-    private:
-        VkBuffer vk_buffer{};
-        VkDeviceMemory vk_device_memory{};
+private:
+    VkBuffer vk_buffer{};
+    VkDeviceMemory vk_device_memory{};
 
-        VkDevice device;
-    };
-}
+    VkDevice device;
+};
+} // namespace Pathfinder
 
 #endif
 
-#endif //PATHFINDER_GPU_BUFFER_VK_H
+#endif // PATHFINDER_GPU_BUFFER_VK_H

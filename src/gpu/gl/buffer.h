@@ -1,24 +1,24 @@
 #ifndef PATHFINDER_GPU_BUFFER_GL_H
 #define PATHFINDER_GPU_BUFFER_GL_H
 
-#include "../buffer.h"
-#include "../../common/global_macros.h"
-
 #include <cstdint>
+
+#include "../../common/global_macros.h"
+#include "../buffer.h"
 
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    class BufferGl : public Buffer {
-    public:
-        BufferGl(BufferType p_type, size_t p_size, MemoryProperty p_property);
+class BufferGl : public Buffer {
+public:
+    BufferGl(BufferType p_type, size_t p_size, MemoryProperty p_property);
 
-        ~BufferGl();
+    ~BufferGl();
 
-        uint32_t id;
-    };
-}
+    uint32_t id;
+};
+} // namespace Pathfinder
 
 #endif
 
-#endif //PATHFINDER_GPU_BUFFER_GL_H
+#endif // PATHFINDER_GPU_BUFFER_GL_H

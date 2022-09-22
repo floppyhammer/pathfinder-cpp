@@ -1,5 +1,4 @@
 #include "../common/app.h"
-
 #include "../src/gpu/platform.h"
 
 uint32_t WINDOW_WIDTH = 1280;
@@ -22,16 +21,11 @@ int main() {
     auto swap_chain = platform->create_swap_chain(driver);
 
     // Create app.
-    App app(driver,
-            WINDOW_WIDTH,
-            WINDOW_HEIGHT,
-            Pathfinder::load_file_as_bytes("../assets/tiger.svg"));
+    App app(driver, WINDOW_WIDTH, WINDOW_HEIGHT, Pathfinder::load_file_as_bytes("../assets/tiger.svg"));
 
     // Set viewport texture to a texture rect.
-    auto texture_rect = std::make_shared<TextureRect>(driver,
-                                                      swap_chain->get_render_pass(),
-                                                      WINDOW_WIDTH,
-                                                      WINDOW_HEIGHT);
+    auto texture_rect =
+        std::make_shared<TextureRect>(driver, swap_chain->get_render_pass(), WINDOW_WIDTH, WINDOW_HEIGHT);
     texture_rect->set_texture(app.canvas->get_dest_texture());
 
     // Main loop.
@@ -49,9 +43,8 @@ int main() {
 
         // Swap chain render pass.
         {
-            cmd_buffer->begin_render_pass(swap_chain->get_render_pass(),
-                                          framebuffer,
-                                          Pathfinder::ColorF(0.2, 0.2, 0.2, 1.0));
+            cmd_buffer->begin_render_pass(
+                swap_chain->get_render_pass(), framebuffer, Pathfinder::ColorF(0.2, 0.2, 0.2, 1.0));
 
             // Draw canvas to screen.
             texture_rect->draw(driver, cmd_buffer, framebuffer->get_size());

@@ -6,21 +6,22 @@
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    class RenderPassGl : public RenderPass {
-        friend class DriverGl;
+class RenderPassGl : public RenderPass {
+    friend class DriverGl;
 
-    public:
-        explicit RenderPassGl(AttachmentLoadOp p_load_op) : load_op(p_load_op) {}
+public:
+    explicit RenderPassGl(AttachmentLoadOp p_load_op) : load_op(p_load_op) {
+    }
 
-        inline AttachmentLoadOp get_attachment_load_op() const {
-            return load_op;
-        }
+    inline AttachmentLoadOp get_attachment_load_op() const {
+        return load_op;
+    }
 
-    private:
-        AttachmentLoadOp load_op;
-    };
-}
+private:
+    AttachmentLoadOp load_op;
+};
+} // namespace Pathfinder
 
 #endif
 
-#endif //PATHFINDER_GPU_RENDER_PASS_GL_H
+#endif // PATHFINDER_GPU_RENDER_PASS_GL_H

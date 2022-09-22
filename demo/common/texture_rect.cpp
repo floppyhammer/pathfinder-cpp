@@ -2,18 +2,18 @@
 
 #include <utility>
 
+#include "../../src/common/global_macros.h"
 #include "../../src/common/math/basic.h"
 #include "../../src/common/math/mat4x4.h"
-#include "../../src/common/global_macros.h"
 #include "../../src/gpu/platform.h"
 
 #ifdef PATHFINDER_USE_VULKAN
-#include "../../src/shaders/generated/blit_vert_spv.h"
-#include "../../src/shaders/generated/blit_frag_spv.h"
+    #include "../../src/shaders/generated/blit_frag_spv.h"
+    #include "../../src/shaders/generated/blit_vert_spv.h"
 #else
 
-#include "../../src/shaders/generated/blit_vert.h"
-#include "../../src/shaders/generated/blit_frag.h"
+    #include "../../src/shaders/generated/blit_frag.h"
+    #include "../../src/shaders/generated/blit_vert.h"
 
 #endif
 
@@ -27,34 +27,29 @@ TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
     // Set VAO&VBO.
     // ---------------------------
     // Set up vertex data (and buffer(s)) and configure vertex attributes.
-    float vertices[] = {
-            // Positions, colors, UVs.
-            0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0,
-            1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0,
-            1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0,
+    float vertices[] = {// Positions, colors, UVs.
+                        0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0,
+                        0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0,
 
-            0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0,
-            1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0,
-            0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0
-    };
+                        0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 1.0,
+                        0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0};
 
-    vertex_buffer = driver->create_buffer(Pathfinder::BufferType::Vertex, sizeof(vertices),
-                                          Pathfinder::MemoryProperty::DEVICE_LOCAL);
-    uniform_buffer = driver->create_buffer(Pathfinder::BufferType::Uniform, 16 * sizeof(float),
-                                           Pathfinder::MemoryProperty::HOST_VISIBLE_AND_COHERENT);
+    vertex_buffer = driver->create_buffer(
+        Pathfinder::BufferType::Vertex, sizeof(vertices), Pathfinder::MemoryProperty::DEVICE_LOCAL);
+    uniform_buffer = driver->create_buffer(
+        Pathfinder::BufferType::Uniform, 16 * sizeof(float), Pathfinder::MemoryProperty::HOST_VISIBLE_AND_COHERENT);
 
     auto cmd_buffer = driver->create_command_buffer(true);
-    cmd_buffer->upload_to_buffer(vertex_buffer,
-                                 0,
-                                 sizeof(vertices),
-                                 (void *) vertices);
+    cmd_buffer->upload_to_buffer(vertex_buffer, 0, sizeof(vertices), (void *)vertices);
     cmd_buffer->submit(std::shared_ptr<Pathfinder::Driver>(driver));
 
     // Pipeline.
     {
 #ifdef PATHFINDER_USE_VULKAN
-        const auto vert_source = std::vector<char>(std::begin(Pathfinder::blit_vert_spv), std::end(Pathfinder::blit_vert_spv));
-        const auto frag_source = std::vector<char>(std::begin(Pathfinder::blit_frag_spv), std::end(Pathfinder::blit_frag_spv));
+        const auto vert_source =
+            std::vector<char>(std::begin(Pathfinder::blit_vert_spv), std::end(Pathfinder::blit_vert_spv));
+        const auto frag_source =
+            std::vector<char>(std::begin(Pathfinder::blit_frag_spv), std::end(Pathfinder::blit_frag_spv));
 #else
         const auto vert_source = std::vector<char>(std::begin(Pathfinder::blit_vert), std::end(Pathfinder::blit_vert));
         const auto frag_source = std::vector<char>(std::begin(Pathfinder::blit_frag), std::end(Pathfinder::blit_frag));
@@ -65,53 +60,37 @@ TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
 
         uint32_t stride = 8 * sizeof(float);
 
-        attribute_descriptions.push_back({0,
-                                          3,
-                                          Pathfinder::DataType::FLOAT,
-                                          stride,
-                                          0,
-                                          Pathfinder::VertexInputRate::VERTEX});
+        attribute_descriptions.push_back(
+            {0, 3, Pathfinder::DataType::FLOAT, stride, 0, Pathfinder::VertexInputRate::VERTEX});
 
-        attribute_descriptions.push_back({0,
-                                          3,
-                                          Pathfinder::DataType::FLOAT,
-                                          stride,
-                                          3 * sizeof(float),
-                                          Pathfinder::VertexInputRate::VERTEX});
+        attribute_descriptions.push_back(
+            {0, 3, Pathfinder::DataType::FLOAT, stride, 3 * sizeof(float), Pathfinder::VertexInputRate::VERTEX});
 
-        attribute_descriptions.push_back({0,
-                                          2,
-                                          Pathfinder::DataType::FLOAT,
-                                          stride,
-                                          6 * sizeof(float),
-                                          Pathfinder::VertexInputRate::VERTEX});
+        attribute_descriptions.push_back(
+            {0, 2, Pathfinder::DataType::FLOAT, stride, 6 * sizeof(float), Pathfinder::VertexInputRate::VERTEX});
 
-        Pathfinder::ColorBlendState blend_state = {true, Pathfinder::BlendFactor::ONE,
-                                                   Pathfinder::BlendFactor::ONE_MINUS_SRC_ALPHA};
+        Pathfinder::ColorBlendState blend_state = {
+            true, Pathfinder::BlendFactor::ONE, Pathfinder::BlendFactor::ONE_MINUS_SRC_ALPHA};
 
         {
             descriptor_set = driver->create_descriptor_set();
 
-            descriptor_set->add_or_update_descriptor({
-                                                             Pathfinder::DescriptorType::UniformBuffer,
-                                                             Pathfinder::ShaderType::Vertex,
-                                                             0,
-                                                             "bUniform",
-                                                             uniform_buffer, nullptr});
-            descriptor_set->add_or_update_descriptor({
-                                                             Pathfinder::DescriptorType::Sampler,
-                                                             Pathfinder::ShaderType::Fragment,
-                                                             1,
-                                                             "uTexture",
-                                                             nullptr, nullptr});
+            descriptor_set->add_or_update_descriptor({Pathfinder::DescriptorType::UniformBuffer,
+                                                      Pathfinder::ShaderType::Vertex,
+                                                      0,
+                                                      "bUniform",
+                                                      uniform_buffer,
+                                                      nullptr});
+            descriptor_set->add_or_update_descriptor({Pathfinder::DescriptorType::Sampler,
+                                                      Pathfinder::ShaderType::Fragment,
+                                                      1,
+                                                      "uTexture",
+                                                      nullptr,
+                                                      nullptr});
         }
 
-        pipeline = driver->create_render_pipeline(vert_source,
-                                                  frag_source,
-                                                  attribute_descriptions,
-                                                  blend_state,
-                                                  descriptor_set,
-                                                  render_pass);
+        pipeline = driver->create_render_pipeline(
+            vert_source, frag_source, attribute_descriptions, blend_state, descriptor_set, render_pass);
     }
 }
 
@@ -135,14 +114,12 @@ void TextureRect::draw(const std::shared_ptr<Pathfinder::Driver> &driver,
     // -------------------------------------------------
     // The actual application order of these matrices is reverse.
     auto model_mat = Pathfinder::Mat4x4<float>(1.0f);
-    model_mat = model_mat.translate(Pathfinder::Vec3<float>(position.x / viewport_size.x * 2.0f,
-                                                            position.y / viewport_size.y * 2.0f,
-                                                            0.0f));
+    model_mat = model_mat.translate(
+        Pathfinder::Vec3<float>(position.x / viewport_size.x * 2.0f, position.y / viewport_size.y * 2.0f, 0.0f));
     model_mat = model_mat.translate(Pathfinder::Vec3<float>(-1.0, -1.0, 0.0f));
     model_mat = model_mat.scale(Pathfinder::Vec3<float>(scale.x, scale.y, 1.0f));
-    model_mat = model_mat.scale(Pathfinder::Vec3<float>(size.x / viewport_size.x * 2.0f,
-                                                        size.y / viewport_size.y * 2.0f,
-                                                        1.0f));
+    model_mat = model_mat.scale(
+        Pathfinder::Vec3<float>(size.x / viewport_size.x * 2.0f, size.y / viewport_size.y * 2.0f, 1.0f));
 
     auto mvp_mat = model_mat;
     // -------------------------------------------------

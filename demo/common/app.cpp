@@ -11,7 +11,7 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
 
     // Set up a canvas.
     canvas = std::make_shared<Pathfinder::Canvas>(driver);
-    canvas->set_empty_scene({0, 0, (float) window_width, (float) window_height});
+    canvas->set_empty_scene({0, 0, (float)window_width, (float)window_height});
     canvas->set_empty_dest_texture(window_width, window_height);
     canvas->load_svg(p_svg_input);
 
@@ -32,7 +32,7 @@ void App::update() {
 
         // Time between frames in ms.
         duration = current_time - last_time;
-        float delta = (float) duration.count() * 1000.f;
+        float delta = (float)duration.count() * 1000.f;
 
         // Show frame time.
         std::ostringstream string_stream;

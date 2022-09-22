@@ -1,14 +1,14 @@
 #ifndef PATHFINDER_DEMO_TEXTURE_RECT_H
 #define PATHFINDER_DEMO_TEXTURE_RECT_H
 
-#include "../../src/gpu/framebuffer.h"
-#include "../../src/gpu/texture.h"
-#include "../../src/gpu/render_pipeline.h"
-#include "../../src/gpu/descriptor_set.h"
-#include "../../src/gpu/command_buffer.h"
-#include "../../src/pathfinder.h"
-
 #include <memory>
+
+#include "../../src/gpu/command_buffer.h"
+#include "../../src/gpu/descriptor_set.h"
+#include "../../src/gpu/framebuffer.h"
+#include "../../src/gpu/render_pipeline.h"
+#include "../../src/gpu/texture.h"
+#include "../../src/pathfinder.h"
 
 /**
  * Simple class to blit a texture onto the screen.
@@ -40,4 +40,4 @@ private:
     std::shared_ptr<Pathfinder::DescriptorSet> descriptor_set;
 };
 
-#endif //PATHFINDER_DEMO_TEXTURE_RECT_H
+#endif // PATHFINDER_DEMO_TEXTURE_RECT_H

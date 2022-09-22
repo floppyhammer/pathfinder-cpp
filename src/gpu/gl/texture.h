@@ -1,29 +1,29 @@
 #ifndef PATHFINDER_GPU_TEXTURE_GL_H
 #define PATHFINDER_GPU_TEXTURE_GL_H
 
-#include "data.h"
-#include "../texture.h"
-#include "../../common/math/rect.h"
 #include "../../common/global_macros.h"
 #include "../../common/logger.h"
+#include "../../common/math/rect.h"
+#include "../texture.h"
+#include "data.h"
 
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    /// Use Texture via smart pointers as its de-constructor will release its GL resources.
-    class TextureGl : public Texture {
-    public:
-        TextureGl(uint32_t p_width, uint32_t p_height, TextureFormat p_format);
+/// Use Texture via smart pointers as its de-constructor will release its GL resources.
+class TextureGl : public Texture {
+public:
+    TextureGl(uint32_t p_width, uint32_t p_height, TextureFormat p_format);
 
-        ~TextureGl();
+    ~TextureGl();
 
-        uint32_t get_texture_id() const;
+    uint32_t get_texture_id() const;
 
-    private:
-        uint32_t texture_id = 0;
-    };
-}
+private:
+    uint32_t texture_id = 0;
+};
+} // namespace Pathfinder
 
 #endif
 
-#endif //PATHFINDER_GPU_TEXTURE_GL_H
+#endif // PATHFINDER_GPU_TEXTURE_GL_H

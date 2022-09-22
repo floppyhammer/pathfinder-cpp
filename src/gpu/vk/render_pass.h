@@ -7,26 +7,23 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-    class RenderPassVk : public RenderPass {
-        friend class DriverVk;
+class RenderPassVk : public RenderPass {
+    friend class DriverVk;
 
-    public:
-        RenderPassVk(VkDevice p_device,
-                     TextureFormat texture_format,
-                     AttachmentLoadOp load_op,
-                     TextureLayout final_layout);
+public:
+    RenderPassVk(VkDevice p_device, TextureFormat texture_format, AttachmentLoadOp load_op, TextureLayout final_layout);
 
-        ~RenderPassVk();
+    ~RenderPassVk();
 
-        VkRenderPass get_vk_render_pass();
+    VkRenderPass get_vk_render_pass();
 
-    private:
-        VkRenderPass vk_render_pass;
+private:
+    VkRenderPass vk_render_pass;
 
-        VkDevice device;
-    };
-}
+    VkDevice device;
+};
+} // namespace Pathfinder
 
 #endif
 
-#endif //PATHFINDER_GPU_RENDER_PASS_VK_H
+#endif // PATHFINDER_GPU_RENDER_PASS_VK_H
