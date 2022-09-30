@@ -1,20 +1,38 @@
 import os
-import sys
 import shutil
+from enum import Enum
 
 
+# Remove source files.
 def delete_cpp_files(path):
     for root, dirs, files in os.walk(path):
         for f in files:
-            # Remove source files.
             if f.lower().endswith(".cpp"):
                 os.remove(os.path.join(root, f))
 
 
-which_demo = sys.argv[1]
+class GpuApi(Enum):
+    GLES = "gles"
+    VULKAN = "vulkan"
+
+
+target_gpu_api = GpuApi.VULKAN
+
+print("Target GPU API:", target_gpu_api.name)
+
+# Go into the jni directory.
+os.system("cd jni")
+
+# Compile.
+os.system("ndk-build -j4 TARGET_GPU_API=" + str(target_gpu_api.value))
+
+# Go back.
+os.system("cd ..")
+
+print("Finished compiling")
 
 # Set Android src path.
-android_src_path = "../demo/" + which_demo + "/app/src/main/cpp"
+android_src_path = "../demo/android-" + str(target_gpu_api.value) + "/app/src/main/cpp"
 
 src_dirs = ["/demo/common", "/src", "/lib", "/third_party", "/assets"]
 dst_dirs = ["/demo/common", "/src", "/lib", "/third_party", "/../assets"]
@@ -38,3 +56,5 @@ for i in range(len(src_dirs)):
 # Copy libraries.
 shutil.copytree("./obj/local/arm64-v8a", android_src_path + "/lib/arm64-v8a")
 shutil.copytree("./obj/local/armeabi-v7a", android_src_path + "/lib/armeabi-v7a")
+
+print("Finished copying")
