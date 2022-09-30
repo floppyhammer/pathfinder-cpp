@@ -16,7 +16,8 @@ class GpuApi(Enum):
     VULKAN = "vulkan"
 
 
-target_gpu_api = GpuApi.VULKAN
+# Change API here.
+target_gpu_api = GpuApi.GLES
 
 print("Target GPU API:", target_gpu_api.name)
 

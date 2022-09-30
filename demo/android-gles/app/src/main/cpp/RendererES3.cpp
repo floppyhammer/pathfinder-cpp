@@ -131,6 +131,9 @@ RendererES3::~RendererES3() {
 void RendererES3::render() {
     app->update();
 
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, (int32_t) texture_rect->size.x, (int32_t) texture_rect->size.y);
+
     auto cmd_buffer = driver->create_command_buffer(true);
 
     texture_rect->draw(driver, cmd_buffer,
