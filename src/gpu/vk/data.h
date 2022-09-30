@@ -96,6 +96,10 @@ inline VkImageLayout to_vk_layout(TextureLayout layout) {
             return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
         case TextureLayout::GENERAL:
             return VK_IMAGE_LAYOUT_GENERAL;
+        case TextureLayout::UNDEFINED:
+            return VK_IMAGE_LAYOUT_UNDEFINED;
+        case TextureLayout::COLOR_ATTACHMENT:
+            return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     }
 }
 
