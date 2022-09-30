@@ -62,13 +62,6 @@ Vec2<uint32_t> pixel_size_to_tile_size(Vec2<uint32_t> pixel_size) {
     return {size.x / TILE_WIDTH, size.y / TILE_HEIGHT};
 }
 
-void TileBatchInfoD3D11::clean() {
-    z_buffer_id.reset();
-    tiles_d3d11_buffer_id.reset();
-    propagate_metadata_buffer_id.reset();
-    first_tile_map_buffer_id.reset();
-}
-
 void SceneSourceBuffers::upload(const std::shared_ptr<Pathfinder::Driver> &driver, SegmentsD3D11 &segments) {
     auto needed_points_capacity = upper_power_of_two(segments.points.size());
     auto needed_point_indices_capacity = upper_power_of_two(segments.indices.size());
@@ -346,6 +339,9 @@ void RendererD3D11::draw(const std::shared_ptr<SceneBuilder> &p_scene_builder) {
     for (auto &batch : scene_builder->tile_batches) {
         prepare_and_draw_tiles(batch, scene_builder->metadata);
     }
+
+    // Clear all batch info.
+    tile_batch_info.clear();
 }
 
 std::shared_ptr<Texture> RendererD3D11::get_dest_texture() {
@@ -370,7 +366,7 @@ void RendererD3D11::prepare_and_draw_tiles(DrawTileBatchD3D11 &batch,
 
     timestamp.record("prepare_tiles");
 
-    auto batch_info = tile_batch_info[tile_batch_id];
+    auto &batch_info = tile_batch_info[tile_batch_id];
 
     upload_metadata(metadata_texture, metadata, driver);
 
@@ -382,8 +378,8 @@ void RendererD3D11::prepare_and_draw_tiles(DrawTileBatchD3D11 &batch,
     timestamp.record("draw_tiles");
     timestamp.print();
 
-    // Free general buffers in batch_info.
-    batch_info.clean();
+    // Replace with empty info, freeing storage buffers related to this batch.
+    batch_info = TileBatchInfoD3D11{};
 }
 
 void RendererD3D11::draw_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,

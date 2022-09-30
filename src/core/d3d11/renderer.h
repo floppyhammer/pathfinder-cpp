@@ -19,8 +19,6 @@ struct TileBatchInfoD3D11 {
     std::shared_ptr<Buffer> tiles_d3d11_buffer_id;
     std::shared_ptr<Buffer> propagate_metadata_buffer_id;
     std::shared_ptr<Buffer> first_tile_map_buffer_id;
-
-    void clean();
 };
 
 struct FillBufferInfoD3D11 {
