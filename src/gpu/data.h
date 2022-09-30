@@ -9,9 +9,11 @@
         #define GLFW_INCLUDE_VULKAN
         #include <GLFW/glfw3.h>
     #else
-        // OpenGL headers.
-        #include <GLFW/glfw3.h>
+        // Include OpenGL header via GLAD.
         #include <glad/glad.h>
+        // Prevent the GLFW header from including the OpenGL header.
+        #define GLFW_INCLUDE_NONE
+        #include <GLFW/glfw3.h>
     #endif
 #else
     #ifdef PATHFINDER_USE_VULKAN
