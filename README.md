@@ -10,12 +10,16 @@ This is a C++ port of [Pathfinder 3](https://github.com/servo/pathfinder) with a
 
 ## How to use
 
+### Shader generation
+
+* Run `src/shaders/compile_and_convert.ps1` to generate shader headers.
+
 ### Native
 
 * Load `demo/native/CMakeList.txt` to run the native demo.
 
 ### Android
 
-* Run `ndk/compile_and_copy.ps1` to build the shared library and copy the header files.
+* Run `ndk/compile_and_copy.py` to build the static library and copy the header files.
 
-* Open `demo/android` in Android Studio to run the Android demo.
+* Open `demo/android-gles` or `demo/android-vulkan` in Android Studio to run the Android demo.
