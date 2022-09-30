@@ -131,12 +131,12 @@ void SwapChainVk::create_swapchain() {
     create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
     QueueFamilyIndices qf_indices = platform->find_queue_families(platform->physical_device);
-    uint32_t queueFamilyIndices[] = {*qf_indices.graphics_family, *qf_indices.present_family};
+    uint32_t queue_family_indices[] = {*qf_indices.graphics_family, *qf_indices.present_family};
 
-    if (qf_indices.graphics_family != qf_indices.present_family) {
+    if (*qf_indices.graphics_family != *qf_indices.present_family) {
         create_info.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
         create_info.queueFamilyIndexCount = 2;
-        create_info.pQueueFamilyIndices = queueFamilyIndices;
+        create_info.pQueueFamilyIndices = queue_family_indices;
     } else {
         create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     }
