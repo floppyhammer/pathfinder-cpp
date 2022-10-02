@@ -50,7 +50,7 @@ void Outline::curve_to(float cx, float cy, float x, float y) {
     auto &current_contour = contours.back();
 
     current_contour.points.emplace_back(cx, cy);
-    current_contour.flags.emplace_back(PointFlags::CONTROL_POINT_0);
+    current_contour.flags.emplace_back(CONTROL_POINT_0);
 
     current_contour.points.emplace_back(x, y);
     current_contour.flags.emplace_back();
@@ -69,10 +69,10 @@ void Outline::cubic_to(float cx, float cy, float cx1, float cy1, float x, float 
     auto &current_contour = contours.back();
 
     current_contour.points.emplace_back(cx, cy);
-    current_contour.flags.emplace_back(PointFlags::CONTROL_POINT_0);
+    current_contour.flags.emplace_back(CONTROL_POINT_0);
 
     current_contour.points.emplace_back(cx1, cy1);
-    current_contour.flags.emplace_back(PointFlags::CONTROL_POINT_1);
+    current_contour.flags.emplace_back(CONTROL_POINT_1);
 
     current_contour.points.emplace_back(x, y);
     current_contour.flags.emplace_back();

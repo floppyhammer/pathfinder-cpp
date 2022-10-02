@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <unordered_map>
+#include <memory>
 
 #include "buffer.h"
 #include "data.h"

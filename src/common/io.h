@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <memory>
 
 namespace Pathfinder {
 std::string load_file_as_string(const std::string &file_path);

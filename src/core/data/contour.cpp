@@ -33,12 +33,12 @@ void Contour::push_segment(const Segment &segment, PushSegmentFlags p_flags) {
     // Not a line.
     if (!segment.is_line()) {
         // Push the first control point.
-        push_point(segment.ctrl.from(), PointFlags(PointFlags::CONTROL_POINT_0), update_bounds);
+        push_point(segment.ctrl.from(), PointFlags(CONTROL_POINT_0), update_bounds);
 
         // Not a quadratic curve.
         if (!segment.is_quadratic()) {
             // Push the second control point.
-            push_point(segment.ctrl.to(), PointFlags(PointFlags::CONTROL_POINT_1), update_bounds);
+            push_point(segment.ctrl.to(), PointFlags(CONTROL_POINT_1), update_bounds);
         }
     }
 
@@ -98,7 +98,7 @@ Segment SegmentsIter::get_next(bool force_closed) {
             head += 1;
         } else if (head + 2 < points_count) {
             // Quadratic Bézier curve.
-            if (flags[head + 1].value == PointFlags::CONTROL_POINT_0 && flags[head + 2].value == 0) {
+            if (flags[head + 1].value == CONTROL_POINT_0 && flags[head + 2].value == 0) {
                 segment.ctrl.set_from(points[head + 1]);
                 segment.baseline.set_to(points[head + 2]);
                 segment.kind = SegmentKind::Quadratic;
@@ -107,8 +107,8 @@ Segment SegmentsIter::get_next(bool force_closed) {
                 head += 2;
             } else if (head + 3 < points_count) {
                 // Cubic Bézier curve.
-                if (flags[head + 1].value == PointFlags::CONTROL_POINT_0 &&
-                    flags[head + 2].value == PointFlags::CONTROL_POINT_1 && flags[head + 3].value == 0) {
+                if (flags[head + 1].value == CONTROL_POINT_0 &&
+                    flags[head + 2].value == CONTROL_POINT_1 && flags[head + 3].value == 0) {
                     segment.ctrl.set_from(points[head + 1]);
                     segment.ctrl.set_to(points[head + 2]);
                     segment.baseline.set_to(points[head + 3]);

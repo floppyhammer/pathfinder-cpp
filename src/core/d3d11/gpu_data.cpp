@@ -63,16 +63,16 @@ Range SegmentsD3D11::add_path(const Outline &outline) {
         // Traverse all points in the contour.
         for (size_t point_index = 0; point_index < point_count; point_index++) {
             // If this point is an on-curve point.
-            if ((contour.flags[point_index].value & (PointFlags::CONTROL_POINT_0 | PointFlags::CONTROL_POINT_1)) == 0) {
+            if ((contour.flags[point_index].value & (CONTROL_POINT_0 | CONTROL_POINT_1)) == 0) {
                 // Segment type. Default is a line.
                 uint32_t flag = 0;
 
                 // If the next point is a 0-type control point.
                 if (point_index + 1 < point_count &&
-                    (contour.flags[point_index + 1].value & PointFlags::CONTROL_POINT_0) != 0) {
+                    (contour.flags[point_index + 1].value & CONTROL_POINT_0) != 0) {
                     // If the point behind the next point is a 1-type control point, this is a cubic curve.
                     if (point_index + 2 < point_count &&
-                        (contour.flags[point_index + 2].value & PointFlags::CONTROL_POINT_1) != 0) {
+                        (contour.flags[point_index + 2].value & CONTROL_POINT_1) != 0) {
                         flag = CURVE_IS_CUBIC;
                     } else { // This is a quadratic curve.
                         flag = CURVE_IS_QUADRATIC;

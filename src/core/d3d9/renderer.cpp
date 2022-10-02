@@ -11,19 +11,15 @@
 #include "../../gpu/platform.h"
 
 #ifdef PATHFINDER_USE_VULKAN
-
     #include "../../shaders/generated/fill_frag_spv.h"
     #include "../../shaders/generated/fill_vert_spv.h"
     #include "../../shaders/generated/tile_frag_spv.h"
     #include "../../shaders/generated/tile_vert_spv.h"
-
 #else
-
     #include "../../shaders/generated/fill_frag.h"
     #include "../../shaders/generated/fill_vert.h"
     #include "../../shaders/generated/tile_frag.h"
     #include "../../shaders/generated/tile_vert.h"
-
 #endif
 
 #include <array>

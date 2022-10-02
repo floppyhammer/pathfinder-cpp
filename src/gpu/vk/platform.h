@@ -4,6 +4,7 @@
 #include <iostream>
 #include <optional>
 #include <vector>
+#include <cstring>
 
 #include "../../common/global_macros.h"
 #include "../platform.h"
