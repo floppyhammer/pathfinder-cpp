@@ -13,7 +13,7 @@ void Outline::move_to(float x, float y) {
 
     // First on-curve point.
     contours.back().points.emplace_back(x, y);
-    contours.back().flags.emplace_back();
+    contours.back().flags.push_back(PointFlag::ON_CURVE_POINT);
 
     // Update contour bounds.
     union_rect(current_contour.bounds, Vec2<float>(x, y), true);
@@ -35,7 +35,7 @@ void Outline::line_to(float x, float y) {
     auto &current_contour = contours.back();
 
     current_contour.points.emplace_back(x, y);
-    current_contour.flags.emplace_back();
+    current_contour.flags.push_back(PointFlag::ON_CURVE_POINT);
 
     // Update contour bounds.
     union_rect(current_contour.bounds, Vec2<float>(x, y));
@@ -50,10 +50,10 @@ void Outline::curve_to(float cx, float cy, float x, float y) {
     auto &current_contour = contours.back();
 
     current_contour.points.emplace_back(cx, cy);
-    current_contour.flags.emplace_back(CONTROL_POINT_0);
+    current_contour.flags.push_back(PointFlag::CONTROL_POINT_0);
 
     current_contour.points.emplace_back(x, y);
-    current_contour.flags.emplace_back();
+    current_contour.flags.push_back(PointFlag::ON_CURVE_POINT);
 
     // Update contour bounds.
     union_rect(current_contour.bounds, Vec2<float>(cx, cy));
@@ -69,13 +69,13 @@ void Outline::cubic_to(float cx, float cy, float cx1, float cy1, float x, float 
     auto &current_contour = contours.back();
 
     current_contour.points.emplace_back(cx, cy);
-    current_contour.flags.emplace_back(CONTROL_POINT_0);
+    current_contour.flags.push_back(PointFlag::CONTROL_POINT_0);
 
     current_contour.points.emplace_back(cx1, cy1);
-    current_contour.flags.emplace_back(CONTROL_POINT_1);
+    current_contour.flags.push_back(PointFlag::CONTROL_POINT_1);
 
     current_contour.points.emplace_back(x, y);
-    current_contour.flags.emplace_back();
+    current_contour.flags.push_back(PointFlag::ON_CURVE_POINT);
 
     // Update contour bounds.
     union_rect(current_contour.bounds, Vec2<float>(cx, cy));
@@ -95,7 +95,7 @@ void Outline::close() {
     // the last one. This is to make sure the contour will be correctly stroked.
     // FIXME: This is a makeshift fix for text stroke rendering.
     if (current_contour.points.size() > 1) {
-        if ((current_contour.flags.rbegin() + 1)->value == 0) {
+        if (*(current_contour.flags.rbegin() + 1) == PointFlag::ON_CURVE_POINT) {
             if (current_contour.points.back() == current_contour.points.front()) {
                 current_contour.points.pop_back();
                 current_contour.flags.pop_back();

@@ -39,22 +39,16 @@ struct PushSegmentFlags {
     }
 };
 
-/// This point is the first control point of a cubic Bézier curve or the only control point
-/// of a quadratic Bézier curve.
-static const uint8_t CONTROL_POINT_0 = 0x01;
-
-/// This point is the second point of a cubic Bézier curve.
-static const uint8_t CONTROL_POINT_1 = 0x02;
-
 /// Flags that each point can have, indicating whether it's an on-curve or control point.
-struct PointFlags {
-    /// Default as on-curve point.
-    uint8_t value = 0x00;
+enum class PointFlag {
+    ON_CURVE_POINT,
 
-    PointFlags() = default;
+    /// This point is the first control point of a cubic Bézier curve or the only control point
+    /// of a quadratic Bézier curve.
+    CONTROL_POINT_0,
 
-    explicit PointFlags(uint8_t p_value) : value(p_value) {
-    }
+    /// This point is the second point of a cubic Bézier curve.
+    CONTROL_POINT_1,
 };
 
 inline Rect<int> round_rect_out_to_tile_bounds(const Rect<float> &rect) {

@@ -5,7 +5,7 @@ Vec2<float> Contour::position_of_last(int index) {
     return points[points.size() - index];
 }
 
-void Contour::push_point(Vec2<float> point, PointFlags p_flag, bool update_bounds) {
+void Contour::push_point(Vec2<float> point, PointFlag p_flag, bool update_bounds) {
     if (update_bounds) {
         auto first = points.empty();
         union_rect(bounds, point, first);
@@ -16,7 +16,7 @@ void Contour::push_point(Vec2<float> point, PointFlags p_flag, bool update_bound
 }
 
 void Contour::push_endpoint(Vec2<float> to) {
-    push_point(to, PointFlags{}, true);
+    push_point(to, PointFlag::ON_CURVE_POINT, true);
 }
 
 void Contour::push_segment(const Segment &segment, PushSegmentFlags p_flags) {
@@ -28,22 +28,22 @@ void Contour::push_segment(const Segment &segment, PushSegmentFlags p_flags) {
     auto update_bounds = (p_flags.value & PushSegmentFlags::UPDATE_BOUNDS) > 0x00;
 
     // Push the first on-curve point.
-    push_point(segment.baseline.from(), PointFlags(), update_bounds);
+    push_point(segment.baseline.from(), PointFlag::ON_CURVE_POINT, update_bounds);
 
     // Not a line.
     if (!segment.is_line()) {
         // Push the first control point.
-        push_point(segment.ctrl.from(), PointFlags(CONTROL_POINT_0), update_bounds);
+        push_point(segment.ctrl.from(), PointFlag::CONTROL_POINT_0, update_bounds);
 
         // Not a quadratic curve.
         if (!segment.is_quadratic()) {
             // Push the second control point.
-            push_point(segment.ctrl.to(), PointFlags(CONTROL_POINT_1), update_bounds);
+            push_point(segment.ctrl.to(), PointFlag::CONTROL_POINT_1, update_bounds);
         }
     }
 
     // Push the second on-curve point.
-    push_point(segment.baseline.to(), PointFlags(), update_bounds);
+    push_point(segment.baseline.to(), PointFlag::ON_CURVE_POINT, update_bounds);
 }
 
 void Contour::update_bounds(Rect<float> &p_bounds) const {
@@ -70,7 +70,7 @@ std::vector<Segment> Contour::get_segments(bool force_closed) const {
 }
 
 SegmentsIter::SegmentsIter(const std::vector<Vec2<float>> &p_points,
-                           const std::vector<PointFlags> &p_flags,
+                           const std::vector<PointFlag> &p_flags,
                            bool p_closed)
     : points(p_points), flags(p_flags), closed(p_closed) {
 }
@@ -81,7 +81,7 @@ Segment SegmentsIter::get_next(bool force_closed) {
     auto points_count = points.size();
 
     // The first point in a segment must be an on-curve point instead of a control point.
-    if (flags[head].value != 0 || head >= points.size()) {
+    if (flags[head] != PointFlag::ON_CURVE_POINT || head >= points.size()) {
         return segment;
     }
 
@@ -90,7 +90,7 @@ Segment SegmentsIter::get_next(bool force_closed) {
 
     if (head + 1 < points_count) {
         // Line.
-        if (flags[head + 1].value == 0) {
+        if (flags[head + 1] == PointFlag::ON_CURVE_POINT) {
             segment.baseline.set_to(points[head + 1]);
             segment.kind = SegmentKind::Line;
 
@@ -98,7 +98,7 @@ Segment SegmentsIter::get_next(bool force_closed) {
             head += 1;
         } else if (head + 2 < points_count) {
             // Quadratic Bézier curve.
-            if (flags[head + 1].value == CONTROL_POINT_0 && flags[head + 2].value == 0) {
+            if (flags[head + 1] == PointFlag::CONTROL_POINT_0 && flags[head + 2] == PointFlag::ON_CURVE_POINT) {
                 segment.ctrl.set_from(points[head + 1]);
                 segment.baseline.set_to(points[head + 2]);
                 segment.kind = SegmentKind::Quadratic;
@@ -107,8 +107,8 @@ Segment SegmentsIter::get_next(bool force_closed) {
                 head += 2;
             } else if (head + 3 < points_count) {
                 // Cubic Bézier curve.
-                if (flags[head + 1].value == CONTROL_POINT_0 &&
-                    flags[head + 2].value == CONTROL_POINT_1 && flags[head + 3].value == 0) {
+                if (flags[head + 1] == PointFlag::CONTROL_POINT_0 && flags[head + 2] == PointFlag::CONTROL_POINT_1 &&
+                    flags[head + 3] == PointFlag::ON_CURVE_POINT) {
                     segment.ctrl.set_from(points[head + 1]);
                     segment.ctrl.set_to(points[head + 2]);
                     segment.baseline.set_to(points[head + 3]);

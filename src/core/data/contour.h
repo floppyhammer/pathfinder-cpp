@@ -19,7 +19,7 @@ public:
     Contour() = default;
 
     std::vector<Vec2<float>> points;
-    std::vector<PointFlags> flags;
+    std::vector<PointFlag> flags;
 
     Rect<float> bounds = Rect<float>();
 
@@ -34,7 +34,7 @@ public:
 
     void add_join(float distance, LineJoin join, Vec2<float> join_point, LineSegmentF next_tangent, float miter_limit);
 
-    void push_point(Vec2<float> point, PointFlags flags, bool update_bounds);
+    void push_point(Vec2<float> point, PointFlag flag, bool update_bounds);
 
     void push_endpoint(Vec2<float> to);
 
@@ -62,7 +62,7 @@ public:
 /// An iterator used to traverse segments efficiently in a contour.
 class SegmentsIter {
 public:
-    SegmentsIter(const std::vector<Vec2<float>> &p_points, const std::vector<PointFlags> &p_flags, bool p_closed);
+    SegmentsIter(const std::vector<Vec2<float>> &p_points, const std::vector<PointFlag> &p_flags, bool p_closed);
 
     /// Get next segment in the contour.
     Segment get_next(bool force_closed = false);
@@ -73,7 +73,7 @@ public:
 private:
     /// Contour data.
     const std::vector<Vec2<float>> &points;
-    const std::vector<PointFlags> &flags;
+    const std::vector<PointFlag> &flags;
 
     /// If the contour is closed.
     bool closed = false;
