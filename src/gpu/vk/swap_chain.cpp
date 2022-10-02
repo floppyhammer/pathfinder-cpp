@@ -66,6 +66,8 @@ void SwapChainVk::recreate_swapchain() {
     init_swapchain();
 
     images_in_flight.resize(swapchain_images.size(), VK_NULL_HANDLE);
+
+    Logger::info("Swapchain recreated");
 }
 
 void SwapChainVk::cleanup_swapchain() {
@@ -264,12 +266,12 @@ void SwapChainVk::flush() {
     auto graphics_queue = driver->get_graphics_queue();
     auto present_queue = platform->get_present_queue();
 
-    auto imageIndex = current_image;
+    auto image_index = current_image;
 
-    if (images_in_flight[imageIndex] != VK_NULL_HANDLE) {
-        vkWaitForFences(device, 1, &images_in_flight[imageIndex], VK_TRUE, UINT64_MAX);
+    if (images_in_flight[image_index] != VK_NULL_HANDLE) {
+        vkWaitForFences(device, 1, &images_in_flight[image_index], VK_TRUE, UINT64_MAX);
     }
-    images_in_flight[imageIndex] = in_flight_fences[current_frame];
+    images_in_flight[image_index] = in_flight_fences[current_frame];
 
     // Submit command buffer.
     // -------------------------------------
@@ -283,7 +285,7 @@ void SwapChainVk::flush() {
     submit_info.pWaitDstStageMask = wait_stages;
 
     submit_info.commandBufferCount = 1;
-    submit_info.pCommandBuffers = &command_buffers[imageIndex];
+    submit_info.pCommandBuffers = &command_buffers[image_index];
 
     // The semaphores to signal after all commands in the buffer are finished.
     VkSemaphore signal_semaphores[] = {render_finished_semaphores[current_frame]};
@@ -293,12 +295,12 @@ void SwapChainVk::flush() {
     vkResetFences(device, 1, &in_flight_fences[current_frame]);
 
     if (vkQueueSubmit(graphics_queue, 1, &submit_info, in_flight_fences[current_frame]) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to submit draw command buffer!");
+        throw std::runtime_error("Failed to submit queue!");
     }
     // -------------------------------------
 
-    // Queue an image for presentation after queueing all rendering commands and transitioning the image to the correct
-    // layout.
+    // Queue an image for presentation after queueing all rendering commands
+    // and transitioning the image to the correct layout.
     // -------------------------------------
     VkPresentInfoKHR present_info{};
     present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -312,18 +314,21 @@ void SwapChainVk::flush() {
     present_info.pSwapchains = swapChains;
 
     // Array of each swap chain’s presentable images.
-    present_info.pImageIndices = &imageIndex;
+    present_info.pImageIndices = &image_index;
 
     VkResult result = vkQueuePresentKHR(present_queue, &present_info);
     // -------------------------------------
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || platform->framebuffer_resized) {
+        // Reset resize flag.
         platform->framebuffer_resized = false;
+
         recreate_swapchain();
     } else if (result != VK_SUCCESS) {
         throw std::runtime_error("Failed to present swap chain image!");
     }
 
+    // Update frame tracker.
     current_frame = (current_frame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 } // namespace Pathfinder

@@ -24,9 +24,8 @@ VkResult create_debug_utils_messenger_ext(VkInstance instance,
     auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
     if (func != nullptr) {
         return func(instance, create_info, allocator, debug_messenger);
-    } else {
-        return VK_ERROR_EXTENSION_NOT_PRESENT;
     }
+    return VK_ERROR_EXTENSION_NOT_PRESENT;
 }
 
 void destroy_debug_utils_messenger_ext(VkInstance instance,
@@ -42,7 +41,7 @@ PlatformVk::PlatformVk(uint32_t window_width, uint32_t window_height) : Platform
     // Get a GLFW window.
     init_window();
 
-    // Initialize the Vulkan library by creating an instance.
+    // Initialize Vulkan by creating an instance.
     create_instance();
 
     setup_debug_messenger();
@@ -56,6 +55,7 @@ PlatformVk::PlatformVk(uint32_t window_width, uint32_t window_height) : Platform
     // Create a logical device.
     create_logical_device();
 
+    // Create a command pool.
     create_command_pool();
 }
 
@@ -77,21 +77,21 @@ void PlatformVk::create_command_pool() {
 }
 
 void PlatformVk::init_window() {
-    // Initializes the GLFW library.
+    // Initializes GLFW.
     glfwInit();
 
     // To not create an OpenGL context (as we're using Vulkan).
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-    // Enable window resizing. This needs us to recreate the swap chain.
+    // Enable window resizing.
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
     // Hide window upon creation as we need to center the window before showing it.
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
     // Get monitor position (used to correctly center the window in a multi-monitor scenario).
-    int monitors_count, monitor_x, monitor_y;
-    GLFWmonitor **monitors = glfwGetMonitors(&monitors_count);
+    int monitor_count, monitor_x, monitor_y;
+    GLFWmonitor **monitors = glfwGetMonitors(&monitor_count);
     const GLFWvidmode *video_mode = glfwGetVideoMode(monitors[0]);
     glfwGetMonitorPos(monitors[0], &monitor_x, &monitor_y);
 
@@ -101,11 +101,11 @@ void PlatformVk::init_window() {
 
     window = glfwCreateWindow(width, height, "Pathfinder (Vulkan)", nullptr, nullptr);
 
-    // Center window.
+    // Center the window.
     glfwSetWindowPos(
         window, monitor_x + (video_mode->width - width) / 2, monitor_y + (video_mode->height - height) / 2);
 
-    // Show window.
+    // Show the window.
     glfwShowWindow(window);
 
     // Assign this to window user, so we can fetch it when window size changes.
@@ -144,8 +144,9 @@ void PlatformVk::create_instance() {
         create_info.ppEnabledLayerNames = VALIDATION_LAYERS.data();
 
         populate_debug_messenger_create_info(debug_create_info);
-        create_info.pNext = (VkDebugUtilsMessengerCreateInfoEXT
-                                 *)&debug_create_info; // Pointer to a structure extending this structure.
+
+        // Pointer to a structure extending this structure.
+        create_info.pNext = (VkDebugUtilsMessengerCreateInfoEXT *)&debug_create_info;
     } else {
         create_info.enabledLayerCount = 0;
 
@@ -154,7 +155,7 @@ void PlatformVk::create_instance() {
 
     // Create a new Vulkan instance.
     if (vkCreateInstance(&create_info, nullptr, &instance) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create instance!");
+        throw std::runtime_error("Failed to create a Vulkan instance!");
     }
 }
 
@@ -189,7 +190,9 @@ void PlatformVk::populate_debug_messenger_create_info(VkDebugUtilsMessengerCreat
 }
 
 void PlatformVk::setup_debug_messenger() {
-    if (!enable_validation_layers) return;
+    if (!enable_validation_layers) {
+        return;
+    }
 
     VkDebugUtilsMessengerCreateInfoEXT create_info;
     populate_debug_messenger_create_info(create_info);
@@ -427,6 +430,7 @@ VkFormat PlatformVk::find_depth_format() const {
 void PlatformVk::cleanup() {
     vkDestroyCommandPool(device, command_pool, nullptr);
 
+    // Destroy the logical device.
     vkDestroyDevice(device, nullptr);
 
     if (enable_validation_layers) {

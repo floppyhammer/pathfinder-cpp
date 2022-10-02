@@ -67,9 +67,6 @@ private:
 
     void recreate_swapchain();
 
-    /**
-     * What have been created in createSwapChainRelatedResources() have to be destroyed in here.
-     */
     void cleanup_swapchain();
 
     /**
@@ -108,8 +105,8 @@ private:
     bool acquire_swapchain_image(uint32_t &image_index);
 
     /**
-     * Set up command queues.
-     * @dependency None.
+     * Allocate command buffers in the pool.
+     * @dependency Command pool.
      */
     void create_command_buffers();
 

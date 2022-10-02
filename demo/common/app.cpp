@@ -5,7 +5,7 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
          uint32_t window_height,
          const std::vector<char> &p_svg_input) {
     // Set logger level.
-    Pathfinder::Logger::set_level(Pathfinder::Logger::Level::DEBUG);
+    Pathfinder::Logger::set_level(Pathfinder::Logger::Level::INFO);
 
     driver = p_driver;
 
