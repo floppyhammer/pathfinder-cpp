@@ -11,10 +11,8 @@
     #include "../../src/shaders/generated/blit_frag_spv.h"
     #include "../../src/shaders/generated/blit_vert_spv.h"
 #else
-
     #include "../../src/shaders/generated/blit_frag.h"
     #include "../../src/shaders/generated/blit_vert.h"
-
 #endif
 
 TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
@@ -24,15 +22,16 @@ TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
     size.x = width;
     size.y = height;
 
-    // Set VAO&VBO.
-    // ---------------------------
     // Set up vertex data (and buffer(s)) and configure vertex attributes.
-    float vertices[] = {// Positions, colors, UVs.
-                        0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0,
-                        0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0,
+    float vertices[] = {// Positions, UVs.
+                        0.0, 0.0, 0.0, 1.0,
+                        1.0, 0.0, 1.0, 1.0,
+                        1.0, 1.0, 1.0, 0.0,
 
-                        0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 1.0,
-                        0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0};
+                        0.0, 0.0, 0.0, 1.0,
+                        1.0, 1.0, 1.0, 0.0,
+                        0.0, 1.0, 0.0, 0.0};
+
 
     vertex_buffer = driver->create_buffer(
         Pathfinder::BufferType::Vertex, sizeof(vertices), Pathfinder::MemoryProperty::DEVICE_LOCAL);
@@ -58,16 +57,13 @@ TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
         std::vector<Pathfinder::VertexInputAttributeDescription> attribute_descriptions;
         attribute_descriptions.reserve(3);
 
-        uint32_t stride = 8 * sizeof(float);
+        uint32_t stride = 4 * sizeof(float);
 
         attribute_descriptions.push_back(
-            {0, 3, Pathfinder::DataType::FLOAT, stride, 0, Pathfinder::VertexInputRate::VERTEX});
+            {0, 2, Pathfinder::DataType::FLOAT, stride, 0, Pathfinder::VertexInputRate::VERTEX});
 
         attribute_descriptions.push_back(
-            {0, 3, Pathfinder::DataType::FLOAT, stride, 3 * sizeof(float), Pathfinder::VertexInputRate::VERTEX});
-
-        attribute_descriptions.push_back(
-            {0, 2, Pathfinder::DataType::FLOAT, stride, 6 * sizeof(float), Pathfinder::VertexInputRate::VERTEX});
+            {0, 2, Pathfinder::DataType::FLOAT, stride, 2 * sizeof(float), Pathfinder::VertexInputRate::VERTEX});
 
         Pathfinder::ColorBlendState blend_state = {
             true, Pathfinder::BlendFactor::ONE, Pathfinder::BlendFactor::ONE_MINUS_SRC_ALPHA};

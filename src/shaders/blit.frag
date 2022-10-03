@@ -11,15 +11,13 @@ precision highp sampler2D;
 #ifdef VULKAN
 layout(location = 0) out vec4 oFragColor;
 
-layout(location = 0) in vec3 vColor;
-layout(location = 1) in vec2 vUV;
+layout(location = 0) in vec2 vUV;
 
 layout(binding = 1) uniform sampler2D uTexture;
 #else
 out vec4 oFragColor;
 
 in vec2 vUV;
-in vec3 vColor;
 
 uniform sampler2D uTexture;
 #endif
