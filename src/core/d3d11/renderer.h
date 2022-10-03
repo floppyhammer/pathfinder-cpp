@@ -12,7 +12,6 @@
 #ifdef PATHFINDER_USE_D3D11
 
 namespace Pathfinder {
-// Buffer data
 struct TileBatchInfoD3D11 {
     uint32_t tile_count;
     std::shared_ptr<Buffer> z_buffer_id;
@@ -30,27 +29,26 @@ struct PropagateMetadataBufferIDsD3D11 {
     std::shared_ptr<Buffer> backdrops;
 };
 
-struct MicrolinesBufferIDsD3D11 {
-    std::shared_ptr<Buffer> buffer_id; // Microlines buffer.
-    uint32_t count;                    // Microline count.
+struct MicrolineBufferIDsD3D11 {
+    std::shared_ptr<Buffer> buffer_id;
+    uint32_t count;
 };
 
 struct SceneSourceBuffers {
-    std::shared_ptr<Buffer> points_buffer; // General buffer.
+    std::shared_ptr<Buffer> points_buffer;
     uint32_t points_capacity = 0;
-    std::shared_ptr<Buffer> point_indices_buffer; // General buffer.
+
+    std::shared_ptr<Buffer> point_indices_buffer;
     uint32_t point_indices_count = 0;
     uint32_t point_indices_capacity = 0;
 
-    /// Upload segments to buffer.
+    /// Upload segments to buffers.
     void upload(const std::shared_ptr<Pathfinder::Driver> &driver, SegmentsD3D11 &segments);
 };
 
 struct SceneBuffers {
     SceneSourceBuffers draw;
     SceneSourceBuffers clip;
-
-    ~SceneBuffers();
 
     /// Upload draw and clip segments to buffers.
     void upload(const std::shared_ptr<Pathfinder::Driver> &driver,
@@ -98,10 +96,10 @@ private:
      * @note COMPUTE INPUT dice_metadata_buffer
      * @note COMPUTE OUTPUT microlines_buffer
      */
-    MicrolinesBufferIDsD3D11 dice_segments(std::vector<DiceMetadataD3D11> &dice_metadata,
-                                           uint32_t batch_segment_count,
-                                           PathSource path_source,
-                                           Transform2 transform);
+    MicrolineBufferIDsD3D11 dice_segments(std::vector<DiceMetadataD3D11> &dice_metadata,
+                                          uint32_t batch_segment_count,
+                                          PathSource path_source,
+                                          Transform2 transform);
 
     /**
      * Initializes the tile maps.
@@ -120,7 +118,7 @@ private:
      * @BufferRead Microlines buffer, propagate metadata buffers, tiles buffer, z buffer
      * @BufferWrite Fill vertex buffer
      */
-    FillBufferInfoD3D11 bin_segments(MicrolinesBufferIDsD3D11 &microlines_storage,
+    FillBufferInfoD3D11 bin_segments(MicrolineBufferIDsD3D11 &microlines_storage,
                                      PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids,
                                      const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
                                      const std::shared_ptr<Buffer> &z_buffer_id);

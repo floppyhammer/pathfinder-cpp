@@ -10,12 +10,12 @@ AlignConsecutiveDeclarations: None
 AlignEscapedNewlines: Left
 AlignOperands: Align
 AlignTrailingComments: true
-AllowAllArgumentsOnNextLine: true
-AllowAllParametersOfDeclarationOnNextLine: true
-AllowShortEnumsOnASingleLine: true
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortEnumsOnASingleLine: false
 AllowShortBlocksOnASingleLine: Never
 AllowShortCaseLabelsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: None
+AllowShortFunctionsOnASingleLine: Empty
 AllowShortLambdasOnASingleLine: All
 AllowShortIfStatementsOnASingleLine: WithoutElse
 AllowShortLoopsOnASingleLine: true
@@ -101,7 +101,6 @@ IndentCaseBlocks: false
 IndentGotoLabels: true
 IndentPPDirectives: BeforeHash
 IndentExternBlock: AfterExternBlock
-IndentRequires: false
 IndentWidth: 4
 IndentWrappedFunctionNames: false
 InsertTrailingCommas: None
