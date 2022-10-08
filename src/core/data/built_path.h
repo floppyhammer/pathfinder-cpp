@@ -41,8 +41,7 @@ public:
     BuiltDrawPath() = default;
 
     BuiltDrawPath(BuiltPath p_path, BlendMode p_blend_mode, FillRule p_fill_rule, bool p_occludes)
-        : path(std::move(p_path)), blend_mode(p_blend_mode), mask_0_fill_rule(p_fill_rule), occludes(p_occludes) {
-    }
+        : path(std::move(p_path)), blend_mode(p_blend_mode), mask_0_fill_rule(p_fill_rule), occludes(p_occludes) {}
 
     BuiltPath path;
     BlendMode blend_mode = BlendMode::SrcIn;

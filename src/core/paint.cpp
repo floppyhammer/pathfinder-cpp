@@ -112,12 +112,13 @@ std::vector<TextureMetadataEntry> Palette::create_texture_metadata(const std::ve
     for (const auto &paint_metadata : p_paint_metadata) {
         TextureMetadataEntry entry;
 
-        entry.color_0_transform = paint_metadata.color_texture_metadata.transform;
+        if (paint_metadata.color_texture_metadata) {
+            entry.color_0_transform = paint_metadata.color_texture_metadata->transform;
 
-        if (paint_metadata.color_texture_metadata.filter.type != PaintFilter::Type::None) {
             // Changed from SrcIn to DestIn to get pure shadow.
             entry.color_0_combine_mode = ColorCombineMode::DestIn;
         } else {
+            // No color combine mode if there's no need to mix with a color texture.
             entry.color_0_combine_mode = ColorCombineMode::None;
         }
 
@@ -137,12 +138,15 @@ std::vector<PaintMetadata> Palette::assign_paint_locations() {
 
     // Traverse paints.
     for (const auto &paint : paints) {
-        PaintColorTextureMetadata color_texture_metadata;
+        std::shared_ptr<PaintColorTextureMetadata> color_texture_metadata;
 
         auto overlay = paint.get_overlay();
 
         // If not solid color paint.
         if (overlay) {
+            // Only paints with overlay have a color texture.
+            color_texture_metadata = std::make_shared<PaintColorTextureMetadata>();
+
             if (overlay->contents.type == PaintContents::Type::Gradient) {
                 const auto gradient = overlay->contents.gradient;
 
@@ -156,17 +160,17 @@ std::vector<PaintMetadata> Palette::assign_paint_locations() {
                 }
 
                 if (gradient.geometry.type == GradientGeometry::Type::Linear) {
-                    color_texture_metadata.filter.type = PaintFilter::Type::None;
+                    color_texture_metadata->filter.type = PaintFilter::Type::None;
                 } else {
-                    color_texture_metadata.filter.type = PaintFilter::Type::RadialGradient;
-                    color_texture_metadata.filter.gradient_filter.line = gradient.geometry.radial.line;
-                    color_texture_metadata.filter.gradient_filter.radii = gradient.geometry.radial.radii;
+                    color_texture_metadata->filter.type = PaintFilter::Type::RadialGradient;
+                    color_texture_metadata->filter.gradient_filter.line = gradient.geometry.radial.line;
+                    color_texture_metadata->filter.gradient_filter.radii = gradient.geometry.radial.radii;
                 }
 
-                color_texture_metadata.sampling_flags = sampling_flags;
-                color_texture_metadata.transform = Transform2();
-                color_texture_metadata.composite_op = overlay->composite_op;
-                color_texture_metadata.border = Vec2<int>();
+                color_texture_metadata->sampling_flags = sampling_flags;
+                color_texture_metadata->transform = Transform2();
+                color_texture_metadata->composite_op = overlay->composite_op;
+                color_texture_metadata->border = Vec2<int>();
             } else { // FIXME: Incomplete.
                 const auto pattern = overlay->contents.pattern;
 
@@ -184,10 +188,10 @@ std::vector<PaintMetadata> Palette::assign_paint_locations() {
                     texture_location.rect = Rect<uint32_t>() + border * 2;
                 }
 
-                color_texture_metadata.location = texture_location;
-                color_texture_metadata.filter = paint_filter;
-                color_texture_metadata.transform = Transform2::from_translation(border.to_f32());
-                color_texture_metadata.composite_op = overlay->composite_op;
+                color_texture_metadata->location = texture_location;
+                color_texture_metadata->filter = paint_filter;
+                color_texture_metadata->transform = Transform2::from_translation(border.to_f32());
+                color_texture_metadata->composite_op = overlay->composite_op;
             }
         }
 
@@ -206,9 +210,13 @@ void Palette::calculate_texture_transforms(std::vector<PaintMetadata> &p_paint_m
     for (int i = 0; i < paints.size(); i++) {
         auto &paint = paints[i];
         auto &metadata = p_paint_metadata[i];
-        auto &color_texture_metadata = metadata.color_texture_metadata;
+        auto color_texture_metadata = metadata.color_texture_metadata;
 
-        auto texture_rect = color_texture_metadata.location.rect;
+        if (!color_texture_metadata) {
+            continue;
+        }
+
+        auto texture_rect = color_texture_metadata->location.rect;
 
         auto texture_scale = Vec2<float>(1.f / texture_rect.width(), 1.f / texture_rect.height());
 
@@ -224,7 +232,7 @@ void Palette::calculate_texture_transforms(std::vector<PaintMetadata> &p_paint_m
                                      Transform2::from_scale(texture_scale * Vec2<float>(1.0, -1.0)) *
                                      pattern.transform.inverse();
 
-                    color_texture_metadata.transform = transform;
+                    color_texture_metadata->transform = transform;
                 }
             }
         }
@@ -233,11 +241,15 @@ void Palette::calculate_texture_transforms(std::vector<PaintMetadata> &p_paint_m
 // ---------------------------------------------------
 
 PaintFilter PaintMetadata::filter() const {
-    PaintFilter filter = color_texture_metadata.filter;
+    if (!color_texture_metadata) {
+        return PaintFilter{};
+    }
 
-    switch (color_texture_metadata.filter.type) {
+    PaintFilter filter = color_texture_metadata->filter;
+
+    switch (color_texture_metadata->filter.type) {
         case PaintFilter::Type::RadialGradient: {
-            auto uv_rect = rect_to_uv(color_texture_metadata.location.rect, color_texture_metadata.page_scale);
+            auto uv_rect = rect_to_uv(color_texture_metadata->location.rect, color_texture_metadata->page_scale);
             filter.gradient_filter.uv_origin = uv_rect.origin();
         } break;
         default:

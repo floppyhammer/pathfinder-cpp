@@ -149,7 +149,7 @@ struct PaintColorTextureMetadata {
 
 struct PaintMetadata {
     /// Metadata associated with the color texture, if applicable.
-    PaintColorTextureMetadata color_texture_metadata;
+    std::shared_ptr<PaintColorTextureMetadata> color_texture_metadata; // Optional
 
     /// The base color that the color texture gets mixed into.
     ColorU base_color;
@@ -191,6 +191,7 @@ private:
 
     std::vector<PaintMetadata> assign_paint_locations();
 
+    /// Calculate color texture transforms.
     void calculate_texture_transforms(std::vector<PaintMetadata> &p_paint_metadata);
 
     std::vector<TextureMetadataEntry> create_texture_metadata(const std::vector<PaintMetadata> &p_paint_metadata);
