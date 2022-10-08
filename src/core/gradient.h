@@ -110,7 +110,7 @@ struct Gradient {
     }
 
     /// Adds a new color stop to the radial gradient.
-    inline void add(const ColorStop stop) {
+    inline void add(const ColorStop &stop) {
         stops.push_back(stop);
     }
 

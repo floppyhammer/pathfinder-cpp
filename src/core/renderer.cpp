@@ -68,26 +68,37 @@ struct FilterParams {
     int32_t ctrl = 0;
 };
 
-FilterParams compute_filter_params(const PaintFilter &filter, BlendMode blend_mode, ColorCombineMode color_0_combine_mode) {
+FilterParams compute_filter_params(const PaintFilter &filter,
+                                   BlendMode blend_mode,
+                                   ColorCombineMode color_0_combine_mode) {
     int32_t ctrl = 0;
+
+    // Add flags for blend mode and color combine mode.
     ctrl |= blend_mode_to_composite_ctrl(blend_mode) << COMBINER_CTRL_COMPOSITE_SHIFT;
     ctrl |= color_combine_mode_to_composite_ctrl(color_0_combine_mode) << COMBINER_CTRL_COLOR_COMBINE_SHIFT;
 
     FilterParams filter_params;
+    filter_params.ctrl = ctrl;
 
+    // Add flag for filter.
     switch (filter.type) {
         case PaintFilter::Type::RadialGradient: {
-            filter_params.p0 = F32x4(filter.gradient_filter.line.from(), filter.gradient_filter.line.vector());
-            filter_params.p1 = F32x4(filter.gradient_filter.radii, filter.gradient_filter.uv_origin);
+            auto gradient = filter.gradient_filter;
 
+            filter_params.p0 = F32x4(gradient.line.from(), gradient.line.vector());
+            filter_params.p1 = F32x4(gradient.radii, gradient.uv_origin);
             filter_params.ctrl = ctrl | (COMBINER_CTRL_FILTER_RADIAL_GRADIENT << COMBINER_CTRL_COLOR_FILTER_SHIFT);
         } break;
         case PaintFilter::Type::PatternFilter: {
-            if (filter.pattern_filter.type == PatternFilter::Type::Blur) {
-                auto sigma = filter.pattern_filter.blur.sigma;
-                auto direction = filter.pattern_filter.blur.direction;
+            auto pattern = filter.pattern_filter;
 
-                if (sigma <= 0) break;
+            if (pattern.type == PatternFilter::Type::Blur) {
+                auto sigma = pattern.blur.sigma;
+                auto direction = pattern.blur.direction;
+
+                if (sigma <= 0) {
+                    break;
+                }
 
                 auto sigma_inv = 1.f / sigma;
                 auto gauss_coeff_x = SQRT_2_PI_INV * sigma_inv;
@@ -101,11 +112,12 @@ FilterParams compute_filter_params(const PaintFilter &filter, BlendMode blend_mo
                 filter_params.p0 = F32x4(src_offset, Vec2<float>(support, 0.0));
                 filter_params.p1 = F32x4(gauss_coeff_x, gauss_coeff_y, gauss_coeff_z, 0.0);
                 filter_params.ctrl = ctrl | (COMBINER_CTRL_FILTER_BLUR << COMBINER_CTRL_COLOR_FILTER_SHIFT);
+            } else {
+                throw std::runtime_error("Text pattern filter is not supported yet!");
             }
         } break;
-        default: {
-            filter_params.ctrl = ctrl;
-        } break;
+        default: // No filter.
+            break;
     }
 
     return filter_params;
@@ -152,20 +164,20 @@ void upload_metadata(const std::shared_ptr<Texture> &metadata_texture,
             filter_params.p1.zw().x,
             filter_params.p1.zw().y,
             // 5
-            0.0f,
-            0.0f,
-            0.0f,
-            0.0f,
+            filter_params.p2.xy().x,
+            filter_params.p2.xy().y,
+            filter_params.p2.zw().x,
+            filter_params.p2.zw().y,
             // 6
-            0.0f,
-            0.0f,
-            0.0f,
-            0.0f,
+            filter_params.p3.xy().x,
+            filter_params.p3.xy().y,
+            filter_params.p3.zw().x,
+            filter_params.p3.zw().y,
             // 7
-            0.0f,
-            0.0f,
-            0.0f,
-            0.0f,
+            filter_params.p4.xy().x,
+            filter_params.p4.xy().y,
+            filter_params.p4.zw().x,
+            filter_params.p4.zw().y,
             // 8
             (float)filter_params.ctrl,
             0.0f,
