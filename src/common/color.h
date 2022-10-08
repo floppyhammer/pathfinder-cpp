@@ -17,6 +17,15 @@ struct ColorF {
 
     ColorF(float p_r, float p_g, float p_b, float p_a);
 
+    ColorF lerp(ColorF other, float t) const {
+        return {
+            r + (other.r - r) * t,
+            g + (other.g - g) * t,
+            b + (other.b - b) * t,
+            a + (other.a - a) * t,
+        };
+    }
+
     static ColorF red() {
         return {1, 0, 0, 1};
     }

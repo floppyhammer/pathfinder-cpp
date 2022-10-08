@@ -76,9 +76,6 @@ struct Gradient {
     /// Information specific to the type of gradient (linear or radial).
     GradientGeometry geometry;
 
-    /// Color stops.
-    std::vector<ColorStop> stops;
-
     /// What should be rendered upon reaching the end of the color stops.
     GradientWrap wrap = GradientWrap::Clamp;
 
@@ -110,24 +107,21 @@ struct Gradient {
     }
 
     /// Adds a new color stop to the radial gradient.
-    inline void add(const ColorStop &stop) {
-        stops.push_back(stop);
-    }
+    void add(const ColorStop &p_stop);
 
     /// A convenience method equivalent to
     /// `gradient.add_color_stop(ColorStop::new(color, offset))`.
-    inline void add_color_stop(const ColorU color, const float offset) {
-        add(ColorStop{offset, color});
-    }
+    void add_color_stop(ColorU color, float offset);
+
+    /// Returns the value of the gradient at offset `t`, which will be clamped between 0.0 and 1.0.
+    ColorU sample(float t);
 
     /// Returns true if all colors of all stops in this gradient are opaque.
-    inline bool is_opaque() {
-        bool opaque = false;
-        for (auto &stop : stops) {
-            opaque |= stop.color.is_opaque();
-        }
-        return opaque;
-    }
+    bool is_opaque();
+
+private:
+    /// Color stops.
+    std::vector<ColorStop> stops;
 };
 } // namespace Pathfinder
 

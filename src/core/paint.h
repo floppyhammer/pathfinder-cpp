@@ -127,7 +127,7 @@ struct TextureSamplingFlags {
     static const uint8_t NEAREST_MAG = 0x08;
 };
 
-/// Metadata related to color texture.
+/// Metadata related to the color texture.
 struct PaintColorTextureMetadata {
     /// The location of the paint.
     TextureLocation location;
