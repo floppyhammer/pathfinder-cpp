@@ -24,23 +24,25 @@ void Gradient::add_color_stop(ColorU color, float offset) {
 /// Returns the value of the gradient at offset `t`, which will be clamped between 0.0 and 1.0.
 ColorU Gradient::sample(float t) {
     if (stops.empty()) {
-        return ColorU();
+        return {};
     }
 
     t = clamp(t, 0.0f, 1.0f);
 
     size_t last_index = stops.size() - 1;
 
-    size_t upper_index = 0;
+    auto end = stops.end();
+    auto iter = stops.begin();
 
-    float dis = 1.0;
-    for (int i = 0; i < stops.size(); i++) {
-        dis = std::min(dis, std::abs(stops[i].offset - t));
+    while ((iter != stops.end()) && (iter->offset < t)) {
+        ++iter;
     }
+
+    size_t upper_index = std::min(size_t(end - iter), last_index);
 
     size_t lower_index;
     if (upper_index > 0) {
-        upper_index - 1;
+        lower_index = upper_index - 1;
     } else {
         lower_index = upper_index;
     }
