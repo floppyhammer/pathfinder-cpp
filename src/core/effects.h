@@ -41,7 +41,7 @@ struct PatternFilter {
 };
 
 /// The shader that should be used when compositing this layer onto its destination.
-struct Filter {
+struct PaintFilter {
     /// Filter type.
     enum class Type {
         None, // No special filter.

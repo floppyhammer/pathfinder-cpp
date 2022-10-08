@@ -41,8 +41,7 @@ std::shared_ptr<PaintOverlay> Paint::get_overlay() const {
 
 // Palette member functions.
 // ---------------------------------------------------
-Palette::Palette(uint32_t p_scene_id) : scene_id(p_scene_id) {
-}
+Palette::Palette(uint32_t p_scene_id) : scene_id(p_scene_id) {}
 
 uint32_t Palette::push_paint(const Paint &paint) {
     // Check if already has this paint.
@@ -58,7 +57,7 @@ uint32_t Palette::push_paint(const Paint &paint) {
 }
 
 Paint Palette::get_paint(uint32_t paint_id) const {
-    if (paint_id < 0 || paint_id >= paints.size()) {
+    if (paint_id >= paints.size()) {
         throw std::runtime_error(std::string("No paint with that ID!"));
     }
 
@@ -66,8 +65,9 @@ Paint Palette::get_paint(uint32_t paint_id) const {
 }
 
 RenderTarget Palette::push_render_target(const std::shared_ptr<Driver> &driver, const Vec2<int> &render_target_size) {
-    auto render_pass = driver->create_render_pass(
-        TextureFormat::RGBA8_UNORM, AttachmentLoadOp::CLEAR, TextureLayout::SHADER_READ_ONLY);
+    auto render_pass = driver->create_render_pass(TextureFormat::RGBA8_UNORM,
+                                                  AttachmentLoadOp::CLEAR,
+                                                  TextureLayout::SHADER_READ_ONLY);
 
     // Create a new framebuffer.
     auto target_texture =
@@ -213,4 +213,19 @@ void Palette::calculate_texture_transforms(std::vector<PaintMetadata> &p_paint_m
     }
 }
 // ---------------------------------------------------
+
+PaintFilter PaintMetadata::filter() const {
+    PaintFilter filter = color_texture_metadata.filter;
+
+    switch (color_texture_metadata.filter.type) {
+        case PaintFilter::Type::RadialGradient: {
+            auto uv_rect = rect_to_uv(color_texture_metadata.location.rect, color_texture_metadata.page_scale);
+            filter.gradient_filter.uv_origin = uv_rect.origin();
+        } break;
+        default:
+            break;
+    }
+
+    return filter;
+}
 } // namespace Pathfinder

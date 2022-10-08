@@ -68,7 +68,7 @@ struct FilterParams {
     int32_t ctrl = 0;
 };
 
-FilterParams compute_filter_params(const Filter &filter, BlendMode blend_mode, ColorCombineMode color_0_combine_mode) {
+FilterParams compute_filter_params(const PaintFilter &filter, BlendMode blend_mode, ColorCombineMode color_0_combine_mode) {
     int32_t ctrl = 0;
     ctrl |= blend_mode_to_composite_ctrl(blend_mode) << COMBINER_CTRL_COMPOSITE_SHIFT;
     ctrl |= color_combine_mode_to_composite_ctrl(color_0_combine_mode) << COMBINER_CTRL_COLOR_COMBINE_SHIFT;
@@ -76,13 +76,13 @@ FilterParams compute_filter_params(const Filter &filter, BlendMode blend_mode, C
     FilterParams filter_params;
 
     switch (filter.type) {
-        case Filter::Type::RadialGradient: {
+        case PaintFilter::Type::RadialGradient: {
             filter_params.p0 = F32x4(filter.gradient_filter.line.from(), filter.gradient_filter.line.vector());
             filter_params.p1 = F32x4(filter.gradient_filter.radii, filter.gradient_filter.uv_origin);
 
             filter_params.ctrl = ctrl | (COMBINER_CTRL_FILTER_RADIAL_GRADIENT << COMBINER_CTRL_COLOR_FILTER_SHIFT);
         } break;
-        case Filter::Type::PatternFilter: {
+        case PaintFilter::Type::PatternFilter: {
             if (filter.pattern_filter.type == PatternFilter::Type::Blur) {
                 auto sigma = filter.pattern_filter.blur.sigma;
                 auto direction = filter.pattern_filter.blur.direction;

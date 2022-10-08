@@ -15,11 +15,9 @@ struct ColorStop {
     /// The offset of the color stop, between 0.0 and 1.0 inclusive. The value 0.0 represents the
     /// start of the gradient, and 1.0 represents the end.
     float offset = 0;
+
     /// The color of the gradient stop.
     ColorU color;
-
-    ColorStop(ColorU p_color, float p_offset) : color(p_color), offset(p_offset) {
-    }
 };
 
 struct GradientRadial {
@@ -29,9 +27,11 @@ struct GradientRadial {
     ///
     /// This is in scene coordinates, not relative to the bounding box of the path.
     LineSegmentF line;
+
     /// The radii of the two circles. The first value may be zero to start the gradient at the
     /// center of the circle.
     Vec2<float> radii;
+
     /// Transform from radial gradient space into screen space.
     ///
     /// Like `gradientTransform` in SVG. Note that this is the inverse of Cairo's gradient
@@ -61,6 +61,7 @@ enum class GradientWrap {
     /// The area before the gradient is filled with the color of the first stop, and the area after
     /// the gradient is filled with the color of the last stop.
     Clamp,
+
     /// The gradient repeats indefinitely.
     Repeat,
 };
@@ -113,7 +114,7 @@ struct Gradient {
     /// A convenience method equivalent to
     /// `gradient.add_color_stop(ColorStop::new(color, offset))`.
     inline void add_color_stop(const ColorU color, const float offset) {
-        add(ColorStop(color, offset));
+        add(ColorStop{offset, color});
     }
 
     /// Returns true if all colors of all stops in this gradient are opaque.

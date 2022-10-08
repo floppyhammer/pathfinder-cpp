@@ -125,7 +125,7 @@ struct TextureMetadataEntry {
     Transform2 color_0_transform;
     ColorCombineMode color_0_combine_mode = ColorCombineMode::SrcIn;
     ColorU base_color;
-    Filter filter;
+    PaintFilter filter;
     BlendMode blend_mode = BlendMode::SrcIn;
 };
 

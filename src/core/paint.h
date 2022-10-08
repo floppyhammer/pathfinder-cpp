@@ -142,25 +142,6 @@ struct TextureSamplingFlags {
     static const uint8_t NEAREST_MAG = 0x08;
 };
 
-struct PaintFilter {
-    enum class Type {
-        None,
-        RadialGradient,
-        PatternFilter,
-    } type = Type::None;
-
-    struct RadialGradient {
-        /// The line segment that connects the two circles.
-        LineSegmentF line;
-        /// The radii of the two circles.
-        Vec2<float> radii;
-    };
-
-    RadialGradient gradient;
-
-    PatternFilter pattern_filter;
-};
-
 /// Metadata related to color texture.
 struct PaintColorTextureMetadata {
     /// The location of the paint.
@@ -193,19 +174,7 @@ struct PaintMetadata {
     /// True if this paint is fully opaque.
     bool is_opaque = true;
 
-    inline Filter filter() const {
-        Filter filter;
-
-        switch (color_texture_metadata.filter.type) {
-            case PaintFilter::Type::PatternFilter: {
-                filter.type = Filter::Type::PatternFilter;
-                filter.pattern_filter = color_texture_metadata.filter.pattern_filter;
-            } break;
-            default:
-                break;
-        }
-        return filter;
-    }
+    PaintFilter filter() const;
 };
 
 /// Stores all paints in a scene.

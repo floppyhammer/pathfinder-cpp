@@ -483,16 +483,38 @@ void Canvas::load_svg(std::vector<char> input) {
         }
 
         // Shadow test.
-        //            set_shadow_color(ColorU::green());
-        //            set_shadow_blur(8);
+//        set_shadow_color(ColorU::green());
+//        set_shadow_blur(8);
 
         // Set dash.
         set_line_dash_offset(nsvg_shape->strokeDashOffset);
         set_line_dash(
             std::vector<float>(nsvg_shape->strokeDashArray, nsvg_shape->strokeDashArray + nsvg_shape->strokeDashCount));
 
+        // Get fill paint.
+        Paint fill_paint;
+        switch (nsvg_shape->fill.type) {
+            case 1: {
+                fill_paint = Paint::from_color(ColorU(nsvg_shape->fill.color));
+            } break;
+            case 2: {
+                Gradient gradient = Gradient::linear(LineSegmentF());
+
+                auto nsvg_gradient = nsvg_shape->fill.gradient;
+                gradient.stops.resize(nsvg_gradient->nstops);
+
+                // Get stops.
+                for (int i = 0; i < nsvg_gradient->nstops; i++) {
+                    gradient.stops[i].offset = nsvg_gradient->stops[i].offset;
+                    gradient.stops[i].color = ColorU(nsvg_gradient->stops[i].color);
+                }
+
+                fill_paint = Paint::from_gradient(gradient);
+            } break;
+        }
+
         // Add fill.
-        set_fill_paint(Paint::from_color(ColorU(nsvg_shape->fill.color)));
+        set_fill_paint(fill_paint);
         fill_path(outline, convert_nsvg_fill_rule(nsvg_shape->fillRule));
 
         // Add stroke.
@@ -508,8 +530,7 @@ void Canvas::load_svg(std::vector<char> input) {
     nsvgDelete(image);
 }
 
-void Canvas::draw_image() {
-}
+void Canvas::draw_image() {}
 
 void Canvas::save_state() {
     saved_states.push_back(current_state);
