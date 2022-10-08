@@ -26,7 +26,7 @@ struct PatternFilter {
         ColorF fg_color;
         /// The background color of the text.
         ColorF bg_color;
-    } text;
+    };
 
     /// A blur operation in one direction, either horizontal or vertical.
     ///
@@ -37,14 +37,22 @@ struct PatternFilter {
         BlurDirection direction{};
         /// Half the blur radius.
         float sigma = 0;
-    } blur;
+    };
+
+    union {
+        Text text;
+        Blur blur;
+    };
+
+    /// We need this constructor to get union work.
+    PatternFilter() {}
 };
 
 /// The shader that should be used when compositing this layer onto its destination.
 struct PaintFilter {
     /// Filter type.
     enum class Type {
-        None, // No special filter.
+        None,
         RadialGradient,
         PatternFilter,
     } type = Type::None;
@@ -57,10 +65,14 @@ struct PaintFilter {
         Vec2<float> radii;
         /// The origin of the linearized gradient in the texture.
         Vec2<float> uv_origin;
-    } gradient_filter;
+    };
 
-    /// One of the `PatternFilter` filters.
-    PatternFilter pattern_filter;
+    union {
+        RadialGradient gradient_filter;
+        PatternFilter pattern_filter;
+    };
+
+    PaintFilter(){};
 };
 
 /// Blend modes that can be applied to individual paths.

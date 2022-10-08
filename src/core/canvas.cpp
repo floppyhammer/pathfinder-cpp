@@ -72,21 +72,22 @@ void composite_shadow_blur_render_targets(Scene &scene, const ShadowBlurRenderTa
     auto pattern_y = Pattern::from_render_target(info.id_y);
     pattern_y.apply_transform(Transform2::from_translation(info.bounds.origin().to_f32()));
 
-    auto sigma = info.sigma;
+    auto filter = PatternFilter();
 
-    PatternFilter pf;
-    pf.type = PatternFilter::Type::Blur;
-    pf.blur.sigma = sigma;
+    filter.type = PatternFilter::Type::Blur;
+    filter.blur.sigma = info.sigma;
 
-    pf.blur.direction = BlurDirection::X;
-    pattern_x.set_filter(pf);
-    pf.blur.direction = BlurDirection::Y;
-    pattern_y.set_filter(pf);
+    filter.blur.direction = BlurDirection::X;
+    pattern_x.set_filter(filter);
+
+    filter.blur.direction = BlurDirection::Y;
+    pattern_y.set_filter(filter);
 
     auto paint_x = Paint::from_pattern(pattern_x);
     paint_x.set_base_color(info.color);
     auto paint_y = Paint::from_pattern(pattern_y);
     paint_y.set_base_color(info.color);
+
     auto paint_id_x = scene.push_paint(paint_x);
     auto paint_id_y = scene.push_paint(paint_y);
 
@@ -483,8 +484,8 @@ void Canvas::load_svg(std::vector<char> input) {
         }
 
         // Shadow test.
-//        set_shadow_color(ColorU::green());
-//        set_shadow_blur(8);
+        //        set_shadow_color(ColorU::green());
+        //        set_shadow_blur(8);
 
         // Set dash.
         set_line_dash_offset(nsvg_shape->strokeDashOffset);

@@ -1,6 +1,7 @@
 #ifndef PATHFINDER_GRADIENT_H
 #define PATHFINDER_GRADIENT_H
 
+#include <utility>
 #include <vector>
 
 #include "../common/color.h"
@@ -46,14 +47,18 @@ struct GradientGeometry {
         Radial,
     } type = Type::Linear;
 
-    /// A linear gradient that follows a line.
-    ///
-    /// The line is in scene coordinates, not relative to the bounding box of the path.
-    std::shared_ptr<LineSegmentF> linear;
+    union {
+        /// A linear gradient that follows a line.
+        ///
+        /// The line is in scene coordinates, not relative to the bounding box of the path.
+        LineSegmentF linear;
 
-    /// A radial gradient that radiates outward from a line connecting two circles (or from one
-    /// circle).
-    std::shared_ptr<GradientRadial> radial;
+        /// A radial gradient that radiates outward from a line connecting two circles (or from one
+        /// circle).
+        GradientRadial radial;
+    };
+
+    GradientGeometry() {}
 };
 
 /// What should be rendered outside the color stops.
@@ -71,10 +76,11 @@ struct Gradient {
     /// Information specific to the type of gradient (linear or radial).
     GradientGeometry geometry;
 
+    /// Color stops.
     std::vector<ColorStop> stops;
 
     /// What should be rendered upon reaching the end of the color stops.
-    GradientWrap wrap = GradientWrap::Repeat;
+    GradientWrap wrap = GradientWrap::Clamp;
 
     /// Creates a new linear gradient with the given line.
     ///
@@ -82,8 +88,7 @@ struct Gradient {
     static Gradient linear(const LineSegmentF &line) {
         Gradient gradient;
         gradient.geometry.type = GradientGeometry::Type::Linear;
-        gradient.geometry.linear = std::make_shared<LineSegmentF>(line);
-        gradient.wrap = GradientWrap::Clamp;
+        gradient.geometry.linear = line;
 
         return gradient;
     }
@@ -98,10 +103,8 @@ struct Gradient {
     static Gradient radial(const LineSegmentF &line, const Vec2<float> &radii) {
         Gradient gradient;
         gradient.geometry.type = GradientGeometry::Type::Radial;
-        gradient.geometry.radial = std::make_shared<GradientRadial>();
-        gradient.geometry.radial->line = line;
-        gradient.geometry.radial->radii = radii;
-        gradient.wrap = GradientWrap::Clamp;
+        gradient.geometry.radial.line = line;
+        gradient.geometry.radial.radii = radii;
 
         return gradient;
     }

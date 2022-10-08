@@ -23,10 +23,11 @@ struct DisplayItem {
         PopRenderTarget,
     } type = Type::DrawPaths;
 
-    RenderTarget render_target;
+    RenderTarget render_target; // For PushRenderTarget.
+
 
     /// Draws paths to the render target on top of the stack.
-    Range path_range;
+    Range path_range; // For DrawPaths.
 };
 
 struct SceneEpoch {
