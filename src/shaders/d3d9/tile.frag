@@ -141,12 +141,6 @@ out vec4 oFragColor;
 #define COMBINER_CTRL_COLOR_COMBINE_SHIFT       8
 #define COMBINER_CTRL_COMPOSITE_SHIFT          10
 
-// Color sampling
-
-vec4 sampleColor(sampler2D colorTexture, vec2 colorTexCoord) {
-    return texture(colorTexture, colorTexCoord);
-}
-
 // Color combining
 
 vec4 combineColor0(vec4 destColor, vec4 srcColor, int op) {
@@ -428,7 +422,7 @@ vec4 filterParams4) {
 }
 
 vec4 filterNone(vec2 colorTexCoord, sampler2D colorTexture) {
-    return sampleColor(colorTexture, colorTexCoord);
+    return texture(colorTexture, colorTexCoord);
 }
 
 vec4 filterColor(
