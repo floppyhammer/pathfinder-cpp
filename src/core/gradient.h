@@ -122,9 +122,9 @@ struct Gradient {
 
     /// Returns true if all colors of all stops in this gradient are opaque.
     inline bool is_opaque() {
-        bool opaque = true;
+        bool opaque = false;
         for (auto &stop : stops) {
-            opaque &= stop.color.is_opaque();
+            opaque |= stop.color.is_opaque();
         }
         return opaque;
     }
