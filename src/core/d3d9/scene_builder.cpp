@@ -173,14 +173,18 @@ void SceneBuilderD3D9::build_tile_batches(const std::vector<BuiltDrawPath> &buil
 
                 // Set color texture.
                 auto overlay = paint.get_overlay();
-                if (overlay && overlay->contents.pattern) {
-                    auto pattern = overlay->contents.pattern;
-                    if (pattern->source.type == PatternSource::Type::Image) {
-                        // FIXME: Make it work.
-                        tile_batch.color_texture = nullptr;
+
+                if (overlay) {
+                    if (overlay->contents.type == PaintContents::Type::Gradient) {
                     } else {
-                        tile_batch.color_texture =
-                            overlay->contents.pattern->source.render_target.framebuffer->get_texture();
+                        auto pattern = overlay->contents.pattern;
+
+                        if (pattern.source.type == PatternSource::Type::Image) {
+                            tile_batch.color_texture = nullptr;
+                        } else {
+                            tile_batch.color_texture =
+                                overlay->contents.pattern.source.render_target.framebuffer->get_texture();
+                        }
                     }
                 }
 

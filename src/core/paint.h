@@ -30,11 +30,13 @@ enum class PaintCompositeOp {
 
 /// The contents of an overlay: either a gradient or a pattern.
 struct PaintContents {
-    /// A gradient, either linear or radial.
-    std::shared_ptr<Gradient> gradient;
+    enum class Type {
+        Gradient,
+        Pattern,
+    } type;
 
-    /// A raster image pattern.
-    std::shared_ptr<Pattern> pattern;
+    Gradient gradient;
+    Pattern pattern;
 };
 
 /// What is to be overlaid on top of a base color.
@@ -63,7 +65,8 @@ public:
     /// Creates a paint from a gradient.
     inline static Paint from_gradient(const Gradient &gradient) {
         PaintContents contents;
-        contents.gradient = std::make_shared<Gradient>(gradient);
+        contents.type = PaintContents::Type::Gradient;
+        contents.gradient = gradient;
 
         Paint paint;
         paint.base_color = ColorU::white();
@@ -78,7 +81,8 @@ public:
     /// Creates a paint from a raster pattern.
     inline static Paint from_pattern(const Pattern &pattern) {
         PaintContents contents;
-        contents.pattern = std::make_shared<Pattern>(pattern);
+        contents.type = PaintContents::Type::Pattern;
+        contents.pattern = pattern;
 
         Paint paint;
         paint.base_color = ColorU::white();
@@ -105,26 +109,7 @@ public:
     /// In order to use Paint as Map keys.
     /// See https://stackoverflow.com/questions/1102392/how-can-i-use-stdmaps-with-user-defined-types-as-key.
     inline bool operator<(const Paint &rhs) const {
-        int base_color_index_l = base_color.to_u32();
-        int base_color_index_r = rhs.base_color.to_u32();
-
-        int overlay_index_l = -1;
-        if (overlay && overlay->contents.pattern) {
-            overlay_index_l = overlay->contents.pattern->source.render_target.framebuffer->get_unique_id();
-        }
-
-        int overlay_index_r = -1;
-        if (rhs.overlay && rhs.overlay->contents.pattern) {
-            overlay_index_r = rhs.overlay->contents.pattern->source.render_target.framebuffer->get_unique_id();
-        }
-
-        if (base_color_index_l < base_color_index_r) {
-            return true;
-        } else if (base_color_index_l > base_color_index_r) {
-            return false;
-        } else {
-            return overlay_index_l < overlay_index_r;
-        }
+        return base_color < rhs.base_color;
     }
 };
 

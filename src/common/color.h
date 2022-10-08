@@ -66,6 +66,10 @@ struct ColorU {
     /// Not transparent.
     bool is_opaque() const;
 
+    inline bool operator<(const ColorU &rhs) const {
+        return to_u32() < rhs.to_u32();
+    }
+
     static ColorU red() {
         return {255, 0, 0, 255};
     }

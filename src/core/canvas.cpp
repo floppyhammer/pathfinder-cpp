@@ -484,8 +484,8 @@ void Canvas::load_svg(std::vector<char> input) {
         }
 
         // Shadow test.
-        //        set_shadow_color(ColorU::green());
-        //        set_shadow_blur(8);
+//                set_shadow_color(ColorU::green());
+//                set_shadow_blur(8);
 
         // Set dash.
         set_line_dash_offset(nsvg_shape->strokeDashOffset);
@@ -502,6 +502,20 @@ void Canvas::load_svg(std::vector<char> input) {
                 Gradient gradient = Gradient::linear(LineSegmentF());
 
                 auto nsvg_gradient = nsvg_shape->fill.gradient;
+                gradient.stops.resize(nsvg_gradient->nstops);
+
+                // Get stops.
+                for (int i = 0; i < nsvg_gradient->nstops; i++) {
+                    gradient.stops[i].offset = nsvg_gradient->stops[i].offset;
+                    gradient.stops[i].color = ColorU(nsvg_gradient->stops[i].color);
+                }
+
+                fill_paint = Paint::from_gradient(gradient);
+            } break;
+            case 3: {
+                auto nsvg_gradient = nsvg_shape->fill.gradient;
+
+                Gradient gradient = Gradient::radial(LineSegmentF{}, {nsvg_gradient->fx, nsvg_gradient->fy});
                 gradient.stops.resize(nsvg_gradient->nstops);
 
                 // Get stops.

@@ -13,11 +13,10 @@ bool Paint::is_opaque() const {
 
     if (overlay) {
         auto &content = overlay->contents;
-        if (content.gradient) {
-            // return content.gradient.is_opaque();
-            return true;
-        } else if (content.pattern) {
-            return content.pattern->is_opaque();
+        if (content.type == PaintContents::Type::Gradient) {
+            return content.gradient.is_opaque();
+        } else {
+            return content.pattern.is_opaque();
         }
     }
 
@@ -45,8 +44,13 @@ Palette::Palette(uint32_t p_scene_id) : scene_id(p_scene_id) {}
 
 uint32_t Palette::push_paint(const Paint &paint) {
     // Check if already has this paint.
-    auto iter = cache.find(paint);
-    if (iter != cache.end()) return iter->second;
+    // FIXME: Only for pure-color paints for now.
+    if (paint.get_overlay() == nullptr) {
+        auto iter = cache.find(paint);
+        if (iter != cache.end()) {
+            return iter->second;
+        }
+    }
 
     // Push.
     uint32_t paint_id = paints.size();
@@ -139,9 +143,11 @@ std::vector<PaintMetadata> Palette::assign_paint_locations() {
 
         // If not solid color paint.
         if (overlay) {
-            if (overlay->contents.gradient) {
+            if (overlay->contents.type == PaintContents::Type::Gradient) {
+                const auto gradient = overlay->contents.gradient;
+
                 auto sampling_flags = TextureSamplingFlags();
-                switch (overlay->contents.gradient->wrap) {
+                switch (gradient.wrap) {
                     case GradientWrap::Repeat: {
                         sampling_flags.value |= TextureSamplingFlags::REPEAT_U;
                     } break;
@@ -149,19 +155,31 @@ std::vector<PaintMetadata> Palette::assign_paint_locations() {
                         break;
                 }
 
-                // FIXME: Incomplete.
-            } else if (overlay->contents.pattern) {
+                if (gradient.geometry.type == GradientGeometry::Type::Linear) {
+                    color_texture_metadata.filter.type = PaintFilter::Type::None;
+                } else {
+                    color_texture_metadata.filter.type = PaintFilter::Type::RadialGradient;
+                    color_texture_metadata.filter.gradient_filter.line = gradient.geometry.radial.line;
+                    color_texture_metadata.filter.gradient_filter.radii = gradient.geometry.radial.radii;
+                }
+
+                color_texture_metadata.sampling_flags = sampling_flags;
+                color_texture_metadata.transform = Transform2();
+                color_texture_metadata.composite_op = overlay->composite_op;
+                color_texture_metadata.border = Vec2<int>();
+            } else { // FIXME: Incomplete.
                 const auto pattern = overlay->contents.pattern;
-                auto border = Vec2<uint32_t>(pattern->repeat_x() ? 0 : 1, pattern->repeat_y() ? 0 : 1);
+
+                auto border = Vec2<uint32_t>(pattern.repeat_x() ? 0 : 1, pattern.repeat_y() ? 0 : 1);
 
                 PaintFilter paint_filter;
                 paint_filter.type = PaintFilter::Type::PatternFilter;
-                paint_filter.pattern_filter = pattern->filter;
+                paint_filter.pattern_filter = pattern.filter;
 
                 TextureLocation texture_location;
 
-                if (pattern->source.type == PatternSource::Type::RenderTarget) {
-                    texture_location.rect = Rect<uint32_t>({}, pattern->source.render_target.size);
+                if (pattern.source.type == PatternSource::Type::RenderTarget) {
+                    texture_location.rect = Rect<uint32_t>({}, pattern.source.render_target.size);
                 } else {
                     texture_location.rect = Rect<uint32_t>() + border * 2;
                 }
@@ -196,15 +214,15 @@ void Palette::calculate_texture_transforms(std::vector<PaintMetadata> &p_paint_m
 
         auto overlay = paint.get_overlay();
         if (overlay) {
-            if (overlay->contents.gradient) {
-            } else if (overlay->contents.pattern) {
-                if (overlay->contents.pattern->source.type == PatternSource::Type::RenderTarget) {
+            if (overlay->contents.type == PaintContents::Type::Gradient) {
+            } else {
+                if (overlay->contents.pattern.source.type == PatternSource::Type::RenderTarget) {
                     auto pattern = overlay->contents.pattern;
                     auto texture_origin_uv = rect_to_uv(texture_rect, texture_scale).lower_left();
 
                     auto transform = Transform2::from_translation(texture_origin_uv) *
                                      Transform2::from_scale(texture_scale * Vec2<float>(1.0, -1.0)) *
-                                     pattern->transform.inverse();
+                                     pattern.transform.inverse();
 
                     color_texture_metadata.transform = transform;
                 }

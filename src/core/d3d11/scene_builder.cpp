@@ -102,8 +102,11 @@ void SceneBuilderD3D11::build_tile_batches(LastSceneInfo &last_scene) {
                 render_target_stack.pop_back();
             } break;
             case DisplayItem::Type::DrawPaths: {
-                auto tile_batch = build_tile_batches_for_draw_path_display_item(
-                    *scene, display_item.path_range, metadata, last_scene, next_batch_id);
+                auto tile_batch = build_tile_batches_for_draw_path_display_item(*scene,
+                                                                                display_item.path_range,
+                                                                                metadata,
+                                                                                last_scene,
+                                                                                next_batch_id);
 
                 next_batch_id += 1;
 
@@ -112,14 +115,18 @@ void SceneBuilderD3D11::build_tile_batches(LastSceneInfo &last_scene) {
                 Paint paint = scene->palette.get_paint(paint_id);
 
                 auto overlay = paint.get_overlay();
-                if (overlay && overlay->contents.pattern) {
-                    auto pattern = overlay->contents.pattern;
-                    if (pattern->source.type == PatternSource::Type::Image) {
-                        // FIXME: Make it work.
-                        tile_batch.color_texture = nullptr;
+
+                if (overlay) {
+                    if (overlay->contents.type == PaintContents::Type::Gradient) {
                     } else {
-                        tile_batch.color_texture =
-                            overlay->contents.pattern->source.render_target.framebuffer->get_texture();
+                        auto pattern = overlay->contents.pattern;
+
+                        if (pattern.source.type == PatternSource::Type::Image) {
+                            tile_batch.color_texture = nullptr;
+                        } else {
+                            tile_batch.color_texture =
+                                overlay->contents.pattern.source.render_target.framebuffer->get_texture();
+                        }
                     }
                 }
 
