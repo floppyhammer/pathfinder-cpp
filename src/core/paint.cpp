@@ -136,6 +136,9 @@ std::vector<PaintMetadata> Palette::assign_paint_locations() {
     std::vector<PaintMetadata> paint_metadata;
     paint_metadata.reserve(paints.size());
 
+    // For gradient color texture.
+    GradientTileBuilder gradient_tile_builder;
+
     // Traverse paints.
     for (const auto &paint : paints) {
         std::shared_ptr<PaintColorTextureMetadata> color_texture_metadata;
@@ -144,20 +147,19 @@ std::vector<PaintMetadata> Palette::assign_paint_locations() {
 
         // If not solid color paint.
         if (overlay) {
-            // Only paints with overlay have a color texture.
+            // For the color texture used in the shaders.
             color_texture_metadata = std::make_shared<PaintColorTextureMetadata>();
 
             if (overlay->contents.type == PaintContents::Type::Gradient) {
                 const auto gradient = overlay->contents.gradient;
 
-                auto sampling_flags = TextureSamplingFlags();
-                switch (gradient.wrap) {
-                    case GradientWrap::Repeat: {
-                        sampling_flags.value |= TextureSamplingFlags::REPEAT_U;
-                    } break;
-                    case GradientWrap::Clamp:
-                        break;
+                TextureSamplingFlags sampling_flags;
+                if (gradient.wrap == GradientWrap::Repeat) {
+                    sampling_flags.value |= TextureSamplingFlags::REPEAT_U;
                 }
+
+                // Assign the gradient to a color texture location.
+                auto location = gradient_tile_builder.allocate(gradient);
 
                 if (gradient.geometry.type == GradientGeometry::Type::Linear) {
                     color_texture_metadata->filter.type = PaintFilter::Type::None;

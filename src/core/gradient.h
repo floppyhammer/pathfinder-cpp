@@ -6,9 +6,12 @@
 
 #include "../common/color.h"
 #include "../common/math/transform2.h"
+#include "../gpu/command_buffer.h"
 #include "data/line_segment.h"
+#include "effects.h"
 
 //! Gradient effects that paths can be filled with.
+
 namespace Pathfinder {
 /// A color in a gradient.
 /// Points in a gradient between two stops interpolate linearly between the stops.
@@ -114,7 +117,7 @@ struct Gradient {
     void add_color_stop(ColorU color, float offset);
 
     /// Returns the value of the gradient at offset `t`, which will be clamped between 0.0 and 1.0.
-    ColorU sample(float t);
+    ColorU sample(float t) const;
 
     /// Returns true if all colors of all stops in this gradient are opaque.
     bool is_opaque();
@@ -123,6 +126,28 @@ private:
     /// Color stops.
     std::vector<ColorStop> stops;
 };
+
+//! Gradient color texture
+
+/// The size of a gradient tile.
+const uint32_t GRADIENT_TILE_LENGTH = 256;
+
+/// Color texture data for gradient filter,
+/// each row of which stores a 1D gradient line.
+struct GradientTile {
+    std::vector<ColorU> texels;
+    uint32_t page;
+    uint32_t next_index;
+};
+
+struct GradientTileBuilder {
+    std::vector<GradientTile> tiles;
+
+    TextureLocation allocate(const Gradient &gradient);
+
+    void upload(const std::shared_ptr<CommandBuffer> &cmd_buffer);
+};
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_GRADIENT_H

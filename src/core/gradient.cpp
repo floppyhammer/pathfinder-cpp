@@ -3,11 +3,11 @@
 #include "../common/math/basic.h"
 
 namespace Pathfinder {
-/// Adds a new color stop to the radial gradient.
 void Gradient::add(const ColorStop &p_stop) {
     auto end = stops.end();
     auto begin = stops.begin();
 
+    // Find a place to insert the new stop.
     while ((begin != end) && (begin->offset < p_stop.offset)) {
         ++begin;
     }
@@ -15,14 +15,11 @@ void Gradient::add(const ColorStop &p_stop) {
     stops.insert(begin, p_stop);
 }
 
-/// A convenience method equivalent to
-/// `gradient.add_color_stop(ColorStop::new(color, offset))`.
 void Gradient::add_color_stop(ColorU color, float offset) {
     add(ColorStop{offset, color});
 }
 
-/// Returns the value of the gradient at offset `t`, which will be clamped between 0.0 and 1.0.
-ColorU Gradient::sample(float t) {
+ColorU Gradient::sample(float t) const {
     if (stops.empty()) {
         return {};
     }
@@ -61,7 +58,6 @@ ColorU Gradient::sample(float t) {
     return ColorU(lower_stop.color.to_f32().lerp(upper_stop.color.to_f32(), ratio));
 }
 
-/// Returns true if all colors of all stops in this gradient are opaque.
 bool Gradient::is_opaque() {
     bool opaque = false;
     for (auto &stop : stops) {
@@ -69,4 +65,53 @@ bool Gradient::is_opaque() {
     }
     return opaque;
 }
+
+TextureLocation GradientTileBuilder::allocate(const Gradient &gradient) {
+    // Allocate new texture page.
+    if (tiles.empty() || tiles.back().next_index == GRADIENT_TILE_LENGTH) {
+        uint32_t area = GRADIENT_TILE_LENGTH * GRADIENT_TILE_LENGTH;
+
+        // New tile.
+        tiles.push_back(GradientTile{
+            std::vector<ColorU>(area, ColorU::black()),
+            0,
+            0,
+        });
+    }
+
+    auto &tile = tiles.back();
+
+    // Texture location that we should write to.
+    auto location = TextureLocation{
+        tile.page,
+        Rect<uint32_t>(0, tile.next_index, GRADIENT_TILE_LENGTH, tile.next_index + 1),
+    };
+
+    // Update which row we should write next.
+    tile.next_index += 1;
+
+    // FIXME(pcwalton): Paint transparent if gradient line has zero size, per spec.
+    // TODO(pcwalton): Optimize this:
+    // 1. Calculate ∇t up front and use differencing in the inner loop.
+    // 2. Go four pixels at a time with SIMD.
+    auto first_address = location.rect.origin().y * GRADIENT_TILE_LENGTH;
+
+    // Update pixel column by column.
+    for (int x = 0; x < GRADIENT_TILE_LENGTH; x++) {
+        auto t = ((float)x + 0.5f) / GRADIENT_TILE_LENGTH;
+        tile.texels[first_address + x] = gradient.sample(t);
+    }
+
+    return location;
+}
+
+void GradientTileBuilder::upload(const std::shared_ptr<CommandBuffer> &cmd_buffer) {
+    for (auto &tile : tiles) {
+        cmd_buffer->upload_to_texture(nullptr,
+                                      Rect<uint32_t>(0, 0, GRADIENT_TILE_LENGTH, GRADIENT_TILE_LENGTH),
+                                      tile.texels.data(),
+                                      TextureLayout::SHADER_READ_ONLY);
+    }
+}
+
 } // namespace Pathfinder

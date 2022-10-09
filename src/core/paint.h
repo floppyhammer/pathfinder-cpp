@@ -16,10 +16,6 @@
 #include "pattern.h"
 
 namespace Pathfinder {
-/// The size of a gradient tile.
-// TODO(pcwalton): Choose this size dynamically!
-const uint32_t GRADIENT_TILE_LENGTH = 256;
-
 /// How an overlay is to be composited over a base color.
 enum class PaintCompositeOp {
     /// The source that overlaps the destination, replaces the destination.
@@ -113,34 +109,30 @@ public:
     }
 };
 
-struct TextureLocation {
-    uint32_t page{};
-    Rect<uint32_t> rect;
-};
-
-struct TextureSamplingFlags {
-    uint8_t value = 0;
-
-    static const uint8_t REPEAT_U = 0x01;
-    static const uint8_t REPEAT_V = 0x02;
-    static const uint8_t NEAREST_MIN = 0x04;
-    static const uint8_t NEAREST_MAG = 0x08;
-};
-
 /// Metadata related to the color texture.
 struct PaintColorTextureMetadata {
     /// The location of the paint.
     TextureLocation location;
+
+    /// Temporary alternative to TextureLocation, since we don't
+    /// have a texture manager yet.
+    std::shared_ptr<Texture> texture;
+
     /// The scale for the page this paint is on.
     Vec2<float> page_scale;
+
     /// The transform to apply to screen coordinates to translate them into UVs.
     Transform2 transform;
+
     /// The sampling mode for the texture.
     TextureSamplingFlags sampling_flags;
+
     /// The filter to be applied to this paint.
     PaintFilter filter;
+
     /// How the color texture is to be composited over the base color.
     PaintCompositeOp composite_op;
+
     /// How much of a border there needs to be around the image.
     ///
     /// The border ensures clamp-to-edge yields the right result.
@@ -148,8 +140,8 @@ struct PaintColorTextureMetadata {
 };
 
 struct PaintMetadata {
-    /// Metadata associated with the color texture, if applicable.
-    std::shared_ptr<PaintColorTextureMetadata> color_texture_metadata; // Optional
+    /// Metadata associated with the color texture, if applicable. (Optional)
+    std::shared_ptr<PaintColorTextureMetadata> color_texture_metadata;
 
     /// The base color that the color texture gets mixed into.
     ColorU base_color;
@@ -189,6 +181,7 @@ private:
 
     uint32_t scene_id;
 
+private:
     std::vector<PaintMetadata> assign_paint_locations();
 
     /// Calculate color texture transforms.

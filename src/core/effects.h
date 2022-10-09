@@ -72,7 +72,7 @@ struct PaintFilter {
         PatternFilter pattern_filter;
     };
 
-    PaintFilter(){};
+    PaintFilter() {}
 };
 
 /// Blend modes that can be applied to individual paths.
@@ -252,6 +252,23 @@ inline bool is_blend_mode_destructive(BlendMode blend_mode) {
         }
     }
 }
+
+struct TextureLocation {
+    /// Which texture.
+    uint32_t page{};
+    /// Region in the texture.
+    Rect<uint32_t> rect;
+};
+
+struct TextureSamplingFlags {
+    uint8_t value = 0;
+
+    static const uint8_t REPEAT_U = 0x01;
+    static const uint8_t REPEAT_V = 0x02;
+    static const uint8_t NEAREST_MIN = 0x04;
+    static const uint8_t NEAREST_MAG = 0x08;
+};
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_EFFECTS_H
