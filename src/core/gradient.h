@@ -145,7 +145,7 @@ struct GradientTileBuilder {
 
     TextureLocation allocate(const Gradient &gradient);
 
-    void upload(const std::shared_ptr<CommandBuffer> &cmd_buffer);
+    void upload(const std::shared_ptr<CommandBuffer> &cmd_buffer, std::shared_ptr<Texture> &texture);
 };
 
 } // namespace Pathfinder

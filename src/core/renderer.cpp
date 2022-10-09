@@ -123,9 +123,9 @@ FilterParams compute_filter_params(const PaintFilter &filter,
     return filter_params;
 }
 
-void upload_metadata(const std::shared_ptr<Texture> &metadata_texture,
-                     const std::vector<TextureMetadataEntry> &metadata,
-                     const std::shared_ptr<Driver> &driver) {
+void upload_texture_metadata(const std::shared_ptr<Texture> &metadata_texture,
+                             const std::vector<TextureMetadataEntry> &metadata,
+                             const std::shared_ptr<Driver> &driver) {
     auto padded_texel_size =
         alignup_i32((int32_t)metadata.size(), TEXTURE_METADATA_ENTRIES_PER_ROW) * TEXTURE_METADATA_TEXTURE_WIDTH * 4;
 

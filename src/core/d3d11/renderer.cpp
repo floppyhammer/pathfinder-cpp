@@ -362,7 +362,7 @@ void RendererD3D11::prepare_and_draw_tiles(DrawTileBatchD3D11 &batch,
 
     auto &batch_info = tile_batch_info[tile_batch_id];
 
-    upload_metadata(metadata_texture, metadata, driver);
+    upload_texture_metadata(metadata_texture, metadata, driver);
 
     draw_tiles(batch_info.tiles_d3d11_buffer_id,
                batch_info.first_tile_map_buffer_id,

@@ -105,9 +105,10 @@ TextureLocation GradientTileBuilder::allocate(const Gradient &gradient) {
     return location;
 }
 
-void GradientTileBuilder::upload(const std::shared_ptr<CommandBuffer> &cmd_buffer) {
+void GradientTileBuilder::upload(const std::shared_ptr<CommandBuffer> &cmd_buffer, std::shared_ptr<Texture> &texture) {
+    // FIXME: We only have one texture for now.
     for (auto &tile : tiles) {
-        cmd_buffer->upload_to_texture(nullptr,
+        cmd_buffer->upload_to_texture(texture,
                                       Rect<uint32_t>(0, 0, GRADIENT_TILE_LENGTH, GRADIENT_TILE_LENGTH),
                                       tile.texels.data(),
                                       TextureLayout::SHADER_READ_ONLY);

@@ -8,7 +8,7 @@
 #include "../gpu/framebuffer.h"
 #include "data/data.h"
 #include "data/path.h"
-#include "paint.h"
+#include "palette.h"
 
 namespace Pathfinder {
 /// High-level drawing commands.
@@ -24,7 +24,6 @@ struct DisplayItem {
     } type = Type::DrawPaths;
 
     RenderTarget render_target; // For PushRenderTarget.
-
 
     /// Draws paths to the render target on top of the stack.
     Range path_range; // For DrawPaths.

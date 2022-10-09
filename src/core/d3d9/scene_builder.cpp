@@ -50,6 +50,30 @@ DrawTileBatch build_tile_batches_for_draw_path_display_item(Scene &p_scene,
         }
     }
 
+    // Get paint.
+    auto paint_id = built_paths[draw_path_range.start].path.paint_id;
+    Paint paint = p_scene.palette.get_paint(paint_id);
+
+    // Set color texture.
+    auto overlay = paint.get_overlay();
+
+    if (overlay) {
+        if (overlay->contents.type == PaintContents::Type::Gradient) {
+            auto pattern = overlay->contents.pattern;
+
+//            draw_tile_batch.color_texture =
+        } else {
+            auto pattern = overlay->contents.pattern;
+
+            if (pattern.source.type == PatternSource::Type::Image) {
+                draw_tile_batch.color_texture = nullptr;
+            } else {
+                draw_tile_batch.color_texture =
+                    overlay->contents.pattern.source.render_target.framebuffer->get_texture();
+            }
+        }
+    }
+
     return draw_tile_batch;
 }
 
@@ -166,27 +190,6 @@ void SceneBuilderD3D9::build_tile_batches(const std::vector<BuiltDrawPath> &buil
                 // Create a new batch.
                 auto tile_batch =
                     build_tile_batches_for_draw_path_display_item(*scene, built_paths, display_item.path_range);
-
-                // Get paint.
-                auto paint_id = built_paths[display_item.path_range.start].path.paint_id;
-                Paint paint = scene->palette.get_paint(paint_id);
-
-                // Set color texture.
-                auto overlay = paint.get_overlay();
-
-                if (overlay) {
-                    if (overlay->contents.type == PaintContents::Type::Gradient) {
-                    } else {
-                        auto pattern = overlay->contents.pattern;
-
-                        if (pattern.source.type == PatternSource::Type::Image) {
-                            tile_batch.color_texture = nullptr;
-                        } else {
-                            tile_batch.color_texture =
-                                overlay->contents.pattern.source.render_target.framebuffer->get_texture();
-                        }
-                    }
-                }
 
                 // Set render target. Pick the one on the top of the stack.
                 if (!render_target_stack.empty()) {

@@ -11,6 +11,7 @@
 #include "dense_tile_map.h"
 
 namespace Pathfinder {
+
 struct BuiltPathData {
     /// During tiling, or if backdrop computation is done on GPU, this stores the sum of backdrops
     /// for tile columns above the viewport.
@@ -50,6 +51,7 @@ public:
     /// If the path is opaque. Used to determine z buffer.
     bool occludes = true;
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_BUILT_PATH_H

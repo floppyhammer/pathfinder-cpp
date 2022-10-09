@@ -16,6 +16,7 @@
 #include "pattern.h"
 
 namespace Pathfinder {
+
 /// How an overlay is to be composited over a base color.
 enum class PaintCompositeOp {
     /// The source that overlaps the destination, replaces the destination.
@@ -23,6 +24,8 @@ enum class PaintCompositeOp {
     /// Destination which overlaps the source, replaces the source.
     DestIn,
 };
+
+Rect<float> rect_to_uv(Rect<uint32_t> rect, Vec2<float> texture_scale);
 
 /// The contents of an overlay: either a gradient or a pattern.
 struct PaintContents {
@@ -114,10 +117,6 @@ struct PaintColorTextureMetadata {
     /// The location of the paint.
     TextureLocation location;
 
-    /// Temporary alternative to TextureLocation, since we don't
-    /// have a texture manager yet.
-    std::shared_ptr<Texture> texture;
-
     /// The scale for the page this paint is on.
     Vec2<float> page_scale;
 
@@ -152,42 +151,6 @@ struct PaintMetadata {
     bool is_opaque = true;
 
     PaintFilter filter() const;
-};
-
-/// Stores all paints in a scene.
-struct Palette {
-public:
-    explicit Palette(uint32_t p_scene_id);
-
-    /// Push a new paint if not already in cache,
-    /// and return its ID.
-    uint32_t push_paint(const Paint &paint);
-
-    Paint get_paint(uint32_t paint_id) const;
-
-    RenderTarget push_render_target(const std::shared_ptr<Driver> &p_driver, const Vec2<int> &render_target_size);
-
-    std::shared_ptr<Framebuffer> get_render_target(uint32_t render_target_id) const;
-
-    /// Core step.
-    std::vector<TextureMetadataEntry> build_paint_info();
-
-private:
-    std::vector<Paint> paints;
-
-    std::vector<std::shared_ptr<Framebuffer>> render_targets;
-
-    std::map<Paint, uint32_t> cache;
-
-    uint32_t scene_id;
-
-private:
-    std::vector<PaintMetadata> assign_paint_locations();
-
-    /// Calculate color texture transforms.
-    void calculate_texture_transforms(std::vector<PaintMetadata> &p_paint_metadata);
-
-    std::vector<TextureMetadataEntry> create_texture_metadata(const std::vector<PaintMetadata> &p_paint_metadata);
 };
 } // namespace Pathfinder
 

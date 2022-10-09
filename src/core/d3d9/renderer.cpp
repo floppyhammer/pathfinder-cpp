@@ -49,8 +49,9 @@ RendererD3D9::RendererD3D9(const std::shared_ptr<Driver> &p_driver) : Renderer(p
     mask_render_pass =
         driver->create_render_pass(TextureFormat::RGBA16F, AttachmentLoadOp::CLEAR, TextureLayout::SHADER_READ_ONLY);
 
-    dest_render_pass_clear = driver->create_render_pass(
-        TextureFormat::RGBA8_UNORM, AttachmentLoadOp::CLEAR, TextureLayout::SHADER_READ_ONLY);
+    dest_render_pass_clear = driver->create_render_pass(TextureFormat::RGBA8_UNORM,
+                                                        AttachmentLoadOp::CLEAR,
+                                                        TextureLayout::SHADER_READ_ONLY);
 
     dest_render_pass_load =
         driver->create_render_pass(TextureFormat::RGBA8_UNORM, AttachmentLoadOp::LOAD, TextureLayout::SHADER_READ_ONLY);
@@ -306,8 +307,8 @@ void RendererD3D9::upload_tiles(const std::vector<TileObjectPrimitive> &tiles,
 
 void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatch> &tile_batches,
                                          const std::vector<TextureMetadataEntry> &metadata) {
-    // Upload metadata (color, blur, etc...).
-    upload_metadata(metadata_texture, metadata, driver);
+    // Upload texture metadata (color, blur, etc...).
+    upload_texture_metadata(metadata_texture, metadata, driver);
 
     // Clear the destination framebuffer for the first time.
     need_to_clear_dest = true;
@@ -358,8 +359,9 @@ void RendererD3D9::draw_tiles(uint32_t tiles_count,
 
     // If no specific RenderTarget is given.
     if (render_target.framebuffer == nullptr) {
-        cmd_buffer->begin_render_pass(
-            need_to_clear_dest ? dest_render_pass_clear : dest_render_pass_load, dest_framebuffer, ColorF());
+        cmd_buffer->begin_render_pass(need_to_clear_dest ? dest_render_pass_clear : dest_render_pass_load,
+                                      dest_framebuffer,
+                                      ColorF());
 
         target_framebuffer = dest_framebuffer;
 

@@ -54,6 +54,26 @@ DrawTileBatchD3D11 build_tile_batches_for_draw_path_display_item(
         draw_tile_batch.tile_batch_data.push(draw_path.path, draw_path_id, draw_path.occludes, last_scene);
     }
 
+    auto paint_id = scene.draw_paths[draw_path_id_range.start].paint;
+
+    Paint paint = scene.palette.get_paint(paint_id);
+
+    auto overlay = paint.get_overlay();
+
+    if (overlay) {
+        if (overlay->contents.type == PaintContents::Type::Gradient) {
+        } else {
+            auto pattern = overlay->contents.pattern;
+
+            if (pattern.source.type == PatternSource::Type::Image) {
+                draw_tile_batch.color_texture = nullptr;
+            } else {
+                draw_tile_batch.color_texture =
+                    overlay->contents.pattern.source.render_target.framebuffer->get_texture();
+            }
+        }
+    }
+
     return draw_tile_batch;
 }
 
@@ -109,26 +129,6 @@ void SceneBuilderD3D11::build_tile_batches(LastSceneInfo &last_scene) {
                                                                                 next_batch_id);
 
                 next_batch_id += 1;
-
-                auto paint_id = scene->draw_paths[display_item.path_range.start].paint;
-
-                Paint paint = scene->palette.get_paint(paint_id);
-
-                auto overlay = paint.get_overlay();
-
-                if (overlay) {
-                    if (overlay->contents.type == PaintContents::Type::Gradient) {
-                    } else {
-                        auto pattern = overlay->contents.pattern;
-
-                        if (pattern.source.type == PatternSource::Type::Image) {
-                            tile_batch.color_texture = nullptr;
-                        } else {
-                            tile_batch.color_texture =
-                                overlay->contents.pattern.source.render_target.framebuffer->get_texture();
-                        }
-                    }
-                }
 
                 // Set render target. Render to screen if there's no render targets on the stack.
                 if (!render_target_stack.empty()) {
