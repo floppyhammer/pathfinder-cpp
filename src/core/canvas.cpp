@@ -442,19 +442,53 @@ LineJoin convert_nsvg_line_join(char line_join) {
     }
 }
 
-static void xform_inverse(float *inv, float *t) {
-    double invdet, det = (double)t[0] * t[3] - (double)t[2] * t[1];
-    if (det > -1e-6 && det < 1e-6) {
-        nsvg__xformIdentity(t);
-        return;
+Paint convert_nsvg_paint(NSVGpaint nsvg_paint) {
+    Paint paint;
+
+    switch (nsvg_paint.type) {
+        case NSVG_PAINT_NONE:
+            break;
+        case NSVG_PAINT_COLOR: {
+            paint = Paint::from_color(ColorU(nsvg_paint.color));
+        } break;
+        case NSVG_PAINT_LINEAR_GRADIENT: {
+            Gradient gradient = Gradient::linear(LineSegmentF());
+
+            auto nsvg_gradient = nsvg_paint.gradient;
+
+            // Get stops.
+            for (int i = 0; i < nsvg_gradient->nstops; i++) {
+                gradient.add_color_stop(ColorU(nsvg_gradient->stops[i].color), nsvg_gradient->stops[i].offset);
+            }
+
+            paint = Paint::from_gradient(gradient);
+        } break;
+        case NSVG_PAINT_RADIAL_GRADIENT: {
+            auto nsvg_gradient = nsvg_paint.gradient;
+
+            auto nsvg_xform = nsvg_gradient->xform;
+
+            auto xform = Transform2(Mat2x2<float>(nsvg_xform[0], nsvg_xform[1], nsvg_xform[2], nsvg_xform[3]),
+                                    Vec2F(nsvg_xform[4], nsvg_xform[5]));
+            auto xform_inv = xform.inverse();
+
+            auto from = xform_inv.get_position();
+            auto to = Vec2F(xform_inv.m12(), xform_inv.m22()) + from;
+
+            Gradient gradient = Gradient::radial(LineSegmentF(from, to), Vec2F(129.00775));
+
+            gradient.geometry.radial.transform = xform;
+
+            // Get stops.
+            for (int i = 0; i < nsvg_gradient->nstops; i++) {
+                gradient.add_color_stop(ColorU(nsvg_gradient->stops[i].color), nsvg_gradient->stops[i].offset);
+            }
+
+            paint = Paint::from_gradient(gradient);
+        } break;
     }
-    invdet = 1.0 / det;
-    inv[0] = (float)(t[3] * invdet);
-    inv[2] = (float)(-t[2] * invdet);
-    inv[4] = (float)(((double)t[2] * t[5] - (double)t[3] * t[4]) * invdet);
-    inv[1] = (float)(-t[1] * invdet);
-    inv[3] = (float)(t[0] * invdet);
-    inv[5] = (float)(((double)t[1] * t[4] - (double)t[0] * t[5]) * invdet);
+
+    return paint;
 }
 
 void Canvas::load_svg(std::vector<char> input) {
@@ -472,12 +506,8 @@ void Canvas::load_svg(std::vector<char> input) {
         return;
     }
 
-    char buffer[100];
-    snprintf(buffer, sizeof(buffer), "Loaded SVG image size: (%.1f, %.1f)", image->width, image->height);
-    Logger::info(std::string(buffer), "Canvas");
-
     // Extract paths, contours and points from the SVG image.
-    // Notable: NSVGshape equals to Path, and NSVGpath equals to Contour (Sub-Path).
+    // Notable: NSVGshape equals to our Path, and NSVGpath equals to our Contour (Sub-Path).
     for (NSVGshape *nsvg_shape = image->shapes; nsvg_shape != nullptr; nsvg_shape = nsvg_shape->next) {
         Outline outline;
 
@@ -506,61 +536,16 @@ void Canvas::load_svg(std::vector<char> input) {
         set_line_dash(
             std::vector<float>(nsvg_shape->strokeDashArray, nsvg_shape->strokeDashArray + nsvg_shape->strokeDashCount));
 
-        // Get fill paint.
-        Paint fill_paint;
-        switch (nsvg_shape->fill.type) {
-            case NSVG_PAINT_NONE:
-                break;
-            case NSVG_PAINT_COLOR: {
-                fill_paint = Paint::from_color(ColorU(nsvg_shape->fill.color));
-            } break;
-            case NSVG_PAINT_LINEAR_GRADIENT: {
-                Gradient gradient = Gradient::linear(LineSegmentF());
-
-                auto nsvg_gradient = nsvg_shape->fill.gradient;
-
-                // Get stops.
-                for (int i = 0; i < nsvg_gradient->nstops; i++) {
-                    gradient.add_color_stop(ColorU(nsvg_gradient->stops[i].color), nsvg_gradient->stops[i].offset);
-                }
-
-                fill_paint = Paint::from_gradient(gradient);
-            } break;
-            case NSVG_PAINT_RADIAL_GRADIENT: {
-                auto nsvg_gradient = nsvg_shape->fill.gradient;
-
-                auto nsvg_xform = nsvg_gradient->xform;
-
-                auto xform = Transform2(Mat2x2<float>(nsvg_xform[0], nsvg_xform[1], nsvg_xform[2], nsvg_xform[3]),
-                                        Vec2F(nsvg_xform[4], nsvg_xform[5]));
-                auto xform_inv = xform.inverse();
-
-                auto from = xform_inv.get_position();
-                auto to = Vec2F(xform_inv.m12(), xform_inv.m22()) + from;
-
-                Gradient gradient = Gradient::radial(LineSegmentF(from, to), Vec2F(129.00775));
-
-                gradient.geometry.radial.transform = xform;
-
-                // Get stops.
-                for (int i = 0; i < nsvg_gradient->nstops; i++) {
-                    gradient.add_color_stop(ColorU(nsvg_gradient->stops[i].color), nsvg_gradient->stops[i].offset);
-                }
-
-                fill_paint = Paint::from_gradient(gradient);
-            } break;
-        }
-
         // Add fill.
-        set_fill_paint(fill_paint);
+        set_fill_paint(convert_nsvg_paint(nsvg_shape->fill));
         fill_path(outline, convert_nsvg_fill_rule(nsvg_shape->fillRule));
 
         // Add stroke.
-        set_stroke_paint(Paint::from_color(ColorU(nsvg_shape->stroke.color)));
         set_line_join(convert_nsvg_line_join(nsvg_shape->strokeLineJoin));
         set_miter_limit(nsvg_shape->miterLimit);
         set_line_cap(convert_nsvg_line_cap(nsvg_shape->strokeLineCap));
         set_line_width(nsvg_shape->strokeWidth);
+        set_stroke_paint(convert_nsvg_paint(nsvg_shape->stroke));
         stroke_path(outline);
     }
 
