@@ -10,22 +10,23 @@
 #undef max
 
 namespace Pathfinder {
+
 /// Create tile batches.
-DrawTileBatch build_tile_batches_for_draw_path_display_item(Scene &p_scene,
+DrawTileBatch build_tile_batches_for_draw_path_display_item(const std::shared_ptr<Scene> &scene,
                                                             const std::vector<BuiltDrawPath> &built_paths,
                                                             Range draw_path_range) {
     // New draw tile batch.
     DrawTileBatch draw_tile_batch;
 
-    auto tile_bounds = round_rect_out_to_tile_bounds(p_scene.get_view_box());
+    auto tile_bounds = round_rect_out_to_tile_bounds(scene->get_view_box());
 
     draw_tile_batch.z_buffer_data = DenseTileMap<uint32_t>::z_builder(tile_bounds);
 
     for (unsigned long draw_path_id = draw_path_range.start; draw_path_id < draw_path_range.end; draw_path_id++) {
         const auto &draw_path = built_paths[draw_path_id];
-        const auto &cpu_data = built_paths[draw_path_id].path.data;
+        const auto &path_data = draw_path.path.data;
 
-        for (const auto &tile : cpu_data.tiles.data) {
+        for (const auto &tile : path_data.tiles.data) {
             // If not an alpha tile and winding is zero.
             if (!tile.alpha_tile_id.is_valid() && tile.backdrop == 0) {
                 continue;
@@ -50,26 +51,30 @@ DrawTileBatch build_tile_batches_for_draw_path_display_item(Scene &p_scene,
         }
     }
 
-    // Get paint.
-    auto paint_id = built_paths[draw_path_range.start].path.paint_id;
-    Paint paint = p_scene.palette.get_paint(paint_id);
+    // For paint overlay.
+    {
+        // Get paint.
+        auto paint_id = built_paths[draw_path_range.start].path.paint_id;
+        Paint paint = scene->palette.get_paint(paint_id);
 
-    // Set color texture.
-    auto overlay = paint.get_overlay();
+        auto overlay = paint.get_overlay();
 
-    if (overlay) {
-        if (overlay->contents.type == PaintContents::Type::Gradient) {
-            auto pattern = overlay->contents.pattern;
+        // Set color texture.
+        if (overlay) {
+            if (overlay->contents.type == PaintContents::Type::Gradient) {
+                auto gradient = overlay->contents.gradient;
 
-//            draw_tile_batch.color_texture =
-        } else {
-            auto pattern = overlay->contents.pattern;
-
-            if (pattern.source.type == PatternSource::Type::Image) {
-                draw_tile_batch.color_texture = nullptr;
+                draw_tile_batch.color_texture = gradient.tile_texture;
             } else {
-                draw_tile_batch.color_texture =
-                    overlay->contents.pattern.source.render_target.framebuffer->get_texture();
+                auto pattern = overlay->contents.pattern;
+
+                // Pattern source is an image.
+                if (pattern.source.type == PatternSource::Type::Image) {
+                    draw_tile_batch.color_texture = nullptr;
+                } else { // Pattern source is a framebuffer.
+                    draw_tile_batch.color_texture =
+                        overlay->contents.pattern.source.render_target.framebuffer->get_texture();
+                }
             }
         }
     }
@@ -77,7 +82,7 @@ DrawTileBatch build_tile_batches_for_draw_path_display_item(Scene &p_scene,
     return draw_tile_batch;
 }
 
-void SceneBuilderD3D9::build() {
+void SceneBuilderD3D9::build(const std::shared_ptr<Driver> &driver) {
     // No need to rebuild the scene if it hasn't changed.
     // Comment this to do benchmark more precisely.
     if (!scene->is_dirty) return;
@@ -85,7 +90,7 @@ void SceneBuilderD3D9::build() {
     Timestamp timestamp;
 
     // Build paint data.
-    metadata = scene->palette.build_paint_info();
+    metadata = scene->palette.build_paint_info(driver);
 
     timestamp.record("Build paint info");
 
@@ -189,7 +194,7 @@ void SceneBuilderD3D9::build_tile_batches(const std::vector<BuiltDrawPath> &buil
             case DisplayItem::Type::DrawPaths: {
                 // Create a new batch.
                 auto tile_batch =
-                    build_tile_batches_for_draw_path_display_item(*scene, built_paths, display_item.path_range);
+                    build_tile_batches_for_draw_path_display_item(scene, built_paths, display_item.path_range);
 
                 // Set render target. Pick the one on the top of the stack.
                 if (!render_target_stack.empty()) {
@@ -205,4 +210,5 @@ void SceneBuilderD3D9::build_tile_batches(const std::vector<BuiltDrawPath> &buil
 void SceneBuilderD3D9::send_fills(const std::vector<Fill> &fill_batch) {
     pending_fills.insert(pending_fills.end(), fill_batch.begin(), fill_batch.end());
 }
+
 } // namespace Pathfinder

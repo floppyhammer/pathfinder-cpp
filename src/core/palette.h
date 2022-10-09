@@ -1,6 +1,7 @@
 #ifndef PATHFINDER_PALETTE_H
 #define PATHFINDER_PALETTE_H
 
+#include "../gpu/driver.h"
 #include "paint.h"
 
 namespace Pathfinder {
@@ -21,7 +22,7 @@ public:
     std::shared_ptr<Framebuffer> get_render_target(uint32_t render_target_id) const;
 
     /// Core step.
-    std::vector<TextureMetadataEntry> build_paint_info();
+    std::vector<TextureMetadataEntry> build_paint_info(const std::shared_ptr<Driver> &driver);
 
 private:
     uint32_t scene_id;
@@ -34,7 +35,7 @@ private:
     std::map<Paint, uint32_t> cache;
 
 private:
-    std::vector<PaintMetadata> assign_paint_locations();
+    std::vector<PaintMetadata> assign_paint_locations(const std::shared_ptr<Driver> &driver);
 
     /// Calculate color texture transforms.
     void calculate_texture_transforms(std::vector<PaintMetadata> &p_paint_metadata);

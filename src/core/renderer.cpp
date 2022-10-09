@@ -70,12 +70,13 @@ struct FilterParams {
 
 FilterParams compute_filter_params(const PaintFilter &filter,
                                    BlendMode blend_mode,
-                                   ColorCombineMode color_0_combine_mode) {
+                                   ColorCombineMode color_combine_mode) {
+    // Control bit flags.
     int32_t ctrl = 0;
 
     // Add flags for blend mode and color combine mode.
     ctrl |= blend_mode_to_composite_ctrl(blend_mode) << COMBINER_CTRL_COMPOSITE_SHIFT;
-    ctrl |= color_combine_mode_to_composite_ctrl(color_0_combine_mode) << COMBINER_CTRL_COLOR_COMBINE_SHIFT;
+    ctrl |= color_combine_mode_to_composite_ctrl(color_combine_mode) << COMBINER_CTRL_COLOR_COMBINE_SHIFT;
 
     FilterParams filter_params;
     filter_params.ctrl = ctrl;

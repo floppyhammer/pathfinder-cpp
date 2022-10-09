@@ -7,7 +7,6 @@
 #include "stroke.h"
 
 #define NANOSVG_IMPLEMENTATION
-
 #include <nanosvg.h>
 
 namespace Pathfinder {
@@ -339,7 +338,7 @@ void Canvas::set_transform(const Transform2 &p_transform) {
 
 void Canvas::build() {
     if (scene_builder) {
-        scene_builder->build();
+        scene_builder->build(renderer->driver);
     }
 }
 
@@ -443,6 +442,21 @@ LineJoin convert_nsvg_line_join(char line_join) {
     }
 }
 
+static void xform_inverse(float *inv, float *t) {
+    double invdet, det = (double)t[0] * t[3] - (double)t[2] * t[1];
+    if (det > -1e-6 && det < 1e-6) {
+        nsvg__xformIdentity(t);
+        return;
+    }
+    invdet = 1.0 / det;
+    inv[0] = (float)(t[3] * invdet);
+    inv[2] = (float)(-t[2] * invdet);
+    inv[4] = (float)(((double)t[2] * t[5] - (double)t[3] * t[4]) * invdet);
+    inv[1] = (float)(-t[1] * invdet);
+    inv[3] = (float)(t[0] * invdet);
+    inv[5] = (float)(((double)t[1] * t[4] - (double)t[0] * t[5]) * invdet);
+}
+
 void Canvas::load_svg(std::vector<char> input) {
     if (input.empty()) {
         Logger::error("SVG input is empty!", "Canvas");
@@ -495,10 +509,12 @@ void Canvas::load_svg(std::vector<char> input) {
         // Get fill paint.
         Paint fill_paint;
         switch (nsvg_shape->fill.type) {
-            case 1: {
+            case NSVG_PAINT_NONE:
+                break;
+            case NSVG_PAINT_COLOR: {
                 fill_paint = Paint::from_color(ColorU(nsvg_shape->fill.color));
             } break;
-            case 2: {
+            case NSVG_PAINT_LINEAR_GRADIENT: {
                 Gradient gradient = Gradient::linear(LineSegmentF());
 
                 auto nsvg_gradient = nsvg_shape->fill.gradient;
@@ -510,10 +526,21 @@ void Canvas::load_svg(std::vector<char> input) {
 
                 fill_paint = Paint::from_gradient(gradient);
             } break;
-            case 3: {
+            case NSVG_PAINT_RADIAL_GRADIENT: {
                 auto nsvg_gradient = nsvg_shape->fill.gradient;
 
-                Gradient gradient = Gradient::radial(LineSegmentF{}, {nsvg_gradient->fx, nsvg_gradient->fy});
+                auto nsvg_xform = nsvg_gradient->xform;
+
+                auto xform = Transform2(Mat2x2<float>(nsvg_xform[0], nsvg_xform[1], nsvg_xform[2], nsvg_xform[3]),
+                                        Vec2F(nsvg_xform[4], nsvg_xform[5]));
+                auto xform_inv = xform.inverse();
+
+                auto from = xform_inv.get_position();
+                auto to = Vec2F(xform_inv.m12(), xform_inv.m22()) + from;
+
+                Gradient gradient = Gradient::radial(LineSegmentF(from, to), Vec2F(129.00775));
+
+                gradient.geometry.radial.transform = xform;
 
                 // Get stops.
                 for (int i = 0; i < nsvg_gradient->nstops; i++) {

@@ -120,6 +120,8 @@ struct PaintColorTextureMetadata {
     /// The scale for the page this paint is on.
     Vec2<float> page_scale;
 
+    std::shared_ptr<Texture> color_texture;
+
     /// The transform to apply to screen coordinates to translate them into UVs.
     Transform2 transform;
 

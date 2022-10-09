@@ -13,7 +13,7 @@ public:
     // ------------------------------------------
 
     /// Build everything we need for rendering.
-    virtual void build() = 0;
+    virtual void build(const std::shared_ptr<Driver> &driver) = 0;
 
     std::shared_ptr<Scene> get_scene() {
         return scene;

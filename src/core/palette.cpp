@@ -55,8 +55,8 @@ std::shared_ptr<Framebuffer> Palette::get_render_target(uint32_t render_target_i
     return render_targets[render_target_id];
 }
 
-std::vector<TextureMetadataEntry> Palette::build_paint_info() {
-    std::vector<PaintMetadata> paint_metadata = assign_paint_locations();
+std::vector<TextureMetadataEntry> Palette::build_paint_info(const std::shared_ptr<Driver> &driver) {
+    std::vector<PaintMetadata> paint_metadata = assign_paint_locations(driver);
 
     // Calculate texture transforms.
     calculate_texture_transforms(paint_metadata);
@@ -94,12 +94,15 @@ std::vector<TextureMetadataEntry> Palette::create_texture_metadata(const std::ve
     return texture_metadata;
 }
 
-std::vector<PaintMetadata> Palette::assign_paint_locations() {
+std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr<Driver> &driver) {
     std::vector<PaintMetadata> paint_metadata;
     paint_metadata.reserve(paints.size());
 
     // For gradient color texture.
     GradientTileBuilder gradient_tile_builder;
+
+    auto gradient_tile_texture =
+        driver->create_texture(GRADIENT_TILE_LENGTH, GRADIENT_TILE_LENGTH, TextureFormat::RGBA8_UNORM);
 
     // Traverse paints.
     for (const auto &paint : paints) {
@@ -113,7 +116,7 @@ std::vector<PaintMetadata> Palette::assign_paint_locations() {
             color_texture_metadata = std::make_shared<PaintColorTextureMetadata>();
 
             if (overlay->contents.type == PaintContents::Type::Gradient) {
-                const auto gradient = overlay->contents.gradient;
+                auto &gradient = overlay->contents.gradient;
 
                 TextureSamplingFlags sampling_flags;
                 if (gradient.wrap == GradientWrap::Repeat) {
@@ -134,6 +137,8 @@ std::vector<PaintMetadata> Palette::assign_paint_locations() {
                 color_texture_metadata->transform = Transform2();
                 color_texture_metadata->composite_op = overlay->composite_op;
                 color_texture_metadata->border = Vec2<int>();
+
+                gradient.tile_texture = gradient_tile_texture;
             } else { // FIXME: Incomplete.
                 const auto pattern = overlay->contents.pattern;
 
@@ -162,7 +167,7 @@ std::vector<PaintMetadata> Palette::assign_paint_locations() {
             {color_texture_metadata, paint.get_base_color(), BlendMode::SrcOver, paint.is_opaque()});
     }
 
-//    gradient_tile_builder.upload(gradient_color_texture);
+    gradient_tile_builder.upload(driver, gradient_tile_texture);
 
     return paint_metadata;
 }

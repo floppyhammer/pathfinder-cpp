@@ -31,7 +31,7 @@ public:
     std::array<std::atomic<size_t>, ALPHA_TILE_LEVEL_COUNT> next_alpha_tile_indices;
 
     /// Build everything we need for rendering.
-    void build() override;
+    void build(const std::shared_ptr<Driver> &driver) override;
 
 private:
     /// For parallel fill insertion.

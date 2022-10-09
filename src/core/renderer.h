@@ -42,9 +42,9 @@ public:
     virtual void set_dest_texture(const std::shared_ptr<Texture> &texture) = 0;
 
     virtual void draw(const std::shared_ptr<SceneBuilder> &p_scene_builder) = 0;
-
-protected:
     std::shared_ptr<Driver> driver;
+protected:
+
 
     /// If we should clear the dest framebuffer or texture.
     bool need_to_clear_dest = true;

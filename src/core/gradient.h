@@ -6,7 +6,7 @@
 
 #include "../common/color.h"
 #include "../common/math/transform2.h"
-#include "../gpu/command_buffer.h"
+#include "../gpu/driver.h"
 #include "data/line_segment.h"
 #include "effects.h"
 
@@ -82,6 +82,8 @@ struct Gradient {
     /// What should be rendered upon reaching the end of the color stops.
     GradientWrap wrap = GradientWrap::Clamp;
 
+    std::shared_ptr<Texture> tile_texture;
+
     /// Creates a new linear gradient with the given line.
     ///
     /// The line is in scene coordinates, not relative to the bounding box of the current path.
@@ -145,7 +147,7 @@ struct GradientTileBuilder {
 
     TextureLocation allocate(const Gradient &gradient);
 
-    void upload(const std::shared_ptr<CommandBuffer> &cmd_buffer, std::shared_ptr<Texture> &texture);
+    void upload(const std::shared_ptr<Driver> &driver, const std::shared_ptr<Texture> &texture);
 };
 
 } // namespace Pathfinder
