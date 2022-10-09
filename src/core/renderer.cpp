@@ -138,53 +138,54 @@ void upload_texture_metadata(const std::shared_ptr<Texture> &metadata_texture,
 
         auto filter_params = compute_filter_params(entry.filter, entry.blend_mode, entry.color_0_combine_mode);
 
+        // 40 f16 points, 10 RGBA pixels in total.
         std::array<half, 40> slice = {
-            // 0
+            // 0 pixel
             entry.color_0_transform.m11(),
             entry.color_0_transform.m21(),
             entry.color_0_transform.m12(),
             entry.color_0_transform.m22(),
-            // 1
+            // 1 pixel
             entry.color_0_transform.m13(),
             entry.color_0_transform.m23(),
             0.0f,
             0.0f,
-            // 2
+            // 2 pixel
             base_color.r,
             base_color.g,
             base_color.b,
             base_color.a,
-            // 3
+            // 3 pixel
             filter_params.p0.xy().x,
             filter_params.p0.xy().y,
             filter_params.p0.zw().x,
             filter_params.p0.zw().y,
-            // 4
+            // 4 pixel
             filter_params.p1.xy().x,
             filter_params.p1.xy().y,
             filter_params.p1.zw().x,
             filter_params.p1.zw().y,
-            // 5
+            // 5 pixel
             filter_params.p2.xy().x,
             filter_params.p2.xy().y,
             filter_params.p2.zw().x,
             filter_params.p2.zw().y,
-            // 6
+            // 6 pixel
             filter_params.p3.xy().x,
             filter_params.p3.xy().y,
             filter_params.p3.zw().x,
             filter_params.p3.zw().y,
-            // 7
+            // 7 pixel
             filter_params.p4.xy().x,
             filter_params.p4.xy().y,
             filter_params.p4.zw().x,
             filter_params.p4.zw().y,
-            // 8
+            // 8 pixel
             (float)filter_params.ctrl,
             0.0f,
             0.0f,
             0.0f,
-            // 9
+            // 9 pixel
             0.0f,
             0.0f,
             0.0f,

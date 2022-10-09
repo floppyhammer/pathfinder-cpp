@@ -53,6 +53,11 @@ PaintFilter PaintMetadata::filter() const {
     switch (color_texture_metadata->filter.type) {
         case PaintFilter::Type::RadialGradient: {
             auto uv_rect = rect_to_uv(color_texture_metadata->location.rect, color_texture_metadata->page_scale);
+
+            // Contract rect.
+            auto amount = Vec2F(0.0, color_texture_metadata->page_scale.y * 0.5f);
+            uv_rect = Rect<float>(uv_rect.origin() + amount, uv_rect.lower_right() - amount);
+
             filter.gradient_filter.uv_origin = uv_rect.origin();
         } break;
         default:

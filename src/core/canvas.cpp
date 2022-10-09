@@ -475,7 +475,12 @@ Paint convert_nsvg_paint(NSVGpaint nsvg_paint) {
             auto from = xform_inv.get_position();
             auto to = Vec2F(xform_inv.m12(), xform_inv.m22()) + from;
 
-            Gradient gradient = Gradient::radial(LineSegmentF(from, to), Vec2F(129.00775));
+            from = {495.37796, 496.82993};
+            to = {495.37796, 496.82993};
+
+            xform = {{1, 0, 0, 1.1665966}, {0, -82.77016}};
+
+            Gradient gradient = Gradient::radial(LineSegmentF(from, to), Vec2F(0.0, 129.00775));
 
             gradient.geometry.radial.transform = xform;
 
@@ -528,8 +533,8 @@ void Canvas::load_svg(std::vector<char> input) {
         }
 
         // Shadow test.
-        //                set_shadow_color(ColorU::green());
-        //                set_shadow_blur(8);
+//                        set_shadow_color(ColorU::green());
+//                        set_shadow_blur(8);
 
         // Set dash.
         set_line_dash_offset(nsvg_shape->strokeDashOffset);

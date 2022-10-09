@@ -78,7 +78,7 @@ std::vector<TextureMetadataEntry> Palette::create_texture_metadata(const std::ve
             entry.color_0_transform = paint_metadata.color_texture_metadata->transform;
 
             // Changed from SrcIn to DestIn to get pure shadow.
-            entry.color_0_combine_mode = ColorCombineMode::DestIn;
+            entry.color_0_combine_mode = ColorCombineMode::SrcIn;
         } else {
             // No color combine mode if there's no need to mix with a color texture.
             entry.color_0_combine_mode = ColorCombineMode::None;
@@ -182,13 +182,31 @@ void Palette::calculate_texture_transforms(std::vector<PaintMetadata> &p_paint_m
             continue;
         }
 
+        // TODO: Use a texture manager.
+        auto texture_scale = Vec2<float>(1.f / GRADIENT_TILE_LENGTH, 1.f / GRADIENT_TILE_LENGTH);
+
         auto texture_rect = color_texture_metadata->location.rect;
 
-        auto texture_scale = Vec2<float>(1.f / texture_rect.width(), 1.f / texture_rect.height());
-
         auto overlay = paint.get_overlay();
+
         if (overlay) {
             if (overlay->contents.type == PaintContents::Type::Gradient) {
+                auto gradient_geometry = overlay->contents.gradient.geometry;
+                color_texture_metadata->page_scale = texture_scale;
+
+                // Convert linear to radical.
+                if (gradient_geometry.type == GradientGeometry::Type::Linear) {
+                    auto gradient_line = gradient_geometry.linear;
+                    auto v0 = texture_rect.to_f32().center().y * texture_scale.y;
+
+                    auto dp = gradient_line.vector();
+                    auto m0 = dp / gradient_line.square_length();
+                    auto m13 = m0 * -gradient_line.from();
+
+                    color_texture_metadata->transform = Transform2({m0.x, m0.y, m13.x + m13.y, 0.0}, {0.0, v0});
+                } else { // Radical
+                    color_texture_metadata->transform = gradient_geometry.radial.transform.inverse();
+                }
             } else {
                 if (overlay->contents.pattern.source.type == PatternSource::Type::RenderTarget) {
                     auto pattern = overlay->contents.pattern;
