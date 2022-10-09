@@ -122,8 +122,8 @@ inline int32_t color_combine_mode_to_composite_ctrl(ColorCombineMode color_combi
 }
 
 struct TextureMetadataEntry {
-    Transform2 color_0_transform;
-    ColorCombineMode color_0_combine_mode = ColorCombineMode::SrcIn;
+    Transform2 color_transform;
+    ColorCombineMode color_combine_mode = ColorCombineMode::SrcIn;
     ColorU base_color;
     PaintFilter filter;
     BlendMode blend_mode = BlendMode::SrcIn;

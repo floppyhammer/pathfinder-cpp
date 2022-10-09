@@ -136,18 +136,18 @@ void upload_texture_metadata(const std::shared_ptr<Texture> &metadata_texture,
     for (const auto &entry : metadata) {
         auto base_color = entry.base_color.to_f32();
 
-        auto filter_params = compute_filter_params(entry.filter, entry.blend_mode, entry.color_0_combine_mode);
+        auto filter_params = compute_filter_params(entry.filter, entry.blend_mode, entry.color_combine_mode);
 
         // 40 f16 points, 10 RGBA pixels in total.
         std::array<half, 40> slice = {
             // 0 pixel
-            entry.color_0_transform.m11(),
-            entry.color_0_transform.m21(),
-            entry.color_0_transform.m12(),
-            entry.color_0_transform.m22(),
+            entry.color_transform.m11(),
+            entry.color_transform.m21(),
+            entry.color_transform.m12(),
+            entry.color_transform.m22(),
             // 1 pixel
-            entry.color_0_transform.m13(),
-            entry.color_0_transform.m23(),
+            entry.color_transform.m13(),
+            entry.color_transform.m23(),
             0.0f,
             0.0f,
             // 2 pixel
