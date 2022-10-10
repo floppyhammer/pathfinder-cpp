@@ -445,6 +445,7 @@ LineJoin convert_nsvg_line_join(char line_join) {
 Paint convert_nsvg_paint(NSVGpaint nsvg_paint) {
     Paint paint;
 
+    // FIXME: Non-Identity transform will cause incorrect gradient (both linear and radical) rendering.
     switch (nsvg_paint.type) {
         case NSVG_PAINT_NONE:
             break;
@@ -455,10 +456,19 @@ Paint convert_nsvg_paint(NSVGpaint nsvg_paint) {
         case NSVG_PAINT_RADIAL_GRADIENT: {
             auto nsvg_gradient = nsvg_paint.gradient;
 
+            auto nsvg_xform = nsvg_gradient->xform2;
+
+            auto xform = Transform2(Mat2x2<float>(nsvg_xform[0], nsvg_xform[1], nsvg_xform[2], nsvg_xform[3]),
+                                    Vec2F(nsvg_xform[4], nsvg_xform[5]));
+
             Gradient gradient;
             if (nsvg_paint.type == NSVG_PAINT_LINEAR_GRADIENT) {
                 Vec2F from = {nsvg_gradient->x1, nsvg_gradient->y1};
                 Vec2F to = {nsvg_gradient->x2, nsvg_gradient->y2};
+
+                // Apply gradient transform.
+                from = xform * from;
+                to = xform * to;
 
                 gradient = Gradient::linear(LineSegmentF(from, to));
             } else {
@@ -466,11 +476,6 @@ Paint convert_nsvg_paint(NSVGpaint nsvg_paint) {
                 Vec2F to = {nsvg_gradient->fx, nsvg_gradient->fy};
 
                 gradient = Gradient::radial(LineSegmentF(from, to), Vec2F(0.0, nsvg_gradient->r));
-
-                auto nsvg_xform = nsvg_gradient->xform2;
-
-                auto xform = Transform2(Mat2x2<float>(nsvg_xform[0], nsvg_xform[1], nsvg_xform[2], nsvg_xform[3]),
-                                        Vec2F(nsvg_xform[4], nsvg_xform[5]));
 
                 gradient.geometry.radial.transform = xform;
             }
