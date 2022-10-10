@@ -113,6 +113,7 @@ typedef struct NSVGgradientStop {
 typedef struct NSVGgradient {
 	float xform[6];
     float xform2[6];
+    float xform3[6];
 	char spread;
     float x1, y1, x2, y2; // linear
     float cx, cy, fx, fy, r; // radical
@@ -878,7 +879,11 @@ static NSVGgradient* nsvg__createGradient(NSVGparser* p, const char* id, const f
         grad->r = nsvg__convertToPixels(p, data->radial.r, 0, sl);
 	}
 
+    // Gradient transform.
     memcpy(grad->xform2, data->xform, 6 * sizeof(float));
+
+    // Path transform.
+    memcpy(grad->xform3, attr->xform, 6 * sizeof(float));
 
 	grad->spread = data->spread;
 	memcpy(grad->stops, stops, nstops*sizeof(NSVGgradientStop));

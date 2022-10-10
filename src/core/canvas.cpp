@@ -456,7 +456,9 @@ Paint convert_nsvg_paint(NSVGpaint nsvg_paint) {
         case NSVG_PAINT_RADIAL_GRADIENT: {
             auto nsvg_gradient = nsvg_paint.gradient;
 
-            auto xform = Transform2(nsvg_gradient->xform2);
+            auto gradient_xform = Transform2(nsvg_gradient->xform2);
+
+            auto path_xform = Transform2(nsvg_gradient->xform3);
 
             Gradient gradient;
             if (nsvg_paint.type == NSVG_PAINT_LINEAR_GRADIENT) {
@@ -464,8 +466,8 @@ Paint convert_nsvg_paint(NSVGpaint nsvg_paint) {
                 Vec2F to = {nsvg_gradient->x2, nsvg_gradient->y2};
 
                 // Apply gradient transform.
-                from = xform * from;
-                to = xform * to;
+                from = path_xform * gradient_xform * from;
+                to = path_xform * gradient_xform * to;
 
                 gradient = Gradient::linear(LineSegmentF(from, to));
             } else {
@@ -474,7 +476,7 @@ Paint convert_nsvg_paint(NSVGpaint nsvg_paint) {
 
                 gradient = Gradient::radial(LineSegmentF(from, to), Vec2F(0.0, nsvg_gradient->r));
 
-                gradient.geometry.radial.transform = xform;
+                gradient.geometry.radial.transform = path_xform * gradient_xform;
             }
 
             // Get stops.
