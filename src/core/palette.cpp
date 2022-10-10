@@ -204,7 +204,7 @@ void Palette::calculate_texture_transforms(std::vector<PaintMetadata> &p_paint_m
                     auto m0 = dp / gradient_line.square_length();
                     auto m13 = m0 * -gradient_line.from();
 
-                    color_texture_metadata->transform = Transform2({m0.x, m0.y, m13.x + m13.y, 0.0}, {0.0, v0});
+                    color_texture_metadata->transform = Transform2({m0.x, 0.0, m0.y, 0.0}, {m13.x + m13.y, v0});
                 } else { // Radical
                     color_texture_metadata->transform = gradient_geometry.radial.transform.inverse();
                 }
