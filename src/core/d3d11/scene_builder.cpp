@@ -8,13 +8,14 @@
 #ifdef PATHFINDER_USE_D3D11
 
 namespace Pathfinder {
-BuiltDrawPath prepare_draw_path_for_gpu_binning(Scene &scene,
+
+BuiltDrawPath prepare_draw_path_for_gpu_binning(const std::shared_ptr<Scene> &scene,
                                                 uint32_t draw_path_id,
                                                 Transform2 &transform,
                                                 const std::vector<TextureMetadataEntry> &paint_metadata) {
-    auto effective_view_box = scene.get_view_box();
+    auto effective_view_box = scene->get_view_box();
 
-    auto &draw_path = scene.draw_paths[draw_path_id];
+    auto &draw_path = scene->draw_paths[draw_path_id];
 
     auto path_bounds = transform * draw_path.outline.bounds;
 
@@ -30,7 +31,7 @@ BuiltDrawPath prepare_draw_path_for_gpu_binning(Scene &scene,
 
 /// Create tile batches.
 DrawTileBatchD3D11 build_tile_batches_for_draw_path_display_item(
-    Scene &scene,
+    const std::shared_ptr<Scene> &scene,
     Range draw_path_id_range,
     const std::vector<TextureMetadataEntry> &paint_metadata,
     LastSceneInfo &last_scene,
@@ -51,39 +52,47 @@ DrawTileBatchD3D11 build_tile_batches_for_draw_path_display_item(
     for (auto draw_path_id = draw_path_id_range.start; draw_path_id < draw_path_id_range.end; draw_path_id++) {
         auto draw_path = prepare_draw_path_for_gpu_binning(scene, draw_path_id, transform, paint_metadata);
 
-        draw_tile_batch.tile_batch_data.push(draw_path.path, draw_path_id, draw_path.occludes, last_scene);
-    }
+        // For paint overlay.
+        {
+            // Get paint.
+            auto paint_id = draw_path.path.paint_id;
+            Paint paint = scene->palette.get_paint(paint_id);
 
-    auto paint_id = scene.draw_paths[draw_path_id_range.start].paint;
+            auto overlay = paint.get_overlay();
 
-    Paint paint = scene.palette.get_paint(paint_id);
+            // Set color texture.
+            if (overlay) {
+                if (overlay->contents.type == PaintContents::Type::Gradient) {
+                    auto gradient = overlay->contents.gradient;
 
-    auto overlay = paint.get_overlay();
+                    draw_tile_batch.color_texture = gradient.tile_texture;
+                } else {
+                    auto pattern = overlay->contents.pattern;
 
-    if (overlay) {
-        if (overlay->contents.type == PaintContents::Type::Gradient) {
-        } else {
-            auto pattern = overlay->contents.pattern;
-
-            if (pattern.source.type == PatternSource::Type::Image) {
-                draw_tile_batch.color_texture = nullptr;
-            } else {
-                draw_tile_batch.color_texture =
-                    overlay->contents.pattern.source.render_target.framebuffer->get_texture();
+                    // Pattern source is an image.
+                    if (pattern.source.type == PatternSource::Type::Image) {
+                        draw_tile_batch.color_texture = nullptr;
+                    } else { // Pattern source is a framebuffer.
+                        draw_tile_batch.color_texture =
+                            overlay->contents.pattern.source.render_target.framebuffer->get_texture();
+                    }
+                }
             }
         }
+
+        draw_tile_batch.tile_batch_data.push(draw_path.path, draw_path_id, draw_path.occludes, last_scene);
     }
 
     return draw_tile_batch;
 }
 
-void SceneBuilderD3D11::build() {
+void SceneBuilderD3D11::build(const std::shared_ptr<Driver> &driver) {
     Timestamp timestamp;
 
     auto draw_path_count = scene->draw_paths.size();
 
     // Get metadata.
-    metadata = scene->palette.build_paint_info();
+    metadata = scene->palette.build_paint_info(driver);
 
     built_segments = BuiltSegments::from_scene(*scene);
 
@@ -122,7 +131,7 @@ void SceneBuilderD3D11::build_tile_batches(LastSceneInfo &last_scene) {
                 render_target_stack.pop_back();
             } break;
             case DisplayItem::Type::DrawPaths: {
-                auto tile_batch = build_tile_batches_for_draw_path_display_item(*scene,
+                auto tile_batch = build_tile_batches_for_draw_path_display_item(scene,
                                                                                 display_item.path_range,
                                                                                 metadata,
                                                                                 last_scene,

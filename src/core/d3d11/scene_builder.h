@@ -36,7 +36,7 @@ public:
     // Sent to renderer to draw tiles.
     std::vector<DrawTileBatchD3D11> tile_batches;
 
-    void build() override;
+    void build(const std::shared_ptr<Driver> &driver) override;
 
 private:
     void finish_building(LastSceneInfo &last_scene);
