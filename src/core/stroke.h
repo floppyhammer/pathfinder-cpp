@@ -11,6 +11,7 @@
 //! Utilities for converting contour strokes to fills.
 
 namespace Pathfinder {
+
 /// How an outline should be stroked.
 struct StrokeStyle {
     /// The width of the stroke in scene units.
@@ -61,6 +62,7 @@ struct OutlineStrokeToFill {
 
     void add_cap(Contour &contour) const;
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_STROKE_H

@@ -9,6 +9,7 @@
 #ifdef PATHFINDER_USE_D3D11
 
 namespace Pathfinder {
+
 struct BuiltSegments {
     SegmentsD3D11 draw_segments;
     SegmentsD3D11 clip_segments;
@@ -31,6 +32,8 @@ struct BuiltSegments {
 
 class SceneBuilderD3D11 : public SceneBuilder {
 public:
+    explicit SceneBuilderD3D11(Scene *p_scene) : SceneBuilder(p_scene) {}
+
     BuiltSegments built_segments;
 
     // Sent to renderer to draw tiles.
@@ -43,6 +46,7 @@ private:
 
     void build_tile_batches(LastSceneInfo &last_scene);
 };
+
 } // namespace Pathfinder
 
 #endif

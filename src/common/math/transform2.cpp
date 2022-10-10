@@ -1,6 +1,7 @@
 #include "transform2.h"
 
 namespace Pathfinder {
+
 Transform2::Transform2() {
     *this = Transform2::from_scale(Vec2<float>(1));
 }
@@ -29,4 +30,5 @@ Transform2 Transform2::inverse() const {
 Vec2<float> Transform2::get_position() const {
     return vector;
 }
+
 } // namespace Pathfinder

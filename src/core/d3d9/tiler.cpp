@@ -2,6 +2,7 @@
 
 #include "../../common/math/basic.h"
 #include "../../common/timestamp.h"
+#include "../scene.h"
 
 #undef min
 #undef max

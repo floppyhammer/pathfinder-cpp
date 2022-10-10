@@ -5,11 +5,11 @@
 #include <utility>
 #include <vector>
 
-#include "../common/color.h"
-#include "../common/math/transform2.h"
-#include "../common/math/vec2.h"
-#include "../gpu/framebuffer.h"
-#include "../gpu/render_pass.h"
+#include "../../common/color.h"
+#include "../../common/math/transform2.h"
+#include "../../common/math/vec2.h"
+#include "../../gpu/framebuffer.h"
+#include "../../gpu/render_pass.h"
 #include "effects.h"
 
 //! Raster image patterns.

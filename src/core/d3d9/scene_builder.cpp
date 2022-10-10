@@ -4,6 +4,7 @@
 
 #include "../../common/global_macros.h"
 #include "../../common/timestamp.h"
+#include "../scene.h"
 #include "tiler.h"
 
 #undef min
@@ -12,13 +13,13 @@
 namespace Pathfinder {
 
 /// Create tile batches.
-DrawTileBatch build_tile_batches_for_draw_path_display_item(const std::shared_ptr<Scene> &scene,
+DrawTileBatch build_tile_batches_for_draw_path_display_item(Scene &scene,
                                                             const std::vector<BuiltDrawPath> &built_paths,
                                                             Range draw_path_range) {
     // New draw tile batch.
     DrawTileBatch draw_tile_batch;
 
-    auto tile_bounds = round_rect_out_to_tile_bounds(scene->get_view_box());
+    auto tile_bounds = round_rect_out_to_tile_bounds(scene.get_view_box());
 
     draw_tile_batch.z_buffer_data = DenseTileMap<uint32_t>::z_builder(tile_bounds);
 
@@ -30,7 +31,7 @@ DrawTileBatch build_tile_batches_for_draw_path_display_item(const std::shared_pt
         {
             // Get paint.
             auto paint_id = draw_path.path.paint_id;
-            Paint paint = scene->palette.get_paint(paint_id);
+            Paint paint = scene.palette.get_paint(paint_id);
 
             auto overlay = paint.get_overlay();
 
@@ -194,7 +195,7 @@ void SceneBuilderD3D9::build_tile_batches(const std::vector<BuiltDrawPath> &buil
             case DisplayItem::Type::DrawPaths: {
                 // Create a new batch.
                 auto tile_batch =
-                    build_tile_batches_for_draw_path_display_item(scene, built_paths, display_item.path_range);
+                    build_tile_batches_for_draw_path_display_item(*scene, built_paths, display_item.path_range);
 
                 // Set render target. Pick the one on the top of the stack.
                 if (!render_target_stack.empty()) {

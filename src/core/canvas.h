@@ -134,15 +134,6 @@ public:
     void stroke_path(Outline p_outline);
     // ------------------------------------------------
 
-    /// Build the scene by SceneBuilder.
-    void build();
-
-    /// Render the scene by Renderer.
-    void render();
-
-    /// A convenience method to build and render a scene.
-    void build_and_render();
-
     /// Clear the scene.
     void clear();
 
@@ -150,9 +141,9 @@ public:
 
     void set_view_box(const Rect<float> &view_box);
 
-    std::shared_ptr<SceneBuilder> get_scene_builder() const;
+    std::shared_ptr<Scene> get_scene() const;
 
-    void set_scene_builder(const std::shared_ptr<SceneBuilder> &p_scene_builder);
+    void set_scene(const std::shared_ptr<Scene> &p_scene);
 
     void set_dest_texture(const std::shared_ptr<Texture> &texture);
 
@@ -174,6 +165,8 @@ public:
 
     void restore_state();
 
+    void draw();
+
 private:
     /**
      * Adds a path.
@@ -186,13 +179,12 @@ private:
 private:
     std::shared_ptr<Driver> driver;
 
+    std::shared_ptr<Scene> scene;
+
     State current_state;
     std::vector<State> saved_states;
 
     std::shared_ptr<Texture> dest_texture;
-
-    /// Scene builder.
-    std::shared_ptr<SceneBuilder> scene_builder;
 
     /// Scene renderer.
     std::shared_ptr<Renderer> renderer;

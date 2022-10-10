@@ -9,13 +9,13 @@
 
 namespace Pathfinder {
 
-BuiltDrawPath prepare_draw_path_for_gpu_binning(const std::shared_ptr<Scene> &scene,
+BuiltDrawPath prepare_draw_path_for_gpu_binning(Scene &scene,
                                                 uint32_t draw_path_id,
                                                 Transform2 &transform,
                                                 const std::vector<TextureMetadataEntry> &paint_metadata) {
-    auto effective_view_box = scene->get_view_box();
+    auto effective_view_box = scene.get_view_box();
 
-    auto &draw_path = scene->draw_paths[draw_path_id];
+    auto &draw_path = scene.draw_paths[draw_path_id];
 
     auto path_bounds = transform * draw_path.outline.bounds;
 
@@ -31,7 +31,7 @@ BuiltDrawPath prepare_draw_path_for_gpu_binning(const std::shared_ptr<Scene> &sc
 
 /// Create tile batches.
 DrawTileBatchD3D11 build_tile_batches_for_draw_path_display_item(
-    const std::shared_ptr<Scene> &scene,
+    Scene &scene,
     Range draw_path_id_range,
     const std::vector<TextureMetadataEntry> &paint_metadata,
     LastSceneInfo &last_scene,
@@ -56,7 +56,7 @@ DrawTileBatchD3D11 build_tile_batches_for_draw_path_display_item(
         {
             // Get paint.
             auto paint_id = draw_path.path.paint_id;
-            Paint paint = scene->palette.get_paint(paint_id);
+            Paint paint = scene.palette.get_paint(paint_id);
 
             auto overlay = paint.get_overlay();
 
@@ -131,7 +131,7 @@ void SceneBuilderD3D11::build_tile_batches(LastSceneInfo &last_scene) {
                 render_target_stack.pop_back();
             } break;
             case DisplayItem::Type::DrawPaths: {
-                auto tile_batch = build_tile_batches_for_draw_path_display_item(scene,
+                auto tile_batch = build_tile_batches_for_draw_path_display_item(*scene,
                                                                                 display_item.path_range,
                                                                                 metadata,
                                                                                 last_scene,

@@ -1,31 +1,32 @@
 #ifndef PATHFINDER_SCENE_BUILDER_H
 #define PATHFINDER_SCENE_BUILDER_H
 
-#include "scene.h"
+#include "../gpu/driver.h"
+#include "data/data.h"
 
 namespace Pathfinder {
+
+class Scene;
+
 class SceneBuilder {
 public:
-    // Data that will be sent to a renderer.
-    // ------------------------------------------
-    // Metadata texture data.
-    std::vector<TextureMetadataEntry> metadata;
-    // ------------------------------------------
+    explicit SceneBuilder(Scene* p_scene) : scene(p_scene) {}
 
     /// Build everything we need for rendering.
-    virtual void build(const std::shared_ptr<Driver> &driver) = 0;
+    virtual void build(const std::shared_ptr<Driver>& driver) = 0;
 
-    std::shared_ptr<Scene> get_scene() {
+    Scene* get_scene() {
         return scene;
-    };
+    }
 
-    void set_scene(const std::shared_ptr<Scene> &p_scene) {
-        scene = p_scene;
-    };
+    // Metadata texture data, which will be sent to a renderer.
+    std::vector<TextureMetadataEntry> metadata{};
 
 protected:
-    std::shared_ptr<Scene> scene;
+    // Use a raw pointer to avoid cyclic reference.
+    Scene* scene{};
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_SCENE_BUILDER_H

@@ -15,7 +15,7 @@ private:
 public:
     Transform2();
 
-    Transform2(float xform[6]);
+    explicit Transform2(float xform[6]);
 
     Transform2(Mat2x2<float> p_matrix, Vec2<float> p_vector);
 

@@ -4,10 +4,10 @@
 #include <utility>
 #include <vector>
 
-#include "../common/color.h"
-#include "../common/math/transform2.h"
-#include "../gpu/driver.h"
-#include "data/line_segment.h"
+#include "../../common/color.h"
+#include "../../common/math/transform2.h"
+#include "../../gpu/driver.h"
+#include "../data/line_segment.h"
 #include "effects.h"
 
 //! Gradient effects that paths can be filled with.

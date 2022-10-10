@@ -7,8 +7,8 @@
 #include "../../../gpu/framebuffer.h"
 #include "../../../gpu/texture.h"
 #include "../../data/dense_tile_map.h"
-#include "../../effects.h"
-#include "../../paint.h"
+#include "../../paint/effects.h"
+#include "../../paint/paint.h"
 #include "gpu_data.h"
 
 namespace Pathfinder {

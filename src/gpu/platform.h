@@ -6,8 +6,7 @@
 namespace Pathfinder {
 class Platform {
 public:
-    Platform(uint32_t window_width, uint32_t window_height) : width(window_width), height(window_height) {
-    }
+    Platform(uint32_t window_width, uint32_t window_height) : width(window_width), height(window_height) {}
 
     static std::shared_ptr<Platform> new_impl(DeviceType device_type, uint32_t window_width, uint32_t window_height);
 
@@ -33,7 +32,11 @@ public:
     /// GLFW: whenever the window size changed (by OS or user) this callback function executes.
     static void framebuffer_resize_callback(GLFWwindow *window, int width, int height) {
         auto platform = reinterpret_cast<Platform *>(glfwGetWindowUserPointer(window));
-        platform->framebuffer_resized = true;
+        if (platform) {
+            platform->framebuffer_resized = true;
+        } else {
+            Logger::error("glfwGetWindowUserPointer is NULL!");
+        }
     }
 
     /// Process input events: query GLFW whether relevant keys are pressed/released this frame and react accordingly.

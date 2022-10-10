@@ -7,7 +7,7 @@
 #include "../../common/math/transform2.h"
 #include "../data/built_path.h"
 #include "../data/line_segment.h"
-#include "../paint.h"
+#include "../paint/paint.h"
 #include "../scene.h"
 
 #ifdef PATHFINDER_USE_D3D11

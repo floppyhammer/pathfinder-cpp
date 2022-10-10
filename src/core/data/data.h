@@ -8,7 +8,7 @@
 #include "../../common/math/rect.h"
 #include "../../common/math/transform2.h"
 #include "../../common/math/vec2.h"
-#include "../effects.h"
+#include "../paint/effects.h"
 
 namespace Pathfinder {
 // Tile size.

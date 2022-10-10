@@ -4,6 +4,7 @@
 #include <utility>
 
 namespace Pathfinder {
+
 /// Stroking tolerance.
 const float STROKE_TOL = 0.1f;
 
@@ -12,8 +13,7 @@ const uint32_t SAMPLE_COUNT = 16;
 const float EPSILON = 0.001;
 
 ContourStrokeToFill::ContourStrokeToFill(Contour p_input, float p_radius, LineJoin p_join, float p_join_miter_limit)
-    : input(std::move(p_input)), radius(p_radius), join(p_join), join_miter_limit(p_join_miter_limit) {
-}
+    : input(std::move(p_input)), radius(p_radius), join(p_join), join_miter_limit(p_join_miter_limit) {}
 
 void ContourStrokeToFill::offset_forward() {
     auto segments_iter = SegmentsIter(input.points, input.flags, input.closed);
@@ -50,8 +50,8 @@ void ContourStrokeToFill::offset_backward() {
     }
 }
 
-OutlineStrokeToFill::OutlineStrokeToFill(const Outline &p_input, StrokeStyle p_style) : input(p_input), style(p_style) {
-}
+OutlineStrokeToFill::OutlineStrokeToFill(const Outline &p_input, StrokeStyle p_style)
+    : input(p_input), style(p_style) {}
 
 void OutlineStrokeToFill::offset() {
     // Resulting contours.
@@ -110,8 +110,11 @@ void OutlineStrokeToFill::push_stroked_contour(std::vector<Contour> &new_contour
         auto p0 = stroker.output.points[0];
 
         auto final_segment = LineSegmentF(p1, p0);
-        stroker.output.add_join(
-            style.line_width * 0.5f, style.line_join, stroker.input.points[0], final_segment, style.miter_limit);
+        stroker.output.add_join(style.line_width * 0.5f,
+                                style.line_join,
+                                stroker.input.points[0],
+                                final_segment,
+                                style.miter_limit);
     }
 
     stroker.output.closed = true;
@@ -188,8 +191,11 @@ bool Contour::might_need_join(LineJoin join) const {
     }
 }
 
-void Contour::add_join(
-    float distance, LineJoin join, Vec2<float> join_point, LineSegmentF next_tangent, float miter_limit) {
+void Contour::add_join(float distance,
+                       LineJoin join,
+                       Vec2<float> join_point,
+                       LineSegmentF next_tangent,
+                       float miter_limit) {
     auto p0 = position_of_last(2);
     auto p1 = position_of_last(1);
 
@@ -377,8 +383,11 @@ bool Segment::error_is_within_tolerance(const Segment &other, float distance) co
     return true;
 }
 
-void Segment::add_to_contour(
-    float distance, LineJoin join, Vec2<float> join_point, float join_miter_limit, Contour &contour) const {
+void Segment::add_to_contour(float distance,
+                             LineJoin join,
+                             Vec2<float> join_point,
+                             float join_miter_limit,
+                             Contour &contour) const {
     // Add join if necessary.
     if (contour.might_need_join(join)) {
         auto p3 = baseline.from();
@@ -415,4 +424,5 @@ void Segment::offset(float distance, LineJoin join, float join_miter_limit, Cont
     before.offset(distance, join, join_miter_limit, contour);
     after.offset(distance, join, join_miter_limit, contour);
 }
+
 } // namespace Pathfinder

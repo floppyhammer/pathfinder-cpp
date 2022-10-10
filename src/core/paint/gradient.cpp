@@ -1,6 +1,6 @@
 #include "gradient.h"
 
-#include "../common/math/basic.h"
+#include "../../common/math/basic.h"
 
 namespace Pathfinder {
 void Gradient::add(const ColorStop &p_stop) {

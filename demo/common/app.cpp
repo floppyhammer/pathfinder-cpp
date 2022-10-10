@@ -43,7 +43,7 @@ void App::update() {
     last_time = current_time;
     // ----------------------------------------
 
-    canvas->build_and_render();
+    canvas->draw();
 }
 
 void App::cleanup() {

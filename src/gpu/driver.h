@@ -1,6 +1,7 @@
 #ifndef PATHFINDER_GPU_DRIVER_H
 #define PATHFINDER_GPU_DRIVER_H
 
+#include "../common/logger.h"
 #include "buffer.h"
 #include "command_buffer.h"
 #include "compute_pipeline.h"
@@ -38,7 +39,8 @@ public:
         const std::shared_ptr<RenderPass> &render_pass) = 0;
 
     virtual std::shared_ptr<ComputePipeline> create_compute_pipeline(
-        const std::vector<char> &comp_source, const std::shared_ptr<DescriptorSet> &descriptor_set) = 0;
+        const std::vector<char> &comp_source,
+        const std::shared_ptr<DescriptorSet> &descriptor_set) = 0;
 };
 } // namespace Pathfinder
 

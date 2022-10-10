@@ -8,12 +8,16 @@
 #include "../gpu/framebuffer.h"
 #include "data/data.h"
 #include "data/path.h"
-#include "palette.h"
+#include "paint/palette.h"
+#include "renderer.h"
+#include "scene_builder.h"
 
 namespace Pathfinder {
+
 /// High-level drawing commands.
 struct DisplayItem {
     enum class Type {
+        /// Draws paths to the render target on top of the stack.
         DrawPaths,
 
         /// Pushes a render target onto the top of the stack.
@@ -23,9 +27,9 @@ struct DisplayItem {
         PopRenderTarget,
     } type = Type::DrawPaths;
 
+    // TODO: Make this an ID.
     RenderTarget render_target; // For PushRenderTarget.
 
-    /// Draws paths to the render target on top of the stack.
     Range path_range; // For DrawPaths.
 };
 
@@ -39,6 +43,8 @@ struct LastSceneInfo {
     SceneEpoch scene_epoch;
     std::vector<Range> draw_segment_ranges;
 };
+
+class SceneBuilder;
 
 /// The scene of paths to be rendered.
 class Scene {
@@ -104,6 +110,12 @@ public:
     /// Changes the view box.
     void set_view_box(const Rect<float> &new_view_box);
 
+    /// Build the scene by SceneBuilder.
+    void build(std::shared_ptr<Driver> &driver);
+
+    /// A convenience method to build and render the scene.
+    void build_and_render(std::shared_ptr<Renderer> &renderer);
+
 private:
     /// Bounds of all paths.
     Rect<float> bounds;
@@ -111,7 +123,11 @@ private:
     /// Scene clipping box.
     /// This can be used to make scrollable elements and clipped text.
     Rect<float> view_box;
+
+    /// Scene builder.
+    std::shared_ptr<SceneBuilder> scene_builder;
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_SCENE_H

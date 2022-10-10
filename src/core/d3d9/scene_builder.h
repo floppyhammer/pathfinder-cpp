@@ -15,6 +15,8 @@ namespace Pathfinder {
 /// Such data only changes when the scene becomes dirty and is rebuilt.
 class SceneBuilderD3D9 : public SceneBuilder {
 public:
+    explicit SceneBuilderD3D9(Scene *p_scene) : SceneBuilder(p_scene) {}
+
     // Data that will be sent to a renderer.
     // ------------------------------------------
     // Fills to draw.

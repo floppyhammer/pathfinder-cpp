@@ -1,7 +1,18 @@
 #include "scene.h"
 
+#include "d3d11/scene_builder.h"
+#include "d3d9/scene_builder.h"
+#include "renderer.h"
+
 namespace Pathfinder {
+
 Scene::Scene(uint32_t p_id, Rect<float> p_view_box) : id(p_id), view_box(p_view_box), palette(Palette(p_id)) {
+    // Set up a scene builder.
+#ifndef PATHFINDER_USE_D3D11
+    scene_builder = std::make_shared<SceneBuilderD3D9>(this);
+#else
+    scene_builder = std::make_shared<SceneBuilderD3D11>(this);
+#endif
 }
 
 uint32_t Scene::push_paint(const Paint &paint) {
@@ -84,4 +95,17 @@ void Scene::set_view_box(const Rect<float> &new_view_box) {
     // We need rebuild the scene if the view box changes.
     is_dirty = true;
 }
+
+void Scene::build(std::shared_ptr<Driver> &driver) {
+    if (scene_builder) {
+        scene_builder->build(driver);
+    }
+}
+
+void Scene::build_and_render(std::shared_ptr<Renderer> &renderer) {
+    build(renderer->driver);
+
+    renderer->draw(scene_builder);
+}
+
 } // namespace Pathfinder

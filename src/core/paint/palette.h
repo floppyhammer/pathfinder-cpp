@@ -1,7 +1,7 @@
 #ifndef PATHFINDER_PALETTE_H
 #define PATHFINDER_PALETTE_H
 
-#include "../gpu/driver.h"
+#include "../../gpu/driver.h"
 #include "paint.h"
 
 namespace Pathfinder {
