@@ -5,8 +5,12 @@ Transform2::Transform2() {
     *this = Transform2::from_scale(Vec2<float>(1));
 }
 
-Transform2::Transform2(Mat2x2<float> p_matrix, Vec2<float> p_vector) : matrix(p_matrix), vector(p_vector) {
+Transform2::Transform2(float xform[6]) {
+    matrix = {xform[0], xform[1], xform[2], xform[3]};
+    vector = {xform[4], xform[5]};
 }
+
+Transform2::Transform2(Mat2x2<float> p_matrix, Vec2<float> p_vector) : matrix(p_matrix), vector(p_vector) {}
 
 Transform2 Transform2::translate(Vec2<float> p_vector) const {
     return Transform2::from_translation(p_vector) * *this;

@@ -15,6 +15,8 @@ private:
 public:
     Transform2();
 
+    Transform2(float xform[6]);
+
     Transform2(Mat2x2<float> p_matrix, Vec2<float> p_vector);
 
     static Transform2 from_scale(const Vec2<float> &p_scale) {

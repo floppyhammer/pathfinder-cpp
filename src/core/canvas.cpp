@@ -456,10 +456,7 @@ Paint convert_nsvg_paint(NSVGpaint nsvg_paint) {
         case NSVG_PAINT_RADIAL_GRADIENT: {
             auto nsvg_gradient = nsvg_paint.gradient;
 
-            auto nsvg_xform = nsvg_gradient->xform2;
-
-            auto xform = Transform2(Mat2x2<float>(nsvg_xform[0], nsvg_xform[1], nsvg_xform[2], nsvg_xform[3]),
-                                    Vec2F(nsvg_xform[4], nsvg_xform[5]));
+            auto xform = Transform2(nsvg_gradient->xform2);
 
             Gradient gradient;
             if (nsvg_paint.type == NSVG_PAINT_LINEAR_GRADIENT) {
