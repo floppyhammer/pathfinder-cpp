@@ -22,9 +22,37 @@ DrawTileBatch build_tile_batches_for_draw_path_display_item(const std::shared_pt
 
     draw_tile_batch.z_buffer_data = DenseTileMap<uint32_t>::z_builder(tile_bounds);
 
-    for (unsigned long draw_path_id = draw_path_range.start; draw_path_id < draw_path_range.end; draw_path_id++) {
+    for (auto draw_path_id = draw_path_range.start; draw_path_id < draw_path_range.end; draw_path_id++) {
         const auto &draw_path = built_paths[draw_path_id];
         const auto &path_data = draw_path.path.data;
+
+        // For paint overlay.
+        {
+            // Get paint.
+            auto paint_id = draw_path.path.paint_id;
+            Paint paint = scene->palette.get_paint(paint_id);
+
+            auto overlay = paint.get_overlay();
+
+            // Set color texture.
+            if (overlay) {
+                if (overlay->contents.type == PaintContents::Type::Gradient) {
+                    auto gradient = overlay->contents.gradient;
+
+                    draw_tile_batch.color_texture = gradient.tile_texture;
+                } else {
+                    auto pattern = overlay->contents.pattern;
+
+                    // Pattern source is an image.
+                    if (pattern.source.type == PatternSource::Type::Image) {
+                        draw_tile_batch.color_texture = nullptr;
+                    } else { // Pattern source is a framebuffer.
+                        draw_tile_batch.color_texture =
+                            overlay->contents.pattern.source.render_target.framebuffer->get_texture();
+                    }
+                }
+            }
+        }
 
         for (const auto &tile : path_data.tiles.data) {
             // If not an alpha tile and winding is zero.
@@ -48,34 +76,6 @@ DrawTileBatch build_tile_batches_for_draw_path_display_item(const std::shared_pt
             // Store the biggest draw_path_id as the z value, which means the solid tile of this path is the topmost.
             *z_value = std::max(*z_value, (unsigned int)draw_path_id);
             // ----------------------------------------------------------
-        }
-    }
-
-    // For paint overlay.
-    {
-        // Get paint.
-        auto paint_id = built_paths[draw_path_range.start].path.paint_id;
-        Paint paint = scene->palette.get_paint(paint_id);
-
-        auto overlay = paint.get_overlay();
-
-        // Set color texture.
-        if (overlay) {
-            if (overlay->contents.type == PaintContents::Type::Gradient) {
-                auto gradient = overlay->contents.gradient;
-
-                draw_tile_batch.color_texture = gradient.tile_texture;
-            } else {
-                auto pattern = overlay->contents.pattern;
-
-                // Pattern source is an image.
-                if (pattern.source.type == PatternSource::Type::Image) {
-                    draw_tile_batch.color_texture = nullptr;
-                } else { // Pattern source is a framebuffer.
-                    draw_tile_batch.color_texture =
-                        overlay->contents.pattern.source.render_target.framebuffer->get_texture();
-                }
-            }
         }
     }
 
