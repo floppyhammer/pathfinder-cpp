@@ -479,6 +479,19 @@ Paint convert_nsvg_paint(NSVGpaint nsvg_paint) {
                 gradient.geometry.radial.transform = path_xform * gradient_xform;
             }
 
+            // TODO: Allow change color texture sampling mode.
+            switch (nsvg_gradient->spread) {
+                case NSVG_SPREAD_PAD: {
+                    gradient.wrap = GradientWrap::Clamp;
+                } break;
+                case NSVG_SPREAD_REFLECT: {
+                    Logger::error("Reflect gradient spread is not supported!");
+                } break;
+                case NSVG_SPREAD_REPEAT: {
+                    gradient.wrap = GradientWrap::Repeat;
+                } break;
+            };
+
             // Get stops.
             for (int i = 0; i < nsvg_gradient->nstops; i++) {
                 gradient.add_color_stop(ColorU(nsvg_gradient->stops[i].color), nsvg_gradient->stops[i].offset);
