@@ -113,7 +113,8 @@ typedef struct NSVGgradientStop {
 typedef struct NSVGgradient {
 	float xform[6];
 	char spread;
-	float fx, fy;
+    float x1, y1, x2, y2; // linear
+    float cx, cy, fx, fy, r; // radical
 	int nstops;
 	NSVGgradientStop stops[1];
 } NSVGgradient;
@@ -864,34 +865,19 @@ static NSVGgradient* nsvg__createGradient(NSVGparser* p, const char* id, const f
 	sl = sqrtf(sw*sw + sh*sh) / sqrtf(2.0f);
 
 	if (data->type == NSVG_PAINT_LINEAR_GRADIENT) {
-		float x1, y1, x2, y2, dx, dy;
-		x1 = nsvg__convertToPixels(p, data->linear.x1, ox, sw);
-		y1 = nsvg__convertToPixels(p, data->linear.y1, oy, sh);
-		x2 = nsvg__convertToPixels(p, data->linear.x2, ox, sw);
-		y2 = nsvg__convertToPixels(p, data->linear.y2, oy, sh);
-		// Calculate transform aligned to the line
-		dx = x2 - x1;
-		dy = y2 - y1;
-		grad->xform[0] = dy; grad->xform[1] = -dx;
-		grad->xform[2] = dx; grad->xform[3] = dy;
-		grad->xform[4] = x1; grad->xform[5] = y1;
+        grad->x1 = nsvg__convertToPixels(p, data->linear.x1, ox, sw);
+        grad->y1 = nsvg__convertToPixels(p, data->linear.y1, oy, sh);
+        grad->x2 = nsvg__convertToPixels(p, data->linear.x2, ox, sw);
+        grad->y2 = nsvg__convertToPixels(p, data->linear.y2, oy, sh);
 	} else {
-		float cx, cy, fx, fy, r;
-		cx = nsvg__convertToPixels(p, data->radial.cx, ox, sw);
-		cy = nsvg__convertToPixels(p, data->radial.cy, oy, sh);
-		fx = nsvg__convertToPixels(p, data->radial.fx, ox, sw);
-		fy = nsvg__convertToPixels(p, data->radial.fy, oy, sh);
-		r = nsvg__convertToPixels(p, data->radial.r, 0, sl);
-		// Calculate transform aligned to the circle
-		grad->xform[0] = r; grad->xform[1] = 0;
-		grad->xform[2] = 0; grad->xform[3] = r;
-		grad->xform[4] = cx; grad->xform[5] = cy;
-		grad->fx = fx / r;
-		grad->fy = fy / r;
+        grad->cx = nsvg__convertToPixels(p, data->radial.cx, ox, sw);
+        grad->cy = nsvg__convertToPixels(p, data->radial.cy, oy, sh);
+        grad->fx = nsvg__convertToPixels(p, data->radial.fx, ox, sw);
+        grad->fy = nsvg__convertToPixels(p, data->radial.fy, oy, sh);
+        grad->r = nsvg__convertToPixels(p, data->radial.r, 0, sl);
 	}
 
-	nsvg__xformMultiply(grad->xform, data->xform);
-	nsvg__xformMultiply(grad->xform, attr->xform);
+    memcpy(grad->xform, data->xform, 6 * sizeof(float));
 
 	grad->spread = data->spread;
 	memcpy(grad->stops, stops, nstops*sizeof(NSVGgradientStop));
