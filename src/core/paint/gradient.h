@@ -13,6 +13,7 @@
 //! Gradient effects that paths can be filled with.
 
 namespace Pathfinder {
+
 /// A color in a gradient.
 /// Points in a gradient between two stops interpolate linearly between the stops.
 struct ColorStop {
@@ -50,18 +51,14 @@ struct GradientGeometry {
         Radial,
     } type = Type::Linear;
 
-    union {
-        /// A linear gradient that follows a line.
-        ///
-        /// The line is in scene coordinates, not relative to the bounding box of the path.
-        LineSegmentF linear;
+    /// A linear gradient that follows a line.
+    ///
+    /// The line is in scene coordinates, not relative to the bounding box of the path.
+    LineSegmentF linear;
 
-        /// A radial gradient that radiates outward from a line connecting two circles (or from one
-        /// circle).
-        GradientRadial radial;
-    };
-
-    GradientGeometry() {}
+    /// A radial gradient that radiates outward from a line connecting two circles (or from one
+    /// circle).
+    GradientRadial radial;
 };
 
 /// What should be rendered outside the color stops.
@@ -111,12 +108,12 @@ struct Gradient {
         return gradient;
     }
 
-    /// Adds a new color stop to the radial gradient.
+    /// Adds a new color stop by order of offset to the gradient.
     void add(const ColorStop &p_stop);
 
     /// A convenience method equivalent to
-    /// `gradient.add_color_stop(ColorStop::new(color, offset))`.
-    void add_color_stop(ColorU color, float offset);
+    /// `gradient.add(ColorStop::new(color, offset))`.
+    void add_color_stop(const ColorU &color, float offset);
 
     /// Returns the value of the gradient at offset `t`, which will be clamped between 0.0 and 1.0.
     ColorU sample(float t) const;
@@ -128,8 +125,6 @@ private:
     /// Color stops.
     std::vector<ColorStop> stops;
 };
-
-//! Gradient color texture
 
 /// The size of a gradient tile.
 const uint32_t GRADIENT_TILE_LENGTH = 256;

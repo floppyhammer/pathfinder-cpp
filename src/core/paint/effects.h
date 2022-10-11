@@ -5,6 +5,7 @@
 #include "../data/line_segment.h"
 
 namespace Pathfinder {
+
 /// The axis a Gaussian blur is applied to.
 enum BlurDirection {
     /// The horizontal axis.
@@ -257,7 +258,7 @@ struct TextureLocation {
     /// Which texture.
     uint32_t page{};
     /// Region in the texture.
-    Rect<uint32_t> rect;
+    Rect<uint32_t> rect{};
 };
 
 struct TextureSamplingFlags {

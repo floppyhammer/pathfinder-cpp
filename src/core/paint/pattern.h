@@ -13,39 +13,37 @@
 #include "effects.h"
 
 //! Raster image patterns.
+
 namespace Pathfinder {
+
 /// A raster image target that can be rendered to and later reused as a pattern.
 ///
 /// This can be useful for creating "stamps" or "symbols" that are rendered once and reused. It can
 /// also be useful for image effects that require many paths to be processed at once; e.g. opacity
 /// applied to a group of paths.
 struct RenderTarget {
-    /// The ID of the scene that this render target ID belongs to.
-    uint32_t scene = 0;
-    /// The ID of the render target within this scene.
-    uint32_t id = 0;
     /// Render pass.
     std::shared_ptr<RenderPass> render_pass;
     /// Framebuffer.
     std::shared_ptr<Framebuffer> framebuffer;
-    /// Size.
+    /// The ID of the render target, including the ID of the scene it came from.
+    uint32_t id = 0;
+    /// The device pixel size of the render target.
     Vec2<uint32_t> size;
-    /// Optional name.
-    std::string name;
 };
 
 /// A raster image, in 32-bit RGBA (8 bits per channel), non-premultiplied form.
 struct Image {
     Vec2<uint32_t> size;
-    std::shared_ptr<Texture> texture;
+    std::vector<ColorU> pixels;
     bool is_opaque = false;
 };
 
 /// Where a raster image pattern comes from.
 struct PatternSource {
     enum class Type {
-        Image,
-        RenderTarget,
+        Image,        // From a CPU image.
+        RenderTarget, // From a GPU framebuffer.
     } type = Type::RenderTarget;
 
     /// A image whose pixels are stored in CPU memory.
@@ -86,7 +84,7 @@ struct PatternFlags {
 struct Pattern {
     PatternSource source;
     Transform2 transform;
-    PatternFilter filter; // Optional.
+    std::shared_ptr<PatternFilter> filter; // Optional
     PatternFlags flags;
 
     static inline Pattern from_source(const PatternSource &p_source) {
@@ -139,12 +137,7 @@ struct Pattern {
 
     /// Applies a filter to this pattern, replacing any previous filter if any.
     inline void set_filter(const PatternFilter &p_filter) {
-        filter = p_filter;
-    }
-
-    /// Returns true if this pattern is obviously fully opaque.
-    inline bool is_opaque() const {
-        return source.is_opaque();
+        filter = std::make_shared<PatternFilter>(p_filter);
     }
 
     /// Returns true if this pattern repeats in the X direction or false if the base color will be
@@ -172,7 +165,13 @@ struct Pattern {
     /// scaled or false if this pattern should use nearest-neighbor interpolation (i.e. should be
     /// pixelated).
     void set_smoothing_enabled(bool enable);
+
+    /// Returns true if this pattern is obviously fully opaque.
+    inline bool is_opaque() const {
+        return source.is_opaque();
+    }
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_PATTERN_H

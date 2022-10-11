@@ -25,14 +25,14 @@ enum class PaintCompositeOp {
     DestIn,
 };
 
-Rect<float> rect_to_uv(Rect<uint32_t> rect, Vec2<float> texture_scale);
+Rect<float> rect_to_uv(const Rect<uint32_t> &rect, const Vec2<float> &texture_scale);
 
 /// The contents of an overlay: either a gradient or a pattern.
 struct PaintContents {
     enum class Type {
         Gradient,
         Pattern,
-    } type;
+    } type = Type::Gradient;
 
     Gradient gradient;
     Pattern pattern;
@@ -51,6 +51,8 @@ struct PaintOverlay {
 struct Paint {
 private:
     ColorU base_color;
+
+    // Optional
     std::shared_ptr<PaintOverlay> overlay;
 
 public:
@@ -100,7 +102,7 @@ public:
     ColorU get_base_color() const;
 
     /// Changes the base color of this paint.
-    void set_base_color(ColorU p_color);
+    void set_base_color(const ColorU &p_color);
 
     /// Returns the paint overlay, which is the portion of the paint on top of the base color.
     std::shared_ptr<PaintOverlay> get_overlay() const;
@@ -140,8 +142,9 @@ struct PaintColorTextureMetadata {
     Vec2<int> border;
 };
 
+/// Built from paints.
 struct PaintMetadata {
-    /// Metadata associated with the color texture, if applicable. (Optional)
+    /// (Optional) Metadata associated with the color texture, if applicable.
     std::shared_ptr<PaintColorTextureMetadata> color_texture_metadata;
 
     /// The base color that the color texture gets mixed into.

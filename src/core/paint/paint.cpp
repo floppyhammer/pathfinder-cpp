@@ -4,13 +4,10 @@
 
 namespace Pathfinder {
 
-Rect<float> rect_to_uv(Rect<uint32_t> rect, Vec2<float> texture_scale) {
+Rect<float> rect_to_uv(const Rect<uint32_t> &rect, const Vec2<float> &texture_scale) {
     return rect.to_f32() * texture_scale;
 }
 
-// Paint member functions.
-// ---------------------------------------------------
-/// Returns true if this paint is obviously opaque, via a quick check.
 bool Paint::is_opaque() const {
     if (!base_color.is_opaque()) {
         return false;
@@ -28,20 +25,17 @@ bool Paint::is_opaque() const {
     return true;
 }
 
-/// Returns the *base color* of this paint.
 ColorU Paint::get_base_color() const {
     return base_color;
 }
 
-/// Changes the *base color* of this paint.
-void Paint::set_base_color(ColorU p_color) {
+void Paint::set_base_color(const ColorU &p_color) {
     base_color = p_color;
 }
 
 std::shared_ptr<PaintOverlay> Paint::get_overlay() const {
     return overlay;
 }
-// ---------------------------------------------------
 
 PaintFilter PaintMetadata::filter() const {
     if (!color_texture_metadata) {
@@ -66,4 +60,5 @@ PaintFilter PaintMetadata::filter() const {
 
     return filter;
 }
+
 } // namespace Pathfinder

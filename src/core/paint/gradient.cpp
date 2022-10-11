@@ -3,6 +3,7 @@
 #include "../../common/math/basic.h"
 
 namespace Pathfinder {
+
 void Gradient::add(const ColorStop &p_stop) {
     auto end = stops.end();
     auto begin = stops.begin();
@@ -15,7 +16,7 @@ void Gradient::add(const ColorStop &p_stop) {
     stops.insert(begin, p_stop);
 }
 
-void Gradient::add_color_stop(ColorU color, float offset) {
+void Gradient::add_color_stop(const ColorU &color, float offset) {
     add(ColorStop{offset, color});
 }
 
@@ -60,9 +61,11 @@ ColorU Gradient::sample(float t) const {
 
 bool Gradient::is_opaque() {
     bool opaque = false;
+
     for (auto &stop : stops) {
         opaque |= stop.color.is_opaque();
     }
+
     return opaque;
 }
 

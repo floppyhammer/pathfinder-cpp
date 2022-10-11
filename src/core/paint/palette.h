@@ -11,8 +11,7 @@ struct Palette {
 public:
     explicit Palette(uint32_t p_scene_id);
 
-    /// Push a new paint if not already in cache,
-    /// and return its ID.
+    /// Push a new paint if not already in cache, and return its ID.
     uint32_t push_paint(const Paint &paint);
 
     Paint get_paint(uint32_t paint_id) const;
