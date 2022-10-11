@@ -44,10 +44,10 @@ DrawTileBatch build_tile_batches_for_draw_path_display_item(Scene &scene,
                 } else {
                     auto pattern = overlay->contents.pattern;
 
-                    // Pattern source is an image.
+                    // Source is an image.
                     if (pattern.source.type == PatternSource::Type::Image) {
-                        draw_tile_batch.color_texture = nullptr;
-                    } else { // Pattern source is a framebuffer.
+                        draw_tile_batch.color_texture = pattern.source.image.texture;
+                    } else { // Source is a render target.
                         draw_tile_batch.color_texture =
                             overlay->contents.pattern.source.render_target.framebuffer->get_texture();
                     }

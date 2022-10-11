@@ -15,6 +15,7 @@ bool Paint::is_opaque() const {
 
     if (overlay) {
         auto &content = overlay->contents;
+
         if (content.type == PaintContents::Type::Gradient) {
             return content.gradient.is_opaque();
         } else {

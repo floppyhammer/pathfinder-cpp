@@ -110,7 +110,7 @@ std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr
 
         auto overlay = paint.get_overlay();
 
-        // If not solid color paint.
+        // If not a solid color paint.
         if (overlay) {
             // For the color texture used in the shaders.
             color_texture_metadata = std::make_shared<PaintColorTextureMetadata>();
@@ -139,27 +139,66 @@ std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr
                 color_texture_metadata->border = Vec2<int>();
 
                 gradient.tile_texture = gradient_tile_texture;
-            } else { // FIXME: Incomplete.
-                const auto pattern = overlay->contents.pattern;
+            } else { // Pattern
+                const auto &pattern = overlay->contents.pattern;
 
-                auto border = Vec2<uint32_t>(pattern.repeat_x() ? 0 : 1, pattern.repeat_y() ? 0 : 1);
-
-                PaintFilter paint_filter;
-                paint_filter.type = PaintFilter::Type::PatternFilter;
-                paint_filter.pattern_filter = pattern.filter;
+                auto border = Vec2<int>(pattern.repeat_x() ? 0 : 1, pattern.repeat_y() ? 0 : 1);
 
                 TextureLocation texture_location;
+                {
+                    // Image
+                    if (pattern.source.type == PatternSource::Type::Image) {
+                        texture_location.rect = Rect<uint32_t>({}, pattern.source.image.size);
 
-                if (pattern.source.type == PatternSource::Type::RenderTarget) {
-                    texture_location.rect = Rect<uint32_t>({}, pattern.source.render_target.size);
-                } else {
-                    texture_location.rect = Rect<uint32_t>() + border * 2;
+                        pattern.source.image.texture = driver->create_texture(pattern.source.image.size.x,
+                                                                              pattern.source.image.size.y,
+                                                                              TextureFormat::RGBA8_UNORM);
+
+                        auto cmd_buffer = driver->create_command_buffer(true);
+
+                        cmd_buffer->upload_to_texture(
+                            pattern.source.image.texture,
+                            Rect<uint32_t>(0, 0, pattern.source.image.size.x, pattern.source.image.size.y),
+                            pattern.source.image.pixels.data(),
+                            TextureLayout::SHADER_READ_ONLY);
+
+                        cmd_buffer->submit(driver);
+                    } else { // Render target
+                        texture_location.rect = Rect<uint32_t>({}, pattern.source.render_target.size);
+                    }
+                }
+
+                PaintFilter paint_filter;
+                {
+                    // We can have a pattern without a filter.
+                    if (pattern.filter == nullptr) {
+                        paint_filter.type = PaintFilter::Type::None;
+                    } else {
+                        paint_filter.type = PaintFilter::Type::PatternFilter;
+                        paint_filter.pattern_filter = *pattern.filter;
+                    }
+                }
+
+                TextureSamplingFlags sampling_flags;
+                {
+                    if (pattern.repeat_x()) {
+                        sampling_flags.value |= TextureSamplingFlags::REPEAT_U;
+                    }
+                    if (pattern.repeat_y()) {
+                        sampling_flags.value |= TextureSamplingFlags::REPEAT_V;
+                    }
+                    if (!pattern.smoothing_enabled()) {
+                        sampling_flags.value |= TextureSamplingFlags::NEAREST_MIN | TextureSamplingFlags::NEAREST_MAG;
+                    }
                 }
 
                 color_texture_metadata->location = texture_location;
+                //                color_texture_metadata->page_scale = ;
+                color_texture_metadata->sampling_flags = sampling_flags;
                 color_texture_metadata->filter = paint_filter;
                 color_texture_metadata->transform = Transform2::from_translation(border.to_f32());
                 color_texture_metadata->composite_op = overlay->composite_op;
+                color_texture_metadata->border = border;
             }
         }
 
@@ -186,6 +225,7 @@ void Palette::calculate_texture_transforms(std::vector<PaintMetadata> &p_paint_m
 
         auto overlay = paint.get_overlay();
 
+        // Calculate transform.
         if (overlay) {
             if (overlay->contents.type == PaintContents::Type::Gradient) {
                 auto gradient_geometry = overlay->contents.gradient.geometry;
@@ -209,19 +249,28 @@ void Palette::calculate_texture_transforms(std::vector<PaintMetadata> &p_paint_m
                     color_texture_metadata->transform = gradient_geometry.radial.transform.inverse();
                 }
             } else {
-                if (overlay->contents.pattern.source.type == PatternSource::Type::RenderTarget) {
-                    auto pattern = overlay->contents.pattern;
+                auto pattern = overlay->contents.pattern;
 
+                Transform2 transform;
+
+                if (pattern.source.type == PatternSource::Type::Image) {
+                    auto texture_scale = Vec2<float>(1.f / texture_rect.width(), 1.f / texture_rect.height());
+
+                    auto texture_origin_uv = rect_to_uv(texture_rect, texture_scale).origin();
+
+                    transform = Transform2::from_scale(texture_scale).translate(texture_origin_uv) *
+                                pattern.transform.inverse();
+                } else {
                     auto texture_scale = Vec2<float>(1.f / texture_rect.width(), 1.f / texture_rect.height());
 
                     auto texture_origin_uv = rect_to_uv(texture_rect, texture_scale).lower_left();
 
-                    auto transform = Transform2::from_translation(texture_origin_uv) *
-                                     Transform2::from_scale(texture_scale * Vec2<float>(1.0, -1.0)) *
-                                     pattern.transform.inverse();
+                    transform = Transform2::from_translation(texture_origin_uv) *
+                                Transform2::from_scale(texture_scale * Vec2<float>(1.0, -1.0)) *
+                                pattern.transform.inverse();
+                };
 
-                    color_texture_metadata->transform = transform;
-                }
+                color_texture_metadata->transform = transform;
             }
         } else {
             throw std::runtime_error("Why do we have color texture metadata but no overlay?");

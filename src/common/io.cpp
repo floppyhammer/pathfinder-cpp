@@ -3,12 +3,12 @@
 #include "logger.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-
 #include <stb_image.h>
 
 #include <stdexcept>
 
 namespace Pathfinder {
+
 std::string load_file_as_string(const std::string &file_path) {
     std::string output;
     std::ifstream file;
@@ -93,6 +93,22 @@ std::shared_ptr<ImageData> ImageData::from_file(const char *file_path, bool flip
 }
 
 ImageData::~ImageData() {
-    if (data) stbi_image_free(data);
+    if (data) {
+        stbi_image_free(data);
+    }
 }
+
+std::vector<ColorU> ImageData::to_rgba_pixels() const {
+    if (channel_count != 4) {
+        Logger::error("Cannot convert ImageData to RGBA pixels due to mismatched channel count!");
+        return {};
+    }
+
+    std::vector<ColorU> pixels(width * height);
+
+    memcpy(pixels.data(), data, width * height * channel_count);
+
+    return pixels;
+}
+
 } // namespace Pathfinder

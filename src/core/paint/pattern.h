@@ -36,7 +36,10 @@ struct RenderTarget {
 struct Image {
     Vec2<uint32_t> size;
     std::vector<ColorU> pixels;
-    bool is_opaque = false;
+    bool is_opaque = true;
+
+    // TODO: This should not be here.
+    mutable std::shared_ptr<Texture> texture;
 };
 
 /// Where a raster image pattern comes from.
@@ -84,7 +87,8 @@ struct PatternFlags {
 struct Pattern {
     PatternSource source;
     Transform2 transform;
-    std::shared_ptr<PatternFilter> filter; // Optional
+    /// (Optional) A pattern doesn't necessarily need a filter.
+    std::shared_ptr<PatternFilter> filter;
     PatternFlags flags;
 
     static inline Pattern from_source(const PatternSource &p_source) {

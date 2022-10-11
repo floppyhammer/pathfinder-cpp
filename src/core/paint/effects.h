@@ -68,12 +68,9 @@ struct PaintFilter {
         Vec2<float> uv_origin;
     };
 
-    union {
-        RadialGradient gradient_filter;
-        PatternFilter pattern_filter;
-    };
+    RadialGradient gradient_filter; // For RadialGradient type.
 
-    PaintFilter() {}
+    PatternFilter pattern_filter; // For PatternFilter type.
 };
 
 /// Blend modes that can be applied to individual paths.
