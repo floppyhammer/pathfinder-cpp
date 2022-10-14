@@ -94,13 +94,21 @@ void composite_shadow_blur_render_targets(Scene &scene, const ShadowBlurRenderTa
     // A rect path used to blur the shadow path.
     // Judging by the size, this path will be drawn to a small texture.
     DrawPath path_x;
-    path_x.outline.add_rect(Rect<float>(Vec2<float>(0.0), info.bounds.size().to_f32()));
+    {
+        Path2d path2d;
+        path2d.add_rect({{0, 0}, info.bounds.size().to_f32()});
+        path_x.outline = path2d.into_outline();
+    }
     path_x.paint = paint_id_x;
 
     // A rect path used to blur the shadow path.
     // Judging by the size, this path will be drawn to the final texture.
     DrawPath path_y;
-    path_y.outline.add_rect(info.bounds.to_f32());
+    {
+        Path2d path2d;
+        path2d.add_rect(info.bounds.to_f32());
+        path_y.outline = path2d.into_outline();
+    }
     path_y.paint = paint_id_y;
 
     // Pop viewport x.
@@ -201,13 +209,14 @@ void Canvas::push_path(Outline &p_outline, PathOp p_path_op, FillRule p_fill_rul
     scene->push_draw_path(path);
 }
 
-void Canvas::fill_path(Outline outline, FillRule fill_rule) {
+void Canvas::fill_path(Path2d &path2d, FillRule fill_rule) {
     if (current_state.fill_paint.is_opaque()) {
+        auto outline = path2d.into_outline();
         push_path(outline, PathOp::Fill, fill_rule);
     }
 }
 
-void Canvas::stroke_path(Outline outline) {
+void Canvas::stroke_path(Path2d &path2d) {
     // Set stroke style.
     auto style = StrokeStyle();
     style.line_width = line_width();
@@ -217,6 +226,8 @@ void Canvas::stroke_path(Outline outline) {
 
     // No need to draw an invisible stroke.
     if (current_state.stroke_paint.is_opaque() && style.line_width > 0) {
+        auto outline = path2d.into_outline();
+
         // Do dash before converting stroke to fill.
         if (!current_state.line_dash.empty()) {
             auto dasher = OutlineDash(outline, current_state.line_dash, 0);
@@ -509,22 +520,21 @@ void Canvas::load_svg(std::vector<char> input) {
     // Extract paths, contours and points from the SVG image.
     // Notable: NSVGshape equals to our Path, and NSVGpath equals to our Contour (Sub-Path).
     for (NSVGshape *nsvg_shape = image->shapes; nsvg_shape != nullptr; nsvg_shape = nsvg_shape->next) {
-        Outline outline;
-
-        // Load the bounds from the SVG file, will be modified when pushing points anyway.
-        outline.bounds = Rect<float>(nsvg_shape->bounds);
+        Path2d path2d;
 
         for (NSVGpath *nsvg_path = nsvg_shape->paths; nsvg_path != nullptr; nsvg_path = nsvg_path->next) {
-            outline.move_to(nsvg_path->pts[0], nsvg_path->pts[1]);
+            path2d.move_to(nsvg_path->pts[0], nsvg_path->pts[1]);
 
             // -6 or -3, both will do, probably.
             for (int point_index = 0; point_index < nsvg_path->npts - 3; point_index += 3) {
                 // * 2 because a point has x and y components.
                 float *p = &nsvg_path->pts[point_index * 2];
-                outline.cubic_to(p[2], p[3], p[4], p[5], p[6], p[7]);
+                path2d.bezier_curve_to(p[2], p[3], p[4], p[5], p[6], p[7]);
             }
 
-            if (nsvg_path->closed) outline.close();
+            if (nsvg_path->closed) {
+                path2d.close_path();
+            }
         }
 
         // Shadow test.
@@ -540,7 +550,7 @@ void Canvas::load_svg(std::vector<char> input) {
 
         // Add fill.
         set_fill_paint(convert_nsvg_paint(nsvg_shape->fill));
-        fill_path(outline, convert_nsvg_fill_rule(nsvg_shape->fillRule));
+        fill_path(path2d, convert_nsvg_fill_rule(nsvg_shape->fillRule));
 
         // Add stroke.
         set_line_join(convert_nsvg_line_join(nsvg_shape->strokeLineJoin));
@@ -548,7 +558,7 @@ void Canvas::load_svg(std::vector<char> input) {
         set_line_cap(convert_nsvg_line_cap(nsvg_shape->strokeLineCap));
         set_line_width(nsvg_shape->strokeWidth);
         set_stroke_paint(convert_nsvg_paint(nsvg_shape->stroke));
-        stroke_path(outline);
+        stroke_path(path2d);
     }
 
     // Clean up NanoSVG image.
@@ -571,5 +581,136 @@ void Canvas::restore_state() {
 void Canvas::draw() {
     scene->build_and_render(renderer);
 }
+
+// Path2d
+// -----------------------------
+
+void Path2d::close_path() {
+    current_contour.close();
+}
+
+void Path2d::move_to(float x, float y) {
+    flush_current_contour();
+    current_contour.push_endpoint({x, y});
+}
+
+void Path2d::line_to(float x, float y) {
+    current_contour.push_endpoint({x, y});
+}
+
+void Path2d::quadratic_curve_to(float cx, float cy, float x, float y) {
+    current_contour.push_quadratic({cx, cy}, {x, y});
+}
+
+void Path2d::bezier_curve_to(float cx0, float cy0, float cx1, float cy1, float x, float y) {
+    current_contour.push_cubic({cx0, cy0}, {cx1, cy1}, {x, y});
+}
+
+void Path2d::add_line(const Vec2<float> &start, const Vec2<float> &end) {
+    if (start == end) return;
+
+    move_to(start.x, start.y);
+    line_to(end.x, end.y);
+}
+
+const float CIRCLE_RATIO = 0.552284749831; // 4.0f * (sqrt(2.0f) - 1.0f) / 3.0f
+
+void Path2d::add_rect(const Rect<float> &rect, float corner_radius) {
+    if (rect.size().x == 0 || rect.size().y == 0) return;
+
+    if (corner_radius <= 0) {
+        move_to(rect.min_x(), rect.min_y());
+        line_to(rect.max_x(), rect.min_y());
+        line_to(rect.max_x(), rect.max_y());
+        line_to(rect.min_x(), rect.max_y());
+        close_path();
+
+        return;
+    }
+
+    // Corner radius can't be greater than the half of the shorter line of the rect.
+    corner_radius = std::min(corner_radius, std::min(rect.width(), rect.height()) * 0.5f);
+
+    // See https://stackoverflow.com/questions/1734745/how-to-create-circle-with-b%C3%A9zier-curves.
+    float adjusted_radius = corner_radius * CIRCLE_RATIO;
+
+    move_to(rect.min_x(), rect.min_y() + corner_radius);
+    bezier_curve_to(rect.min_x(),
+                    rect.min_y() + corner_radius - adjusted_radius,
+                    rect.min_x() + corner_radius - adjusted_radius,
+                    rect.min_y(),
+                    rect.min_x() + corner_radius,
+                    rect.min_y());
+    line_to(rect.max_x() - corner_radius, rect.min_y());
+    bezier_curve_to(rect.max_x() - corner_radius + adjusted_radius,
+                    rect.min_y(),
+                    rect.max_x(),
+                    rect.min_y() + corner_radius - adjusted_radius,
+                    rect.max_x(),
+                    rect.min_y() + corner_radius);
+    line_to(rect.max_x(), rect.max_y() - corner_radius);
+    bezier_curve_to(rect.max_x(),
+                    rect.max_y() - corner_radius + adjusted_radius,
+                    rect.max_x() - corner_radius + adjusted_radius,
+                    rect.max_y(),
+                    rect.max_x() - corner_radius,
+                    rect.max_y());
+    line_to(rect.min_x() + corner_radius, rect.max_y());
+    bezier_curve_to(rect.min_x() + corner_radius - adjusted_radius,
+                    rect.max_y(),
+                    rect.min_x(),
+                    rect.max_y() - corner_radius + adjusted_radius,
+                    rect.min_x(),
+                    rect.max_y() - corner_radius);
+    close_path();
+}
+
+void Path2d::add_circle(const Vec2<float> &center, float radius) {
+    if (radius == 0) return;
+
+    // See https://stackoverflow.com/questions/1734745/how-to-create-circle-with-b%C3%A9zier-curves.
+    float adjusted_radius = radius * CIRCLE_RATIO;
+
+    move_to(center.x, center.y - radius);
+    bezier_curve_to(center.x + adjusted_radius,
+                    center.y - radius,
+                    center.x + radius,
+                    center.y - adjusted_radius,
+                    center.x + radius,
+                    center.y);
+    bezier_curve_to(center.x + radius,
+                    center.y + adjusted_radius,
+                    center.x + adjusted_radius,
+                    center.y + radius,
+                    center.x,
+                    center.y + radius);
+    bezier_curve_to(center.x - adjusted_radius,
+                    center.y + radius,
+                    center.x - radius,
+                    center.y + adjusted_radius,
+                    center.x - radius,
+                    center.y);
+    bezier_curve_to(center.x - radius,
+                    center.y - adjusted_radius,
+                    center.x - adjusted_radius,
+                    center.y - radius,
+                    center.x,
+                    center.y - radius);
+    close_path();
+}
+
+Outline Path2d::into_outline() {
+    flush_current_contour();
+    return outline;
+}
+
+void Path2d::flush_current_contour() {
+    if (!current_contour.is_empty()) {
+        outline.push_contour(current_contour);
+        current_contour = Contour();
+    }
+}
+
+// -----------------------------
 
 } // namespace Pathfinder

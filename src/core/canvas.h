@@ -10,6 +10,7 @@
 #include "d3d9/scene_builder.h"
 
 namespace Pathfinder {
+
 enum PathOp {
     Fill,
     Stroke,
@@ -65,6 +66,42 @@ struct State {
     Vec2<float> shadow_offset;
 
     BlendMode global_composite_operation;
+};
+
+/// Equivalent to SVG path.
+class Path2d {
+public:
+    Contour current_contour;
+
+    // Basic geometries.
+    // -----------------------------------------------
+    void close_path();
+
+    void move_to(float x, float y);
+
+    void line_to(float x, float y);
+
+    void quadratic_curve_to(float cx, float cy, float x, float y);
+
+    void bezier_curve_to(float cx, float cy, float cx1, float cy1, float x, float y);
+    // -----------------------------------------------
+
+    // Advanced geometries.
+    // -----------------------------------------------
+    void add_line(const Vec2<float> &start, const Vec2<float> &end);
+
+    void add_rect(const Rect<float> &rect, float corner_radius = 0);
+
+    /// There is no exact representation of the circle using Bezier curves.
+    void add_circle(const Vec2<float> &center, float radius);
+    // -----------------------------------------------
+
+    Outline into_outline();
+
+private:
+    Outline outline;
+
+    void flush_current_contour();
 };
 
 /// Normally, we only need one canvas to render multiple scenes.
@@ -128,10 +165,10 @@ public:
     // Drawing ops.
     // ------------------------------------------------
     /// Fill a shape.
-    void fill_path(Outline p_outline, FillRule p_fill_rule);
+    void fill_path(Path2d &path2d, FillRule fill_rule);
 
     /// Stroke a path.
-    void stroke_path(Outline p_outline);
+    void stroke_path(Path2d &path2d);
     // ------------------------------------------------
 
     /// Clear the scene.
@@ -189,5 +226,7 @@ private:
     /// Scene renderer.
     std::shared_ptr<Renderer> renderer;
 };
+
 } // namespace Pathfinder
+
 #endif // PATHFINDER_CANVAS_H

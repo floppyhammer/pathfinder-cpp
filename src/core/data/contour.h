@@ -10,6 +10,7 @@
 #include "segment.h"
 
 namespace Pathfinder {
+
 /// An individual sub-path, consisting of a series of endpoints and/or control points. Contours can
 /// be either open (first and last points disconnected) or closed (first point implicitly joined to
 /// last point with a line).
@@ -34,9 +35,23 @@ public:
 
     void add_join(float distance, LineJoin join, Vec2<float> join_point, LineSegmentF next_tangent, float miter_limit);
 
-    void push_point(Vec2<float> point, PointFlag flag, bool update_bounds);
+    /// Adds a new on-curve point at the given position to this contour.
+    void push_endpoint(const Vec2<float> &to);
 
-    void push_endpoint(Vec2<float> to);
+    /// Adds a new quadratic Bézier curve to the given on-curve position and control point to this
+    /// contour.
+    void push_quadratic(const Vec2<float> &ctrl0, const Vec2<float> &to);
+
+    /// Adds a new cubic Bézier curve to the given on-curve position and control points to this
+    /// contour.
+    void push_cubic(const Vec2<float> &ctrl0, const Vec2<float> &ctrl1, const Vec2<float> &to);
+
+    /// Marks this contour as closed, which results in an implicit line from the end back to the
+    /// starting point.
+    void close();
+
+    /// Push a point with a flag.
+    void push_point(const Vec2<float> &point, PointFlag flag, bool update_bounds);
 
     /// Push a segment as points and flags.
     void push_segment(const Segment &segment, PushSegmentFlags p_flags);
@@ -84,6 +99,7 @@ private:
     /// If the contour has next segment.
     bool has_next = true;
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_CONTOUR_H

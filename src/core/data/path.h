@@ -7,6 +7,7 @@
 #include "contour.h"
 
 namespace Pathfinder {
+
 /// A vector path to be filled (without drawing info).
 /// In order to differentiate it from DrawPath and ClipPath, we use the name 'Outline' here.
 /// Outlines consist of contours (a.k.a. sub-paths).
@@ -18,29 +19,6 @@ public:
     Rect<float> bounds;
 
 public:
-    /// Basic geometries.
-    /// -----------------------------------------------
-    void move_to(float x, float y);
-
-    void line_to(float x, float y);
-
-    void curve_to(float cx, float cy, float x, float y);
-
-    void cubic_to(float cx, float cy, float cx1, float cy1, float x, float y);
-
-    void close();
-    /// -----------------------------------------------
-
-    /// Advanced geometries.
-    /// -----------------------------------------------
-    void add_line(Vec2<float> p_start, Vec2<float> p_end);
-
-    void add_rect(const Rect<float> &p_rect, float p_corner_radius = 0);
-
-    /// There is no exact representation of the circle using Bezier curves.
-    void add_circle(Vec2<float> p_center, float p_radius);
-    /// -----------------------------------------------
-
     /**
      * Translate the SVG image. Bounds are also updated.
      * @param translation The translation vector.
@@ -101,6 +79,7 @@ struct ClipPath {
     /// How to fill this shape (winding or even-odd).
     FillRule fill_rule = FillRule::Winding;
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_PATH_H

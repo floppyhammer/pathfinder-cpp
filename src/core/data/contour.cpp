@@ -5,20 +5,6 @@ Vec2<float> Contour::position_of_last(int index) {
     return points[points.size() - index];
 }
 
-void Contour::push_point(Vec2<float> point, PointFlag p_flag, bool update_bounds) {
-    if (update_bounds) {
-        auto first = points.empty();
-        union_rect(bounds, point, first);
-    }
-
-    points.push_back(point);
-    flags.push_back(p_flag);
-}
-
-void Contour::push_endpoint(Vec2<float> to) {
-    push_point(to, PointFlag::ON_CURVE_POINT, true);
-}
-
 void Contour::push_segment(const Segment &segment, PushSegmentFlags p_flags) {
     // Not a valid segment.
     if (segment.kind == SegmentKind::None) {
@@ -69,11 +55,39 @@ std::vector<Segment> Contour::get_segments(bool force_closed) const {
     return segments;
 }
 
+void Contour::close() {
+    closed = true;
+}
+
+void Contour::push_point(const Vec2<float> &point, PointFlag flag, bool update_bounds) {
+    if (update_bounds) {
+        auto first = points.empty();
+        union_rect(bounds, point, first);
+    }
+
+    points.push_back(point);
+    flags.push_back(flag);
+}
+
+void Contour::push_endpoint(const Vec2<float> &to) {
+    push_point(to, PointFlag::ON_CURVE_POINT, true);
+}
+
+void Contour::push_quadratic(const Vec2<float> &ctrl0, const Vec2<float> &to) {
+    push_point(ctrl0, PointFlag::CONTROL_POINT_0, true);
+    push_point(to, PointFlag::ON_CURVE_POINT, true);
+}
+
+void Contour::push_cubic(const Vec2<float> &ctrl0, const Vec2<float> &ctrl1, const Vec2<float> &to) {
+    push_point(ctrl0, PointFlag::CONTROL_POINT_0, true);
+    push_point(ctrl1, PointFlag::CONTROL_POINT_1, true);
+    push_point(to, PointFlag::ON_CURVE_POINT, true);
+}
+
 SegmentsIter::SegmentsIter(const std::vector<Vec2<float>> &p_points,
                            const std::vector<PointFlag> &p_flags,
                            bool p_closed)
-    : points(p_points), flags(p_flags), closed(p_closed) {
-}
+    : points(p_points), flags(p_flags), closed(p_closed) {}
 
 Segment SegmentsIter::get_next(bool force_closed) {
     Segment segment;
