@@ -7,6 +7,7 @@
 #include "gpu/framebuffer.h"
 #include "gpu/swap_chain.h"
 #include "core/canvas.h"
+#include "core/svg.h"
 #include "common/global_macros.h"
 #include "common/io.h"
 #include "common/math/vec2.h"

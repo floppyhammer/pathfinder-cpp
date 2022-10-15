@@ -109,11 +109,9 @@ class Canvas {
 public:
     Canvas(const std::shared_ptr<Driver> &p_driver);
 
-    void set_empty_scene(const Rect<float> &view_box);
-
     void set_empty_dest_texture(float p_size_x, float p_size_y);
 
-    // Change state.
+    // Canvas state.
     // ------------------------------------------------
     Paint fill_paint() const;
 
@@ -160,9 +158,11 @@ public:
     void set_line_dash_offset(float p_line_dash_offset);
 
     void set_transform(const Transform2 &p_transform);
+
+    Transform2 get_transform() const;
     // ------------------------------------------------
 
-    // Drawing ops.
+    // Drawing operations.
     // ------------------------------------------------
     /// Fill a shape.
     void fill_path(Path2d &path2d, FillRule fill_rule);
@@ -171,30 +171,27 @@ public:
     void stroke_path(Path2d &path2d);
     // ------------------------------------------------
 
-    /// Clear the scene.
+    void draw_image(const Image &image, const Rect<float> &dst_location);
+
+    void set_size(const Vec2<int> &size);
+
+    Vec2<int> get_size() const;
+
+    /// Clears the current canvas.
     void clear();
 
-    void resize(float p_size_x, float p_size_y);
-
-    void set_view_box(const Rect<float> &view_box);
+    void resize_dest_texture(float p_size_x, float p_size_y);
 
     std::shared_ptr<Scene> get_scene() const;
 
     void set_scene(const std::shared_ptr<Scene> &p_scene);
 
+    /// Returns the inner scene, replacing it with a blank scene.
+    std::shared_ptr<Scene> take_scene();
+
     void set_dest_texture(const std::shared_ptr<Texture> &texture);
 
     std::shared_ptr<Texture> get_dest_texture();
-
-    /**
-     * @brief Load a SVG file into the scene.
-     * @note We need a copy of the input vector as its content will be modified.
-     * @param input SVG file content.
-     */
-    void load_svg(std::vector<char> input);
-
-    // TODO
-    void draw_image();
 
     // Canvas state
 

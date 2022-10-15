@@ -9,8 +9,8 @@
 class App {
 public:
     App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
-        uint32_t window_width,
-        uint32_t window_height,
+        int window_width,
+        int window_height,
         const std::vector<char> &p_svg_input);
 
     void update();
@@ -21,6 +21,8 @@ public:
 
 private:
     std::shared_ptr<Pathfinder::Driver> driver;
+
+    Pathfinder::SvgScene svg_scene;
 
     std::chrono::time_point<std::chrono::steady_clock> last_time;
     std::chrono::time_point<std::chrono::steady_clock> last_time_printed_fps;

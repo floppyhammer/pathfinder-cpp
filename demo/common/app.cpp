@@ -1,8 +1,8 @@
 #include "app.h"
 
 App::App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
-         uint32_t window_width,
-         uint32_t window_height,
+         int window_width,
+         int window_height,
          const std::vector<char> &p_svg_input) {
     // Set logger level.
     Pathfinder::Logger::set_level(Pathfinder::Logger::Level::INFO);
@@ -11,9 +11,12 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
 
     // Set up a canvas.
     canvas = std::make_shared<Pathfinder::Canvas>(driver);
-    canvas->set_empty_scene({0, 0, (float)window_width, (float)window_height});
+    canvas->set_size({window_width, window_height});
     canvas->set_empty_dest_texture(window_width, window_height);
-    canvas->load_svg(p_svg_input);
+
+    svg_scene.load_file(p_svg_input, *canvas);
+
+    canvas->set_scene(svg_scene.get_scene());
 
     // Timers.
     last_time = std::chrono::steady_clock::now();

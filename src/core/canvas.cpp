@@ -7,9 +7,6 @@
 #include "dash.h"
 #include "stroke.h"
 
-#define NANOSVG_IMPLEMENTATION
-#include <nanosvg.h>
-
 namespace Pathfinder {
 struct ShadowBlurRenderTargetInfo {
     /// Render targets.
@@ -137,10 +134,8 @@ Canvas::Canvas(const std::shared_ptr<Driver> &p_driver) {
     renderer->set_up();
 
     renderer->set_up_pipelines();
-}
 
-void Canvas::set_empty_scene(const Rect<float> &view_box) {
-    scene = std::make_shared<Scene>(0, view_box);
+    scene = std::make_shared<Scene>(0, Rect<float>(0, 0, 0, 0));
 }
 
 void Canvas::set_empty_dest_texture(float size_x, float size_y) {
@@ -154,7 +149,7 @@ void Canvas::push_path(Outline &p_outline, PathOp p_path_op, FillRule p_fill_rul
     // Push to the scene's palette.
     auto paint_id = scene->push_paint(paint);
 
-    auto transform = current_state.transform;
+    auto transform = get_transform();
     auto blend_mode = current_state.global_composite_operation;
 
     // Apply transform.
@@ -339,12 +334,30 @@ void Canvas::set_transform(const Transform2 &p_transform) {
     current_state.transform = p_transform;
 }
 
-void Canvas::clear() {
-    // Create a new scene but keep the ID and the view box.
-    scene = std::make_shared<Scene>(scene->id, scene->get_view_box());
+Transform2 Canvas::get_transform() const {
+    return current_state.transform;
 }
 
-void Canvas::resize(float p_size_x, float p_size_y) {
+void Canvas::draw_image(const Image &image, const Rect<float> &dst_location) {
+    auto pattern = Pattern::from_image(image);
+    auto src_rect = Rect<float>(Vec2<float>(0.0, 0.0), image.size.to_f32());
+
+    auto old_fill_paint = fill_paint();
+
+    set_fill_paint(Paint::from_pattern(pattern));
+
+    Path2d path2d;
+    path2d.add_rect(dst_location);
+    fill_path(path2d, FillRule::Winding);
+
+    set_fill_paint(old_fill_paint);
+}
+
+void Canvas::clear() {
+    take_scene();
+}
+
+void Canvas::resize_dest_texture(float p_size_x, float p_size_y) {
     if (p_size_x <= 0 || p_size_y <= 0) {
         return;
     }
@@ -354,10 +367,6 @@ void Canvas::resize(float p_size_x, float p_size_y) {
     }
 
     set_dest_texture(driver->create_texture(p_size_x, p_size_y, TextureFormat::BGRA8_UNORM));
-}
-
-void Canvas::set_view_box(const Rect<float> &view_box) {
-    scene->set_view_box(view_box);
 }
 
 std::shared_ptr<Scene> Canvas::get_scene() const {
@@ -377,196 +386,6 @@ std::shared_ptr<Texture> Canvas::get_dest_texture() {
     return dest_texture;
 }
 
-/**
- * @brief Convert NanoSVG fill rule enum to our own type.
- * @param line_cap NanoSVG fill rule enum.
- * @return FillRule enum.
- */
-FillRule convert_nsvg_fill_rule(char fill_rule) {
-    return fill_rule == NSVGfillRule::NSVG_FILLRULE_EVENODD ? FillRule::EvenOdd : FillRule::Winding;
-}
-
-/**
- * @brief Convert NanoSVG line cap enum to our own type.
- * @param line_cap NanoSVG line cap enum.
- * @return LineCap enum.
- */
-LineCap convert_nsvg_line_cap(char line_cap) {
-    switch (line_cap) {
-        case NSVGlineCap::NSVG_CAP_ROUND: {
-            return LineCap::Round;
-        }
-        case NSVGlineCap::NSVG_CAP_SQUARE: {
-            return LineCap::Square;
-        }
-        default: {
-            return LineCap::Butt;
-        }
-    }
-}
-
-/**
- * @brief Convert NanoSVG line join enum to our own type.
- * @param line_cap NanoSVG line join enum.
- * @return LineJoin enum.
- */
-LineJoin convert_nsvg_line_join(char line_join) {
-    switch (line_join) {
-        case NSVGlineJoin::NSVG_JOIN_ROUND: {
-            return LineJoin::Round;
-        }
-        case NSVGlineJoin::NSVG_JOIN_BEVEL: {
-            return LineJoin::Bevel;
-        }
-        default: {
-            return LineJoin::Miter;
-        }
-    }
-}
-
-Paint convert_nsvg_paint(NSVGpaint nsvg_paint) {
-    Paint paint;
-
-    // FIXME: Non-Identity transform will cause incorrect gradient (both linear and radical) rendering.
-    switch (nsvg_paint.type) {
-        case NSVG_PAINT_NONE:
-            break;
-        case NSVG_PAINT_COLOR: {
-            paint = Paint::from_color(ColorU(nsvg_paint.color));
-
-            // Image pattern test.
-            if (false) {
-                auto image_data = ImageData::from_file("../assets/test.png", false);
-
-                Image image;
-                image.pixels = image_data->to_rgba_pixels();
-                image.size = {image_data->width, image_data->height};
-
-                auto pattern = Pattern::from_image(image);
-
-                // FIXME: Should assign path transform to the pattern, but NanoSVG cannot provide it.
-                //                pattern.transform = Transform2();
-
-                paint = Paint::from_pattern(pattern);
-            }
-        } break;
-        case NSVG_PAINT_LINEAR_GRADIENT:
-        case NSVG_PAINT_RADIAL_GRADIENT: {
-            auto nsvg_gradient = nsvg_paint.gradient;
-
-            auto gradient_xform = Transform2(nsvg_gradient->xform2);
-
-            auto path_xform = Transform2(nsvg_gradient->xform3);
-
-            Gradient gradient;
-            if (nsvg_paint.type == NSVG_PAINT_LINEAR_GRADIENT) {
-                Vec2F from = {nsvg_gradient->x1, nsvg_gradient->y1};
-                Vec2F to = {nsvg_gradient->x2, nsvg_gradient->y2};
-
-                // Apply gradient transform.
-                from = path_xform * gradient_xform * from;
-                to = path_xform * gradient_xform * to;
-
-                gradient = Gradient::linear(LineSegmentF(from, to));
-            } else {
-                Vec2F from = {nsvg_gradient->cx, nsvg_gradient->cy};
-                Vec2F to = {nsvg_gradient->fx, nsvg_gradient->fy};
-
-                gradient = Gradient::radial(LineSegmentF(from, to), Vec2F(0.0, nsvg_gradient->r));
-
-                gradient.geometry.radial.transform = path_xform * gradient_xform;
-            }
-
-            // TODO: Allow change color texture sampling mode.
-            switch (nsvg_gradient->spread) {
-                case NSVG_SPREAD_PAD: {
-                    gradient.wrap = GradientWrap::Clamp;
-                } break;
-                case NSVG_SPREAD_REFLECT: {
-                    Logger::error("Reflect gradient spread is not supported!");
-                } break;
-                case NSVG_SPREAD_REPEAT: {
-                    gradient.wrap = GradientWrap::Repeat;
-                } break;
-            };
-
-            // Get stops.
-            for (int i = 0; i < nsvg_gradient->nstops; i++) {
-                gradient.add_color_stop(ColorU(nsvg_gradient->stops[i].color), nsvg_gradient->stops[i].offset);
-            }
-
-            paint = Paint::from_gradient(gradient);
-        } break;
-    }
-
-    return paint;
-}
-
-void Canvas::load_svg(std::vector<char> input) {
-    if (input.empty()) {
-        Logger::error("SVG input is empty!", "Canvas");
-        return;
-    }
-
-    // Load the SVG image.
-    NSVGimage *image = nsvgParse(input.data(), "px", 96);
-
-    // Check if image loading is successful.
-    if (image == nullptr) {
-        Logger::error("NanoSVG loading image failed!", "Canvas");
-        return;
-    }
-
-    // Extract paths, contours and points from the SVG image.
-    // Notable: NSVGshape equals to our Path, and NSVGpath equals to our Contour (Sub-Path).
-    for (NSVGshape *nsvg_shape = image->shapes; nsvg_shape != nullptr; nsvg_shape = nsvg_shape->next) {
-        Path2d path2d;
-
-        for (NSVGpath *nsvg_path = nsvg_shape->paths; nsvg_path != nullptr; nsvg_path = nsvg_path->next) {
-            path2d.move_to(nsvg_path->pts[0], nsvg_path->pts[1]);
-
-            // -6 or -3, both will do, probably.
-            for (int point_index = 0; point_index < nsvg_path->npts - 3; point_index += 3) {
-                // * 2 because a point has x and y components.
-                float *p = &nsvg_path->pts[point_index * 2];
-                path2d.bezier_curve_to(p[2], p[3], p[4], p[5], p[6], p[7]);
-            }
-
-            if (nsvg_path->closed) {
-                path2d.close_path();
-            }
-        }
-
-        // Shadow test.
-        if (false) {
-            set_shadow_color(ColorU::green());
-            set_shadow_blur(8);
-        }
-
-        // Set dash.
-        set_line_dash_offset(nsvg_shape->strokeDashOffset);
-        set_line_dash(
-            std::vector<float>(nsvg_shape->strokeDashArray, nsvg_shape->strokeDashArray + nsvg_shape->strokeDashCount));
-
-        // Add fill.
-        set_fill_paint(convert_nsvg_paint(nsvg_shape->fill));
-        fill_path(path2d, convert_nsvg_fill_rule(nsvg_shape->fillRule));
-
-        // Add stroke.
-        set_line_join(convert_nsvg_line_join(nsvg_shape->strokeLineJoin));
-        set_miter_limit(nsvg_shape->miterLimit);
-        set_line_cap(convert_nsvg_line_cap(nsvg_shape->strokeLineCap));
-        set_line_width(nsvg_shape->strokeWidth);
-        set_stroke_paint(convert_nsvg_paint(nsvg_shape->stroke));
-        stroke_path(path2d);
-    }
-
-    // Clean up NanoSVG image.
-    nsvgDelete(image);
-}
-
-void Canvas::draw_image() {}
-
 void Canvas::save_state() {
     saved_states.push_back(current_state);
 }
@@ -580,6 +399,24 @@ void Canvas::restore_state() {
 
 void Canvas::draw() {
     scene->build_and_render(renderer);
+}
+
+std::shared_ptr<Scene> Canvas::take_scene() {
+    auto taken_scene = scene;
+
+    scene = std::make_shared<Scene>(0, scene->get_view_box());
+
+    return taken_scene;
+}
+
+void Canvas::set_size(const Vec2<int> &new_size) {
+    auto new_view_box = Rect<int>(Vec2<int>(), new_size).to_f32();
+    //    scene.set_bounds(new_view_box);
+    scene->set_view_box(new_view_box);
+}
+
+Vec2<int> Canvas::get_size() const {
+    return scene->get_view_box().size().ceil();
 }
 
 // Path2d

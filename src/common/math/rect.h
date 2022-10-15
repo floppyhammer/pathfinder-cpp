@@ -7,6 +7,7 @@
 #undef max
 
 namespace Pathfinder {
+
 template <typename T>
 struct Rect {
     // A valid rect is when left <= right and top <= bottom.
@@ -199,6 +200,7 @@ inline void union_rect(Rect<float> &bounds, Vec2<float> new_point, bool first_po
         bounds = Rect<float>(bounds.origin().min(new_point), bounds.lower_right().max(new_point));
     }
 }
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_RECT_H
