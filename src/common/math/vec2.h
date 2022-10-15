@@ -35,6 +35,10 @@ struct Vec2 {
         return {(float)x, (float)y};
     }
 
+    inline Vec2<int> to_i32() const {
+        return {(int)x, (int)y};
+    }
+
     inline Vec2 min(const Vec2 &other) const {
         return {std::min(x, other.x), std::min(y, other.y)};
     }
