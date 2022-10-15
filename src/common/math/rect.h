@@ -170,12 +170,12 @@ struct Rect {
     inline Rect union_rect(const Rect &other) const {
         // This rect is invalid, return the other rect.
         if (!is_valid()) {
-            return {other.origin(), other.lower_right()};
+            return other;
         }
 
         // The other rect is invalid, return this rect.
         if (!other.is_valid()) {
-            return {origin(), lower_right()};
+            return *this;
         }
 
         return {origin().min(other.origin()), lower_right().max(other.lower_right())};

@@ -21,6 +21,10 @@ Transform2 Transform2::rotate(float theta) const {
     return Transform2::from_rotation(theta) * *this;
 }
 
+bool Transform2::is_identity() const {
+    return matrix == Mat2x2<float>::from_scale({1, 1}) && vector == Vec2<float>();
+}
+
 Transform2 Transform2::inverse() const {
     auto matrix_inv = matrix.inverse();
     auto vector_inv = -(matrix_inv * vector);

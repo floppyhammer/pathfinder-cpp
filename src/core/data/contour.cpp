@@ -37,6 +37,7 @@ void Contour::update_bounds(Rect<float> &p_bounds) const {
     if (!p_bounds.is_valid()) {
         p_bounds = bounds;
     }
+
     p_bounds = p_bounds.union_rect(bounds);
 }
 
@@ -82,6 +83,15 @@ void Contour::push_cubic(const Vec2<float> &ctrl0, const Vec2<float> &ctrl1, con
     push_point(ctrl0, PointFlag::CONTROL_POINT_0, true);
     push_point(ctrl1, PointFlag::CONTROL_POINT_1, true);
     push_point(to, PointFlag::ON_CURVE_POINT, true);
+}
+
+void Contour::transform(const Transform2 &transform) {
+    for (int i = 0; i < points.size(); i++) {
+        auto &point = points[i];
+        point = transform * point;
+
+        union_rect(bounds, point, i == 0);
+    }
 }
 
 SegmentsIter::SegmentsIter(const std::vector<Vec2<float>> &p_points,

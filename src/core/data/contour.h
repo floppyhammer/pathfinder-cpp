@@ -72,6 +72,8 @@ public:
      * @return Segments (e.g. lines, curves).
      */
     std::vector<Segment> get_segments(bool force_closed = false) const;
+
+    void transform(const Transform2 &transform);
 };
 
 /// An iterator used to traverse segments efficiently in a contour.

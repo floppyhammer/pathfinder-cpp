@@ -19,31 +19,8 @@ public:
     Rect<float> bounds;
 
 public:
-    /**
-     * Translate the SVG image. Bounds are also updated.
-     * @param translation The translation vector.
-     */
-    void translate(const Vec2<float> &translation);
-
-    /**
-     * Scale the SVG image. Bounds are also updated.
-     * @param scale The scaling factor.
-     */
-    void scale(const Vec2<float> &scale);
-
-    /**
-     * Rotate the SVG image. Bounds are also updated.
-     * @param rotation The rotation angle in degree.
-     */
-    void rotate(float rotation);
-
     /// Applies an affine transform to this shape and all its paths.
     void transform(const Transform2 &transform);
-
-    /**
-     * Update shape and paths bounds. Required after transforming shape.
-     */
-    void update_bounds();
 
     /// Add a new contour to this shape.
     void push_contour(const Contour &p_contour);

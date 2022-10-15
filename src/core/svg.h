@@ -8,6 +8,8 @@ namespace Pathfinder {
 
 class SvgScene {
 public:
+    SvgScene();
+
     /**
      * @brief Load a SVG file into the scene.
      * @note We need a copy of the input vector as its content will be modified.

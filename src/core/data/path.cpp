@@ -4,84 +4,21 @@
 
 namespace Pathfinder {
 
-void Outline::scale(const Vec2<float> &scale) {
-    // Outline origin.
-    // Vec2<float> origin = bounds.origin();
-    Vec2<float> origin{};
-
-    for (auto &contour : contours) {
-        for (auto &point : contour.points) {
-            // Move to local coordinates first.
-            point -= origin;
-
-            // Do scaling.
-            point *= scale;
-
-            // Move it back to global coordinates.
-            point += origin;
-        }
-    }
-
-    update_bounds();
-}
-
-void Outline::translate(const Vec2<float> &translation) {
-    for (auto &contour : contours) {
-        for (auto &point : contour.points) {
-            point += translation;
-        }
-    }
-
-    update_bounds();
-}
-
-void Outline::rotate(float rotation) {
-    // Outline origin.
-    // Vec2<float> origin = bounds.origin();
-    Vec2<float> origin{};
-
-    float rotation_in_radian = deg2rad(rotation);
-
-    for (auto &contour : contours) {
-        for (auto &point : contour.points) {
-            // Move to local coordinates first.
-            point -= origin;
-
-            // Do rotation.
-            point *= Vec2<float>(cos(rotation_in_radian), sin(rotation_in_radian));
-
-            // Move it back to global coordinates.
-            point += origin;
-        }
-    }
-
-    update_bounds();
-}
-
 void Outline::transform(const Transform2 &transform) {
-    for (auto &contour : contours) {
-        for (auto &point : contour.points) {
-            point = transform * point;
-        }
+    if (transform.is_identity()) {
+        return;
     }
 
-    update_bounds();
-}
+    Rect<float> new_bounds;
 
-void Outline::update_bounds() {
-    bounds = Rect<float>();
-
-    // Update child contours' bounds and its own bounds.
     for (auto &contour : contours) {
-        contour.bounds = Rect<float>();
+        contour.transform(transform);
 
-        for (auto &point : contour.points) {
-            union_rect(contour.bounds, point);
-        }
-
-        // Own bounds.
-        bounds = bounds.union_rect(contour.bounds);
+        // Update bounds.
+        new_bounds = new_bounds.union_rect(contour.bounds);
     }
+
+    bounds = new_bounds;
 }
 
 void Outline::push_contour(const Contour &p_contour) {

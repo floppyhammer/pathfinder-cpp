@@ -138,8 +138,8 @@ Canvas::Canvas(const std::shared_ptr<Driver> &p_driver) {
     scene = std::make_shared<Scene>(0, Rect<float>(0, 0, 0, 0));
 }
 
-void Canvas::set_empty_dest_texture(float size_x, float size_y) {
-    set_dest_texture(driver->create_texture(size_x, size_y, TextureFormat::RGBA8_UNORM));
+void Canvas::set_empty_dest_texture(uint32_t p_width, uint32_t p_height) {
+    set_dest_texture(driver->create_texture(p_width, p_height, TextureFormat::RGBA8_UNORM));
 }
 
 void Canvas::push_path(Outline &p_outline, PathOp p_path_op, FillRule p_fill_rule) {

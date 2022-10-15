@@ -71,6 +71,10 @@ struct Mat2x2 {
                 v[1] * other.v[2] + v[3] * other.v[3]};
     }
 
+    inline bool operator==(const Mat2x2 &b) const {
+        return v[0] == b.v[0] && v[1] == b.v[1] && v[2] == b.v[2] && v[3] == b.v[3];
+    }
+
     inline Vec2<float> operator*(const Vec2<float> &other) const {
         return {v[0] * other.x + v[2] * other.y, v[1] * other.x + v[3] * other.y};
     }

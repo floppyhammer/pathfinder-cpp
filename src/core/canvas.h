@@ -109,7 +109,7 @@ class Canvas {
 public:
     Canvas(const std::shared_ptr<Driver> &p_driver);
 
-    void set_empty_dest_texture(float p_size_x, float p_size_y);
+    void set_empty_dest_texture(uint32_t p_width, uint32_t p_height);
 
     // Canvas state.
     // ------------------------------------------------

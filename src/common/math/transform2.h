@@ -35,6 +35,8 @@ public:
         return {Mat2x2<float>::from_rotation_vector(p_vector), Vec2<float>(0)};
     }
 
+    bool is_identity() const;
+
     Transform2 inverse() const;
 
     /**

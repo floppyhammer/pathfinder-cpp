@@ -137,6 +137,10 @@ Paint convert_nsvg_paint(NSVGpaint nsvg_paint) {
     return paint;
 }
 
+SvgScene::SvgScene() {
+    scene = std::make_shared<Scene>(0, Rect<float>());
+}
+
 void SvgScene::load_file(std::vector<char> input, Canvas &canvas) {
     if (input.empty()) {
         Logger::error("SVG input is empty!", "SvgScene");
@@ -152,7 +156,7 @@ void SvgScene::load_file(std::vector<char> input, Canvas &canvas) {
         return;
     }
 
-    auto previous_scene = canvas.take_scene();
+    auto old_scene = canvas.replace_scene(scene);
 
     canvas.set_size({(int)image->width, (int)image->height});
 
@@ -206,7 +210,7 @@ void SvgScene::load_file(std::vector<char> input, Canvas &canvas) {
 
     scene = canvas.get_scene();
 
-    canvas.set_scene(previous_scene);
+    canvas.set_scene(old_scene);
 
     // Clean up NanoSVG image.
     nsvgDelete(image);
