@@ -373,10 +373,6 @@ std::shared_ptr<Scene> Canvas::get_scene() const {
     return scene;
 }
 
-void Canvas::set_scene(const std::shared_ptr<Scene> &p_scene) {
-    scene = p_scene;
-}
-
 void Canvas::set_dest_texture(const std::shared_ptr<Texture> &texture) {
     dest_texture = texture;
     renderer->set_dest_texture(texture);
@@ -401,10 +397,22 @@ void Canvas::draw() {
     scene->build_and_render(renderer);
 }
 
+void Canvas::set_scene(const std::shared_ptr<Scene> &p_scene) {
+    scene = p_scene;
+}
+
 std::shared_ptr<Scene> Canvas::take_scene() {
     auto taken_scene = scene;
 
     scene = std::make_shared<Scene>(0, scene->get_view_box());
+
+    return taken_scene;
+}
+
+std::shared_ptr<Scene> Canvas::replace_scene(const std::shared_ptr<Scene> &new_scene) {
+    auto taken_scene = scene;
+
+    scene = new_scene;
 
     return taken_scene;
 }
