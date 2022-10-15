@@ -1,5 +1,7 @@
 #include "canvas.h"
 
+#include <utility>
+
 #include "../common/global_macros.h"
 #include "../common/io.h"
 #include "../common/logger.h"

@@ -19,16 +19,16 @@ public:
 
     Transform2(Mat2x2<float> p_matrix, Vec2<float> p_vector);
 
-    static Transform2 from_scale(const Vec2<float> &p_scale) {
-        return {Mat2x2<float>::from_scale(p_scale), Vec2<float>(0)};
+    static Transform2 from_scale(const Vec2<float> &scale) {
+        return {Mat2x2<float>::from_scale(scale), Vec2<float>(0)};
     }
 
     static Transform2 from_rotation(float theta) {
         return {Mat2x2<float>::from_rotation(theta), Vec2<float>(0)};
     }
 
-    static Transform2 from_translation(const Vec2<float> &p_vector) {
-        return {Mat2x2<float>::from_scale(Vec2<float>(1)), p_vector};
+    static Transform2 from_translation(const Vec2<float> &translation) {
+        return {Mat2x2<float>::identity(), translation};
     }
 
     static Transform2 from_rotation_vector(const UnitVector &p_vector) {

@@ -20,6 +20,10 @@ struct Mat2x2 {
         v[3] = m22;
     }
 
+    static Mat2x2 identity() {
+        return Mat2x2<float>::from_scale(Vec2<float>(1));
+    }
+
     static Mat2x2 from_scale(Vec2<float> p_scale) {
         return {p_scale.x, 0.0, 0.0, p_scale.y};
     }

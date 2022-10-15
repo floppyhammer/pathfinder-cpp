@@ -71,10 +71,6 @@ struct State {
 /// Equivalent to SVG path.
 class Path2d {
 public:
-    Contour current_contour;
-
-    Outline outline;
-
     // Basic geometries.
     // -----------------------------------------------
     void close_path();
@@ -101,6 +97,10 @@ public:
     Outline into_outline();
 
 private:
+    Contour current_contour;
+
+    Outline outline;
+
     void flush_current_contour();
 };
 
