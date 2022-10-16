@@ -173,9 +173,16 @@ public:
 
     void draw_image(const Image &image, const Rect<float> &dst_location);
 
+    /// Global control of path clipping.
     void set_size(const Vec2<int> &size);
 
     Vec2<int> get_size() const;
+
+    /// Local control of path clipping.
+    /// Will force bounds of outlines drawn henceforward be within the set clipping box.
+    void set_clipping_box(const Rect<float> &box);
+
+    void unset_clipping_box();
 
     /// Clears the current canvas.
     void clear();
@@ -221,6 +228,8 @@ private:
     std::vector<State> saved_states;
 
     std::shared_ptr<Texture> dest_texture;
+
+    Rect<float> clipping_box;
 
     /// Scene renderer.
     std::shared_ptr<Renderer> renderer;

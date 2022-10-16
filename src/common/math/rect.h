@@ -157,7 +157,7 @@ struct Rect {
         return !(left > other.right || right < other.left || top > other.bottom || bottom < other.top);
     }
 
-    /// Return intersection rect. Return a invalid zero rect if no intersection.
+    /// Return intersection rect. Return an invalid rect if no intersection.
     inline Rect intersection(const Rect &other) const {
         // If not intersected, return a zero rect.
         if (!intersects(other)) {

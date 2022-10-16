@@ -157,6 +157,14 @@ void Canvas::push_path(Outline &p_outline, PathOp p_path_op, FillRule p_fill_rul
     // Apply transform.
     p_outline.transform(transform);
 
+    // Apply refined clipping.
+    if (clipping_box.is_valid()) {
+        p_outline.bounds = p_outline.bounds.intersection(clipping_box);
+        if (!p_outline.bounds.is_valid()) {
+            return;
+        }
+    }
+
     // Add shadow.
     if (current_state.shadow_color.is_opaque()) {
         // Copy outline.
@@ -427,6 +435,14 @@ void Canvas::set_size(const Vec2<int> &new_size) {
 
 Vec2<int> Canvas::get_size() const {
     return scene->get_view_box().size().ceil();
+}
+
+void Canvas::set_clipping_box(const Rect<float> &box) {
+    clipping_box = box;
+}
+
+void Canvas::unset_clipping_box() {
+    clipping_box = Rect<float>();
 }
 
 // Path2d
