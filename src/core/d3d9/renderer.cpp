@@ -2,7 +2,6 @@
 
 #include "../../common/global_macros.h"
 #include "../../common/io.h"
-#include "../../common/math/basic.h"
 #include "../../common/math/mat4x4.h"
 #include "../../common/math/vec3.h"
 #include "../../common/timestamp.h"
@@ -224,7 +223,7 @@ void RendererD3D9::set_up_pipelines() {
                 descriptor.type = DescriptorType::Sampler;
                 descriptor.stage = ShaderType::Vertex, descriptor.binding = 0;
                 descriptor.binding_name = "uTextureMetadata";
-                descriptor.texture = metadata_texture;
+                //                descriptor.texture = metadata_texture;
 
                 tile_descriptor_set->add_or_update_descriptor(descriptor);
             }
@@ -279,7 +278,7 @@ void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &p_scene_builder) {
     }
 
     // Tiles need to be drawn after fill drawing and after tile batches are prepared.
-    upload_and_draw_tiles(scene_builder->tile_batches, scene_builder->metadata);
+    upload_and_draw_tiles(scene_builder->tile_batches);
 }
 
 void RendererD3D9::upload_fills(const std::vector<Fill> &fills, const std::shared_ptr<CommandBuffer> &cmd_buffer) {
@@ -305,11 +304,7 @@ void RendererD3D9::upload_tiles(const std::vector<TileObjectPrimitive> &tiles,
     cmd_buffer->upload_to_buffer(tile_vertex_buffer, 0, byte_size, (void *)tiles.data());
 }
 
-void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatch> &tile_batches,
-                                         const std::vector<TextureMetadataEntry> &metadata) {
-    // Upload texture metadata (color, blur, etc...).
-    upload_texture_metadata(metadata_texture, metadata, driver);
-
+void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatch> &tile_batches) {
     // Clear the destination framebuffer for the first time.
     need_to_clear_dest = true;
 
@@ -327,7 +322,12 @@ void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatch> &tile_
 
         upload_tiles(batch.tiles, cmd_buffer);
 
-        draw_tiles(tile_count, batch.render_target, batch.color_texture, z_buffer_texture, cmd_buffer);
+        draw_tiles(tile_count,
+                   batch.render_target,
+                   batch.metadata_texture,
+                   batch.color_texture,
+                   z_buffer_texture,
+                   cmd_buffer);
 
         cmd_buffer->submit(driver);
     }
@@ -352,6 +352,7 @@ void RendererD3D9::draw_fills(uint32_t fills_count, const std::shared_ptr<Comman
 
 void RendererD3D9::draw_tiles(uint32_t tiles_count,
                               const RenderTarget &render_target,
+                              const std::shared_ptr<Texture> &metadata_texture,
                               const std::shared_ptr<Texture> &color_texture,
                               const std::shared_ptr<Texture> &z_buffer_texture,
                               const std::shared_ptr<CommandBuffer> &cmd_buffer) {
@@ -399,14 +400,20 @@ void RendererD3D9::draw_tiles(uint32_t tiles_count,
     {
         tile_descriptor_set->add_or_update_descriptor(
             {DescriptorType::Sampler, ShaderType::Fragment, 7, "uDestTexture", nullptr, z_buffer_texture}); // Unused
+
         tile_descriptor_set->add_or_update_descriptor(
             {DescriptorType::Sampler, ShaderType::Vertex, 1, "uZBuffer", nullptr, z_buffer_texture});
+
         tile_descriptor_set->add_or_update_descriptor({DescriptorType::Sampler,
                                                        ShaderType::Fragment,
                                                        5,
                                                        "uColorTexture0",
                                                        nullptr,
                                                        color_texture ? color_texture : z_buffer_texture});
+
+        tile_descriptor_set->add_or_update_descriptor(
+            {DescriptorType::Sampler, ShaderType::Vertex, 0, "uTextureMetadata", nullptr, metadata_texture});
+
         tile_descriptor_set->add_or_update_descriptor(
             {DescriptorType::Sampler, ShaderType::Fragment, 8, "uGammaLUT", nullptr, z_buffer_texture}); // Unused
     }

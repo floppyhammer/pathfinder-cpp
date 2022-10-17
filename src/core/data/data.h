@@ -11,6 +11,7 @@
 #include "../paint/effects.h"
 
 namespace Pathfinder {
+
 // Tile size.
 const int TILE_WIDTH = 16;
 const int TILE_HEIGHT = 16;
@@ -35,8 +36,7 @@ struct PushSegmentFlags {
 
     PushSegmentFlags() = default;
 
-    explicit PushSegmentFlags(uint8_t p_value) : value(p_value) {
-    }
+    explicit PushSegmentFlags(uint8_t p_value) : value(p_value) {}
 };
 
 /// Flags that each point can have, indicating whether it's an on-curve or control point.
@@ -140,6 +140,41 @@ struct Range {
 
     Range(unsigned long long p_start, unsigned long long p_end) : start(p_start), end(p_end){};
 };
+
+/// Only for draw paths. Not for clip paths.
+struct DrawTilingPathInfo {
+    uint32_t paint_id;
+    BlendMode blend_mode;
+    FillRule fill_rule;
+};
+
+struct TilingPathInfo {
+    enum class Type {
+        Clip,
+        Draw,
+    } type;
+
+    DrawTilingPathInfo info;
+
+    inline uint8_t to_ctrl() const {
+        uint8_t ctrl = 0;
+
+        if (type == TilingPathInfo::Type::Draw) {
+            ctrl = info.fill_rule == FillRule::EvenOdd ? TILE_CTRL_MASK_EVEN_ODD << TILE_CTRL_MASK_0_SHIFT
+                                                       : TILE_CTRL_MASK_WINDING << TILE_CTRL_MASK_0_SHIFT;
+        }
+
+        return ctrl;
+    }
+};
+
+struct Clip {
+    uint32_t dest_tile_id = 0;
+    int32_t dest_backdrop = 0;
+    uint32_t src_tile_id = 0;
+    int32_t src_backdrop = 0;
+};
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_DATA_H

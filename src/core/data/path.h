@@ -35,7 +35,7 @@ struct DrawPath {
     uint16_t paint{};
 
     /// The ID of an optional clip shape that will be used to clip this shape.
-    uint32_t clip_path{};
+    std::shared_ptr<uint32_t> clip_path; // Optional
 
     /// How to fill this shape (winding or even-odd).
     FillRule fill_rule = FillRule::Winding;
@@ -49,9 +49,10 @@ struct ClipPath {
     /// The actual vector path.
     Outline outline;
 
-    /// The ID of another, previously-defined, clip shape that clips this one.
-    /// Nested clips can be achieved by clipping clip shapes with other clip shapes.
-    uint32_t clip_path{};
+    /// The ID of another, previously-defined, clip path that clips this one.
+    ///
+    /// Nested clips can be achieved by clipping clip paths with other clip paths.
+    std::shared_ptr<uint32_t> clip_path; // Optional
 
     /// How to fill this shape (winding or even-odd).
     FillRule fill_rule = FillRule::Winding;

@@ -4,12 +4,19 @@
 #include "path.h"
 
 namespace Pathfinder {
-BuiltPath::BuiltPath(
-    uint32_t path_id, Rect<float> path_bounds, uint32_t p_paint_id, Rect<float> view_box_bounds, FillRule p_fill_rule)
-    : fill_rule(p_fill_rule), paint_id(p_paint_id) {
-    // Set fill rule.
-    ctrl_byte = fill_rule == FillRule::EvenOdd ? TILE_CTRL_MASK_EVEN_ODD << TILE_CTRL_MASK_0_SHIFT
-                                               : TILE_CTRL_MASK_WINDING << TILE_CTRL_MASK_0_SHIFT;
+
+BuiltPath::BuiltPath(uint32_t path_id,
+                     Rect<float> path_bounds,
+                     Rect<float> view_box_bounds,
+                     FillRule p_fill_rule,
+                     std::shared_ptr<uint32_t> clip_path_id,
+                     const TilingPathInfo &path_info)
+    : fill_rule(p_fill_rule) {
+    if (path_info.type == TilingPathInfo::Type::Draw) {
+        paint_id = path_info.info.paint_id;
+    }
+
+    ctrl_byte = path_info.to_ctrl();
 
     Rect<float> tile_map_bounds = path_bounds;
 
@@ -19,4 +26,5 @@ BuiltPath::BuiltPath(
 
     data.tiles = DenseTileMap<TileObjectPrimitive>(tile_bounds, path_id, paint_id, ctrl_byte);
 }
+
 } // namespace Pathfinder

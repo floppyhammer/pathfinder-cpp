@@ -144,31 +144,30 @@ void Canvas::set_empty_dest_texture(uint32_t p_width, uint32_t p_height) {
     set_dest_texture(driver->create_texture(p_width, p_height, TextureFormat::RGBA8_UNORM));
 }
 
-void Canvas::push_path(Outline &p_outline, PathOp p_path_op, FillRule p_fill_rule) {
-    // Get paint.
-    Paint paint = p_path_op == PathOp::Fill ? fill_paint() : stroke_paint();
-
-    // Push to the scene's palette.
+void Canvas::push_path(Outline &outline, PathOp path_op, FillRule fill_rule) {
+    // Get paint and push it to the scene's palette.
+    Paint paint = path_op == PathOp::Fill ? fill_paint() : stroke_paint();
     auto paint_id = scene->push_paint(paint);
 
-    auto transform = get_transform();
+    auto transform = current_state.transform;
+    auto clip_path = current_state.clip_path;
     auto blend_mode = current_state.global_composite_operation;
 
-    // Apply transform.
-    p_outline.transform(transform);
+    // Apply transform to the outline.
+    outline.transform(transform);
 
     // Apply refined clipping.
-    if (clipping_box.is_valid()) {
-        p_outline.bounds = p_outline.bounds.intersection(clipping_box);
-        if (!p_outline.bounds.is_valid()) {
-            return;
-        }
-    }
+    //    if (clipping_box.is_valid()) {
+    //        outline.bounds = outline.bounds.intersection(clipping_box);
+    //        if (!outline.bounds.is_valid()) {
+    //            return;
+    //        }
+    //    }
 
     // Add shadow.
     if (current_state.shadow_color.is_opaque()) {
         // Copy outline.
-        Outline shadow_outline = p_outline;
+        Outline shadow_outline = outline;
 
         // Set shadow offset.
         shadow_outline.transform(Transform2::from_translation(current_state.shadow_offset));
@@ -196,7 +195,7 @@ void Canvas::push_path(Outline &p_outline, PathOp p_path_op, FillRule p_fill_rul
         DrawPath path;
         path.outline = shadow_outline;
         path.paint = shadow_paint_id;
-        path.fill_rule = p_fill_rule;
+        path.fill_rule = fill_rule;
         path.blend_mode = blend_mode;
 
         // This path goes to the blur viewport x.
@@ -206,9 +205,10 @@ void Canvas::push_path(Outline &p_outline, PathOp p_path_op, FillRule p_fill_rul
     }
 
     DrawPath path;
-    path.outline = p_outline;
+    path.outline = outline;
     path.paint = paint_id;
-    path.fill_rule = p_fill_rule;
+    path.clip_path = clip_path;
+    path.fill_rule = fill_rule;
     path.blend_mode = blend_mode;
 
     scene->push_draw_path(path);
@@ -250,6 +250,19 @@ void Canvas::stroke_path(Path2d &path2d) {
         // Even-Odd fill rule is not applicable for strokes.
         push_path(stroke_outline, PathOp::Stroke, FillRule::Winding);
     }
+}
+
+void Canvas::clip_path(Path2d &path, FillRule fill_rule) {
+    auto outline = path.into_outline();
+    outline.transform(current_state.transform);
+
+    ClipPath clip_path;
+    clip_path.outline = outline;
+    clip_path.fill_rule = fill_rule;
+    clip_path.clip_path = current_state.clip_path;
+
+    uint32_t clip_path_id = scene->push_clip_path(clip_path);
+    current_state.clip_path = std::make_shared<uint32_t>(clip_path_id);
 }
 
 Paint Canvas::fill_paint() const {
@@ -340,12 +353,20 @@ void Canvas::set_line_dash_offset(float p_line_dash_offset) {
     current_state.line_dash_offset = p_line_dash_offset;
 }
 
+Transform2 Canvas::get_transform() const {
+    return current_state.transform;
+}
+
 void Canvas::set_transform(const Transform2 &p_transform) {
     current_state.transform = p_transform;
 }
 
-Transform2 Canvas::get_transform() const {
-    return current_state.transform;
+void Canvas::set_global_alpha(float new_global_alpha) {
+    current_state.global_alpha = new_global_alpha;
+}
+
+void Canvas::set_global_composite_operation(BlendMode new_composite_operation) {
+    current_state.global_composite_operation = new_composite_operation;
 }
 
 void Canvas::draw_image(const Image &image, const Rect<float> &dst_location) {

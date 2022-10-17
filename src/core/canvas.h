@@ -16,35 +16,6 @@ enum PathOp {
     Stroke,
 };
 
-enum CompositeOperation {
-    SourceOver,
-    SourceIn,
-    SourceOut,
-    SourceAtop,
-    DestinationOver,
-    DestinationIn,
-    DestinationOut,
-    DestinationAtop,
-    Lighter,
-    Copy,
-    Xor,
-    Multiply,
-    Screen,
-    Overlay,
-    Darken,
-    Lighten,
-    ColorDodge,
-    ColorBurn,
-    HardLight,
-    SoftLight,
-    Difference,
-    Exclusion,
-    Hue,
-    Saturation,
-    Color,
-    Luminosity,
-};
-
 /// Canvas state.
 struct State {
     Transform2 transform;
@@ -65,7 +36,10 @@ struct State {
     float shadow_blur = 0;
     Vec2<float> shadow_offset;
 
+    float global_alpha = 1;
     BlendMode global_composite_operation;
+
+    std::shared_ptr<uint32_t> clip_path; // Optional
 };
 
 /// Equivalent to SVG path.
@@ -90,7 +64,6 @@ public:
 
     void add_rect(const Rect<float> &rect, float corner_radius = 0);
 
-    /// There is no exact representation of the circle using Bezier curves.
     void add_circle(const Vec2<float> &center, float radius);
     // -----------------------------------------------
 
@@ -109,18 +82,14 @@ class Canvas {
 public:
     Canvas(const std::shared_ptr<Driver> &p_driver);
 
+    /// Clears the current canvas.
+    void clear();
+
     void set_empty_dest_texture(uint32_t p_width, uint32_t p_height);
 
     // Canvas state.
     // ------------------------------------------------
-    Paint fill_paint() const;
-
-    void set_fill_paint(const Paint &p_fill_paint);
-
-    Paint stroke_paint() const;
-
-    void set_stroke_paint(const Paint &p_stroke_paint);
-
+    // Line styles
     float line_width() const;
 
     void set_line_width(float p_line_width);
@@ -137,6 +106,25 @@ public:
 
     void set_miter_limit(float p_miter_limit);
 
+    std::vector<float> line_dash() const;
+
+    void set_line_dash(const std::vector<float> &p_line_dash);
+
+    float line_dash_offset() const;
+
+    void set_line_dash_offset(float p_line_dash_offset);
+
+    // Fill and stroke styles
+    Paint fill_paint() const;
+
+    void set_fill_paint(const Paint &p_fill_paint);
+
+    Paint stroke_paint() const;
+
+    void set_stroke_paint(const Paint &p_stroke_paint);
+
+    // Shadows
+
     float shadow_blur() const;
 
     void set_shadow_blur(float p_shadow_blur);
@@ -149,30 +137,28 @@ public:
 
     void set_shadow_offset(float p_shadow_offset_x, float p_shadow_offset_y);
 
-    std::vector<float> line_dash() const;
-
-    void set_line_dash(const std::vector<float> &p_line_dash);
-
-    float line_dash_offset() const;
-
-    void set_line_dash_offset(float p_line_dash_offset);
+    Transform2 get_transform() const;
 
     void set_transform(const Transform2 &p_transform);
 
-    Transform2 get_transform() const;
+    void set_global_alpha(float new_global_alpha);
+
+    void set_global_composite_operation(BlendMode new_composite_operation);
     // ------------------------------------------------
 
-    // Drawing operations.
+    // Drawing paths.
     // ------------------------------------------------
-    /// Fill a shape.
     void fill_path(Path2d &path2d, FillRule fill_rule);
 
-    /// Stroke a path.
     void stroke_path(Path2d &path2d);
+
+    void clip_path(Path2d &path2d, FillRule fill_rule);
     // ------------------------------------------------
 
+    // Drawing images
     void draw_image(const Image &image, const Rect<float> &dst_location);
 
+    /// Set the inner scene's view box.
     /// Global control of path clipping.
     void set_size(const Vec2<int> &size);
 
@@ -184,11 +170,9 @@ public:
 
     void unset_clipping_box();
 
-    /// Clears the current canvas.
-    void clear();
-
     void resize_dest_texture(float p_size_x, float p_size_y);
 
+    /// Returns the inner scene.
     std::shared_ptr<Scene> get_scene() const;
 
     void set_scene(const std::shared_ptr<Scene> &p_scene);
@@ -212,27 +196,30 @@ public:
 
 private:
     /**
-     * Adds a path.
-     * @param p_outline Path to add.
-     * @param p_path_op Fill/Stroke.
-     * @param p_fill_rule Winding/Even-Odd.
+     * Adds an outline.
+     * @param outline Outline to add
+     * @param path_op Fill/Stroke
+     * @param fill_rule Winding/Even-Odd
      */
-    void push_path(Outline &p_outline, PathOp p_path_op, FillRule p_fill_rule);
+    void push_path(Outline &outline, PathOp path_op, FillRule fill_rule);
 
 private:
-    std::shared_ptr<Driver> driver;
-
     std::shared_ptr<Scene> scene;
 
+    // State management.
     State current_state;
     std::vector<State> saved_states;
 
     std::shared_ptr<Texture> dest_texture;
 
+    // TODO: Should be replaced with clip path.
     Rect<float> clipping_box;
 
     /// Scene renderer.
     std::shared_ptr<Renderer> renderer;
+
+    /// Rendering API related.
+    std::shared_ptr<Driver> driver;
 };
 
 } // namespace Pathfinder

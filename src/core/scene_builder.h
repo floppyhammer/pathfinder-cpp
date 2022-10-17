@@ -19,9 +19,6 @@ public:
         return scene;
     }
 
-    // Metadata texture data, which will be sent to a renderer.
-    std::vector<TextureMetadataEntry> metadata{};
-
 protected:
     // Use a raw pointer to avoid cyclic reference.
     Scene* scene{};

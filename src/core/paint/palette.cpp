@@ -1,6 +1,180 @@
 #include "palette.h"
 
+#include "../../common/math/basic.h"
+#include "../d3d9/tiler.h"
+#include "umHalf.h"
+
 namespace Pathfinder {
+
+// 1.0 / sqrt(2 * pi)
+const float SQRT_2_PI_INV = 0.3989422804014327;
+
+const int32_t COMBINER_CTRL_FILTER_RADIAL_GRADIENT = 0x1;
+const int32_t COMBINER_CTRL_FILTER_TEXT = 0x2;
+const int32_t COMBINER_CTRL_FILTER_BLUR = 0x3;
+const int32_t COMBINER_CTRL_FILTER_COLOR_MATRIX = 0x4;
+
+const int32_t COMBINER_CTRL_COLOR_FILTER_SHIFT = 4;
+const int32_t COMBINER_CTRL_COLOR_COMBINE_SHIFT = 8;
+const int32_t COMBINER_CTRL_COMPOSITE_SHIFT = 10;
+
+struct FilterParams {
+    F32x4 p0 = F32x4::splat(0);
+    F32x4 p1 = F32x4::splat(0);
+    F32x4 p2 = F32x4::splat(0);
+    F32x4 p3 = F32x4::splat(0);
+    F32x4 p4 = F32x4::splat(0);
+    int32_t ctrl = 0;
+};
+
+FilterParams compute_filter_params(const PaintFilter &filter,
+                                   BlendMode blend_mode,
+                                   ColorCombineMode color_combine_mode) {
+    // Control bit flags.
+    int32_t ctrl = 0;
+
+    // Add flags for blend mode and color combine mode.
+    ctrl |= blend_mode_to_composite_ctrl(blend_mode) << COMBINER_CTRL_COMPOSITE_SHIFT;
+    ctrl |= color_combine_mode_to_composite_ctrl(color_combine_mode) << COMBINER_CTRL_COLOR_COMBINE_SHIFT;
+
+    FilterParams filter_params;
+    filter_params.ctrl = ctrl;
+
+    // Add flag for filter.
+    switch (filter.type) {
+        case PaintFilter::Type::RadialGradient: {
+            auto gradient = filter.gradient_filter;
+
+            filter_params.p0 = F32x4(gradient.line.from(), gradient.line.vector());
+            filter_params.p1 = F32x4(gradient.radii, gradient.uv_origin);
+            filter_params.ctrl = ctrl | (COMBINER_CTRL_FILTER_RADIAL_GRADIENT << COMBINER_CTRL_COLOR_FILTER_SHIFT);
+        } break;
+        case PaintFilter::Type::PatternFilter: {
+            auto pattern = filter.pattern_filter;
+
+            if (pattern.type == PatternFilter::Type::Blur) {
+                auto sigma = pattern.blur.sigma;
+                auto direction = pattern.blur.direction;
+
+                if (sigma <= 0) {
+                    break;
+                }
+
+                auto sigma_inv = 1.f / sigma;
+                auto gauss_coeff_x = SQRT_2_PI_INV * sigma_inv;
+                auto gauss_coeff_y = std::exp(-0.5f * sigma_inv * sigma_inv);
+                auto gauss_coeff_z = gauss_coeff_y * gauss_coeff_y;
+
+                auto src_offset = direction == BlurDirection::X ? Vec2<float>(1.0, 0.0) : Vec2<float>(0.0, 1.0);
+
+                auto support = std::ceil(1.5f * sigma) * 2.f;
+
+                filter_params.p0 = F32x4(src_offset, Vec2<float>(support, 0.0));
+                filter_params.p1 = F32x4(gauss_coeff_x, gauss_coeff_y, gauss_coeff_z, 0.0);
+                filter_params.ctrl = ctrl | (COMBINER_CTRL_FILTER_BLUR << COMBINER_CTRL_COLOR_FILTER_SHIFT);
+            } else {
+                throw std::runtime_error("Text pattern filter is not supported yet!");
+            }
+        } break;
+        default: // No filter.
+            break;
+    }
+
+    return filter_params;
+}
+
+void upload_texture_metadata(const std::shared_ptr<Texture> &metadata_texture,
+                             const std::vector<TextureMetadataEntry> &metadata,
+                             const std::shared_ptr<Driver> &driver) {
+    auto padded_texel_size =
+        alignup_i32((int32_t)metadata.size(), TEXTURE_METADATA_ENTRIES_PER_ROW) * TEXTURE_METADATA_TEXTURE_WIDTH * 4;
+
+    std::vector<half> texels;
+    texels.reserve(padded_texel_size);
+
+    for (const auto &entry : metadata) {
+        auto base_color = entry.base_color.to_f32();
+
+        auto filter_params = compute_filter_params(entry.filter, entry.blend_mode, entry.color_combine_mode);
+
+        // 40 f16 points, 10 RGBA pixels in total.
+        std::array<half, 40> slice = {
+            // 0 pixel
+            entry.color_transform.m11(),
+            entry.color_transform.m21(),
+            entry.color_transform.m12(),
+            entry.color_transform.m22(),
+            // 1 pixel
+            entry.color_transform.m13(),
+            entry.color_transform.m23(),
+            0.0f,
+            0.0f,
+            // 2 pixel
+            base_color.r,
+            base_color.g,
+            base_color.b,
+            base_color.a,
+            // 3 pixel
+            filter_params.p0.xy().x,
+            filter_params.p0.xy().y,
+            filter_params.p0.zw().x,
+            filter_params.p0.zw().y,
+            // 4 pixel
+            filter_params.p1.xy().x,
+            filter_params.p1.xy().y,
+            filter_params.p1.zw().x,
+            filter_params.p1.zw().y,
+            // 5 pixel
+            filter_params.p2.xy().x,
+            filter_params.p2.xy().y,
+            filter_params.p2.zw().x,
+            filter_params.p2.zw().y,
+            // 6 pixel
+            filter_params.p3.xy().x,
+            filter_params.p3.xy().y,
+            filter_params.p3.zw().x,
+            filter_params.p3.zw().y,
+            // 7 pixel
+            filter_params.p4.xy().x,
+            filter_params.p4.xy().y,
+            filter_params.p4.zw().x,
+            filter_params.p4.zw().y,
+            // 8 pixel
+            (float)filter_params.ctrl,
+            0.0f,
+            0.0f,
+            0.0f,
+            // 9 pixel
+            0.0f,
+            0.0f,
+            0.0f,
+            0.0f,
+        };
+
+        texels.insert(texels.end(), slice.begin(), slice.end());
+    }
+
+    // Add padding.
+    while (texels.size() < padded_texel_size) {
+        texels.emplace_back(0.0f);
+    }
+
+    // Update the region that contains info instead of the whole texture.
+    auto region_rect =
+        Rect<uint32_t>(0, 0, TEXTURE_METADATA_TEXTURE_WIDTH, texels.size() / (4 * TEXTURE_METADATA_TEXTURE_WIDTH));
+
+    // Don't use a vector as we need to delay the de-allocation until the image data is uploaded to GPU.
+    auto raw_texels = new half[texels.size()];
+    std::copy(texels.begin(), texels.end(), raw_texels);
+
+    // Callback to clean up staging resources.
+    auto callback = [raw_texels] { delete[] raw_texels; };
+
+    auto cmd_buffer = driver->create_command_buffer(true);
+    cmd_buffer->add_callback(callback);
+    cmd_buffer->upload_to_texture(metadata_texture, region_rect, raw_texels, TextureLayout::SHADER_READ_ONLY);
+    cmd_buffer->submit(driver);
+}
 
 Palette::Palette(uint32_t p_scene_id) : scene_id(p_scene_id) {}
 
@@ -55,7 +229,7 @@ std::shared_ptr<Framebuffer> Palette::get_render_target(uint32_t render_target_i
     return render_targets[render_target_id];
 }
 
-std::vector<TextureMetadataEntry> Palette::build_paint_info(const std::shared_ptr<Driver> &driver) {
+std::vector<PaintMetadata> Palette::build_paint_info(const std::shared_ptr<Driver> &driver) {
     std::vector<PaintMetadata> paint_metadata = assign_paint_locations(driver);
 
     // Calculate texture transforms.
@@ -64,7 +238,17 @@ std::vector<TextureMetadataEntry> Palette::build_paint_info(const std::shared_pt
     // Create texture metadata.
     auto texture_metadata_entries = create_texture_metadata(paint_metadata);
 
-    return texture_metadata_entries;
+    // We only allocate the metadata texture once.
+    if (metadata_texture == nullptr) {
+        metadata_texture = driver->create_texture(TEXTURE_METADATA_TEXTURE_WIDTH,
+                                                  TEXTURE_METADATA_TEXTURE_HEIGHT,
+                                                  TextureFormat::RGBA16F);
+    }
+
+    // Upload texture metadata.
+    upload_texture_metadata(metadata_texture, texture_metadata_entries, driver);
+
+    return paint_metadata;
 }
 
 std::vector<TextureMetadataEntry> Palette::create_texture_metadata(const std::vector<PaintMetadata> &p_paint_metadata) {

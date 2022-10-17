@@ -42,9 +42,9 @@ public:
     void build(const std::shared_ptr<Driver> &driver) override;
 
 private:
-    void finish_building(LastSceneInfo &last_scene);
+    void finish_building(LastSceneInfo &last_scene, const std::vector<PaintMetadata> &paint_metadata);
 
-    void build_tile_batches(LastSceneInfo &last_scene);
+    void build_tile_batches(LastSceneInfo &last_scene, const std::vector<PaintMetadata> &paint_metadata);
 };
 
 } // namespace Pathfinder

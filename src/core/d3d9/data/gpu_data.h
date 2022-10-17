@@ -25,6 +25,7 @@ struct TileObjectPrimitive {
     uint32_t path_id = 0;
     uint32_t metadata_id = 0;
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_D3D9_GPU_DATA_H

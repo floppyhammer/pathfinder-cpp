@@ -23,7 +23,7 @@ struct BuiltPath {
     BuiltPathData data;
     Rect<int> tile_bounds;
     FillRule fill_rule = FillRule::Winding;
-
+    std::shared_ptr<uint32_t> clip_path_id;
     uint8_t ctrl_byte = 0;
     uint16_t paint_id = 0;
 
@@ -31,9 +31,10 @@ struct BuiltPath {
 
     BuiltPath(uint32_t path_id,
               Rect<float> path_bounds,
-              uint32_t paint_id,
               Rect<float> view_box_bounds,
-              FillRule p_fill_rule);
+              FillRule p_fill_rule,
+              std::shared_ptr<uint32_t> clip_path_id,
+              const TilingPathInfo &path_info);
 };
 
 /// This stores a built path with extra info related to its drawing.

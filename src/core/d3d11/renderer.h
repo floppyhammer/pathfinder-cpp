@@ -79,7 +79,7 @@ public:
 
 private:
     /// RenderCommand::DrawTilesD3D11(draw_tile_batch)
-    void prepare_and_draw_tiles(DrawTileBatchD3D11 &batch, const std::vector<TextureMetadataEntry> &paint_metadata);
+    void prepare_and_draw_tiles(DrawTileBatchD3D11 &batch);
 
     /**
      * Computes backdrops, performs clipping, and populates Z buffers on GPU.
@@ -145,6 +145,7 @@ private:
     void draw_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
                     const std::shared_ptr<Buffer> &first_tile_map_buffer_id,
                     const RenderTarget &render_target,
+                    const std::shared_ptr<Texture> &metadata_texture,
                     const std::shared_ptr<Texture> &color_texture);
 
     void upload_initial_backdrops(const std::shared_ptr<Buffer> &backdrops_buffer_id,

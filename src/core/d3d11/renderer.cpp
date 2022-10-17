@@ -291,7 +291,6 @@ void RendererD3D11::set_up_pipelines() {
                 descriptor.stage = ShaderType::Compute;
                 descriptor.binding = 2;
                 descriptor.binding_name = "uTextureMetadata";
-                descriptor.texture = metadata_texture;
 
                 tile_descriptor_set->add_or_update_descriptor(descriptor);
             }
@@ -331,7 +330,7 @@ void RendererD3D11::draw(const std::shared_ptr<SceneBuilder> &p_scene_builder) {
     need_to_clear_dest = true;
 
     for (auto &batch : scene_builder->tile_batches) {
-        prepare_and_draw_tiles(batch, scene_builder->metadata);
+        prepare_and_draw_tiles(batch);
     }
 
     // Clear all batch info.
@@ -350,27 +349,18 @@ void RendererD3D11::upload_scene(SegmentsD3D11 &draw_segments, SegmentsD3D11 &cl
     scene_buffers.upload(driver, draw_segments, clip_segments);
 }
 
-void RendererD3D11::prepare_and_draw_tiles(DrawTileBatchD3D11 &batch,
-                                           const std::vector<TextureMetadataEntry> &metadata) {
-    Timestamp timestamp;
-
+void RendererD3D11::prepare_and_draw_tiles(DrawTileBatchD3D11 &batch) {
     auto tile_batch_id = batch.tile_batch_data.batch_id;
 
     prepare_tiles(batch.tile_batch_data);
 
-    timestamp.record("prepare_tiles");
-
     auto &batch_info = tile_batch_info[tile_batch_id];
-
-    upload_texture_metadata(metadata_texture, metadata, driver);
 
     draw_tiles(batch_info.tiles_d3d11_buffer_id,
                batch_info.first_tile_map_buffer_id,
                batch.render_target,
+               batch.metadata_texture,
                batch.color_texture);
-
-    timestamp.record("draw_tiles");
-    timestamp.print();
 
     // Replace with empty info, freeing storage buffers related to this batch.
     batch_info = TileBatchInfoD3D11{};
@@ -379,6 +369,7 @@ void RendererD3D11::prepare_and_draw_tiles(DrawTileBatchD3D11 &batch,
 void RendererD3D11::draw_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
                                const std::shared_ptr<Buffer> &first_tile_map_buffer_id,
                                const RenderTarget &render_target,
+                               const std::shared_ptr<Texture> &metadata_texture,
                                const std::shared_ptr<Texture> &color_texture) {
     // The framebuffer mentioned here is different from the target viewport.
     // This doesn't change as long as the destination texture's size doesn't change.
@@ -425,6 +416,9 @@ void RendererD3D11::draw_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer
 
     // Update descriptor set.
     {
+        tile_descriptor_set->add_or_update_descriptor(
+            {DescriptorType::Sampler, ShaderType::Compute, 2, "uTextureMetadata", nullptr, metadata_texture});
+
         tile_descriptor_set->add_or_update_descriptor(
             {DescriptorType::Sampler, ShaderType::Compute, 3, "uZBuffer", nullptr, mask_texture});
         tile_descriptor_set->add_or_update_descriptor({DescriptorType::Sampler,
@@ -549,9 +543,9 @@ void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
     MicrolineBufferIDsD3D11 microline_storage{};
     for (int _ = 0; _ < 2; _++) {
         microline_storage = dice_segments(batch.prepare_info.dice_metadata,
-                                           batch.segment_count,
-                                           batch.path_source,
-                                           batch.prepare_info.transform);
+                                          batch.segment_count,
+                                          batch.path_source,
+                                          batch.prepare_info.transform);
 
         // If the microline buffer has been allocated successfully.
         if (microline_storage.buffer_id != nullptr) break;
@@ -625,8 +619,8 @@ MicrolineBufferIDsD3D11 RendererD3D11::dice_segments(std::vector<DiceMetadataD3D
                                                      Transform2 transform) {
     // Allocate some general buffers.
     auto microline_buffer_id = driver->create_buffer(BufferType::Storage,
-                                                      allocated_microline_count * sizeof(MicrolineD3D11),
-                                                      MemoryProperty::DEVICE_LOCAL);
+                                                     allocated_microline_count * sizeof(MicrolineD3D11),
+                                                     MemoryProperty::DEVICE_LOCAL);
     auto dice_metadata_buffer_id = driver->create_buffer(BufferType::Storage,
                                                          dice_metadata.size() * sizeof(DiceMetadataD3D11),
                                                          MemoryProperty::DEVICE_LOCAL);

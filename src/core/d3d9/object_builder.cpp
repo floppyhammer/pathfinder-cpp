@@ -6,10 +6,15 @@
 #include "../data/data.h"
 
 namespace Pathfinder {
-ObjectBuilder::ObjectBuilder(
-    uint32_t path_id, Rect<float> path_bounds, uint32_t paint_id, Rect<float> view_box_bounds, FillRule fill_rule)
+
+ObjectBuilder::ObjectBuilder(uint32_t path_id,
+                             Rect<float> path_bounds,
+                             const Rect<float> &view_box_bounds,
+                             FillRule fill_rule,
+                             std::shared_ptr<uint32_t> clip_path_id,
+                             const TilingPathInfo &path_info)
     : bounds(path_bounds) {
-    built_path = BuiltPath(path_id, path_bounds, paint_id, view_box_bounds, fill_rule);
+    built_path = BuiltPath(path_id, path_bounds, view_box_bounds, fill_rule, clip_path_id, path_info);
 }
 
 void ObjectBuilder::add_fill(SceneBuilderD3D9 &scene_builder, LineSegmentF p_segment, Vec2<int> tile_coords) {
@@ -109,4 +114,5 @@ void ObjectBuilder::adjust_alpha_tile_backdrop(const Vec2<int> &tile_coords, int
     auto local_tile_index = tiles.coords_to_index_unchecked(tile_coords);
     tiles.data[local_tile_index].backdrop += delta;
 }
+
 } // namespace Pathfinder

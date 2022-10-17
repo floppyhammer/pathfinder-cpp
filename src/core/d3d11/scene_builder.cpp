@@ -12,7 +12,7 @@ namespace Pathfinder {
 BuiltDrawPath prepare_draw_path_for_gpu_binning(Scene &scene,
                                                 uint32_t draw_path_id,
                                                 Transform2 &transform,
-                                                const std::vector<TextureMetadataEntry> &paint_metadata) {
+                                                const std::vector<PaintMetadata> &paint_metadata) {
     auto effective_view_box = scene.get_view_box();
 
     auto &draw_path = scene.draw_paths[draw_path_id];
@@ -21,21 +21,22 @@ BuiltDrawPath prepare_draw_path_for_gpu_binning(Scene &scene,
 
     auto paint_id = draw_path.paint;
 
-    auto &paint_metadata0 = paint_metadata[paint_id];
+    TilingPathInfo path_info;
+    path_info.type = TilingPathInfo::Type::Draw;
+    path_info.info.paint_id = paint_id;
 
-    auto built_path = BuiltPath(draw_path_id, path_bounds, paint_id, effective_view_box, draw_path.fill_rule);
+    auto built_path = BuiltPath(draw_path_id, path_bounds, effective_view_box, draw_path.fill_rule, nullptr, path_info);
 
     // FIXME: Fix hardcoded blend mode.
     return {built_path, BlendMode::SrcOver, draw_path.fill_rule, true};
 }
 
 /// Create tile batches.
-DrawTileBatchD3D11 build_tile_batches_for_draw_path_display_item(
-    Scene &scene,
-    Range draw_path_id_range,
-    const std::vector<TextureMetadataEntry> &paint_metadata,
-    LastSceneInfo &last_scene,
-    uint32_t next_batch_id) {
+DrawTileBatchD3D11 build_tile_batches_for_draw_path_display_item(Scene &scene,
+                                                                 Range draw_path_id_range,
+                                                                 const std::vector<PaintMetadata> &paint_metadata,
+                                                                 LastSceneInfo &last_scene,
+                                                                 uint32_t next_batch_id) {
     // New draw tile batch.
     DrawTileBatchD3D11 draw_tile_batch;
 
@@ -45,8 +46,7 @@ DrawTileBatchD3D11 build_tile_batches_for_draw_path_display_item(
 
     // Create a new batch if necessary.
     draw_tile_batch.tile_batch_data = TileBatchDataD3D11(next_batch_id, PathSource::Draw);
-
-    // draw_tile_batch.color_texture = draw_path.color_texture;
+    draw_tile_batch.metadata_texture = scene.palette.metadata_texture;
     draw_tile_batch.tile_batch_data.prepare_info.transform = transform;
 
     for (auto draw_path_id = draw_path_id_range.start; draw_path_id < draw_path_id_range.end; draw_path_id++) {
@@ -87,14 +87,12 @@ DrawTileBatchD3D11 build_tile_batches_for_draw_path_display_item(
 }
 
 void SceneBuilderD3D11::build(const std::shared_ptr<Driver> &driver) {
-    Timestamp timestamp;
-
     auto draw_path_count = scene->draw_paths.size();
 
-    // Get metadata.
-    metadata = scene->palette.build_paint_info(driver);
-
     built_segments = BuiltSegments::from_scene(*scene);
+
+    // Build paint data.
+    auto paint_metadata = scene->palette.build_paint_info(driver);
 
     auto last_scene = LastSceneInfo{
         scene->id,
@@ -102,18 +100,11 @@ void SceneBuilderD3D11::build(const std::shared_ptr<Driver> &driver) {
         built_segments.draw_segment_ranges,
     };
 
-    timestamp.record("SceneBuilderD3D11::build > from_scene");
-
-    finish_building(last_scene);
-
-    timestamp.record("SceneBuilderD3D11::build > finish_building");
-    timestamp.print();
-
-    Logger::verbose("build > draw path count " + std::to_string(draw_path_count), "SceneBuilderD3D11");
-    Logger::verbose("build > tile batch count " + std::to_string(tile_batches.size()), "SceneBuilderD3D11");
+    finish_building(last_scene, paint_metadata);
 }
 
-void SceneBuilderD3D11::build_tile_batches(LastSceneInfo &last_scene) {
+void SceneBuilderD3D11::build_tile_batches(LastSceneInfo &last_scene,
+                                           const std::vector<PaintMetadata> &paint_metadata) {
     // Clear batches.
     tile_batches.clear();
 
@@ -133,7 +124,7 @@ void SceneBuilderD3D11::build_tile_batches(LastSceneInfo &last_scene) {
             case DisplayItem::Type::DrawPaths: {
                 auto tile_batch = build_tile_batches_for_draw_path_display_item(*scene,
                                                                                 display_item.path_range,
-                                                                                metadata,
+                                                                                paint_metadata,
                                                                                 last_scene,
                                                                                 next_batch_id);
 
@@ -150,9 +141,10 @@ void SceneBuilderD3D11::build_tile_batches(LastSceneInfo &last_scene) {
     }
 }
 
-void SceneBuilderD3D11::finish_building(LastSceneInfo &last_scene) {
-    build_tile_batches(last_scene);
+void SceneBuilderD3D11::finish_building(LastSceneInfo &last_scene, const std::vector<PaintMetadata> &paint_metadata) {
+    build_tile_batches(last_scene, paint_metadata);
 }
+
 } // namespace Pathfinder
 
 #endif

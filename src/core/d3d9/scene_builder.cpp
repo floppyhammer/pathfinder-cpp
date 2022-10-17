@@ -22,6 +22,7 @@ DrawTileBatch build_tile_batches_for_draw_path_display_item(Scene &scene,
     auto tile_bounds = round_rect_out_to_tile_bounds(scene.get_view_box());
 
     draw_tile_batch.z_buffer_data = DenseTileMap<uint32_t>::z_builder(tile_bounds);
+    draw_tile_batch.metadata_texture = scene.palette.metadata_texture;
 
     for (auto draw_path_id = draw_path_range.start; draw_path_id < draw_path_range.end; draw_path_id++) {
         const auto &draw_path = built_paths[draw_path_id];
@@ -88,22 +89,13 @@ void SceneBuilderD3D9::build(const std::shared_ptr<Driver> &driver) {
     // Comment this to do benchmark more precisely.
     if (!scene->is_dirty) return;
 
-    Timestamp timestamp;
-
     // Build paint data.
-    metadata = scene->palette.build_paint_info(driver);
-
-    timestamp.record("Build paint info");
+    auto paint_metadata = scene->palette.build_paint_info(driver);
 
     // Most important step. Build draw paths into built draw paths.
-    auto built_paths = build_paths_on_cpu();
-
-    timestamp.record("Build paths on CPU");
+    auto built_paths = build_paths_on_cpu(paint_metadata);
 
     finish_building(built_paths);
-
-    timestamp.record("Build tile batches");
-    timestamp.print();
 
     // Mark the scene as clean, so we don't need to rebuild it the next frame.
     scene->is_dirty = false;
@@ -115,59 +107,142 @@ void SceneBuilderD3D9::finish_building(const std::vector<BuiltDrawPath> &built_p
     build_tile_batches(built_paths);
 }
 
-std::vector<BuiltDrawPath> SceneBuilderD3D9::build_paths_on_cpu() {
+std::vector<BuiltDrawPath> SceneBuilderD3D9::build_paths_on_cpu(std::vector<PaintMetadata> &paint_metadata) {
     // Reset builder.
     // ------------------------------
     // Clear pending fills.
     pending_fills.clear();
 
     // Clear next alpha tile indices.
-    for (auto &next_alpha_tile_index : next_alpha_tile_indices) next_alpha_tile_index = 0;
+    for (auto &next_alpha_tile_index : next_alpha_tile_indices) {
+        next_alpha_tile_index = 0;
+    }
     // ------------------------------
 
     auto draw_paths_count = scene->draw_paths.size();
+    auto clip_paths_count = scene->clip_paths.size();
+    auto view_box = scene->get_view_box();
 
-    std::vector<BuiltDrawPath> built_paths(draw_paths_count);
+    // We need to build clip paths first.
+    std::vector<BuiltPath> built_clip_paths(clip_paths_count);
+    {
+        // Parallel build.
+        auto task = [this, &built_clip_paths, &clip_paths_count, &view_box](int begin) {
+            for (int path_index = begin; path_index < clip_paths_count; path_index += PATHFINDER_THREADS) {
+                PathBuildParams params;
+                params.path_id = path_index;
+                params.view_box = view_box;
+                params.scene = scene;
 
-    // Parallel.
-    auto task = [this, &built_paths, &draw_paths_count](int begin) {
-        for (int path_index = begin; path_index < draw_paths_count; path_index += PATHFINDER_THREADS) {
-            auto &draw_path = scene->draw_paths[path_index];
-
-            // Skip invisible draw paths.
-            if (!scene->get_paint(draw_path.paint).is_opaque() ||
-                !draw_path.outline.bounds.intersects(scene->get_view_box())) {
-                continue;
+                built_clip_paths[path_index] = build_clip_path_on_cpu(params);
             }
+        };
 
-            built_paths[path_index] = build_draw_path_on_cpu(path_index);
+        size_t threads_count = std::min(draw_paths_count, (size_t)PATHFINDER_THREADS);
+        std::vector<std::thread> threads(threads_count);
+        for (int i = 0; i < threads_count; i++) {
+            threads[i] = std::thread(task, i);
         }
-    };
 
-    size_t threads_count = std::min(draw_paths_count, (size_t)PATHFINDER_THREADS);
-    std::vector<std::thread> threads(threads_count);
-    for (int i = 0; i < threads_count; i++) {
-        threads[i] = std::thread(task, i);
+        for (auto &t : threads) {
+            t.join();
+        }
     }
 
-    for (auto &t : threads) {
-        t.join();
+    std::vector<BuiltDrawPath> built_draw_paths(draw_paths_count);
+    {
+        // Parallel build.
+        auto task =
+            [this, &built_draw_paths, &draw_paths_count, &view_box, &paint_metadata, &built_clip_paths](int begin) {
+                for (int path_index = begin; path_index < draw_paths_count; path_index += PATHFINDER_THREADS) {
+                    auto &draw_path = scene->draw_paths[path_index];
+
+                    // Skip invisible draw paths.
+                    if (!scene->get_paint(draw_path.paint).is_opaque() ||
+                        !draw_path.outline.bounds.intersects(scene->get_view_box())) {
+                        continue;
+                    }
+
+                    DrawPathBuildParams params;
+                    params.paint_metadata = paint_metadata;
+                    params.built_clip_paths = built_clip_paths;
+                    params.path_build_params.path_id = path_index;
+                    params.path_build_params.view_box = view_box;
+                    params.path_build_params.scene = scene;
+
+                    built_draw_paths[path_index] = build_draw_path_on_cpu(params);
+                }
+            };
+
+        size_t threads_count = std::min(draw_paths_count, (size_t)PATHFINDER_THREADS);
+        std::vector<std::thread> threads(threads_count);
+        for (int i = 0; i < threads_count; i++) {
+            threads[i] = std::thread(task, i);
+        }
+
+        for (auto &t : threads) {
+            t.join();
+        }
     }
 
-    return built_paths;
+    return built_draw_paths;
 }
 
-BuiltDrawPath SceneBuilderD3D9::build_draw_path_on_cpu(uint32_t path_id) {
-    // Get the draw path (a thin wrapper over outline).
-    const auto &path_object = scene->draw_paths[path_id];
+BuiltPath SceneBuilderD3D9::build_clip_path_on_cpu(const PathBuildParams &params) {
+    uint32_t path_id = params.path_id;
+
+    const auto &path_object = scene->clip_paths[path_id];
+
+    TilingPathInfo path_info;
+    path_info.type = TilingPathInfo::Type::Clip;
 
     // Create a tiler for the draw path.
-    Tiler tiler(*this, path_id, path_object, path_object.fill_rule, scene->get_view_box());
+    Tiler tiler(*this,
+                path_id,
+                path_object.outline,
+                path_object.fill_rule,
+                scene->get_view_box(),
+                path_object.clip_path,
+                {},
+                path_info);
 
     // Core step.
     tiler.generate_tiles();
 
-    tiler.object_builder.built_path.paint_id = path_object.paint;
+    // Add generated fills from the tile generation step. Need a lock.
+    fill_write_mutex.lock();
+    send_fills(tiler.object_builder.fills);
+    fill_write_mutex.unlock();
+
+    return tiler.object_builder.built_path;
+}
+
+BuiltDrawPath SceneBuilderD3D9::build_draw_path_on_cpu(const DrawPathBuildParams &params) {
+    uint32_t path_id = params.path_build_params.path_id;
+
+    // Get the draw path (a thin wrapper over outline).
+    const auto &path_object = scene->draw_paths[path_id];
+
+    TilingPathInfo path_info;
+    path_info.type = TilingPathInfo::Type::Draw;
+    path_info.info.paint_id = path_object.paint;
+    path_info.info.blend_mode = path_object.blend_mode;
+    path_info.info.fill_rule = path_object.fill_rule;
+
+    // Create a tiler for the draw path.
+    Tiler tiler(*this,
+                path_id,
+                path_object.outline,
+                path_object.fill_rule,
+                scene->get_view_box(),
+                path_object.clip_path,
+                {},
+                path_info);
+
+    // Core step.
+    tiler.generate_tiles();
+
+    //    tiler.object_builder.built_path.paint_id = path_object.paint;
 
     // Add generated fills from the tile generation step. Need a lock.
     fill_write_mutex.lock();

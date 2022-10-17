@@ -77,6 +77,9 @@ public:
      */
     uint32_t push_draw_path(const DrawPath &p_path);
 
+    /// Defines a clip path. Returns an ID that can be used to later clip draw paths.
+    uint32_t push_clip_path(const ClipPath &clip_path);
+
     /// Directs subsequent draw paths to draw to the given render target instead of the output.
     ///
     /// Render targets form a stack. All `push_draw_path()` commands go to the render target at the
@@ -117,11 +120,11 @@ public:
     void build_and_render(std::shared_ptr<Renderer> &renderer);
 
 private:
-    /// Bounds of all paths.
+    /// Path clipping control.
+    /// This can be used to make scrollable elements and clipped text.
     Rect<float> bounds;
 
-    /// Scene clipping box.
-    /// This can be used to make scrollable elements and clipped text.
+    /// Scene-wide clipping control.
     Rect<float> view_box;
 
     /// Scene builder.

@@ -51,6 +51,13 @@ uint32_t Scene::push_draw_path(const DrawPath &p_path) {
     return draw_path_index;
 }
 
+uint32_t Scene::push_clip_path(const ClipPath &clip_path) {
+    bounds = bounds.union_rect(clip_path.outline.bounds);
+    uint32_t clip_path_id = clip_paths.size();
+    clip_paths.push_back(clip_path);
+    return clip_path_id;
+}
+
 void Scene::append_scene(const Scene &p_scene) {
     if (p_scene.draw_paths.empty()) return;
 

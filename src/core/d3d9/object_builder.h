@@ -8,6 +8,7 @@
 #include "scene_builder.h"
 
 namespace Pathfinder {
+
 class ObjectBuilder {
 public:
     BuiltPath built_path;
@@ -16,8 +17,12 @@ public:
 
     ObjectBuilder() = default;
 
-    ObjectBuilder(
-        uint32_t path_id, Rect<float> path_bounds, uint32_t paint_id, Rect<float> view_box_bounds, FillRule fill_rule);
+    ObjectBuilder(uint32_t path_id,
+                  Rect<float> path_bounds,
+                  const Rect<float> &view_box_bounds,
+                  FillRule fill_rule,
+                  std::shared_ptr<uint32_t> clip_path_id,
+                  const TilingPathInfo &path_info);
 
     /// Alpha tile id is set at this stage.
     void add_fill(SceneBuilderD3D9 &scene_builder, LineSegmentF p_segment, Vec2<int> tile_coords);

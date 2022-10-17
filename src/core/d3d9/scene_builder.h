@@ -11,6 +11,21 @@
 #include "data/gpu_data.h"
 
 namespace Pathfinder {
+
+/// For draw path and clip path.
+struct PathBuildParams {
+    uint32_t path_id;
+    Rect<float> view_box;
+    Scene *scene;
+};
+
+/// For draw path only.
+struct DrawPathBuildParams {
+    PathBuildParams path_build_params;
+    std::vector<PaintMetadata> paint_metadata; // TODO: Make these references.
+    std::vector<BuiltPath> built_clip_paths;
+};
+
 /// Builds a scene into rendering data.
 /// Such data only changes when the scene becomes dirty and is rebuilt.
 class SceneBuilderD3D9 : public SceneBuilder {
@@ -48,14 +63,16 @@ private:
     /**
      * Build draw paths into built draw paths.
      */
-    std::vector<BuiltDrawPath> build_paths_on_cpu();
+    std::vector<BuiltDrawPath> build_paths_on_cpu(std::vector<PaintMetadata> &paint_metadata);
+
+    BuiltPath build_clip_path_on_cpu(const PathBuildParams &params);
 
     /**
      * Run in a thread. Run a tiler on a path.
      * @param path_id Unique ID of the path in the scene.
      * @return A built shape.
      */
-    BuiltDrawPath build_draw_path_on_cpu(uint32_t path_id);
+    BuiltDrawPath build_draw_path_on_cpu(const DrawPathBuildParams &params);
 
     /// Build patches for built paths.
     void build_tile_batches(const std::vector<BuiltDrawPath> &built_paths);
@@ -67,6 +84,7 @@ private:
      */
     void send_fills(const std::vector<Fill> &fill_batch);
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_D3D9_SCENE_BUILDER_H

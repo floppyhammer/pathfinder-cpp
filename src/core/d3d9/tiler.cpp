@@ -281,15 +281,22 @@ void process_segment(Segment &p_segment, SceneBuilderD3D9 &p_scene_builder, Obje
 
 Tiler::Tiler(SceneBuilderD3D9 &p_scene_builder,
              uint32_t path_id,
-             const DrawPath &p_path,
+             const Outline &p_outline,
              FillRule fill_rule,
-             const Rect<float> &view_box)
-    : path(p_path), scene_builder(p_scene_builder) {
+             const Rect<float> &view_box,
+             std::shared_ptr<uint32_t> clip_path_id,
+             const std::vector<BuiltPath> &built_clip_paths,
+             TilingPathInfo path_info)
+    : outline(p_outline), scene_builder(p_scene_builder) {
     // The intersection rect of the path bounds and the view box.
-    auto bounds = path.outline.bounds.intersection(view_box);
+    auto bounds = outline.bounds.intersection(view_box);
+
+    if (clip_path_id) {
+        clip_path = std::make_shared<BuiltPath>(built_clip_paths[*clip_path_id]);
+    };
 
     // Create an object builder.
-    object_builder = ObjectBuilder(path_id, bounds, path.paint, view_box, fill_rule);
+    object_builder = ObjectBuilder(path_id, bounds, view_box, fill_rule, clip_path_id, path_info);
 }
 
 void Tiler::generate_tiles() {
@@ -302,7 +309,7 @@ void Tiler::generate_tiles() {
 
 void Tiler::generate_fills() {
     // Traverse paths in the shape.
-    for (const auto &contour : path.outline.contours) {
+    for (const auto &contour : outline.contours) {
         auto segments_iter = SegmentsIter(contour.points, contour.flags, contour.closed);
 
         // Traverse curve/line segments.
@@ -348,4 +355,5 @@ void Tiler::prepare_tiles() {
         backdrops[column] += delta;
     }
 }
+
 } // namespace Pathfinder

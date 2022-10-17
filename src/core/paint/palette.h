@@ -6,6 +6,11 @@
 
 namespace Pathfinder {
 
+/// Metadata texture size.
+const int32_t TEXTURE_METADATA_ENTRIES_PER_ROW = 128;
+const int32_t TEXTURE_METADATA_TEXTURE_WIDTH = TEXTURE_METADATA_ENTRIES_PER_ROW * 10;
+const int32_t TEXTURE_METADATA_TEXTURE_HEIGHT = 65536 / TEXTURE_METADATA_ENTRIES_PER_ROW;
+
 /// Stores all paints in a scene.
 struct Palette {
 public:
@@ -21,7 +26,9 @@ public:
     std::shared_ptr<Framebuffer> get_render_target(uint32_t render_target_id) const;
 
     /// Core step.
-    std::vector<TextureMetadataEntry> build_paint_info(const std::shared_ptr<Driver> &driver);
+    std::vector<PaintMetadata> build_paint_info(const std::shared_ptr<Driver> &driver);
+
+    std::shared_ptr<Texture> metadata_texture;
 
 private:
     uint32_t scene_id;

@@ -83,6 +83,12 @@ void DescriptorSetVk::update_vk_descriptor_set(VkDevice p_device, VkDescriptorSe
         descriptor_write.descriptorCount = 1;
 
         if (descriptor.type == DescriptorType::UniformBuffer) {
+            // It's possible to bind nothing at a slot in the layout.
+            // However, you may see validation errors.
+            if (descriptor.buffer == nullptr) {
+                continue;
+            }
+
             auto buffer_vk = static_cast<BufferVk *>(descriptor.buffer.get());
 
             bufferInfo.buffer = buffer_vk->get_vk_buffer();
@@ -92,6 +98,12 @@ void DescriptorSetVk::update_vk_descriptor_set(VkDevice p_device, VkDescriptorSe
             descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
             descriptor_write.pBufferInfo = &bufferInfo;
         } else if (descriptor.type == DescriptorType::Sampler) {
+            // It's possible to bind nothing at a slot in the layout.
+            // However, you may see validation errors.
+            if (descriptor.texture == nullptr) {
+                continue;
+            }
+
             auto texture_vk = static_cast<TextureVk *>(descriptor.texture.get());
 
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -101,6 +113,12 @@ void DescriptorSetVk::update_vk_descriptor_set(VkDevice p_device, VkDescriptorSe
             descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
             descriptor_write.pImageInfo = &imageInfo;
         } else if (descriptor.type == DescriptorType::StorageBuffer) {
+            // It's possible to bind nothing at a slot in the layout.
+            // However, you may see validation errors.
+            if (descriptor.buffer == nullptr) {
+                continue;
+            }
+
             auto buffer_vk = static_cast<BufferVk *>(descriptor.buffer.get());
 
             bufferInfo.buffer = buffer_vk->get_vk_buffer();
@@ -110,6 +128,12 @@ void DescriptorSetVk::update_vk_descriptor_set(VkDevice p_device, VkDescriptorSe
             descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             descriptor_write.pBufferInfo = &bufferInfo;
         } else if (descriptor.type == DescriptorType::Image) {
+            // It's possible to bind nothing at a slot in the layout.
+            // However, you may see validation errors.
+            if (descriptor.texture == nullptr) {
+                continue;
+            }
+
             auto texture_vk = static_cast<TextureVk *>(descriptor.texture.get());
 
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;

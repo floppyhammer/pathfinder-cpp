@@ -7,6 +7,7 @@
 #include "segment.h"
 
 namespace Pathfinder {
+
 struct Outcode {
     uint8_t flag = 0x00;
 
@@ -42,9 +43,12 @@ struct Tiler {
 public:
     Tiler(SceneBuilderD3D9& p_scene_builder,
           uint32_t path_id,
-          const DrawPath& p_path,
+          const Outline& p_outline,
           FillRule fill_rule,
-          const Rect<float>& view_box);
+          const Rect<float>& view_box,
+          std::shared_ptr<uint32_t> clip_path_id,
+          const std::vector<BuiltPath>& built_clip_paths,
+          TilingPathInfo path_info);
 
     ObjectBuilder object_builder;
 
@@ -54,7 +58,9 @@ public:
 private:
     SceneBuilderD3D9& scene_builder;
 
-    DrawPath path;
+    Outline outline;
+
+    std::shared_ptr<BuiltPath> clip_path; // Optional
 
     /// Process all paths of the attached shape.
     void generate_fills();
@@ -62,6 +68,7 @@ private:
     /// Prepare the winding (backdrops) vector for solid tiles.
     void prepare_tiles();
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_D3D9_TILER_H

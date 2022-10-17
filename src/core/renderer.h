@@ -17,11 +17,6 @@ const uint32_t MASK_TILES_DOWN = 256;
 const int32_t MASK_FRAMEBUFFER_WIDTH = TILE_WIDTH * MASK_TILES_ACROSS;
 const int32_t MASK_FRAMEBUFFER_HEIGHT = TILE_HEIGHT / 4 * MASK_TILES_DOWN;
 
-/// Metadata texture.
-const int32_t TEXTURE_METADATA_ENTRIES_PER_ROW = 128;
-const int32_t TEXTURE_METADATA_TEXTURE_WIDTH = TEXTURE_METADATA_ENTRIES_PER_ROW * 10;
-const int32_t TEXTURE_METADATA_TEXTURE_HEIGHT = 65536 / TEXTURE_METADATA_ENTRIES_PER_ROW;
-
 void upload_texture_metadata(const std::shared_ptr<Texture> &metadata_texture,
                              const std::vector<TextureMetadataEntry> &metadata,
                              const std::shared_ptr<Driver> &driver);
@@ -52,8 +47,8 @@ protected:
     /// Pre-defined texture used to draw the mask texture. Shared by D3D9 and D3D10.
     std::shared_ptr<Texture> area_lut_texture;
 
-    /// Texture to store metadata. Shared by D3D9 and D3D10.
-    std::shared_ptr<Texture> metadata_texture;
+//    /// Texture to store metadata. Shared by D3D9 and D3D10.
+//    std::shared_ptr<Texture> metadata_texture;
 
     /// Uniform buffer containing some constants. Shared by D3D9 and D3D10.
     std::shared_ptr<Buffer> fixed_sizes_ub{};
