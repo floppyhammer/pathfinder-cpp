@@ -10,6 +10,7 @@
 #undef max
 
 namespace Pathfinder {
+
 // This value amounts to 16.0 * tolerance * tolerance in Pathfinder Rust.
 const float FLATTENING_TOLERANCE = 1.0f;
 
@@ -19,13 +20,28 @@ enum class StepDirection {
     Y,
 };
 
-bool Outcode::is_empty() const {
-    return flag == 0x00;
-}
+struct Outcode {
+    uint8_t flag = 0x00;
 
-bool Outcode::contains(uint8_t p_side) const {
-    return (flag & p_side) != 0x00;
-}
+    static const uint8_t LEFT = 0x01;
+    static const uint8_t RIGHT = 0x02;
+    static const uint8_t TOP = 0x04;
+    static const uint8_t BOTTOM = 0x08;
+
+    bool is_empty() const {
+        return flag == 0x00;
+    }
+
+    bool contains(uint8_t p_side) const {
+        return (flag & p_side) != 0x00;
+    }
+
+    Outcode operator&(const Outcode &b) const {
+        Outcode res;
+        res.flag = flag & b.flag;
+        return res;
+    }
+};
 
 Outcode compute_outcode(const Vec2<float> &point, const Rect<float> &rect) {
     Outcode outcode;
@@ -108,6 +124,10 @@ bool clip_line_segment_to_rect(LineSegmentF &line_segment, Rect<float> rect) {
     }
 }
 
+/// This is the meat of the technique. It implements the fast lattice-clipping algorithm from
+/// Nehab and Hoppe, "Random-Access Rendering of General Vector Graphics" 2006.
+/// The algorithm to step through tiles is Amanatides and Woo, "A Fast Voxel Traversal Algorithm for
+/// Ray Tracing" 1987: http://www.cse.yorku.ca/~amana/research/grid.pdf
 void process_line_segment(LineSegmentF p_line_segment,
                           SceneBuilderD3D9 &p_scene_builder,
                           ObjectBuilder &p_object_builder) {
@@ -254,6 +274,7 @@ void process_line_segment(LineSegmentF p_line_segment,
     }
 }
 
+/// Recursive call.
 void process_segment(Segment &p_segment, SceneBuilderD3D9 &p_scene_builder, ObjectBuilder &p_object_builder) {
     // TODO(pcwalton): Stop degree elevating.
     // If the segment is a quadratic curve.
