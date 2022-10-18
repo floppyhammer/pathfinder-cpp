@@ -182,7 +182,7 @@ void SvgScene::load_file(std::vector<char> input, Canvas &canvas) {
 
         canvas.save_state();
 
-        // Shadow test.
+        // TEST: Shadow/Blur.
         if (false) {
             canvas.set_shadow_color(ColorU::green());
             canvas.set_shadow_blur(8);
@@ -192,6 +192,13 @@ void SvgScene::load_file(std::vector<char> input, Canvas &canvas) {
         canvas.set_line_dash_offset(nsvg_shape->strokeDashOffset);
         canvas.set_line_dash(
             std::vector<float>(nsvg_shape->strokeDashArray, nsvg_shape->strokeDashArray + nsvg_shape->strokeDashCount));
+
+        // TEST: Add clip path.
+        if (true) {
+            Path2d path;
+            path.add_rect({{}, {720, 720}});
+            canvas.clip_path(path, FillRule::Winding);
+        }
 
         // Add fill.
         canvas.set_fill_paint(convert_nsvg_paint(nsvg_shape->fill));

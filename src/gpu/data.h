@@ -62,7 +62,7 @@ enum class TextureLayout {
 };
 
 // TODO(floppyhammer): Make this bits.
-enum class ShaderType {
+enum class ShaderStage {
     Vertex,
     Fragment,
     VertexFragment,

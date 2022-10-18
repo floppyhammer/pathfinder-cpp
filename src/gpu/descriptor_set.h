@@ -2,8 +2,8 @@
 #define PATHFINDER_GPU_DESCRIPTOR_SET_H
 
 #include <cstdint>
-#include <unordered_map>
 #include <memory>
+#include <unordered_map>
 
 #include "buffer.h"
 #include "data.h"
@@ -13,7 +13,7 @@ namespace Pathfinder {
 struct Descriptor {
     DescriptorType type = DescriptorType::Max;
 
-    ShaderType stage = ShaderType::Max;
+    ShaderStage stage = ShaderStage::Max;
 
     /// Binding point.
     uint32_t binding{};

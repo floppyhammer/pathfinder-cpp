@@ -40,7 +40,8 @@ struct PushSegmentFlags {
 };
 
 /// Flags that each point can have, indicating whether it's an on-curve or control point.
-enum class PointFlag {
+enum class PointFlag
+{
     ON_CURVE_POINT,
 
     /// This point is the first control point of a cubic Bézier curve or the only control point
@@ -56,7 +57,8 @@ inline Rect<int> round_rect_out_to_tile_bounds(const Rect<float> &rect) {
 }
 
 /// Fill rule for a shape.
-enum class FillRule {
+enum class FillRule
+{
     /// The nonzero rule: https://en.wikipedia.org/wiki/Nonzero-rule
     Winding,
     /// The even-odd rule: https://en.wikipedia.org/wiki/Even%E2%80%93odd_rule
@@ -64,14 +66,16 @@ enum class FillRule {
 };
 
 /// Fill style for a shape.
-enum class FillStyle {
+enum class FillStyle
+{
     Color,
     Gradient,
     Pattern,
 };
 
 /// The shape of the ends of the stroke.
-enum class LineCap {
+enum class LineCap
+{
     /// The ends of lines are squared off at the endpoints.
     Butt,
     /// The ends of lines are squared off by adding a box with an equal width and half the height
@@ -82,7 +86,8 @@ enum class LineCap {
 };
 
 /// The shape used to join two line segments where they meet.
-enum class LineJoin {
+enum class LineJoin
+{
     /// Connected segments are joined by extending their outside edges to connect at a single
     /// point, with the effect of filling an additional lozenge-shaped area. The `f32` value
     /// specifies the miter limit ratio.
@@ -96,14 +101,16 @@ enum class LineJoin {
     Round,
 };
 
-enum class ArcDirection {
+enum class ArcDirection
+{
     /// Clockwise, starting from the +x axis.
     CW,
     /// Counterclockwise, starting from the +x axis.
     CCW,
 };
 
-enum class ColorCombineMode {
+enum class ColorCombineMode
+{
     None,
     SrcIn,
     DestIn,
@@ -149,7 +156,8 @@ struct DrawTilingPathInfo {
 };
 
 struct TilingPathInfo {
-    enum class Type {
+    enum class Type
+    {
         Clip,
         Draw,
     } type;
@@ -166,13 +174,6 @@ struct TilingPathInfo {
 
         return ctrl;
     }
-};
-
-struct Clip {
-    uint32_t dest_tile_id = 0;
-    int32_t dest_backdrop = 0;
-    uint32_t src_tile_id = 0;
-    int32_t src_backdrop = 0;
 };
 
 } // namespace Pathfinder

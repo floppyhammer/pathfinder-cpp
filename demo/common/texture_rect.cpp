@@ -72,13 +72,13 @@ TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
             descriptor_set = driver->create_descriptor_set();
 
             descriptor_set->add_or_update_descriptor({Pathfinder::DescriptorType::UniformBuffer,
-                                                      Pathfinder::ShaderType::Vertex,
+                                                      Pathfinder::ShaderStage::Vertex,
                                                       0,
                                                       "bUniform",
                                                       uniform_buffer,
                                                       nullptr});
             descriptor_set->add_or_update_descriptor({Pathfinder::DescriptorType::Sampler,
-                                                      Pathfinder::ShaderType::Fragment,
+                                                      Pathfinder::ShaderStage::Fragment,
                                                       1,
                                                       "uTexture",
                                                       nullptr,
@@ -95,7 +95,7 @@ void TextureRect::set_texture(std::shared_ptr<Pathfinder::Texture> p_texture) {
 
     Pathfinder::Descriptor descriptor;
     descriptor.type = Pathfinder::DescriptorType::Sampler;
-    descriptor.stage = Pathfinder::ShaderType::Fragment;
+    descriptor.stage = Pathfinder::ShaderStage::Fragment;
     descriptor.binding = 1;
     descriptor.binding_name = "uTexture";
     descriptor.texture = texture;

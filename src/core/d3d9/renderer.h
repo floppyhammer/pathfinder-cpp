@@ -13,6 +13,12 @@
 #include "object_builder.h"
 
 namespace Pathfinder {
+
+struct ClipBufferInfo {
+    std::shared_ptr<Buffer> clip_buffer;
+    uint32_t clip_count;
+};
+
 /// Renderer should run in a different thread than that of the builder.
 class RendererD3D9 : public Renderer {
 public:
@@ -27,6 +33,8 @@ public:
 
     void set_up_pipelines() override;
 
+    void create_tile_clip_copy_pipeline();
+
     /// We need to call this for each scene.
     void draw(const std::shared_ptr<SceneBuilder> &p_scene_builder) override;
 
@@ -36,16 +44,20 @@ public:
 
 private:
     /// Vertex buffers.
-    std::shared_ptr<Buffer> quad_vertex_buffer, fill_vertex_buffer, tile_vertex_buffer;
+    std::shared_ptr<Buffer> quad_vertex_buffer;                     // Static
+    std::shared_ptr<Buffer> fill_vertex_buffer, tile_vertex_buffer; // Dynamic
 
     /// Pipelines.
     std::shared_ptr<RenderPipeline> fill_pipeline, tile_pipeline;
+    std::shared_ptr<RenderPipeline> tile_clip_copy_pipeline, tile_clip_combine_pipeline; // For clip paths.
 
     /// Descriptor sets.
     std::shared_ptr<DescriptorSet> fill_descriptor_set, tile_descriptor_set;
+    std::shared_ptr<DescriptorSet> tile_clip_copy_descriptor_set, tile_clip_combine_descriptor_set; // For clip paths.
 
     /// Uniform buffers.
-    std::shared_ptr<Buffer> tile_varying_sizes_ub{}, tile_transform_ub{};
+    std::shared_ptr<Buffer> tile_varying_sizes_ub, tile_transform_ub;
+    std::shared_ptr<Buffer> tile_clip_copy_ub; // For clip paths.
 
     /// Where the final rendering output goes.
     std::shared_ptr<Framebuffer> dest_framebuffer;
@@ -59,6 +71,11 @@ private:
 
     /// Upload fills data to GPU.
     void upload_fills(const std::vector<Fill> &fills, const std::shared_ptr<CommandBuffer> &cmd_buffer);
+
+    ClipBufferInfo upload_clip_tiles(const std::vector<Clip> &clips, const std::shared_ptr<Driver> &driver);
+
+    /// Apply clip paths.
+    void clip_tiles(const ClipBufferInfo &clip_buffer_info, const std::shared_ptr<Driver> &driver);
 
     /// Upload tiles data to GPU.
     void upload_tiles(const std::vector<TileObjectPrimitive> &tiles, const std::shared_ptr<CommandBuffer> &cmd_buffer);
@@ -74,6 +91,7 @@ private:
     /// Draw the mask texture. Use Renderer::buffered_fills.
     void draw_fills(uint32_t fills_count, const std::shared_ptr<CommandBuffer> &cmd_buffer);
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_D3D9_RENDERER_H

@@ -1,5 +1,7 @@
 #include "tiler.h"
 
+#include <utility>
+
 #include "../../common/math/basic.h"
 #include "../../common/timestamp.h"
 #include "../scene.h"
@@ -121,7 +123,9 @@ void process_line_segment(LineSegmentF p_line_segment,
         const bool inside_view = clip_line_segment_to_rect(p_line_segment, clip_box);
 
         // If the line segment falls outside the clip box, no need to process it.
-        if (!inside_view) return;
+        if (!inside_view) {
+            return;
+        }
     }
 
     // Tile size.
@@ -281,13 +285,13 @@ void process_segment(Segment &p_segment, SceneBuilderD3D9 &p_scene_builder, Obje
 
 Tiler::Tiler(SceneBuilderD3D9 &p_scene_builder,
              uint32_t path_id,
-             const Outline &p_outline,
+             Outline p_outline,
              FillRule fill_rule,
              const Rect<float> &view_box,
-             std::shared_ptr<uint32_t> clip_path_id,
+             const std::shared_ptr<uint32_t> &clip_path_id,
              const std::vector<BuiltPath> &built_clip_paths,
              TilingPathInfo path_info)
-    : outline(p_outline), scene_builder(p_scene_builder) {
+    : outline(std::move(p_outline)), scene_builder(p_scene_builder) {
     // The intersection rect of the path bounds and the view box.
     auto bounds = outline.bounds.intersection(view_box);
 
@@ -317,7 +321,9 @@ void Tiler::generate_fills() {
             auto segment = segments_iter.get_next(true);
 
             // Break for invalid segment.
-            if (segment.kind == SegmentKind::None) break;
+            if (segment.kind == SegmentKind::None) {
+                break;
+            }
 
             process_segment(segment, scene_builder, object_builder);
         }
@@ -326,8 +332,11 @@ void Tiler::generate_fills() {
 
 void Tiler::prepare_tiles() {
     // Prepared previously by generate_fills().
-    auto &backdrops = object_builder.built_path.data.backdrops;
-    auto &tiles = object_builder.built_path.data.tiles;
+    auto &tiled_data = object_builder.built_path.data;
+
+    auto &backdrops = tiled_data.backdrops;
+    auto &tiles = tiled_data.tiles;
+    auto &clips = tiled_data.clip_tiles;
 
     auto tiles_across = tiles.rect.width();
 
@@ -337,6 +346,8 @@ void Tiler::prepare_tiles() {
         // Current tile.
         auto &draw_tile = tiles.data[draw_tile_index];
 
+        auto tile_coords = Vec2<int>(draw_tile.tile_x, draw_tile.tile_y);
+
         // Current column.
         auto column = draw_tile_index % tiles_across;
 
@@ -344,12 +355,47 @@ void Tiler::prepare_tiles() {
         auto delta = draw_tile.backdrop;
 
         auto draw_alpha_tile_id = draw_tile.alpha_tile_id;
-        auto draw_tile_backdrop = backdrops[column];
+        int8_t draw_tile_backdrop = backdrops[column];
 
-        // Suppose to handle clip path in here. Skip for now.
+        // Handle clip path.
+        if (clip_path) {
+            auto &clip_tiles = clip_path->data.tiles;
+
+            auto clip_tile = clip_tiles.get(tile_coords);
+
+            if (clip_tile) {
+                if (clip_tile->alpha_tile_id.is_valid() && draw_alpha_tile_id.is_valid()) {
+                    // Hard case: We have an alpha tile and a clip tile with masks. Add a
+                    // job to combine the two masks. Because the mask combining step
+                    // applies the backdrops, zero out the backdrop in the draw tile itself
+                    // so that we don't double-count it.
+                    auto clip = clips->get(tile_coords);
+                    clip->dest_tile_id = draw_tile.alpha_tile_id;
+                    clip->dest_backdrop = draw_tile_backdrop;
+                    clip->src_tile_id = clip_tile->alpha_tile_id;
+                    clip->src_backdrop = clip_tile->backdrop;
+
+                    draw_tile_backdrop = 0;
+                } else if (clip_tile->alpha_tile_id.is_valid() && !draw_alpha_tile_id.is_valid() &&
+                           draw_tile_backdrop != 0) {
+                    // This is a solid draw tile, but there's a clip applied. Replace it
+                    // with an alpha tile pointing directly to the clip mask.
+                    draw_alpha_tile_id = clip_tile->alpha_tile_id;
+                    draw_tile_backdrop = clip_tile->backdrop;
+                } else if (!clip_tile->alpha_tile_id.is_valid() && clip_tile->backdrop == 0) {
+                    // This is a blank clip tile. Cull the draw tile entirely.
+                    draw_alpha_tile_id = AlphaTileId();
+                    draw_tile_backdrop = 0;
+                }
+            } else {
+                // This draw tile is outside the clip path rect. Cull the tile.
+                draw_alpha_tile_id = AlphaTileId();
+                draw_tile_backdrop = 0;
+            }
+        }
 
         draw_tile.alpha_tile_id = draw_alpha_tile_id;
-        draw_tile.backdrop = (int8_t)draw_tile_backdrop;
+        draw_tile.backdrop = draw_tile_backdrop;
 
         // Add local winding to global.
         backdrops[column] += delta;

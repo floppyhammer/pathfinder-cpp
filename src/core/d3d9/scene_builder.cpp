@@ -10,6 +10,8 @@
 #undef min
 #undef max
 
+using std::vector;
+
 namespace Pathfinder {
 
 /// Create tile batches.
@@ -79,6 +81,14 @@ DrawTileBatch build_tile_batches_for_draw_path_display_item(Scene &scene,
             *z_value = std::max(*z_value, (unsigned int)draw_path_id);
             // ----------------------------------------------------------
         }
+
+        if (path_data.clip_tiles) {
+            for (auto &clip_tile : path_data.clip_tiles->data) {
+                if (clip_tile.dest_tile_id.is_valid() && clip_tile.src_tile_id.is_valid()) {
+                    draw_tile_batch.clips.push_back(clip_tile);
+                }
+            }
+        }
     }
 
     return draw_tile_batch;
@@ -87,14 +97,18 @@ DrawTileBatch build_tile_batches_for_draw_path_display_item(Scene &scene,
 void SceneBuilderD3D9::build(const std::shared_ptr<Driver> &driver) {
     // No need to rebuild the scene if it hasn't changed.
     // Comment this to do benchmark more precisely.
-    if (!scene->is_dirty) return;
+    if (!scene->is_dirty) {
+        return;
+    }
 
     // Build paint data.
     auto paint_metadata = scene->palette.build_paint_info(driver);
 
-    // Most important step. Build draw paths into built draw paths.
+    // Most important step.
+    // Build draw paths into built draw paths.
     auto built_paths = build_paths_on_cpu(paint_metadata);
 
+    // Prepare batches.
     finish_building(built_paths);
 
     // Mark the scene as clean, so we don't need to rebuild it the next frame.
@@ -103,11 +117,10 @@ void SceneBuilderD3D9::build(const std::shared_ptr<Driver> &driver) {
 
 void SceneBuilderD3D9::finish_building(const std::vector<BuiltDrawPath> &built_paths) {
     // We can already start drawing fills asynchronously at this stage.
-
     build_tile_batches(built_paths);
 }
 
-std::vector<BuiltDrawPath> SceneBuilderD3D9::build_paths_on_cpu(std::vector<PaintMetadata> &paint_metadata) {
+vector<BuiltDrawPath> SceneBuilderD3D9::build_paths_on_cpu(vector<PaintMetadata> &paint_metadata) {
     // Reset builder.
     // ------------------------------
     // Clear pending fills.
@@ -193,10 +206,10 @@ BuiltPath SceneBuilderD3D9::build_clip_path_on_cpu(const PathBuildParams &params
 
     const auto &path_object = scene->clip_paths[path_id];
 
-    TilingPathInfo path_info;
-    path_info.type = TilingPathInfo::Type::Clip;
+    TilingPathInfo tiling_path_info;
+    tiling_path_info.type = TilingPathInfo::Type::Clip;
 
-    // Create a tiler for the draw path.
+    // Create a tiler for the clip path.
     Tiler tiler(*this,
                 path_id,
                 path_object.outline,
@@ -204,15 +217,13 @@ BuiltPath SceneBuilderD3D9::build_clip_path_on_cpu(const PathBuildParams &params
                 scene->get_view_box(),
                 path_object.clip_path,
                 {},
-                path_info);
+                tiling_path_info);
 
     // Core step.
     tiler.generate_tiles();
 
-    // Add generated fills from the tile generation step. Need a lock.
-    fill_write_mutex.lock();
+    // Add generated fills from the tile generation step.
     send_fills(tiler.object_builder.fills);
-    fill_write_mutex.unlock();
 
     return tiler.object_builder.built_path;
 }
@@ -220,10 +231,9 @@ BuiltPath SceneBuilderD3D9::build_clip_path_on_cpu(const PathBuildParams &params
 BuiltDrawPath SceneBuilderD3D9::build_draw_path_on_cpu(const DrawPathBuildParams &params) {
     uint32_t path_id = params.path_build_params.path_id;
 
-    // Get the draw path (a thin wrapper over outline).
     const auto &path_object = scene->draw_paths[path_id];
 
-    TilingPathInfo path_info;
+    TilingPathInfo path_info{};
     path_info.type = TilingPathInfo::Type::Draw;
     path_info.info.paint_id = path_object.paint;
     path_info.info.blend_mode = path_object.blend_mode;
@@ -236,18 +246,14 @@ BuiltDrawPath SceneBuilderD3D9::build_draw_path_on_cpu(const DrawPathBuildParams
                 path_object.fill_rule,
                 scene->get_view_box(),
                 path_object.clip_path,
-                {},
+                params.built_clip_paths,
                 path_info);
 
     // Core step.
     tiler.generate_tiles();
 
-    //    tiler.object_builder.built_path.paint_id = path_object.paint;
-
-    // Add generated fills from the tile generation step. Need a lock.
-    fill_write_mutex.lock();
+    // Add generated fills from the tile generation step.
     send_fills(tiler.object_builder.fills);
-    fill_write_mutex.unlock();
 
     return {tiler.object_builder.built_path, path_object.blend_mode, path_object.fill_rule, true};
 }
@@ -284,7 +290,10 @@ void SceneBuilderD3D9::build_tile_batches(const std::vector<BuiltDrawPath> &buil
 }
 
 void SceneBuilderD3D9::send_fills(const std::vector<Fill> &fill_batch) {
+    // Need a lock.
+    fill_write_mutex.lock();
     pending_fills.insert(pending_fills.end(), fill_batch.begin(), fill_batch.end());
+    fill_write_mutex.unlock();
 }
 
 } // namespace Pathfinder

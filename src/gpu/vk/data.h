@@ -43,15 +43,15 @@ inline TextureFormat vk_to_texture_format(VkFormat texture_format) {
     }
 }
 
-inline VkShaderStageFlagBits to_vk_shader_stage(ShaderType shader_type) {
+inline VkShaderStageFlagBits to_vk_shader_stage(ShaderStage shader_type) {
     switch (shader_type) {
-        case ShaderType::Vertex:
+        case ShaderStage::Vertex:
             return VK_SHADER_STAGE_VERTEX_BIT;
-        case ShaderType::Fragment:
+        case ShaderStage::Fragment:
             return VK_SHADER_STAGE_FRAGMENT_BIT;
-        case ShaderType::VertexFragment:
+        case ShaderStage::VertexFragment:
             return static_cast<VkShaderStageFlagBits>(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
-        case ShaderType::Compute:
+        case ShaderStage::Compute:
             return VK_SHADER_STAGE_COMPUTE_BIT;
         default:
             abort();

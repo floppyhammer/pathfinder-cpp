@@ -26,6 +26,14 @@ struct TileObjectPrimitive {
     uint32_t metadata_id = 0;
 };
 
+/// A vector of this will be sent the tile clip copy program.
+struct Clip {
+    AlphaTileId dest_tile_id;
+    int32_t dest_backdrop = 0;
+    AlphaTileId src_tile_id;
+    int32_t src_backdrop = 0;
+};
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_D3D9_GPU_DATA_H

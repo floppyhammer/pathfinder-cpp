@@ -12,11 +12,19 @@
 #ifdef PATHFINDER_USE_VULKAN
     #include "../../shaders/generated/fill_frag_spv.h"
     #include "../../shaders/generated/fill_vert_spv.h"
+    #include "../../shaders/generated/tile_clip_combine_frag_spv.h"
+    #include "../../shaders/generated/tile_clip_combine_vert_spv.h"
+    #include "../../shaders/generated/tile_clip_copy_frag_spv.h"
+    #include "../../shaders/generated/tile_clip_copy_vert_spv.h"
     #include "../../shaders/generated/tile_frag_spv.h"
     #include "../../shaders/generated/tile_vert_spv.h"
 #else
     #include "../../shaders/generated/fill_frag.h"
     #include "../../shaders/generated/fill_vert.h"
+    #include "../../shaders/generated/tile_clip_combine_frag.h"
+    #include "../../shaders/generated/tile_clip_combine_vert.h"
+    #include "../../shaders/generated/tile_clip_copy_frag.h"
+    #include "../../shaders/generated/tile_clip_copy_vert.h"
     #include "../../shaders/generated/tile_frag.h"
     #include "../../shaders/generated/tile_vert.h"
 #endif
@@ -76,11 +84,6 @@ void RendererD3D9::set_dest_texture(const std::shared_ptr<Texture> &texture) {
 }
 
 void RendererD3D9::set_up_pipelines() {
-    std::string postfix;
-#ifdef PATHFINDER_USE_VULKAN
-    postfix = ".spv";
-#endif
-
     // Fill pipeline.
     {
 #ifdef PATHFINDER_USE_VULKAN
@@ -103,13 +106,13 @@ void RendererD3D9::set_up_pipelines() {
             // Vertex stride for the second vertex buffer.
             uint32_t stride = sizeof(Fill);
 
-            // LineSegmentU16.
+            // Attributes in the second buffer.
             attribute_descriptions.push_back({1, 4, DataType::UNSIGNED_SHORT, stride, 0, VertexInputRate::INSTANCE});
-            // Link.
             attribute_descriptions.push_back(
                 {1, 1, DataType::UNSIGNED_INT, stride, offsetof(Fill, link), VertexInputRate::INSTANCE});
         }
 
+        // Blend.
         ColorBlendState blend_state = {true, BlendFactor::ONE, BlendFactor::ONE};
 
         // Set descriptor set.
@@ -117,9 +120,9 @@ void RendererD3D9::set_up_pipelines() {
             fill_descriptor_set = driver->create_descriptor_set();
 
             fill_descriptor_set->add_or_update_descriptor(
-                {DescriptorType::UniformBuffer, ShaderType::Vertex, 0, "bFixedSizes", fixed_sizes_ub, nullptr});
+                {DescriptorType::UniformBuffer, ShaderStage::Vertex, 0, "bFixedSizes", fixed_sizes_ub, nullptr});
             fill_descriptor_set->add_or_update_descriptor(
-                {DescriptorType::Sampler, ShaderType::Fragment, 1, "uAreaLUT", nullptr, area_lut_texture});
+                {DescriptorType::Sampler, ShaderStage::Fragment, 1, "uAreaLUT", nullptr, area_lut_texture});
         }
 
         fill_pipeline = driver->create_render_pipeline(fill_vert_source,
@@ -152,7 +155,7 @@ void RendererD3D9::set_up_pipelines() {
             // Vertex stride for the second vertex buffer.
             uint32_t stride = sizeof(TileObjectPrimitive);
 
-            // Other attributes.
+            // Attributes in the second buffer.
             attribute_descriptions.push_back({1, 2, DataType::SHORT, stride, 0, VertexInputRate::INSTANCE});
             attribute_descriptions.push_back({1,
                                               4,
@@ -172,6 +175,7 @@ void RendererD3D9::set_up_pipelines() {
                                               VertexInputRate::INSTANCE});
         }
 
+        // Blend.
         ColorBlendState blend_state = {true, BlendFactor::ONE, BlendFactor::ONE_MINUS_SRC_ALPHA};
 
         // Create uniform buffers.
@@ -189,7 +193,7 @@ void RendererD3D9::set_up_pipelines() {
             {
                 Descriptor descriptor;
                 descriptor.type = DescriptorType::UniformBuffer;
-                descriptor.stage = ShaderType::Vertex, descriptor.binding = 2;
+                descriptor.stage = ShaderStage::Vertex, descriptor.binding = 2;
                 descriptor.binding_name = "bTransform";
                 descriptor.buffer = tile_transform_ub;
 
@@ -199,7 +203,7 @@ void RendererD3D9::set_up_pipelines() {
             {
                 Descriptor descriptor;
                 descriptor.type = DescriptorType::UniformBuffer;
-                descriptor.stage = ShaderType::VertexFragment, descriptor.binding = 3;
+                descriptor.stage = ShaderStage::VertexFragment, descriptor.binding = 3;
                 descriptor.binding_name = "bVaryingSizes";
                 descriptor.buffer = tile_varying_sizes_ub;
 
@@ -209,7 +213,7 @@ void RendererD3D9::set_up_pipelines() {
             {
                 Descriptor descriptor;
                 descriptor.type = DescriptorType::UniformBuffer;
-                descriptor.stage = ShaderType::VertexFragment, descriptor.binding = 4;
+                descriptor.stage = ShaderStage::VertexFragment, descriptor.binding = 4;
                 descriptor.binding_name = "bFixedSizes";
                 descriptor.buffer = fixed_sizes_ub;
 
@@ -218,34 +222,27 @@ void RendererD3D9::set_up_pipelines() {
 
             // Textures.
 
-            {
-                Descriptor descriptor;
-                descriptor.type = DescriptorType::Sampler;
-                descriptor.stage = ShaderType::Vertex, descriptor.binding = 0;
-                descriptor.binding_name = "uTextureMetadata";
-                //                descriptor.texture = metadata_texture;
-
-                tile_descriptor_set->add_or_update_descriptor(descriptor);
-            }
-
-            {
-                Descriptor descriptor;
-                descriptor.type = DescriptorType::Sampler;
-                descriptor.stage = ShaderType::Fragment, descriptor.binding = 6;
-                descriptor.binding_name = "uMaskTexture0";
-                descriptor.texture = mask_framebuffer->get_texture();
-
-                tile_descriptor_set->add_or_update_descriptor(descriptor);
-            }
-
-            // Placeholders.
             tile_descriptor_set->add_or_update_descriptor(
-                {DescriptorType::Sampler, ShaderType::Fragment, 7, "uDestTexture"});
+                {DescriptorType::Sampler, ShaderStage::Vertex, 0, "uTextureMetadata"});
+
             tile_descriptor_set->add_or_update_descriptor(
-                {DescriptorType::Sampler, ShaderType::Fragment, 8, "uGammaLUT"});
-            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Sampler, ShaderType::Vertex, 1, "uZBuffer"});
+                {DescriptorType::Sampler, ShaderStage::Vertex, 1, "uZBuffer"});
+
             tile_descriptor_set->add_or_update_descriptor(
-                {DescriptorType::Sampler, ShaderType::Fragment, 5, "uColorTexture0"});
+                {DescriptorType::Sampler, ShaderStage::Fragment, 5, "uColorTexture0"});
+
+            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Sampler,
+                                                           ShaderStage::Fragment,
+                                                           6,
+                                                           "uMaskTexture0",
+                                                           nullptr,
+                                                           mask_framebuffer->get_texture()});
+
+            tile_descriptor_set->add_or_update_descriptor(
+                {DescriptorType::Sampler, ShaderStage::Fragment, 7, "uDestTexture"});
+
+            tile_descriptor_set->add_or_update_descriptor(
+                {DescriptorType::Sampler, ShaderStage::Fragment, 8, "uGammaLUT"});
         }
 
         tile_pipeline = driver->create_render_pipeline(tile_vert_source,
@@ -257,10 +254,58 @@ void RendererD3D9::set_up_pipelines() {
     }
 }
 
+void RendererD3D9::create_tile_clip_copy_pipeline() {
+#ifdef PATHFINDER_USE_VULKAN
+    const auto tile_clip_copy_vert_source =
+        std::vector<char>(std::begin(tile_clip_copy_vert_spv), std::end(tile_clip_copy_vert_spv));
+    const auto tile_clip_copy_frag_source =
+        std::vector<char>(std::begin(tile_clip_copy_frag_spv), std::end(tile_clip_copy_frag_spv));
+#else
+    const auto tile_clip_copy_vert_source =
+        std::vector<char>(std::begin(tile_clip_copy_vert), std::end(tile_clip_copy_vert));
+    const auto tile_clip_copy_frag_source =
+        std::vector<char>(std::begin(tile_clip_copy_frag), std::end(tile_clip_copy_frag));
+#endif
+
+    // Set vertex attributes.
+    std::vector<VertexInputAttributeDescription> attribute_descriptions;
+    {
+        attribute_descriptions.reserve(2);
+
+        attribute_descriptions.push_back({0, 2, DataType::INT, 2 * sizeof(uint16_t), 0, VertexInputRate::VERTEX});
+        attribute_descriptions.push_back({1, 1, DataType::INT, sizeof(uint16_t), 0, VertexInputRate::INSTANCE});
+    }
+
+    // Blend.
+    ColorBlendState blend_state = {true, BlendFactor::ONE, BlendFactor::ONE_MINUS_SRC_ALPHA};
+
+    // Create uniform buffer.
+    tile_clip_copy_ub =
+        driver->create_buffer(BufferType::Uniform, 4 * sizeof(float), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
+
+    // Create descriptor set.
+    {
+        tile_clip_copy_descriptor_set = driver->create_descriptor_set();
+
+        // Uniform buffer.
+        tile_descriptor_set->add_or_update_descriptor(
+            {DescriptorType::UniformBuffer, ShaderStage::Vertex, 0, "uFramebufferSize", tile_clip_copy_ub});
+
+        // Sampler.
+        tile_clip_copy_descriptor_set->add_or_update_descriptor(
+            {DescriptorType::Sampler, ShaderStage::Vertex, 1, "uSrc"});
+    }
+
+    tile_clip_copy_pipeline = driver->create_render_pipeline(tile_clip_copy_vert_source,
+                                                             tile_clip_copy_frag_source,
+                                                             attribute_descriptions,
+                                                             blend_state,
+                                                             tile_clip_copy_descriptor_set,
+                                                             mask_render_pass);
+}
+
 void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &p_scene_builder) {
     auto *scene_builder = static_cast<SceneBuilderD3D9 *>(p_scene_builder.get());
-
-    if (scene_builder->pending_fills.empty()) return;
 
     // We are supposed to do this before the builder finishes building.
     // However, it seems not providing much performance boost.
@@ -312,15 +357,23 @@ void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatch> &tile_
         uint32_t tile_count = batch.tiles.size();
 
         // No tiles to draw.
-        if (tile_count == 0) continue;
+        if (tile_count == 0) {
+            continue;
+        }
+
+        // Apply clip paths.
+        if (!batch.clips.empty()) {
+            auto clip_buffer_info = upload_clip_tiles(batch.clips, driver);
+            clip_tiles(clip_buffer_info, driver);
+        }
 
         // Different batches will use the same vertex buffer, so we need to make sure a batch is drawn
         // before processing the next batch.
         auto cmd_buffer = driver->create_command_buffer(true);
 
-        auto z_buffer_texture = upload_z_buffer(driver, batch.z_buffer_data, cmd_buffer);
-
         upload_tiles(batch.tiles, cmd_buffer);
+
+        auto z_buffer_texture = upload_z_buffer(driver, batch.z_buffer_data, cmd_buffer);
 
         draw_tiles(tile_count,
                    batch.render_target,
@@ -334,8 +387,17 @@ void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatch> &tile_
 }
 
 void RendererD3D9::draw_fills(uint32_t fills_count, const std::shared_ptr<CommandBuffer> &cmd_buffer) {
-    // No fills to draw or no valid mask viewport.
-    if (fills_count == 0 || mask_framebuffer == nullptr) return;
+    // Mask framebuffer is invalid.
+    if (mask_framebuffer == nullptr) {
+        Logger::error("RendererD3D9", "Invalid mask framebuffer!");
+        return;
+    }
+
+    // No fills to draw.
+    if (fills_count == 0) {
+        Logger::warn("RendererD3D9", "No fills to draw!");
+        return;
+    }
 
     cmd_buffer->begin_render_pass(mask_render_pass, mask_framebuffer, ColorF());
 
@@ -348,6 +410,93 @@ void RendererD3D9::draw_fills(uint32_t fills_count, const std::shared_ptr<Comman
     cmd_buffer->draw_instanced(6, fills_count);
 
     cmd_buffer->end_render_pass();
+}
+
+// Uploads clip tiles from CPU to GPU.
+ClipBufferInfo RendererD3D9::upload_clip_tiles(const std::vector<Clip> &clips, const std::shared_ptr<Driver> &driver) {
+    ClipBufferInfo info;
+
+    auto byte_size = sizeof(Clip) * clips.size();
+
+    info.clip_buffer = driver->create_buffer(BufferType::Vertex, byte_size, MemoryProperty::DEVICE_LOCAL);
+
+    auto cmd_buffer = driver->create_command_buffer(true);
+
+    cmd_buffer->upload_to_buffer(info.clip_buffer, 0, byte_size, (void *)clips.data());
+
+    cmd_buffer->submit(driver);
+
+    return info;
+}
+
+void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std::shared_ptr<Driver> &driver) {
+    // Allocate temp mask framebuffer.
+    auto mask_temp_texture =
+        driver->create_texture(MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT, TextureFormat::RGBA16F);
+    auto mask_temp_framebuffer = driver->create_framebuffer(mask_render_pass, mask_temp_texture);
+
+    auto mask_texture_size = mask_temp_texture->get_size();
+
+    auto clip_vertex_buffer = clip_buffer_info.clip_buffer;
+
+    {
+        float uniform_data[4] = {MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT};
+
+        auto cmd_buffer = driver->create_command_buffer(true);
+
+        // We don't need to preserve the data until the upload commands are implemented because
+        // these uniform buffers are host-visible/coherent.
+        cmd_buffer->upload_to_buffer(tile_clip_copy_ub, 0, 2 * sizeof(float), uniform_data);
+
+        cmd_buffer->submit(driver);
+    }
+
+    tile_clip_copy_descriptor_set->add_or_update_descriptor(
+        {DescriptorType::Sampler, ShaderStage::Vertex, 1, "uSrc", nullptr, mask_framebuffer->get_texture()});
+
+    // Copy out tiles.
+    //
+    // TODO(pcwalton): Don't do this on GL4.
+    {
+        auto cmd_buffer = driver->create_command_buffer(true);
+
+        cmd_buffer->begin_render_pass(mask_render_pass, mask_temp_framebuffer, ColorF());
+
+        cmd_buffer->bind_render_pipeline(tile_clip_copy_pipeline);
+
+        cmd_buffer->bind_vertex_buffers({quad_vertex_buffer, clip_vertex_buffer});
+
+        cmd_buffer->bind_descriptor_set(tile_clip_copy_descriptor_set);
+
+        cmd_buffer->draw_instanced(6, clip_buffer_info.clip_count * 2);
+
+        cmd_buffer->end_render_pass();
+
+        cmd_buffer->submit(driver);
+    }
+
+    //
+    //    // Combine clip tiles.
+    //    core.device.draw_elements_instanced(6, clip_buffer_info.clip_count, &RenderState{
+    //        target : &RenderTarget::Framebuffer(mask_framebuffer),
+    //        program : &self.programs.tile_clip_combine_program.program,
+    //        vertex_array : &tile_clip_combine_vertex_array.vertex_array,
+    //        primitive : Primitive::Triangles,
+    //        textures : &[
+    //            (&self.programs.tile_clip_combine_program.src_texture,
+    //             core.device.framebuffer_texture(&mask_temp_framebuffer)),
+    //        ],
+    //        images : &[],
+    //        uniforms : &[
+    //            (&self.programs.tile_clip_combine_program.framebuffer_size_uniform,
+    //             UniformData::Vec2(mask_texture_size.to_f32() .0)),
+    //        ],
+    //        storage_buffers : &[],
+    //        viewport : RectI::new (Vector2I::zero(), mask_texture_size),
+    //        options : RenderOptions::default(),
+    //    });
+
+    //    core.allocator.free_framebuffer(mask_temp_framebuffer_id);
 }
 
 void RendererD3D9::draw_tiles(uint32_t tiles_count,
@@ -399,23 +548,23 @@ void RendererD3D9::draw_tiles(uint32_t tiles_count,
     // Update descriptor set.
     {
         tile_descriptor_set->add_or_update_descriptor(
-            {DescriptorType::Sampler, ShaderType::Fragment, 7, "uDestTexture", nullptr, z_buffer_texture}); // Unused
+            {DescriptorType::Sampler, ShaderStage::Fragment, 7, "uDestTexture", nullptr, z_buffer_texture}); // Unused
 
         tile_descriptor_set->add_or_update_descriptor(
-            {DescriptorType::Sampler, ShaderType::Vertex, 1, "uZBuffer", nullptr, z_buffer_texture});
+            {DescriptorType::Sampler, ShaderStage::Vertex, 1, "uZBuffer", nullptr, z_buffer_texture});
 
         tile_descriptor_set->add_or_update_descriptor({DescriptorType::Sampler,
-                                                       ShaderType::Fragment,
+                                                       ShaderStage::Fragment,
                                                        5,
                                                        "uColorTexture0",
                                                        nullptr,
                                                        color_texture ? color_texture : z_buffer_texture});
 
         tile_descriptor_set->add_or_update_descriptor(
-            {DescriptorType::Sampler, ShaderType::Vertex, 0, "uTextureMetadata", nullptr, metadata_texture});
+            {DescriptorType::Sampler, ShaderStage::Vertex, 0, "uTextureMetadata", nullptr, metadata_texture});
 
         tile_descriptor_set->add_or_update_descriptor(
-            {DescriptorType::Sampler, ShaderType::Fragment, 8, "uGammaLUT", nullptr, z_buffer_texture}); // Unused
+            {DescriptorType::Sampler, ShaderStage::Fragment, 8, "uGammaLUT", nullptr, z_buffer_texture}); // Unused
     }
 
     cmd_buffer->bind_render_pipeline(tile_pipeline);

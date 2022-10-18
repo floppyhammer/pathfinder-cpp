@@ -156,14 +156,6 @@ void Canvas::push_path(Outline &outline, PathOp path_op, FillRule fill_rule) {
     // Apply transform to the outline.
     outline.transform(transform);
 
-    // Apply refined clipping.
-    //    if (clipping_box.is_valid()) {
-    //        outline.bounds = outline.bounds.intersection(clipping_box);
-    //        if (!outline.bounds.is_valid()) {
-    //            return;
-    //        }
-    //    }
-
     // Add shadow.
     if (current_state.shadow_color.is_opaque()) {
         // Copy outline.

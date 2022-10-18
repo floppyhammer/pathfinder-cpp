@@ -10,6 +10,8 @@
 #include "data.h"
 #include "dense_tile_map.h"
 
+using std::shared_ptr;
+
 namespace Pathfinder {
 
 struct BuiltPathData {
@@ -17,6 +19,7 @@ struct BuiltPathData {
     /// for tile columns above the viewport.
     std::vector<int32_t> backdrops;
     DenseTileMap<TileObjectPrimitive> tiles;
+    shared_ptr<DenseTileMap<Clip>> clip_tiles;
 };
 
 struct BuiltPath {
@@ -33,8 +36,8 @@ struct BuiltPath {
               Rect<float> path_bounds,
               Rect<float> view_box_bounds,
               FillRule p_fill_rule,
-              std::shared_ptr<uint32_t> clip_path_id,
-              const TilingPathInfo &path_info);
+              const std::shared_ptr<uint32_t>& clip_path_id,
+              const TilingPathInfo& tiling_path_info);
 };
 
 /// This stores a built path with extra info related to its drawing.

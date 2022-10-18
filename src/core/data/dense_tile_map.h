@@ -7,6 +7,7 @@
 #include "../../common/math/rect.h"
 
 namespace Pathfinder {
+
 template <typename T>
 struct DenseTileMap {
     // It may contain TileObjectPrimitives, z buffer or Clips.
@@ -17,8 +18,7 @@ struct DenseTileMap {
 
     DenseTileMap() = default;
 
-    DenseTileMap(const std::vector<T> &p_data, const Rect<int> &p_rect) : data(p_data), rect(p_rect) {
-    }
+    DenseTileMap(const std::vector<T> &p_data, const Rect<int> &p_rect) : data(p_data), rect(p_rect) {}
 
     /// Constructor for TileObjectPrimitive.
     DenseTileMap(const Rect<int> &p_rect, uint32_t p_path_id, uint32_t p_paint_id, uint8_t p_ctrl_byte) : rect(p_rect) {
@@ -37,9 +37,40 @@ struct DenseTileMap {
         }
     }
 
+    /// Constructor for Clip.
+    DenseTileMap(const Rect<int> &p_rect,
+                 AlphaTileId dest_tile_id,
+                 int32_t dest_backdrop,
+                 AlphaTileId src_tile_id,
+                 int32_t src_backdrop)
+        : rect(p_rect) {
+        data = std::vector<T>(rect.width() * rect.height(), T());
+
+        for (int y = rect.min_y(); y < rect.max_y(); y++) {
+            int offset = (y - rect.min_y()) * rect.width();
+            for (int x = rect.min_x(); x < rect.max_x(); x++) {
+                int index = offset + (x - rect.min_x());
+                data[index].dest_tile_id = dest_tile_id;
+                data[index].dest_backdrop = dest_backdrop;
+                data[index].src_tile_id = src_tile_id;
+                data[index].src_backdrop = src_backdrop;
+            }
+        }
+    }
+
     /// A quick way to build z buffer.
     static inline DenseTileMap z_builder(const Rect<int> &p_rect) {
         return {std::vector<T>(p_rect.width() * p_rect.height(), 0), p_rect};
+    }
+
+    inline T *get(const Vec2<int> &coords) {
+        int index = coords_to_index_unchecked(coords);
+
+        if (index < data.size()) {
+            return &data[index];
+        } else {
+            return nullptr;
+        }
     }
 
     // This is similar to finding an element index in a matrix by row and column.
@@ -51,6 +82,7 @@ struct DenseTileMap {
         return (p_y - rect.min_y()) * rect.size().x + p_x - rect.min_x();
     }
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_DENSE_TILE_MAP_H

@@ -12,6 +12,9 @@ const int32_t TEXTURE_METADATA_TEXTURE_WIDTH = TEXTURE_METADATA_ENTRIES_PER_ROW 
 const int32_t TEXTURE_METADATA_TEXTURE_HEIGHT = 65536 / TEXTURE_METADATA_ENTRIES_PER_ROW;
 
 /// Stores all paints in a scene.
+/// A palette will give two things to a renderer:
+/// 1. A metadata texture.
+/// 2. A vector of PaintMetadata.
 struct Palette {
 public:
     explicit Palette(uint32_t p_scene_id);

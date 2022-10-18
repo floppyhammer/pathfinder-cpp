@@ -9,6 +9,10 @@ New-Variable -Name "GLSLC" -Visibility Public -Value $env:VULKAN_SDK"/Bin/glslc.
 & $GLSLC d3d9/fill.frag -o generated/fill_frag.spv
 & $GLSLC d3d9/tile.vert -o generated/tile_vert.spv
 & $GLSLC d3d9/tile.frag -o generated/tile_frag.spv
+& $GLSLC d3d9/tile_clip_copy.vert -o generated/tile_clip_copy_vert.spv
+& $GLSLC d3d9/tile_clip_copy.frag -o generated/tile_clip_copy_frag.spv
+& $GLSLC d3d9/tile_clip_combine.vert -o generated/tile_clip_combine_vert.spv
+& $GLSLC d3d9/tile_clip_combine.frag -o generated/tile_clip_combine_frag.spv
 
 & $GLSLC d3d11/bin.comp -o generated/bin_comp.spv
 & $GLSLC d3d11/bound.comp -o generated/bound_comp.spv

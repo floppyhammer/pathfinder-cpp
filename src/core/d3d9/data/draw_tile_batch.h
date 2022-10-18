@@ -17,7 +17,7 @@ namespace Pathfinder {
 struct DrawTileBatch {
     std::vector<TileObjectPrimitive> tiles;
 
-//    std::vector<Clip> clips;
+    std::vector<Clip> clips;
 
     // Tile map size = viewport size / tile size.
     DenseTileMap<uint32_t> z_buffer_data;

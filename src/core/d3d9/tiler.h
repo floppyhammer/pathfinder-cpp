@@ -43,10 +43,10 @@ struct Tiler {
 public:
     Tiler(SceneBuilderD3D9& p_scene_builder,
           uint32_t path_id,
-          const Outline& p_outline,
+          Outline p_outline,
           FillRule fill_rule,
           const Rect<float>& view_box,
-          std::shared_ptr<uint32_t> clip_path_id,
+          const std::shared_ptr<uint32_t>& clip_path_id,
           const std::vector<BuiltPath>& built_clip_paths,
           TilingPathInfo path_info);
 
