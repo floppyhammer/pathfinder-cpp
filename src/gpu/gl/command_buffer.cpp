@@ -88,9 +88,13 @@ void CommandBufferGl::submit(const std::shared_ptr<Driver> &p_driver) {
                 auto blend_state = pipeline_gl->get_blend_state();
 
                 // Color blend.
-                glEnable(GL_BLEND);
-                glBlendFunc(to_gl_blend_factor(blend_state.src_blend_factor),
-                            to_gl_blend_factor(blend_state.dst_blend_factor));
+                if (blend_state.blend_enable) {
+                    glEnable(GL_BLEND);
+                    glBlendFunc(to_gl_blend_factor(blend_state.src_blend_factor),
+                                to_gl_blend_factor(blend_state.dst_blend_factor));
+                } else {
+                    glDisable(GL_BLEND);
+                }
 
                 pipeline_gl->get_program()->use();
 
@@ -214,8 +218,13 @@ void CommandBufferGl::submit(const std::shared_ptr<Driver> &p_driver) {
                         case DescriptorType::Image: {
                             auto texture_gl = static_cast<TextureGl *>(descriptor.texture.get());
 
-                            glBindImageTexture(
-                                binding_point, texture_gl->get_texture_id(), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA8);
+                            glBindImageTexture(binding_point,
+                                               texture_gl->get_texture_id(),
+                                               0,
+                                               GL_FALSE,
+                                               0,
+                                               GL_READ_WRITE,
+                                               GL_RGBA8);
                         } break;
     #endif
                         default:
