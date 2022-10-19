@@ -19,20 +19,31 @@ precision highp float;
 precision highp sampler2D;
 #endif
 
+#ifdef VULKAN
+layout(binding = 0) uniform bFixedSizes {
+#else
 layout(std140) uniform bFixedSizes {
+#endif
     vec2 uFramebufferSize; // Fixed as (4096, 1024).
     vec2 pad0; // Not used here.
     vec2 pad1;
     vec2 pad2;
 };
 
-in ivec2 aTileOffset;
+#ifdef VULKAN
+layout(location = 0) in uvec2 aTileOffset;
+layout(location = 1) in int aTileIndex;
+
+layout(location = 0) out vec2 vTexCoord;
+#else
+in uvec2 aTileOffset;
 in int aTileIndex;
 
 out vec2 vTexCoord;
+#endif
 
 void main() {
-    vec2 position = vec2(ivec2(aTileIndex % 256, aTileIndex / 256) + aTileOffset);
+    vec2 position = vec2(ivec2(aTileIndex % 256, aTileIndex / 256) + ivec2(aTileOffset));
     position *= vec2(16.0, 4.0) / uFramebufferSize;
 
     vTexCoord = position;

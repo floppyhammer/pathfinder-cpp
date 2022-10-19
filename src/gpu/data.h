@@ -82,7 +82,7 @@ enum class BlendFactor {
 };
 
 struct ColorBlendState {
-    bool blend_enable;
+    bool blend_enabled;
     BlendFactor src_blend_factor;
     BlendFactor dst_blend_factor;
 };

@@ -19,14 +19,30 @@ precision highp float;
 precision highp sampler2D;
 #endif
 
+#ifdef VULKAN
+layout(binding = 0) uniform bFixedSizes {
+#else
 layout(std140) uniform bFixedSizes {
+#endif
     vec2 uFramebufferSize; // Fixed as (4096, 1024).
     vec2 pad0; // Not used here.
     vec2 pad1;
     vec2 pad2;
 };
 
-in ivec2 aTileOffset;
+#ifdef VULKAN
+layout(location = 0) in uvec2 aTileOffset;
+layout(location = 1) in int aDestTileIndex;
+layout(location = 2) in int aDestBackdrop;
+layout(location = 3) in int aSrcTileIndex;
+layout(location = 4) in int aSrcBackdrop;
+
+layout(location = 0) out vec2 vTexCoord0;
+layout(location = 1) out float vBackdrop0;
+layout(location = 2) out vec2 vTexCoord1;
+layout(location = 3) out float vBackdrop1;
+#else
+in uvec2 aTileOffset;
 in int aDestTileIndex;
 in int aDestBackdrop;
 in int aSrcTileIndex;
@@ -36,10 +52,11 @@ out vec2 vTexCoord0;
 out float vBackdrop0;
 out vec2 vTexCoord1;
 out float vBackdrop1;
+#endif
 
 void main() {
-    vec2 destPosition = vec2(ivec2(aDestTileIndex % 256, aDestTileIndex / 256) + aTileOffset);
-    vec2 srcPosition  = vec2(ivec2(aSrcTileIndex  % 256, aSrcTileIndex  / 256) + aTileOffset);
+    vec2 destPosition = vec2(ivec2(aDestTileIndex % 256, aDestTileIndex / 256) + ivec2(aTileOffset));
+    vec2 srcPosition  = vec2(ivec2(aSrcTileIndex  % 256, aSrcTileIndex  / 256) + ivec2(aTileOffset));
     destPosition *= vec2(16.0, 4.0) / uFramebufferSize;
     srcPosition  *= vec2(16.0, 4.0) / uFramebufferSize;
 

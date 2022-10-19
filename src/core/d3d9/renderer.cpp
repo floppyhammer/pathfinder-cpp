@@ -341,16 +341,14 @@ void RendererD3D9::create_tile_clip_combine_pipeline() {
     ColorBlendState blend_state = {false};
 
     // Create descriptor set.
-    auto descriptor_set = driver->create_descriptor_set();
-    tile_clip_combine_descriptor_set = descriptor_set;
+    auto descriptor_set = tile_clip_combine_descriptor_set = driver->create_descriptor_set();
     {
         // Uniform buffer.
-        tile_clip_combine_descriptor_set->add_or_update_descriptor(
+        descriptor_set->add_or_update_descriptor(
             {DescriptorType::UniformBuffer, ShaderStage::Vertex, 0, "bFixedSizes", fixed_sizes_ub});
 
         // Sampler.
-        tile_clip_combine_descriptor_set->add_or_update_descriptor(
-            {DescriptorType::Sampler, ShaderStage::Vertex, 1, "uSrc"});
+        descriptor_set->add_or_update_descriptor({DescriptorType::Sampler, ShaderStage::Fragment, 1, "uSrc"});
     }
 
     tile_clip_combine_pipeline = driver->create_render_pipeline(vert_source,

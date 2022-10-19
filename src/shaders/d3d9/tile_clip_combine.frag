@@ -19,6 +19,16 @@ precision highp float;
 precision highp sampler2D;
 #endif
 
+#ifdef VULKAN
+layout(binding = 1) uniform sampler2D uSrc;
+
+layout(location = 0) in vec2 vTexCoord0;
+layout(location = 1) in float vBackdrop0;
+layout(location = 2) in vec2 vTexCoord1;
+layout(location = 3) in float vBackdrop1;
+
+layout(location = 0) out vec4 oFragColor;
+#else
 uniform sampler2D uSrc;
 
 in vec2 vTexCoord0;
@@ -27,6 +37,7 @@ in vec2 vTexCoord1;
 in float vBackdrop1;
 
 out vec4 oFragColor;
+#endif
 
 void main() {
     oFragColor = min(abs(texture(uSrc, vTexCoord0) + vBackdrop0),

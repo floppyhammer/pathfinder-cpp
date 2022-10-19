@@ -88,7 +88,7 @@ void CommandBufferGl::submit(const std::shared_ptr<Driver> &p_driver) {
                 auto blend_state = pipeline_gl->get_blend_state();
 
                 // Color blend.
-                if (blend_state.blend_enable) {
+                if (blend_state.blend_enabled) {
                     glEnable(GL_BLEND);
                     glBlendFunc(to_gl_blend_factor(blend_state.src_blend_factor),
                                 to_gl_blend_factor(blend_state.dst_blend_factor));
