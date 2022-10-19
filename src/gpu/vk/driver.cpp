@@ -21,8 +21,7 @@ DriverVk::DriverVk(VkDevice p_device,
                    VkQueue p_graphics_queue,
                    VkCommandPool p_command_pool)
     : device(p_device), physical_device(p_physical_device), graphics_queue(p_graphics_queue),
-      command_pool(p_command_pool) {
-}
+      command_pool(p_command_pool) {}
 
 VkDevice DriverVk::get_device() const {
     return device;
@@ -186,9 +185,13 @@ std::shared_ptr<RenderPipeline> DriverVk::create_render_pipeline(
     VkPipelineColorBlendAttachmentState color_blend_attachment{};
     color_blend_attachment.colorWriteMask =
         VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-    color_blend_attachment.blendEnable = VK_TRUE;
-    // Need to set blend config if blend is enabled.
-    {
+
+    color_blend_attachment.blendEnable = VK_FALSE;
+
+    if (blend_state.blend_enabled) {
+        color_blend_attachment.blendEnable = VK_TRUE;
+
+        // Need to set blend config if blend is enabled.
         color_blend_attachment.srcColorBlendFactor = to_vk_blend_factor(blend_state.src_blend_factor);
         color_blend_attachment.dstColorBlendFactor = to_vk_blend_factor(blend_state.dst_blend_factor);
         color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
@@ -225,8 +228,12 @@ std::shared_ptr<RenderPipeline> DriverVk::create_render_pipeline(
     pipelineInfo.pDynamicState = &dynamic; // Make viewport and scissor dynamic.
 
     // Create pipeline.
-    if (vkCreateGraphicsPipelines(
-            device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &render_pipeline_vk->vk_pipeline) != VK_SUCCESS) {
+    if (vkCreateGraphicsPipelines(device,
+                                  VK_NULL_HANDLE,
+                                  1,
+                                  &pipelineInfo,
+                                  nullptr,
+                                  &render_pipeline_vk->vk_pipeline) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create graphics pipeline!");
     }
 
@@ -238,7 +245,8 @@ std::shared_ptr<RenderPipeline> DriverVk::create_render_pipeline(
 }
 
 std::shared_ptr<ComputePipeline> DriverVk::create_compute_pipeline(
-    const std::vector<char> &comp_source, const std::shared_ptr<DescriptorSet> &descriptor_set) {
+    const std::vector<char> &comp_source,
+    const std::shared_ptr<DescriptorSet> &descriptor_set) {
     auto compute_pipeline_vk = std::make_shared<ComputePipelineVk>(device);
 
     // Create descriptor set layout.
@@ -303,9 +311,12 @@ std::shared_ptr<ComputePipeline> DriverVk::create_compute_pipeline(
     pipeline_create_info.basePipelineIndex = 0;
 
     // Create pipeline.
-    if (vkCreateComputePipelines(
-            device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &compute_pipeline_vk->vk_pipeline) !=
-        VK_SUCCESS) {
+    if (vkCreateComputePipelines(device,
+                                 VK_NULL_HANDLE,
+                                 1,
+                                 &pipeline_create_info,
+                                 nullptr,
+                                 &compute_pipeline_vk->vk_pipeline) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create compute pipeline!");
     }
 
@@ -699,8 +710,11 @@ void DriverVk::copy_vk_buffer(VkCommandBuffer command_buffer,
     vkCmdCopyBuffer(command_buffer, src_buffer, dst_buffer, 1, &copy_region);
 }
 
-void DriverVk::copy_buffer_to_image(
-    VkCommandBuffer command_buffer, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) const {
+void DriverVk::copy_buffer_to_image(VkCommandBuffer command_buffer,
+                                    VkBuffer buffer,
+                                    VkImage image,
+                                    uint32_t width,
+                                    uint32_t height) const {
     // Structure specifying a buffer image copy operation.
     VkBufferImageCopy region{};
     region.bufferOffset =

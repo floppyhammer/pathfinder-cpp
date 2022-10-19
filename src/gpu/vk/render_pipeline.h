@@ -9,6 +9,7 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+
 class RenderPipelineVk : public RenderPipeline {
     friend class DriverVk;
 
@@ -16,8 +17,7 @@ public:
     RenderPipelineVk(VkDevice p_device,
                      std::vector<VertexInputAttributeDescription> p_attribute_descriptions,
                      ColorBlendState p_blend_state)
-        : RenderPipeline(p_attribute_descriptions, p_blend_state), device(p_device) {
-    }
+        : RenderPipeline(std::move(p_attribute_descriptions), p_blend_state), device(p_device) {}
 
     ~RenderPipelineVk() {
         vkDestroyDescriptorSetLayout(device, descriptor_set_layout, nullptr);
@@ -46,6 +46,7 @@ private:
 
     VkDevice device{};
 };
+
 } // namespace Pathfinder
 
 #endif
