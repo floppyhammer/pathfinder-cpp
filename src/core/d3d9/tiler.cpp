@@ -68,10 +68,14 @@ bool clip_line_segment_to_rect(LineSegmentF &line_segment, Rect<float> rect) {
 
     while (true) {
         // The line segment is inside the bounding rect. No clipping.
-        if (outcode_from.is_empty() && outcode_to.is_empty()) return true;
+        if (outcode_from.is_empty() && outcode_to.is_empty()) {
+            return true;
+        }
 
         // The line segment is outside the bounding rect, so no clipping.
-        if (!(outcode_from & outcode_to).is_empty()) return false;
+        if (!(outcode_from & outcode_to).is_empty()) {
+            return false;
+        }
 
         // The line segment crosses the boundaries of the bounding rect.
 
@@ -392,9 +396,9 @@ void Tiler::prepare_tiles() {
                     // so that we don't double-count it.
                     auto clip = clips->get(tile_coords);
                     clip->dest_tile_id = draw_tile.alpha_tile_id;
-                    clip->dest_backdrop = draw_tile_backdrop;
+                    clip->dest_backdrop = int32_t(draw_tile_backdrop);
                     clip->src_tile_id = clip_tile->alpha_tile_id;
-                    clip->src_backdrop = clip_tile->backdrop;
+                    clip->src_backdrop = int32_t(clip_tile->backdrop);
 
                     draw_tile_backdrop = 0;
                 } else if (clip_tile->alpha_tile_id.is_valid() && !draw_alpha_tile_id.is_valid() &&

@@ -8,6 +8,7 @@
 #include "scene_builder.h"
 
 namespace Pathfinder {
+
 /// Mask tile dimension.
 const uint32_t MASK_TILES_ACROSS = 256;
 const uint32_t MASK_TILES_DOWN = 256;
@@ -47,12 +48,13 @@ protected:
     /// Pre-defined texture used to draw the mask texture. Shared by D3D9 and D3D10.
     std::shared_ptr<Texture> area_lut_texture;
 
-//    /// Texture to store metadata. Shared by D3D9 and D3D10.
-//    std::shared_ptr<Texture> metadata_texture;
+    //    /// Texture to store metadata. Shared by D3D9 and D3D10.
+    //    std::shared_ptr<Texture> metadata_texture;
 
     /// Uniform buffer containing some constants. Shared by D3D9 and D3D10.
     std::shared_ptr<Buffer> fixed_sizes_ub{};
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_RENDERER_H

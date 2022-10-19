@@ -19,7 +19,12 @@ precision highp float;
 precision highp sampler2D;
 #endif
 
-uniform vec2 uFramebufferSize;
+layout(std140) uniform bFixedSizes {
+    vec2 uFramebufferSize; // Fixed as (4096, 1024).
+    vec2 pad0; // Not used here.
+    vec2 pad1;
+    vec2 pad2;
+};
 
 in ivec2 aTileOffset;
 in int aDestTileIndex;

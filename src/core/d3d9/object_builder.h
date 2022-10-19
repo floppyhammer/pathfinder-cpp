@@ -21,7 +21,7 @@ public:
                   Rect<float> path_bounds,
                   const Rect<float> &view_box_bounds,
                   FillRule fill_rule,
-                  std::shared_ptr<uint32_t> clip_path_id,
+                  const std::shared_ptr<uint32_t>& clip_path_id,
                   const TilingPathInfo &path_info);
 
     /// Alpha tile id is set at this stage.

@@ -163,20 +163,19 @@ void SvgScene::load_file(std::vector<char> input, Canvas &canvas) {
     // Extract paths, contours and points from the SVG image.
     // Notable: NSVGshape equals to our Path, and NSVGpath equals to our Contour (Sub-Path).
     for (NSVGshape *nsvg_shape = image->shapes; nsvg_shape != nullptr; nsvg_shape = nsvg_shape->next) {
-        Path2d path2d;
+        Path2d path;
 
         for (NSVGpath *nsvg_path = nsvg_shape->paths; nsvg_path != nullptr; nsvg_path = nsvg_path->next) {
-            path2d.move_to(nsvg_path->pts[0], nsvg_path->pts[1]);
+            path.move_to(nsvg_path->pts[0], nsvg_path->pts[1]);
 
-            // -6 or -3, both will do, probably.
             for (int point_index = 0; point_index < nsvg_path->npts - 3; point_index += 3) {
                 // * 2 because a point has x and y components.
                 float *p = &nsvg_path->pts[point_index * 2];
-                path2d.bezier_curve_to(p[2], p[3], p[4], p[5], p[6], p[7]);
+                path.bezier_curve_to(p[2], p[3], p[4], p[5], p[6], p[7]);
             }
 
             if (nsvg_path->closed) {
-                path2d.close_path();
+                path.close_path();
             }
         }
 
@@ -195,14 +194,14 @@ void SvgScene::load_file(std::vector<char> input, Canvas &canvas) {
 
         // TEST: Add clip path.
         if (true) {
-            Path2d path;
-            path.add_rect({{}, {720, 720}});
-            canvas.clip_path(path, FillRule::Winding);
+            Path2d clip_path;
+            clip_path.add_rect({{}, {720, 360}});
+            canvas.clip_path(clip_path, FillRule::Winding);
         }
 
         // Add fill.
         canvas.set_fill_paint(convert_nsvg_paint(nsvg_shape->fill));
-        canvas.fill_path(path2d, convert_nsvg_fill_rule(nsvg_shape->fillRule));
+        canvas.fill_path(path, convert_nsvg_fill_rule(nsvg_shape->fillRule));
 
         // Add stroke.
         canvas.set_line_join(convert_nsvg_line_join(nsvg_shape->strokeLineJoin));
@@ -210,7 +209,7 @@ void SvgScene::load_file(std::vector<char> input, Canvas &canvas) {
         canvas.set_line_cap(convert_nsvg_line_cap(nsvg_shape->strokeLineCap));
         canvas.set_line_width(nsvg_shape->strokeWidth);
         canvas.set_stroke_paint(convert_nsvg_paint(nsvg_shape->stroke));
-        canvas.stroke_path(path2d);
+        canvas.stroke_path(path);
 
         canvas.restore_state();
     }

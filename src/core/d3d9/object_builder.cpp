@@ -11,7 +11,7 @@ ObjectBuilder::ObjectBuilder(uint32_t path_id,
                              Rect<float> path_bounds,
                              const Rect<float> &view_box_bounds,
                              FillRule fill_rule,
-                             std::shared_ptr<uint32_t> clip_path_id,
+                             const std::shared_ptr<uint32_t> &clip_path_id,
                              const TilingPathInfo &path_info)
     : bounds(path_bounds) {
     built_path = BuiltPath(path_id, path_bounds, view_box_bounds, fill_rule, clip_path_id, path_info);

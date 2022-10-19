@@ -168,14 +168,6 @@ vector<BuiltDrawPath> SceneBuilderD3D9::build_paths_on_cpu(vector<PaintMetadata>
         auto task =
             [this, &built_draw_paths, &draw_paths_count, &view_box, &paint_metadata, &built_clip_paths](int begin) {
                 for (int path_index = begin; path_index < draw_paths_count; path_index += PATHFINDER_THREADS) {
-                    auto &draw_path = scene->draw_paths[path_index];
-
-                    // Skip invisible draw paths.
-                    if (!scene->get_paint(draw_path.paint).is_opaque() ||
-                        !draw_path.outline.bounds.intersects(scene->get_view_box())) {
-                        continue;
-                    }
-
                     DrawPathBuildParams params;
                     params.paint_metadata = paint_metadata;
                     params.built_clip_paths = built_clip_paths;
