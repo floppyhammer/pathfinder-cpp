@@ -5,7 +5,8 @@
 #include "alpha_tile_id.h"
 
 namespace Pathfinder {
-/// These data will be sent to GPU directly.
+
+//! Data that will be sent to GPU directly.
 
 /// A vector of this will be sent to the fill program.
 struct Fill {

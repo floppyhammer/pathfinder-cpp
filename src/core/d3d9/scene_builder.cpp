@@ -15,11 +15,11 @@ using std::vector;
 namespace Pathfinder {
 
 /// Create tile batches.
-DrawTileBatch build_tile_batches_for_draw_path_display_item(Scene &scene,
+DrawTileBatchD3D9 build_tile_batches_for_draw_path_display_item(Scene &scene,
                                                             const std::vector<BuiltDrawPath> &built_paths,
                                                             Range draw_path_range) {
     // New draw tile batch.
-    DrawTileBatch draw_tile_batch;
+    DrawTileBatchD3D9 draw_tile_batch;
 
     auto tile_bounds = round_rect_out_to_tile_bounds(scene.get_view_box());
 

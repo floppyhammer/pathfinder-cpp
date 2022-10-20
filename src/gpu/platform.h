@@ -4,6 +4,7 @@
 #include "driver.h"
 
 namespace Pathfinder {
+
 class Platform {
 public:
     Platform(uint32_t window_width, uint32_t window_height) : width(window_width), height(window_height) {}
@@ -52,6 +53,7 @@ protected:
     GLFWwindow *window{};
 #endif
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_GPU_PLATFORM_H

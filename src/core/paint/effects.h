@@ -7,7 +7,7 @@
 namespace Pathfinder {
 
 /// The axis a Gaussian blur is applied to.
-enum BlurDirection {
+enum class BlurDirection {
     /// The horizontal axis.
     X,
     /// The vertical axis.

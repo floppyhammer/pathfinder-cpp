@@ -11,7 +11,7 @@
 
 namespace Pathfinder {
 
-enum PathOp {
+enum class PathOp {
     Fill,
     Stroke,
 };

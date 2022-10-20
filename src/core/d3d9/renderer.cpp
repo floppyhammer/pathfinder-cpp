@@ -404,7 +404,7 @@ void RendererD3D9::upload_tiles(const std::vector<TileObjectPrimitive> &tiles,
     cmd_buffer->upload_to_buffer(tile_vertex_buffer, 0, byte_size, (void *)tiles.data());
 }
 
-void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatch> &tile_batches) {
+void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &tile_batches) {
     // Clear the destination framebuffer for the first time.
     need_to_clear_dest = true;
 

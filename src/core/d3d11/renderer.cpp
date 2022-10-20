@@ -750,8 +750,12 @@ void RendererD3D11::bound(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
     {
         bound_descriptor_set->add_or_update_descriptor(
             {DescriptorType::StorageBuffer, ShaderStage::Compute, 0, "", path_info_buffer_id, nullptr}); // Read only.
-        bound_descriptor_set->add_or_update_descriptor(
-            {DescriptorType::StorageBuffer, ShaderStage::Compute, 1, "", tiles_d3d11_buffer_id, nullptr}); // Write only.
+        bound_descriptor_set->add_or_update_descriptor({DescriptorType::StorageBuffer,
+                                                        ShaderStage::Compute,
+                                                        1,
+                                                        "",
+                                                        tiles_d3d11_buffer_id,
+                                                        nullptr}); // Write only.
     }
 
     cmd_buffer = driver->create_command_buffer(true);
@@ -801,19 +805,27 @@ FillBufferInfoD3D11 RendererD3D11::bin_segments(MicrolineBufferIDsD3D11 &microli
                                                       microline_storage.buffer_id,
                                                       nullptr}); // Read only.
         bin_descriptor_set->add_or_update_descriptor({DescriptorType::StorageBuffer,
-                                                      ShaderType::Compute,
+                                                      ShaderStage::Compute,
                                                       1,
                                                       "",
                                                       propagate_metadata_buffer_ids.propagate_metadata,
                                                       nullptr}); // Read only.
         bin_descriptor_set->add_or_update_descriptor(
-            {DescriptorType::StorageBuffer, ShaderType::Compute, 2, "", z_buffer_id, nullptr}); // Read write.
-        bin_descriptor_set->add_or_update_descriptor(
-            {DescriptorType::StorageBuffer, ShaderType::Compute, 3, "", fill_vertex_buffer_id, nullptr}); // Write only.
-        bin_descriptor_set->add_or_update_descriptor(
-            {DescriptorType::StorageBuffer, ShaderType::Compute, 4, "", tiles_d3d11_buffer_id, nullptr}); // Read write.
+            {DescriptorType::StorageBuffer, ShaderStage::Compute, 2, "", z_buffer_id, nullptr}); // Read write.
         bin_descriptor_set->add_or_update_descriptor({DescriptorType::StorageBuffer,
-                                                      ShaderType::Compute,
+                                                      ShaderStage::Compute,
+                                                      3,
+                                                      "",
+                                                      fill_vertex_buffer_id,
+                                                      nullptr}); // Write only.
+        bin_descriptor_set->add_or_update_descriptor({DescriptorType::StorageBuffer,
+                                                      ShaderStage::Compute,
+                                                      4,
+                                                      "",
+                                                      tiles_d3d11_buffer_id,
+                                                      nullptr}); // Read write.
+        bin_descriptor_set->add_or_update_descriptor({DescriptorType::StorageBuffer,
+                                                      ShaderStage::Compute,
                                                       5,
                                                       "",
                                                       propagate_metadata_buffer_ids.backdrops,
@@ -885,41 +897,49 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
     // Bind storage buffers.
     {
         propagate_descriptor_set->add_or_update_descriptor({DescriptorType::StorageBuffer,
-                                                            ShaderType::Compute,
+                                                            ShaderStage::Compute,
                                                             0,
                                                             "",
                                                             propagate_metadata_buffer_ids.propagate_metadata,
                                                             nullptr}); // Read only.
         propagate_descriptor_set->add_or_update_descriptor({DescriptorType::StorageBuffer,
-                                                            ShaderType::Compute,
+                                                            ShaderStage::Compute,
                                                             1,
                                                             "",
                                                             propagate_metadata_buffer_ids.propagate_metadata,
                                                             nullptr}); // Clip metadata, read only.
         propagate_descriptor_set->add_or_update_descriptor({DescriptorType::StorageBuffer,
-                                                            ShaderType::Compute,
+                                                            ShaderStage::Compute,
                                                             2,
                                                             "",
                                                             propagate_metadata_buffer_ids.backdrops,
                                                             nullptr}); // Read only.
-        propagate_descriptor_set->add_or_update_descriptor(
-            {DescriptorType::StorageBuffer, ShaderType::Compute, 3, "", tiles_d3d11_buffer_id, nullptr}); // Read write.
         propagate_descriptor_set->add_or_update_descriptor({DescriptorType::StorageBuffer,
-                                                            ShaderType::Compute,
+                                                            ShaderStage::Compute,
+                                                            3,
+                                                            "",
+                                                            tiles_d3d11_buffer_id,
+                                                            nullptr}); // Read write.
+        propagate_descriptor_set->add_or_update_descriptor({DescriptorType::StorageBuffer,
+                                                            ShaderStage::Compute,
                                                             4,
                                                             "",
                                                             tiles_d3d11_buffer_id,
                                                             nullptr}); // Clip tiles, read write.
         propagate_descriptor_set->add_or_update_descriptor(
-            {DescriptorType::StorageBuffer, ShaderType::Compute, 5, "", z_buffer_id, nullptr}); // Read write.
+            {DescriptorType::StorageBuffer, ShaderStage::Compute, 5, "", z_buffer_id, nullptr}); // Read write.
         propagate_descriptor_set->add_or_update_descriptor({DescriptorType::StorageBuffer,
-                                                            ShaderType::Compute,
+                                                            ShaderStage::Compute,
                                                             6,
                                                             "",
                                                             first_tile_map_buffer_id,
                                                             nullptr}); // Read write.
-        propagate_descriptor_set->add_or_update_descriptor(
-            {DescriptorType::StorageBuffer, ShaderType::Compute, 7, "", alpha_tiles_buffer_id, nullptr}); // Write only.
+        propagate_descriptor_set->add_or_update_descriptor({DescriptorType::StorageBuffer,
+                                                            ShaderStage::Compute,
+                                                            7,
+                                                            "",
+                                                            alpha_tiles_buffer_id,
+                                                            nullptr}); // Write only.
     }
 
     cmd_buffer = driver->create_command_buffer(true);
@@ -978,15 +998,15 @@ void RendererD3D11::draw_fills(FillBufferInfoD3D11 &fill_storage_info,
     // Update descriptor set.
     {
         fill_descriptor_set->add_or_update_descriptor({DescriptorType::StorageBuffer,
-                                                       ShaderType::Compute,
+                                                       ShaderStage::Compute,
                                                        0,
                                                        "",
                                                        fill_storage_info.fill_vertex_buffer_id,
                                                        nullptr}); // Read only.
         fill_descriptor_set->add_or_update_descriptor(
-            {DescriptorType::StorageBuffer, ShaderType::Compute, 1, "", tiles_d3d11_buffer_id, nullptr}); // Read only.
+            {DescriptorType::StorageBuffer, ShaderStage::Compute, 1, "", tiles_d3d11_buffer_id, nullptr}); // Read only.
         fill_descriptor_set->add_or_update_descriptor(
-            {DescriptorType::StorageBuffer, ShaderType::Compute, 2, "", alpha_tiles_buffer_id, nullptr}); // Read only.
+            {DescriptorType::StorageBuffer, ShaderStage::Compute, 2, "", alpha_tiles_buffer_id, nullptr}); // Read only.
     }
 
     cmd_buffer = driver->create_command_buffer(true);
@@ -1022,16 +1042,20 @@ void RendererD3D11::sort_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer
 
     // Update descriptor set.
     {
-        sort_descriptor_set->add_or_update_descriptor(
-            {DescriptorType::StorageBuffer, ShaderType::Compute, 0, "", tiles_d3d11_buffer_id, nullptr}); // Read write.
         sort_descriptor_set->add_or_update_descriptor({DescriptorType::StorageBuffer,
-                                                       ShaderType::Compute,
+                                                       ShaderStage::Compute,
+                                                       0,
+                                                       "",
+                                                       tiles_d3d11_buffer_id,
+                                                       nullptr}); // Read write.
+        sort_descriptor_set->add_or_update_descriptor({DescriptorType::StorageBuffer,
+                                                       ShaderStage::Compute,
                                                        1,
                                                        "",
                                                        first_tile_map_buffer_id,
                                                        nullptr}); // Read write.
         sort_descriptor_set->add_or_update_descriptor(
-            {DescriptorType::StorageBuffer, ShaderType::Compute, 2, "", z_buffer_id, nullptr}); // Read only.
+            {DescriptorType::StorageBuffer, ShaderStage::Compute, 2, "", z_buffer_id, nullptr}); // Read only.
     }
 
     cmd_buffer = driver->create_command_buffer(true);

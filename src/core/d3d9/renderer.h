@@ -27,7 +27,7 @@ public:
     std::vector<Fill> pending_fills;
 
     /// Tiles to draw.
-    std::vector<DrawTileBatch> pending_tile_batches;
+    std::vector<DrawTileBatchD3D9> pending_tile_batches;
 
     explicit RendererD3D9(const std::shared_ptr<Driver> &p_driver);
 
@@ -70,7 +70,7 @@ private:
 
     void create_tile_clip_combine_pipeline();
 
-    void upload_and_draw_tiles(const std::vector<DrawTileBatch> &tile_batches);
+    void upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &tile_batches);
 
     /// Upload fills data to GPU.
     void upload_fills(const std::vector<Fill> &fills, const std::shared_ptr<CommandBuffer> &cmd_buffer);

@@ -114,7 +114,7 @@ struct PrepareTilesInfoD3D11 {
 };
 
 /// Where a path should come from (draw or clip).
-enum PathSource {
+enum class PathSource {
     Draw,
     Clip,
 };

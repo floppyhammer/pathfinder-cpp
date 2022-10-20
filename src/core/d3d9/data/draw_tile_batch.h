@@ -14,7 +14,7 @@
 
 namespace Pathfinder {
 
-struct DrawTileBatch {
+struct DrawTileBatchD3D9 {
     std::vector<TileObjectPrimitive> tiles;
 
     std::vector<Clip> clips;
