@@ -28,18 +28,24 @@
 #endif
 
 namespace Pathfinder {
-enum class DataType {
-    // Integers.
-    BYTE,           // 1 byte
-    UNSIGNED_BYTE,  // 1 byte
-    SHORT,          // 2 bytes
-    UNSIGNED_SHORT, // 2 bytes
-    INT,            // 4 bytes
-    UNSIGNED_INT,   // 4 bytes
 
-    // Floats.
-    FLOAT,      // 4 bytes
-    HALF_FLOAT, // 2 bytes
+enum class DataType {
+    /// i8
+    BYTE,
+    /// u8
+    UNSIGNED_BYTE,
+    /// i16
+    SHORT,
+    /// u16
+    UNSIGNED_SHORT,
+    /// i32
+    INT,
+    /// u32
+    UNSIGNED_INT,
+    /// f32
+    FLOAT,
+    /// f16
+    HALF_FLOAT,
 };
 
 /// Texture format in GPU memory.
@@ -61,7 +67,6 @@ enum class TextureLayout {
     GENERAL,
 };
 
-// TODO(floppyhammer): Make this bits.
 enum class ShaderStage {
     Vertex,
     Fragment,
@@ -132,13 +137,13 @@ struct BlendState {
 };
 
 enum class VertexInputRate {
-    VERTEX = 0,
-    INSTANCE = 1,
+    Vertex = 0,
+    Instance = 1,
 };
 
 struct VertexInputAttributeDescription {
     uint32_t binding;
-    uint8_t size; // Must be 1, 2, 3, 4.
+    uint8_t size; // Must be one of 1, 2, 3, 4.
     DataType type;
     uint32_t stride;
     size_t offset;
@@ -172,8 +177,8 @@ enum class StorageBufferUsage {
 };
 
 enum class AttachmentLoadOp {
-    LOAD = 0,
-    CLEAR,
+    Load,
+    Clear,
 };
 
 inline uint32_t get_pixel_size(TextureFormat format) {
@@ -203,6 +208,7 @@ inline DataType texture_format_to_data_type(TextureFormat format) {
         }
     }
 }
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_GPU_DATA_H

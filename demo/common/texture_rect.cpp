@@ -57,10 +57,10 @@ TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
         uint32_t stride = 4 * sizeof(float);
 
         attribute_descriptions.push_back(
-            {0, 2, Pathfinder::DataType::FLOAT, stride, 0, Pathfinder::VertexInputRate::VERTEX});
+            {0, 2, Pathfinder::DataType::FLOAT, stride, 0, Pathfinder::VertexInputRate::Vertex});
 
         attribute_descriptions.push_back(
-            {0, 2, Pathfinder::DataType::FLOAT, stride, 2 * sizeof(float), Pathfinder::VertexInputRate::VERTEX});
+            {0, 2, Pathfinder::DataType::FLOAT, stride, 2 * sizeof(float), Pathfinder::VertexInputRate::Vertex});
 
         auto blend_state = Pathfinder::BlendState::from_over();
 

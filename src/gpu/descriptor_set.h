@@ -10,6 +10,7 @@
 #include "texture.h"
 
 namespace Pathfinder {
+
 struct Descriptor {
     DescriptorType type = DescriptorType::Max;
 
@@ -44,6 +45,7 @@ public:
 protected:
     std::unordered_map<uint32_t, Descriptor> descriptors;
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_GPU_DESCRIPTOR_SET_H

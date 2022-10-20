@@ -25,7 +25,7 @@ Pathfinder::RenderPassVk::RenderPassVk(VkDevice p_device,
     colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     // The layout the attachment image subresource will be in when a render pass instance begins.
     colorAttachment.initialLayout =
-        load_op == AttachmentLoadOp::CLEAR ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        load_op == AttachmentLoadOp::Clear ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     // The layout the attachment image subresource will be transitioned to when a render pass instance ends.
     colorAttachment.finalLayout = to_vk_layout(final_layout);
 

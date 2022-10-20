@@ -54,17 +54,17 @@ std::shared_ptr<Texture> upload_z_buffer(const std::shared_ptr<Driver> &driver,
 
 RendererD3D9::RendererD3D9(const std::shared_ptr<Driver> &p_driver) : Renderer(p_driver) {
     mask_render_pass_clear =
-        driver->create_render_pass(TextureFormat::RGBA16F, AttachmentLoadOp::CLEAR, TextureLayout::SHADER_READ_ONLY);
+        driver->create_render_pass(TextureFormat::RGBA16F, AttachmentLoadOp::Clear, TextureLayout::SHADER_READ_ONLY);
 
     mask_render_pass_load =
-        driver->create_render_pass(TextureFormat::RGBA16F, AttachmentLoadOp::LOAD, TextureLayout::SHADER_READ_ONLY);
+        driver->create_render_pass(TextureFormat::RGBA16F, AttachmentLoadOp::Load, TextureLayout::SHADER_READ_ONLY);
 
     dest_render_pass_clear = driver->create_render_pass(TextureFormat::RGBA8_UNORM,
-                                                        AttachmentLoadOp::CLEAR,
+                                                        AttachmentLoadOp::Clear,
                                                         TextureLayout::SHADER_READ_ONLY);
 
     dest_render_pass_load =
-        driver->create_render_pass(TextureFormat::RGBA8_UNORM, AttachmentLoadOp::LOAD, TextureLayout::SHADER_READ_ONLY);
+        driver->create_render_pass(TextureFormat::RGBA8_UNORM, AttachmentLoadOp::Load, TextureLayout::SHADER_READ_ONLY);
 
     auto mask_texture = driver->create_texture(MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT, TextureFormat::RGBA16F);
     mask_framebuffer = driver->create_framebuffer(mask_render_pass_clear, mask_texture);
@@ -104,19 +104,16 @@ void RendererD3D9::set_up_pipelines() {
 
             // Quad vertex.
             attribute_descriptions.push_back(
-                {0, 2, DataType::UNSIGNED_SHORT, 2 * sizeof(uint16_t), 0, VertexInputRate::VERTEX});
+                {0, 2, DataType::UNSIGNED_SHORT, 2 * sizeof(uint16_t), 0, VertexInputRate::Vertex});
 
             // Vertex stride for the second vertex buffer.
             uint32_t stride = sizeof(Fill);
 
             // Attributes in the second buffer.
-            attribute_descriptions.push_back({1, 4, DataType::UNSIGNED_SHORT, stride, 0, VertexInputRate::INSTANCE});
+            attribute_descriptions.push_back({1, 4, DataType::UNSIGNED_SHORT, stride, 0, VertexInputRate::Instance});
             attribute_descriptions.push_back(
-                {1, 1, DataType::UNSIGNED_INT, stride, offsetof(Fill, link), VertexInputRate::INSTANCE});
+                {1, 1, DataType::UNSIGNED_INT, stride, offsetof(Fill, link), VertexInputRate::Instance});
         }
-
-        // Blend.
-        BlendState blend_state = BlendState::from_equal();
 
         // Set descriptor set.
         {
@@ -131,7 +128,7 @@ void RendererD3D9::set_up_pipelines() {
         fill_pipeline = driver->create_render_pipeline(fill_vert_source,
                                                        fill_frag_source,
                                                        attribute_descriptions,
-                                                       blend_state,
+                                                       BlendState::from_equal(),
                                                        fill_descriptor_set,
                                                        mask_render_pass_clear);
     }
@@ -153,33 +150,30 @@ void RendererD3D9::set_up_pipelines() {
 
             // Quad vertex.
             attribute_descriptions.push_back(
-                {0, 2, DataType::UNSIGNED_SHORT, 2 * sizeof(uint16_t), 0, VertexInputRate::VERTEX});
+                {0, 2, DataType::UNSIGNED_SHORT, 2 * sizeof(uint16_t), 0, VertexInputRate::Vertex});
 
             // Vertex stride for the second vertex buffer.
             uint32_t stride = sizeof(TileObjectPrimitive);
 
             // Attributes in the second buffer.
-            attribute_descriptions.push_back({1, 2, DataType::SHORT, stride, 0, VertexInputRate::INSTANCE});
+            attribute_descriptions.push_back({1, 2, DataType::SHORT, stride, 0, VertexInputRate::Instance});
             attribute_descriptions.push_back({1,
                                               4,
                                               DataType::UNSIGNED_BYTE,
                                               stride,
                                               offsetof(TileObjectPrimitive, alpha_tile_id),
-                                              VertexInputRate::INSTANCE});
+                                              VertexInputRate::Instance});
             attribute_descriptions.push_back(
-                {1, 2, DataType::BYTE, stride, offsetof(TileObjectPrimitive, ctrl), VertexInputRate::INSTANCE});
+                {1, 2, DataType::BYTE, stride, offsetof(TileObjectPrimitive, ctrl), VertexInputRate::Instance});
             attribute_descriptions.push_back(
-                {1, 1, DataType::INT, stride, offsetof(TileObjectPrimitive, path_id), VertexInputRate::INSTANCE});
+                {1, 1, DataType::INT, stride, offsetof(TileObjectPrimitive, path_id), VertexInputRate::Instance});
             attribute_descriptions.push_back({1,
                                               1,
                                               DataType::UNSIGNED_INT,
                                               stride,
                                               offsetof(TileObjectPrimitive, metadata_id),
-                                              VertexInputRate::INSTANCE});
+                                              VertexInputRate::Instance});
         }
-
-        // Blend.
-        BlendState blend_state = BlendState::from_over();
 
         // Create uniform buffers.
         tile_transform_ub =
@@ -251,7 +245,7 @@ void RendererD3D9::set_up_pipelines() {
         tile_pipeline = driver->create_render_pipeline(tile_vert_source,
                                                        tile_frag_source,
                                                        attribute_descriptions,
-                                                       blend_state,
+                                                       BlendState::from_over(),
                                                        tile_descriptor_set,
                                                        dest_render_pass_clear);
     }
@@ -280,14 +274,11 @@ void RendererD3D9::create_tile_clip_copy_pipeline() {
         attribute_descriptions.reserve(2);
 
         attribute_descriptions.push_back(
-            {0, 2, DataType::UNSIGNED_SHORT, 2 * sizeof(uint16_t), 0, VertexInputRate::VERTEX});
+            {0, 2, DataType::UNSIGNED_SHORT, 2 * sizeof(uint16_t), 0, VertexInputRate::Vertex});
 
         // Set stride based on Clip.
-        attribute_descriptions.push_back({1, 1, DataType::INT, sizeof(Clip) / 2, 0, VertexInputRate::INSTANCE});
+        attribute_descriptions.push_back({1, 1, DataType::INT, sizeof(Clip) / 2, 0, VertexInputRate::Instance});
     }
-
-    // Blend.
-    BlendState blend_state = BlendState::from_equal();
 
     // Create descriptor set.
     auto descriptor_set = tile_clip_copy_descriptor_set = driver->create_descriptor_set();
@@ -303,7 +294,7 @@ void RendererD3D9::create_tile_clip_copy_pipeline() {
     tile_clip_copy_pipeline = driver->create_render_pipeline(tile_clip_copy_vert_source,
                                                              tile_clip_copy_frag_source,
                                                              attribute_descriptions,
-                                                             blend_state,
+                                                             BlendState::from_equal(),
                                                              descriptor_set,
                                                              mask_render_pass_clear);
 }
@@ -325,16 +316,16 @@ void RendererD3D9::create_tile_clip_combine_pipeline() {
         attribute_descriptions.reserve(5);
 
         attribute_descriptions.push_back(
-            {0, 2, DataType::UNSIGNED_SHORT, 2 * sizeof(uint16_t), 0, VertexInputRate::VERTEX});
+            {0, 2, DataType::UNSIGNED_SHORT, 2 * sizeof(uint16_t), 0, VertexInputRate::Vertex});
 
         uint32_t stride = sizeof(Clip);
-        attribute_descriptions.push_back({1, 1, DataType::INT, stride, 0, VertexInputRate::INSTANCE});
+        attribute_descriptions.push_back({1, 1, DataType::INT, stride, 0, VertexInputRate::Instance});
         attribute_descriptions.push_back(
-            {1, 1, DataType::INT, stride, offsetof(Clip, dest_backdrop), VertexInputRate::INSTANCE});
+            {1, 1, DataType::INT, stride, offsetof(Clip, dest_backdrop), VertexInputRate::Instance});
         attribute_descriptions.push_back(
-            {1, 1, DataType::INT, stride, offsetof(Clip, src_tile_id), VertexInputRate::INSTANCE});
+            {1, 1, DataType::INT, stride, offsetof(Clip, src_tile_id), VertexInputRate::Instance});
         attribute_descriptions.push_back(
-            {1, 1, DataType::INT, stride, offsetof(Clip, src_backdrop), VertexInputRate::INSTANCE});
+            {1, 1, DataType::INT, stride, offsetof(Clip, src_backdrop), VertexInputRate::Instance});
     }
 
     // We have to disable blend for tile clip combine.

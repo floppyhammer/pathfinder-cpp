@@ -71,7 +71,7 @@ void CommandBufferGl::submit(const std::shared_ptr<Driver> &p_driver) {
 
                 glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_gl->get_gl_framebuffer());
 
-                if (render_pass_gl->get_attachment_load_op() == AttachmentLoadOp::CLEAR) {
+                if (render_pass_gl->get_attachment_load_op() == AttachmentLoadOp::Clear) {
                     glClearColor(args.clear_color.r, args.clear_color.g, args.clear_color.b, args.clear_color.a);
                     glClear(GL_COLOR_BUFFER_BIT);
                 }
@@ -164,7 +164,7 @@ void CommandBufferGl::submit(const std::shared_ptr<Driver> &p_driver) {
 
                     glEnableVertexAttribArray(location);
 
-                    if (attrib.vertex_input_rate == VertexInputRate::VERTEX) {
+                    if (attrib.vertex_input_rate == VertexInputRate::Vertex) {
                         glVertexAttribDivisor(location, 0);
                     } else {
                         glVertexAttribDivisor(location, 1);

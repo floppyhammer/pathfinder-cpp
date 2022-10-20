@@ -125,7 +125,7 @@ std::shared_ptr<RenderPipeline> DriverVk::create_render_pipeline(
         VkVertexInputBindingDescription binding_description{};
         binding_description.binding = d.binding;
         binding_description.stride = d.stride;
-        binding_description.inputRate = d.vertex_input_rate == VertexInputRate::VERTEX ? VK_VERTEX_INPUT_RATE_VERTEX
+        binding_description.inputRate = d.vertex_input_rate == VertexInputRate::Vertex ? VK_VERTEX_INPUT_RATE_VERTEX
                                                                                        : VK_VERTEX_INPUT_RATE_INSTANCE;
 
         binding_descriptions.push_back(binding_description);

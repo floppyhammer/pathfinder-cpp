@@ -206,7 +206,7 @@ Paint Palette::get_paint(uint32_t paint_id) const {
 
 RenderTarget Palette::push_render_target(const std::shared_ptr<Driver> &driver, const Vec2<int> &render_target_size) {
     auto render_pass = driver->create_render_pass(TextureFormat::RGBA8_UNORM,
-                                                  AttachmentLoadOp::CLEAR,
+                                                  AttachmentLoadOp::Clear,
                                                   TextureLayout::SHADER_READ_ONLY);
 
     // Create a new framebuffer.

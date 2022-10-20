@@ -23,7 +23,7 @@ public:
 
         command_buffer = std::make_shared<CommandBufferGl>();
 
-        render_pass = std::make_shared<RenderPassGl>(AttachmentLoadOp::CLEAR);
+        render_pass = std::make_shared<RenderPassGl>(AttachmentLoadOp::Clear);
     }
 
     #endif

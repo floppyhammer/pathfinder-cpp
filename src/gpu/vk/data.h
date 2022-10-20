@@ -147,9 +147,9 @@ inline VkMemoryPropertyFlagBits to_vk_memory_property(MemoryProperty property) {
 
 inline VkAttachmentLoadOp to_vk_attachment_load_op(AttachmentLoadOp load_op) {
     switch (load_op) {
-        case AttachmentLoadOp::CLEAR:
+        case AttachmentLoadOp::Clear:
             return VK_ATTACHMENT_LOAD_OP_CLEAR;
-        case AttachmentLoadOp::LOAD:
+        case AttachmentLoadOp::Load:
             return VK_ATTACHMENT_LOAD_OP_LOAD;
     }
 }
