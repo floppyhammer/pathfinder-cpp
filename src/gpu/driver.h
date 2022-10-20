@@ -34,7 +34,7 @@ public:
         const std::vector<char> &vert_source,
         const std::vector<char> &frag_source,
         const std::vector<VertexInputAttributeDescription> &p_attribute_descriptions,
-        ColorBlendState p_blend_state,
+        BlendState p_blend_state,
         const std::shared_ptr<DescriptorSet> &descriptor_set,
         const std::shared_ptr<RenderPass> &render_pass) = 0;
 

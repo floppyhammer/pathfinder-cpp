@@ -116,7 +116,7 @@ void RendererD3D9::set_up_pipelines() {
         }
 
         // Blend.
-        ColorBlendState blend_state = {true, BlendFactor::ONE, BlendFactor::ONE};
+        BlendState blend_state = BlendState::from_equal();
 
         // Set descriptor set.
         {
@@ -179,7 +179,7 @@ void RendererD3D9::set_up_pipelines() {
         }
 
         // Blend.
-        ColorBlendState blend_state = {true, BlendFactor::ONE, BlendFactor::ONE_MINUS_SRC_ALPHA};
+        BlendState blend_state = BlendState::from_over();
 
         // Create uniform buffers.
         tile_transform_ub =
@@ -287,7 +287,7 @@ void RendererD3D9::create_tile_clip_copy_pipeline() {
     }
 
     // Blend.
-    ColorBlendState blend_state = {true, BlendFactor::ONE, BlendFactor::ONE};
+    BlendState blend_state = BlendState::from_equal();
 
     // Create descriptor set.
     auto descriptor_set = tile_clip_copy_descriptor_set = driver->create_descriptor_set();
@@ -338,7 +338,7 @@ void RendererD3D9::create_tile_clip_combine_pipeline() {
     }
 
     // We have to disable blend for tile clip combine.
-    ColorBlendState blend_state = {false};
+    BlendState blend_state = {false};
 
     // Create descriptor set.
     auto descriptor_set = tile_clip_combine_descriptor_set = driver->create_descriptor_set();

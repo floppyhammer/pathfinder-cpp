@@ -10,6 +10,7 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+
 class DriverVk : public Driver {
     friend class PlatformVk;
 
@@ -37,12 +38,13 @@ public:
         const std::vector<char> &vert_source,
         const std::vector<char> &frag_source,
         const std::vector<VertexInputAttributeDescription> &p_attribute_descriptions,
-        ColorBlendState blend_state,
+        BlendState blend_state,
         const std::shared_ptr<DescriptorSet> &descriptor_set,
         const std::shared_ptr<RenderPass> &render_pass) override;
 
     std::shared_ptr<ComputePipeline> create_compute_pipeline(
-        const std::vector<char> &comp_source, const std::shared_ptr<DescriptorSet> &descriptor_set) override;
+        const std::vector<char> &comp_source,
+        const std::shared_ptr<DescriptorSet> &descriptor_set) override;
 
 public:
     VkDevice get_device() const;
@@ -103,9 +105,13 @@ private:
 
     VkFormat find_depth_format() const;
 
-    void copy_buffer_to_image(
-        VkCommandBuffer command_buffer, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) const;
+    void copy_buffer_to_image(VkCommandBuffer command_buffer,
+                              VkBuffer buffer,
+                              VkImage image,
+                              uint32_t width,
+                              uint32_t height) const;
 };
+
 } // namespace Pathfinder
 
 #endif

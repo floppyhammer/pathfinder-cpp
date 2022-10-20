@@ -7,11 +7,12 @@
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+
 inline GLint to_gl_blend_factor(BlendFactor blend_factor) {
     switch (blend_factor) {
-        case BlendFactor::ONE:
+        case BlendFactor::One:
             return GL_ONE;
-        case BlendFactor::ONE_MINUS_SRC_ALPHA:
+        case BlendFactor::OneMinusSrcAlpha:
             return GL_ONE_MINUS_SRC_ALPHA;
     }
 }
@@ -49,6 +50,7 @@ inline GLint to_gl_texture_format(TextureFormat texture_format) {
             return GL_RGBA8;
     }
 }
+
 } // namespace Pathfinder
 
 #endif

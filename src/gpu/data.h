@@ -77,14 +77,58 @@ enum class DeviceType {
 };
 
 enum class BlendFactor {
-    ONE,
-    ONE_MINUS_SRC_ALPHA,
+    /// 1.0
+    One,
+    /// 1.0 - S.alpha
+    OneMinusSrcAlpha,
 };
 
-struct ColorBlendState {
-    bool blend_enabled;
-    BlendFactor src_blend_factor;
-    BlendFactor dst_blend_factor;
+enum class BlendOperation {
+    /// Src + Dst
+    Add,
+};
+
+struct BlendComponent {
+    /// Multiplier for the source, which is produced by the fragment shader.
+    BlendFactor src_factor;
+    /// Multiplier for the destination, which is stored in the target.
+    BlendFactor dst_factor;
+    /// The binary operation applied to the source and destination,
+    /// multiplied by their respective factors.
+    BlendOperation operation;
+};
+
+struct BlendState {
+    /// If blend is enabled.
+    bool enabled;
+    /// Color equation.
+    BlendComponent color;
+    /// Alpha equation.
+    BlendComponent alpha;
+
+    static BlendState from_over() {
+        BlendState blend_state{};
+        blend_state.enabled = true;
+        blend_state.color.src_factor = BlendFactor::One;
+        blend_state.color.dst_factor = BlendFactor::OneMinusSrcAlpha;
+        blend_state.alpha.src_factor = BlendFactor::One;
+        blend_state.alpha.dst_factor = BlendFactor::OneMinusSrcAlpha;
+        blend_state.color.operation = BlendOperation::Add;
+
+        return blend_state;
+    }
+
+    static BlendState from_equal() {
+        BlendState blend_state{};
+        blend_state.enabled = true;
+        blend_state.color.src_factor = BlendFactor::One;
+        blend_state.color.dst_factor = BlendFactor::One;
+        blend_state.alpha.src_factor = BlendFactor::One;
+        blend_state.alpha.dst_factor = BlendFactor::One;
+        blend_state.color.operation = BlendOperation::Add;
+
+        return blend_state;
+    }
 };
 
 enum class VertexInputRate {

@@ -10,6 +10,7 @@
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+
 std::shared_ptr<Framebuffer> DriverGl::create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
                                                           const std::shared_ptr<Texture> &texture) {
     auto framebuffer_gl = std::make_shared<FramebufferGl>(texture);
@@ -52,7 +53,7 @@ std::shared_ptr<RenderPipeline> DriverGl::create_render_pipeline(
     const std::vector<char> &vert_source,
     const std::vector<char> &frag_source,
     const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
-    ColorBlendState blend_state,
+    BlendState blend_state,
     const std::shared_ptr<DescriptorSet> &descriptor_set,
     const std::shared_ptr<RenderPass> &render_pass) {
     auto pipeline_gl =
@@ -67,12 +68,14 @@ std::shared_ptr<DescriptorSet> DriverGl::create_descriptor_set() {
 }
 
 std::shared_ptr<ComputePipeline> DriverGl::create_compute_pipeline(
-    const std::vector<char> &comp_source, const std::shared_ptr<DescriptorSet> &descriptor_set) {
+    const std::vector<char> &comp_source,
+    const std::shared_ptr<DescriptorSet> &descriptor_set) {
     auto pipeline_gl = std::make_shared<ComputePipelineGl>(comp_source);
 
     check_error("create_compute_pipeline");
     return pipeline_gl;
 }
+
 } // namespace Pathfinder
 
 #endif

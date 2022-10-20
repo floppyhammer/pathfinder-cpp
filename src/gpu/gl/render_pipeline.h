@@ -9,12 +9,13 @@
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+
 class RenderPipelineGl : public RenderPipeline {
 public:
     RenderPipelineGl(const std::vector<char> &vert_source,
                      const std::vector<char> &frag_source,
                      const std::vector<VertexInputAttributeDescription> &p_attribute_descriptions,
-                     ColorBlendState p_blend_state)
+                     BlendState p_blend_state)
         : RenderPipeline(p_attribute_descriptions, p_blend_state) {
         program = std::make_shared<RasterProgram>(vert_source, frag_source);
 
@@ -38,6 +39,7 @@ private:
 
     uint32_t vao{};
 };
+
 } // namespace Pathfinder
 
 #endif

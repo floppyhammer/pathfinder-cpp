@@ -16,7 +16,7 @@ class RenderPipelineVk : public RenderPipeline {
 public:
     RenderPipelineVk(VkDevice p_device,
                      std::vector<VertexInputAttributeDescription> p_attribute_descriptions,
-                     ColorBlendState p_blend_state)
+                     BlendState p_blend_state)
         : RenderPipeline(std::move(p_attribute_descriptions), p_blend_state), device(p_device) {}
 
     ~RenderPipelineVk() {

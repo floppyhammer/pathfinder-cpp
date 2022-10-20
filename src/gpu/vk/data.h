@@ -128,9 +128,9 @@ inline VkFormat to_vk_format(DataType type, uint32_t count) {
 
 inline VkBlendFactor to_vk_blend_factor(BlendFactor factor) {
     switch (factor) {
-        case BlendFactor::ONE:
+        case BlendFactor::One:
             return VK_BLEND_FACTOR_ONE;
-        case BlendFactor::ONE_MINUS_SRC_ALPHA:
+        case BlendFactor::OneMinusSrcAlpha:
             return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
     }
 }

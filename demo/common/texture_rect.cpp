@@ -24,19 +24,16 @@ TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
 
     // Set up vertex data (and buffer(s)) and configure vertex attributes.
     float vertices[] = {// Positions, UVs.
-                        0.0, 0.0, 0.0, 1.0,
-                        1.0, 0.0, 1.0, 1.0,
-                        1.0, 1.0, 1.0, 0.0,
+                        0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0,
 
-                        0.0, 0.0, 0.0, 1.0,
-                        1.0, 1.0, 1.0, 0.0,
-                        0.0, 1.0, 0.0, 0.0};
+                        0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0};
 
-
-    vertex_buffer = driver->create_buffer(
-        Pathfinder::BufferType::Vertex, sizeof(vertices), Pathfinder::MemoryProperty::DEVICE_LOCAL);
-    uniform_buffer = driver->create_buffer(
-        Pathfinder::BufferType::Uniform, 16 * sizeof(float), Pathfinder::MemoryProperty::HOST_VISIBLE_AND_COHERENT);
+    vertex_buffer = driver->create_buffer(Pathfinder::BufferType::Vertex,
+                                          sizeof(vertices),
+                                          Pathfinder::MemoryProperty::DEVICE_LOCAL);
+    uniform_buffer = driver->create_buffer(Pathfinder::BufferType::Uniform,
+                                           16 * sizeof(float),
+                                           Pathfinder::MemoryProperty::HOST_VISIBLE_AND_COHERENT);
 
     auto cmd_buffer = driver->create_command_buffer(true);
     cmd_buffer->upload_to_buffer(vertex_buffer, 0, sizeof(vertices), (void *)vertices);
@@ -65,8 +62,7 @@ TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
         attribute_descriptions.push_back(
             {0, 2, Pathfinder::DataType::FLOAT, stride, 2 * sizeof(float), Pathfinder::VertexInputRate::VERTEX});
 
-        Pathfinder::ColorBlendState blend_state = {
-            true, Pathfinder::BlendFactor::ONE, Pathfinder::BlendFactor::ONE_MINUS_SRC_ALPHA};
+        auto blend_state = Pathfinder::BlendState::from_over();
 
         {
             descriptor_set = driver->create_descriptor_set();
@@ -85,8 +81,12 @@ TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
                                                       nullptr});
         }
 
-        pipeline = driver->create_render_pipeline(
-            vert_source, frag_source, attribute_descriptions, blend_state, descriptor_set, render_pass);
+        pipeline = driver->create_render_pipeline(vert_source,
+                                                  frag_source,
+                                                  attribute_descriptions,
+                                                  blend_state,
+                                                  descriptor_set,
+                                                  render_pass);
     }
 }
 

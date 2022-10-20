@@ -15,6 +15,7 @@
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+
 class DriverGl : public Driver {
 public:
     std::shared_ptr<Framebuffer> create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
@@ -36,13 +37,15 @@ public:
         const std::vector<char> &vert_source,
         const std::vector<char> &frag_source,
         const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
-        ColorBlendState blend_state,
+        BlendState blend_state,
         const std::shared_ptr<DescriptorSet> &descriptor_set,
         const std::shared_ptr<RenderPass> &render_pass) override;
 
     std::shared_ptr<ComputePipeline> create_compute_pipeline(
-        const std::vector<char> &comp_source, const std::shared_ptr<DescriptorSet> &descriptor_set) override;
+        const std::vector<char> &comp_source,
+        const std::shared_ptr<DescriptorSet> &descriptor_set) override;
 };
+
 } // namespace Pathfinder
 
 #endif

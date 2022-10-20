@@ -16,6 +16,7 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+
 DriverVk::DriverVk(VkDevice p_device,
                    VkPhysicalDevice p_physical_device,
                    VkQueue p_graphics_queue,
@@ -43,7 +44,7 @@ std::shared_ptr<RenderPipeline> DriverVk::create_render_pipeline(
     const std::vector<char> &vert_source,
     const std::vector<char> &frag_source,
     const std::vector<VertexInputAttributeDescription> &p_attribute_descriptions,
-    ColorBlendState blend_state,
+    BlendState blend_state,
     const std::shared_ptr<DescriptorSet> &descriptor_set,
     const std::shared_ptr<RenderPass> &render_pass) {
     auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
@@ -188,15 +189,15 @@ std::shared_ptr<RenderPipeline> DriverVk::create_render_pipeline(
 
     color_blend_attachment.blendEnable = VK_FALSE;
 
-    if (blend_state.blend_enabled) {
+    if (blend_state.enabled) {
         color_blend_attachment.blendEnable = VK_TRUE;
 
         // Need to set blend config if blend is enabled.
-        color_blend_attachment.srcColorBlendFactor = to_vk_blend_factor(blend_state.src_blend_factor);
-        color_blend_attachment.dstColorBlendFactor = to_vk_blend_factor(blend_state.dst_blend_factor);
+        color_blend_attachment.srcColorBlendFactor = to_vk_blend_factor(blend_state.color.src_factor);
+        color_blend_attachment.dstColorBlendFactor = to_vk_blend_factor(blend_state.color.dst_factor);
         color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
-        color_blend_attachment.srcAlphaBlendFactor = to_vk_blend_factor(blend_state.src_blend_factor);
-        color_blend_attachment.dstAlphaBlendFactor = to_vk_blend_factor(blend_state.dst_blend_factor);
+        color_blend_attachment.srcAlphaBlendFactor = to_vk_blend_factor(blend_state.alpha.src_factor);
+        color_blend_attachment.dstAlphaBlendFactor = to_vk_blend_factor(blend_state.alpha.dst_factor);
         color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
     }
 
@@ -752,6 +753,7 @@ void DriverVk::copy_data_from_memory(void *dst, VkDeviceMemory buffer_memory, si
     memcpy(dst, data, data_size);
     vkUnmapMemory(device, buffer_memory);
 }
+
 } // namespace Pathfinder
 
 #endif
