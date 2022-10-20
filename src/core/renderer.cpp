@@ -38,7 +38,7 @@ void Renderer::set_up() {
 
     auto image_data = ImageData::from_memory({std::begin(area_lut_png), std::end(area_lut_png)}, false);
 
-    area_lut_texture = driver->create_texture(image_data->width, image_data->height, TextureFormat::RGBA8_UNORM);
+    area_lut_texture = driver->create_texture(image_data->width, image_data->height, TextureFormat::Rgba8Unorm);
 
     cmd_buffer->upload_to_texture(area_lut_texture, {}, image_data->data, TextureLayout::SHADER_READ_ONLY);
 

@@ -50,11 +50,11 @@ enum class DataType {
 
 /// Texture format in GPU memory.
 enum class TextureFormat {
-    RGBA8_UNORM,
-    BGRA8_UNORM,
-    RGBA8_SRGB,
-    BGRA8_SRGB,
-    RGBA16F,
+    Rgba8Unorm,
+    Bgra8Unorm,
+    Rgba8Srgb,
+    Bgra8Srgb,
+    Rgba16Float,
 };
 
 enum class TextureLayout {
@@ -70,7 +70,7 @@ enum class TextureLayout {
 enum class ShaderStage {
     Vertex,
     Fragment,
-    VertexFragment,
+    VertexAndFragment,
     Compute,
     Max,
 };
@@ -183,13 +183,13 @@ enum class AttachmentLoadOp {
 
 inline uint32_t get_pixel_size(TextureFormat format) {
     switch (format) {
-        case TextureFormat::RGBA8_UNORM:
-        case TextureFormat::BGRA8_UNORM:
-        case TextureFormat::RGBA8_SRGB:
-        case TextureFormat::BGRA8_SRGB: {
+        case TextureFormat::Rgba8Unorm:
+        case TextureFormat::Bgra8Unorm:
+        case TextureFormat::Rgba8Srgb:
+        case TextureFormat::Bgra8Srgb: {
             return 4;
         }
-        case TextureFormat::RGBA16F: {
+        case TextureFormat::Rgba16Float: {
             return 8;
         }
     }
@@ -197,13 +197,13 @@ inline uint32_t get_pixel_size(TextureFormat format) {
 
 inline DataType texture_format_to_data_type(TextureFormat format) {
     switch (format) {
-        case TextureFormat::RGBA8_UNORM:
-        case TextureFormat::BGRA8_UNORM:
-        case TextureFormat::RGBA8_SRGB:
-        case TextureFormat::BGRA8_SRGB: {
+        case TextureFormat::Rgba8Unorm:
+        case TextureFormat::Bgra8Unorm:
+        case TextureFormat::Rgba8Srgb:
+        case TextureFormat::Bgra8Srgb: {
             return DataType::UNSIGNED_BYTE;
         }
-        case TextureFormat::RGBA16F: {
+        case TextureFormat::Rgba16Float: {
             return DataType::HALF_FLOAT;
         }
     }

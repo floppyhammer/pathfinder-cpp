@@ -11,15 +11,15 @@
 namespace Pathfinder {
 inline VkFormat to_vk_texture_format(TextureFormat texture_format) {
     switch (texture_format) {
-        case TextureFormat::RGBA8_UNORM:
+        case TextureFormat::Rgba8Unorm:
             return VK_FORMAT_R8G8B8A8_UNORM;
-        case TextureFormat::BGRA8_UNORM:
+        case TextureFormat::Bgra8Unorm:
             return VK_FORMAT_B8G8R8A8_UNORM;
-        case TextureFormat::RGBA8_SRGB:
+        case TextureFormat::Rgba8Srgb:
             return VK_FORMAT_R8G8B8A8_SRGB;
-        case TextureFormat::BGRA8_SRGB:
+        case TextureFormat::Bgra8Srgb:
             return VK_FORMAT_B8G8R8A8_SRGB;
-        case TextureFormat::RGBA16F:
+        case TextureFormat::Rgba16Float:
             return VK_FORMAT_R16G16B16A16_SFLOAT;
         default:
             abort();
@@ -29,15 +29,15 @@ inline VkFormat to_vk_texture_format(TextureFormat texture_format) {
 inline TextureFormat vk_to_texture_format(VkFormat texture_format) {
     switch (texture_format) {
         case VK_FORMAT_R8G8B8A8_UNORM:
-            return TextureFormat::RGBA8_UNORM;
+            return TextureFormat::Rgba8Unorm;
         case VK_FORMAT_B8G8R8A8_UNORM:
-            return TextureFormat::BGRA8_UNORM;
+            return TextureFormat::Bgra8Unorm;
         case VK_FORMAT_R8G8B8A8_SRGB:
-            return TextureFormat::RGBA8_SRGB;
+            return TextureFormat::Rgba8Srgb;
         case VK_FORMAT_B8G8R8A8_SRGB:
-            return TextureFormat::BGRA8_SRGB;
+            return TextureFormat::Bgra8Srgb;
         case VK_FORMAT_R16G16B16A16_SFLOAT:
-            return TextureFormat::RGBA16F;
+            return TextureFormat::Rgba16Float;
         default:
             abort();
     }
@@ -49,7 +49,7 @@ inline VkShaderStageFlagBits to_vk_shader_stage(ShaderStage shader_type) {
             return VK_SHADER_STAGE_VERTEX_BIT;
         case ShaderStage::Fragment:
             return VK_SHADER_STAGE_FRAGMENT_BIT;
-        case ShaderStage::VertexFragment:
+        case ShaderStage::VertexAndFragment:
             return static_cast<VkShaderStageFlagBits>(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
         case ShaderStage::Compute:
             return VK_SHADER_STAGE_COMPUTE_BIT;

@@ -40,11 +40,11 @@ inline GLint to_gl_data_type(DataType data_type) {
 
 inline GLint to_gl_texture_format(TextureFormat texture_format) {
     switch (texture_format) {
-        case TextureFormat::RGBA8_UNORM:
+        case TextureFormat::Rgba8Unorm:
             return GL_RGBA8;
-        case TextureFormat::RGBA8_SRGB:
+        case TextureFormat::Rgba8Srgb:
             return GL_SRGB8;
-        case TextureFormat::RGBA16F:
+        case TextureFormat::Rgba16Float:
             return GL_RGBA16F;
         default:
             return GL_RGBA8;

@@ -141,7 +141,7 @@ Canvas::Canvas(const std::shared_ptr<Driver> &p_driver) {
 }
 
 void Canvas::set_empty_dest_texture(uint32_t p_width, uint32_t p_height) {
-    set_dest_texture(driver->create_texture(p_width, p_height, TextureFormat::RGBA8_UNORM));
+    set_dest_texture(driver->create_texture(p_width, p_height, TextureFormat::Rgba8Unorm));
 }
 
 void Canvas::push_path(Outline &outline, PathOp path_op, FillRule fill_rule) {
@@ -389,7 +389,7 @@ void Canvas::resize_dest_texture(float p_size_x, float p_size_y) {
         return;
     }
 
-    set_dest_texture(driver->create_texture(p_size_x, p_size_y, TextureFormat::BGRA8_UNORM));
+    set_dest_texture(driver->create_texture(p_size_x, p_size_y, TextureFormat::Bgra8Unorm));
 }
 
 std::shared_ptr<Scene> Canvas::get_scene() const {

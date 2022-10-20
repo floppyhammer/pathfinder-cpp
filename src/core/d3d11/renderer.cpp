@@ -130,7 +130,7 @@ RendererD3D11::RendererD3D11(const std::shared_ptr<Pathfinder::Driver> &driver) 
     tile_ub1 = driver->create_buffer(BufferType::Uniform, 8 * sizeof(float), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
 
     // Unlike D3D9, we use RGBA8 instead of RGBA16F for the mask texture.
-    mask_texture = driver->create_texture(MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT, TextureFormat::RGBA8_UNORM);
+    mask_texture = driver->create_texture(MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT, TextureFormat::Rgba8Unorm);
 }
 
 void RendererD3D11::set_up_pipelines() {

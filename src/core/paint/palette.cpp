@@ -205,13 +205,11 @@ Paint Palette::get_paint(uint32_t paint_id) const {
 }
 
 RenderTarget Palette::push_render_target(const std::shared_ptr<Driver> &driver, const Vec2<int> &render_target_size) {
-    auto render_pass = driver->create_render_pass(TextureFormat::RGBA8_UNORM,
-                                                  AttachmentLoadOp::Clear,
-                                                  TextureLayout::SHADER_READ_ONLY);
+    auto render_pass =
+        driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Clear, TextureLayout::SHADER_READ_ONLY);
 
     // Create a new framebuffer.
-    auto target_texture =
-        driver->create_texture(render_target_size.x, render_target_size.y, TextureFormat::RGBA8_UNORM);
+    auto target_texture = driver->create_texture(render_target_size.x, render_target_size.y, TextureFormat::Rgba8Unorm);
     auto framebuffer = driver->create_framebuffer(render_pass, target_texture);
 
     RenderTarget render_target;
@@ -242,7 +240,7 @@ std::vector<PaintMetadata> Palette::build_paint_info(const std::shared_ptr<Drive
     if (metadata_texture == nullptr) {
         metadata_texture = driver->create_texture(TEXTURE_METADATA_TEXTURE_WIDTH,
                                                   TEXTURE_METADATA_TEXTURE_HEIGHT,
-                                                  TextureFormat::RGBA16F);
+                                                  TextureFormat::Rgba16Float);
     }
 
     // Upload texture metadata.
@@ -286,7 +284,7 @@ std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr
     GradientTileBuilder gradient_tile_builder;
 
     auto gradient_tile_texture =
-        driver->create_texture(GRADIENT_TILE_LENGTH, GRADIENT_TILE_LENGTH, TextureFormat::RGBA8_UNORM);
+        driver->create_texture(GRADIENT_TILE_LENGTH, GRADIENT_TILE_LENGTH, TextureFormat::Rgba8Unorm);
 
     // Traverse paints.
     for (const auto &paint : paints) {
@@ -336,7 +334,7 @@ std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr
 
                         pattern.source.image.texture = driver->create_texture(pattern.source.image.size.x,
                                                                               pattern.source.image.size.y,
-                                                                              TextureFormat::RGBA8_UNORM);
+                                                                              TextureFormat::Rgba8Unorm);
 
                         auto cmd_buffer = driver->create_command_buffer(true);
 
