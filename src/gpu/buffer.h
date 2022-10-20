@@ -29,6 +29,7 @@ public:
 
     MemoryProperty memory_property;
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_GPU_BUFFER_H

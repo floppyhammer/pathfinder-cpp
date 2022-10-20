@@ -32,6 +32,7 @@
 #include <array>
 
 namespace Pathfinder {
+
 static uint16_t QUAD_VERTEX_POSITIONS[12] = {0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1};
 
 const size_t FILL_INSTANCE_SIZE = 12;
@@ -119,10 +120,8 @@ void RendererD3D9::set_up_pipelines() {
         {
             fill_descriptor_set = driver->create_descriptor_set();
 
-            fill_descriptor_set->add_or_update_descriptor(
-                {DescriptorType::UniformBuffer, ShaderStage::Vertex, 0, "bFixedSizes", fixed_sizes_ub, nullptr});
-            fill_descriptor_set->add_or_update_descriptor(
-                {DescriptorType::Sampler, ShaderStage::Fragment, 1, "uAreaLUT", nullptr, area_lut_texture});
+            fill_descriptor_set->add_or_update_uniform(ShaderStage::Vertex, 0, "bFixedSizes", fixed_sizes_ub);
+            fill_descriptor_set->add_or_update_sampler(ShaderStage::Fragment, 1, "uAreaLUT", area_lut_texture);
         }
 
         fill_pipeline = driver->create_render_pipeline(fill_vert_source,
@@ -187,59 +186,31 @@ void RendererD3D9::set_up_pipelines() {
 
             // Uniform buffers.
 
-            {
-                Descriptor descriptor;
-                descriptor.type = DescriptorType::UniformBuffer;
-                descriptor.stage = ShaderStage::Vertex, descriptor.binding = 2;
-                descriptor.binding_name = "bTransform";
-                descriptor.buffer = tile_transform_ub;
+            tile_descriptor_set->add_or_update_uniform(ShaderStage::Vertex, 2, "bTransform", tile_transform_ub);
 
-                tile_descriptor_set->add_or_update_descriptor(descriptor);
-            }
+            tile_descriptor_set->add_or_update_uniform(ShaderStage::VertexFragment,
+                                                       3,
+                                                       "bVaryingSizes",
+                                                       tile_varying_sizes_ub);
 
-            {
-                Descriptor descriptor;
-                descriptor.type = DescriptorType::UniformBuffer;
-                descriptor.stage = ShaderStage::VertexFragment, descriptor.binding = 3;
-                descriptor.binding_name = "bVaryingSizes";
-                descriptor.buffer = tile_varying_sizes_ub;
-
-                tile_descriptor_set->add_or_update_descriptor(descriptor);
-            }
-
-            {
-                Descriptor descriptor;
-                descriptor.type = DescriptorType::UniformBuffer;
-                descriptor.stage = ShaderStage::VertexFragment, descriptor.binding = 4;
-                descriptor.binding_name = "bFixedSizes";
-                descriptor.buffer = fixed_sizes_ub;
-
-                tile_descriptor_set->add_or_update_descriptor(descriptor);
-            }
+            tile_descriptor_set->add_or_update_uniform(ShaderStage::VertexFragment, 4, "bFixedSizes", fixed_sizes_ub);
 
             // Textures.
 
-            tile_descriptor_set->add_or_update_descriptor(
-                {DescriptorType::Sampler, ShaderStage::Vertex, 0, "uTextureMetadata"});
+            tile_descriptor_set->add_or_update_sampler(ShaderStage::Vertex, 0, "uTextureMetadata");
 
-            tile_descriptor_set->add_or_update_descriptor(
-                {DescriptorType::Sampler, ShaderStage::Vertex, 1, "uZBuffer"});
+            tile_descriptor_set->add_or_update_sampler(ShaderStage::Vertex, 1, "uZBuffer");
 
-            tile_descriptor_set->add_or_update_descriptor(
-                {DescriptorType::Sampler, ShaderStage::Fragment, 5, "uColorTexture0"});
+            tile_descriptor_set->add_or_update_sampler(ShaderStage::Fragment, 5, "uColorTexture0");
 
-            tile_descriptor_set->add_or_update_descriptor({DescriptorType::Sampler,
-                                                           ShaderStage::Fragment,
-                                                           6,
-                                                           "uMaskTexture0",
-                                                           nullptr,
-                                                           mask_framebuffer->get_texture()});
+            tile_descriptor_set->add_or_update_sampler(ShaderStage::Fragment,
+                                                       6,
+                                                       "uMaskTexture0",
+                                                       mask_framebuffer->get_texture());
 
-            tile_descriptor_set->add_or_update_descriptor(
-                {DescriptorType::Sampler, ShaderStage::Fragment, 7, "uDestTexture"});
+            tile_descriptor_set->add_or_update_sampler(ShaderStage::Fragment, 7, "uDestTexture");
 
-            tile_descriptor_set->add_or_update_descriptor(
-                {DescriptorType::Sampler, ShaderStage::Fragment, 8, "uGammaLUT"});
+            tile_descriptor_set->add_or_update_sampler(ShaderStage::Fragment, 8, "uGammaLUT");
         }
 
         tile_pipeline = driver->create_render_pipeline(tile_vert_source,
@@ -284,11 +255,10 @@ void RendererD3D9::create_tile_clip_copy_pipeline() {
     auto descriptor_set = tile_clip_copy_descriptor_set = driver->create_descriptor_set();
     {
         // Uniform buffer.
-        descriptor_set->add_or_update_descriptor(
-            {DescriptorType::UniformBuffer, ShaderStage::Vertex, 0, "bFixedSizes", fixed_sizes_ub});
+        descriptor_set->add_or_update_uniform(ShaderStage::Vertex, 0, "bFixedSizes", fixed_sizes_ub);
 
         // Sampler.
-        descriptor_set->add_or_update_descriptor({DescriptorType::Sampler, ShaderStage::Fragment, 1, "uSrc"});
+        descriptor_set->add_or_update_sampler(ShaderStage::Fragment, 1, "uSrc");
     }
 
     tile_clip_copy_pipeline = driver->create_render_pipeline(tile_clip_copy_vert_source,
@@ -335,11 +305,10 @@ void RendererD3D9::create_tile_clip_combine_pipeline() {
     auto descriptor_set = tile_clip_combine_descriptor_set = driver->create_descriptor_set();
     {
         // Uniform buffer.
-        descriptor_set->add_or_update_descriptor(
-            {DescriptorType::UniformBuffer, ShaderStage::Vertex, 0, "bFixedSizes", fixed_sizes_ub});
+        descriptor_set->add_or_update_uniform(ShaderStage::Vertex, 0, "bFixedSizes", fixed_sizes_ub);
 
         // Sampler.
-        descriptor_set->add_or_update_descriptor({DescriptorType::Sampler, ShaderStage::Fragment, 1, "uSrc"});
+        descriptor_set->add_or_update_sampler(ShaderStage::Fragment, 1, "uSrc");
     }
 
     tile_clip_combine_pipeline = driver->create_render_pipeline(vert_source,
@@ -484,8 +453,10 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std:
 
     auto clip_vertex_buffer = clip_buffer_info.clip_buffer;
 
-    tile_clip_copy_descriptor_set->add_or_update_descriptor(
-        {DescriptorType::Sampler, ShaderStage::Fragment, 1, "uSrc", nullptr, mask_framebuffer->get_texture()});
+    tile_clip_copy_descriptor_set->add_or_update_sampler(ShaderStage::Fragment,
+                                                         1,
+                                                         "uSrc",
+                                                         mask_framebuffer->get_texture());
 
     // Copy out tiles.
     //
@@ -509,8 +480,10 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std:
         cmd_buffer->submit(driver);
     }
 
-    tile_clip_combine_descriptor_set->add_or_update_descriptor(
-        {DescriptorType::Sampler, ShaderStage::Vertex, 1, "uSrc", nullptr, mask_temp_framebuffer->get_texture()});
+    tile_clip_combine_descriptor_set->add_or_update_sampler(ShaderStage::Vertex,
+                                                            1,
+                                                            "uSrc",
+                                                            mask_temp_framebuffer->get_texture());
 
     // Combine clip tiles.
     {
@@ -580,24 +553,21 @@ void RendererD3D9::draw_tiles(uint32_t tiles_count,
 
     // Update descriptor set.
     {
-        tile_descriptor_set->add_or_update_descriptor(
-            {DescriptorType::Sampler, ShaderStage::Fragment, 7, "uDestTexture", nullptr, z_buffer_texture}); // Unused
+        tile_descriptor_set->add_or_update_sampler(ShaderStage::Fragment,
+                                                   7,
+                                                   "uDestTexture",
+                                                   z_buffer_texture); // Unused
 
-        tile_descriptor_set->add_or_update_descriptor(
-            {DescriptorType::Sampler, ShaderStage::Vertex, 1, "uZBuffer", nullptr, z_buffer_texture});
+        tile_descriptor_set->add_or_update_sampler(ShaderStage::Vertex, 1, "uZBuffer", z_buffer_texture);
 
-        tile_descriptor_set->add_or_update_descriptor({DescriptorType::Sampler,
-                                                       ShaderStage::Fragment,
-                                                       5,
-                                                       "uColorTexture0",
-                                                       nullptr,
-                                                       color_texture ? color_texture : z_buffer_texture});
+        tile_descriptor_set->add_or_update_sampler(ShaderStage::Fragment,
+                                                   5,
+                                                   "uColorTexture0",
+                                                   color_texture ? color_texture : z_buffer_texture);
 
-        tile_descriptor_set->add_or_update_descriptor(
-            {DescriptorType::Sampler, ShaderStage::Vertex, 0, "uTextureMetadata", nullptr, metadata_texture});
+        tile_descriptor_set->add_or_update_sampler(ShaderStage::Vertex, 0, "uTextureMetadata", metadata_texture);
 
-        tile_descriptor_set->add_or_update_descriptor(
-            {DescriptorType::Sampler, ShaderStage::Fragment, 8, "uGammaLUT", nullptr, z_buffer_texture}); // Unused
+        tile_descriptor_set->add_or_update_sampler(ShaderStage::Fragment, 8, "uGammaLUT", z_buffer_texture); // Unused
     }
 
     cmd_buffer->bind_render_pipeline(tile_pipeline);
@@ -614,4 +584,5 @@ void RendererD3D9::draw_tiles(uint32_t tiles_count,
 std::shared_ptr<Texture> RendererD3D9::get_dest_texture() {
     return dest_framebuffer->get_texture();
 }
+
 } // namespace Pathfinder

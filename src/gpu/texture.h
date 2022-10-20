@@ -6,6 +6,7 @@
 #include "data.h"
 
 namespace Pathfinder {
+
 class Texture {
 public:
     Texture(uint32_t p_width, uint32_t p_height, TextureFormat p_format)
@@ -44,6 +45,7 @@ protected:
 
     TextureLayout layout = TextureLayout::UNDEFINED;
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_GPU_TEXTURE_H

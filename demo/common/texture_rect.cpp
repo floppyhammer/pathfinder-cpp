@@ -67,18 +67,8 @@ TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
         {
             descriptor_set = driver->create_descriptor_set();
 
-            descriptor_set->add_or_update_descriptor({Pathfinder::DescriptorType::UniformBuffer,
-                                                      Pathfinder::ShaderStage::Vertex,
-                                                      0,
-                                                      "bUniform",
-                                                      uniform_buffer,
-                                                      nullptr});
-            descriptor_set->add_or_update_descriptor({Pathfinder::DescriptorType::Sampler,
-                                                      Pathfinder::ShaderStage::Fragment,
-                                                      1,
-                                                      "uTexture",
-                                                      nullptr,
-                                                      nullptr});
+            descriptor_set->add_or_update_uniform(Pathfinder::ShaderStage::Vertex, 0, "bUniform", uniform_buffer);
+            descriptor_set->add_or_update_sampler(Pathfinder::ShaderStage::Fragment, 1, "uTexture");
         }
 
         pipeline = driver->create_render_pipeline(vert_source,
@@ -93,14 +83,7 @@ TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
 void TextureRect::set_texture(std::shared_ptr<Pathfinder::Texture> p_texture) {
     texture = std::move(p_texture);
 
-    Pathfinder::Descriptor descriptor;
-    descriptor.type = Pathfinder::DescriptorType::Sampler;
-    descriptor.stage = Pathfinder::ShaderStage::Fragment;
-    descriptor.binding = 1;
-    descriptor.binding_name = "uTexture";
-    descriptor.texture = texture;
-
-    descriptor_set->add_or_update_descriptor(descriptor);
+    descriptor_set->add_or_update_sampler(Pathfinder::ShaderStage::Fragment, 1, "uTexture", texture);
 }
 
 void TextureRect::draw(const std::shared_ptr<Pathfinder::Driver> &driver,

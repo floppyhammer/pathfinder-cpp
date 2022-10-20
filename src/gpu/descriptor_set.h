@@ -34,7 +34,44 @@ struct Descriptor {
  */
 class DescriptorSet {
 public:
-    inline void add_or_update_descriptor(const Descriptor &descriptor) {
+    inline void add_or_update_uniform(ShaderStage stage,
+                                      uint32_t binding,
+                                      std::string binding_name,
+                                      std::shared_ptr<Buffer> buffer = nullptr) {
+        if (buffer) {
+            if (buffer->type != BufferType::Uniform) {
+                throw std::runtime_error(std::string("Mismatched buffer type when adding a descriptor!"));
+            }
+        }
+
+        Descriptor descriptor{DescriptorType::UniformBuffer, stage, binding, binding_name, buffer, nullptr};
+        descriptors[descriptor.binding] = descriptor;
+    }
+
+    inline void add_or_update_sampler(ShaderStage stage,
+                                      uint32_t binding,
+                                      std::string binding_name,
+                                      std::shared_ptr<Texture> texture = nullptr) {
+        Descriptor descriptor{DescriptorType::Sampler, stage, binding, binding_name, nullptr, texture};
+        descriptors[descriptor.binding] = descriptor;
+    }
+
+    inline void add_or_update_storage(ShaderStage stage, uint32_t binding, std::shared_ptr<Buffer> buffer = nullptr) {
+        if (buffer) {
+            if (buffer->type != BufferType::Storage) {
+                throw std::runtime_error(std::string("Mismatched buffer type when adding a descriptor!"));
+            }
+        }
+
+        Descriptor descriptor{DescriptorType::StorageBuffer, stage, binding, "", buffer, nullptr};
+        descriptors[descriptor.binding] = descriptor;
+    }
+
+    inline void add_or_update_image(ShaderStage stage,
+                                    uint32_t binding,
+                                    std::string binding_name,
+                                    std::shared_ptr<Texture> texture = nullptr) {
+        Descriptor descriptor{DescriptorType::Image, stage, binding, binding_name, nullptr, texture};
         descriptors[descriptor.binding] = descriptor;
     }
 
