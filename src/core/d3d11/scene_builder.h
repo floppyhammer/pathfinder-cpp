@@ -8,6 +8,9 @@
 
 #ifdef PATHFINDER_USE_D3D11
 
+using std::shared_ptr;
+using std::unordered_map;
+
 namespace Pathfinder {
 
 struct BuiltSegments {
@@ -42,9 +45,13 @@ public:
     void build(const std::shared_ptr<Driver> &driver) override;
 
 private:
-    void finish_building(LastSceneInfo &last_scene, const std::vector<PaintMetadata> &paint_metadata);
+    void finish_building(LastSceneInfo &last_scene,
+                         const std::vector<PaintMetadata> &paint_metadata,
+                         const shared_ptr<vector<BuiltDrawPath>> &built_paths);
 
-    void build_tile_batches(LastSceneInfo &last_scene, const std::vector<PaintMetadata> &paint_metadata);
+    void build_tile_batches(LastSceneInfo &last_scene,
+                            const std::vector<PaintMetadata> &paint_metadata,
+                            const shared_ptr<vector<BuiltDrawPath>> &built_paths);
 };
 
 } // namespace Pathfinder

@@ -12,7 +12,10 @@
 
 #ifdef PATHFINDER_USE_D3D11
 
+using std::vector;
+
 namespace Pathfinder {
+
 struct GlobalPathId {
     uint32_t batch_id;
     uint32_t path_index;
@@ -119,13 +122,34 @@ enum class PathSource {
     Clip,
 };
 
+/// Information about clips applied to paths in a batch.
+struct ClippedPathInfo {
+    /// The ID of the batch containing the clips.
+    uint32_t clip_batch_i;
+
+    /// The number of paths that have clips.
+    uint32_t clipped_path_count;
+
+    /// The maximum number of clipped tiles.
+    ///
+    /// This is used to allocate vertex buffers.
+    uint32_t max_clipped_tile_count;
+
+    /// The actual clips, if calculated on CPU.
+    shared_ptr<vector<Clip>> clips;
+};
+
 /// Information about a batch of tiles to be prepared (post-processed).
 struct TileBatchDataD3D11 {
     TileBatchDataD3D11() = default;
 
     TileBatchDataD3D11(uint32_t p_batch_id, PathSource p_path_source);
 
-    uint32_t push(BuiltPath &path, uint32_t global_path_id, bool z_write, LastSceneInfo &last_scene);
+    uint32_t push(const BuiltPath &path,
+                  uint32_t global_path_id,
+                  const std::shared_ptr<GlobalPathId> &batch_clip_path_id,
+                  bool z_write,
+                  LastSceneInfo &last_scene);
 
     /// The ID of this batch.
     /// The renderer should not assume that these values are consecutive.
@@ -145,6 +169,9 @@ struct TileBatchDataD3D11 {
 
     /// Where the paths come from (draw or clip).
     PathSource path_source = PathSource::Draw;
+
+    /// Information about clips applied to paths, if any of the paths have clips.
+    shared_ptr<ClippedPathInfo> clipped_path_info;
 };
 
 struct TileBatchTexture {
@@ -158,12 +185,13 @@ struct DrawTileBatchD3D11 {
     /// Data for the tile batch.
     TileBatchDataD3D11 tile_batch_data;
 
+    /// Metadata.
     std::shared_ptr<Texture> metadata_texture;
 
     /// The color texture to use.
     std::shared_ptr<Texture> color_texture;
 
-    /// Render target.
+    /// Where to draw this batch.
     RenderTarget render_target;
 };
 
@@ -182,6 +210,7 @@ struct SegmentsD3D11 {
     /// Add a outline as segments.
     Range add_path(const Outline &outline);
 };
+
 } // namespace Pathfinder
 
 #endif

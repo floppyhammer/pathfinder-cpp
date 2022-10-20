@@ -20,7 +20,11 @@ TileBatchDataD3D11::TileBatchDataD3D11(uint32_t p_batch_id, PathSource p_path_so
     prepare_info = PrepareTilesInfoD3D11{};
 }
 
-uint32_t TileBatchDataD3D11::push(BuiltPath &path, uint32_t global_path_id, bool z_write, LastSceneInfo &last_scene) {
+uint32_t TileBatchDataD3D11::push(const BuiltPath &path,
+                                  uint32_t global_path_id,
+                                  const std::shared_ptr<GlobalPathId> &batch_clip_path_id,
+                                  bool z_write,
+                                  LastSceneInfo &last_scene) {
     auto batch_path_index = path_count;
     path_count++;
 
@@ -28,7 +32,7 @@ uint32_t TileBatchDataD3D11::push(BuiltPath &path, uint32_t global_path_id, bool
                                                tile_count,
                                                batch_path_index,
                                                z_write,
-                                               ~0u,
+                                               batch_clip_path_id ? batch_clip_path_id->path_index : ~0u,
                                                static_cast<uint32_t>(prepare_info.backdrops.size())});
 
     init_backdrops(prepare_info.backdrops, batch_path_index, path.tile_bounds);
@@ -49,6 +53,17 @@ uint32_t TileBatchDataD3D11::push(BuiltPath &path, uint32_t global_path_id, bool
 
     tile_count += path.tile_bounds.area();
     segment_count += segment_range.end - segment_range.start;
+
+    // Handle clip.
+    uint32_t clip_batch_id;
+    if (batch_clip_path_id) {
+        clip_batch_id = batch_clip_path_id->batch_id;
+    } else {
+        clip_batch_id = batch_path_index;
+    }
+
+    if (clipped_path_info == nullptr) {
+    }
 
     return batch_path_index;
 }
