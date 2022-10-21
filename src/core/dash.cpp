@@ -41,8 +41,7 @@ bool DashState::is_on() const {
 /// * `offset`: The line dash offset, or "phase". See
 ///   https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineDashOffset.
 OutlineDash::OutlineDash(Outline &p_input, const std::vector<float> &p_dashes, float p_offset)
-    : input(p_input), output(Outline()), state(DashState(p_dashes, p_offset)) {
-}
+    : input(p_input), output(Outline()), state(DashState(p_dashes, p_offset)) {}
 
 void OutlineDash::dash() {
     for (auto &contour : input.contours) {
@@ -59,8 +58,7 @@ Outline OutlineDash::into_outline() {
 }
 
 ContourDash::ContourDash(Contour &p_input, Outline &p_output, DashState &p_state)
-    : input(p_input), output(p_output), state(p_state) {
-}
+    : input(p_input), output(p_output), state(p_state) {}
 
 void ContourDash::dash() {
     auto segments_iter = SegmentsIter(input.points, input.flags, input.closed);

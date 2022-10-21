@@ -1,12 +1,10 @@
 #include "segment.h"
 
 namespace Pathfinder {
-Segment::Segment(const LineSegmentF& p_baseline, const LineSegmentF& p_ctrl) : baseline(p_baseline), ctrl(p_ctrl) {
-}
+Segment::Segment(const LineSegmentF& p_baseline, const LineSegmentF& p_ctrl) : baseline(p_baseline), ctrl(p_ctrl) {}
 
 Segment::Segment(const LineSegmentF& p_baseline, const LineSegmentF& p_ctrl, SegmentKind p_kind, SegmentFlags p_flags)
-    : baseline(p_baseline), ctrl(p_ctrl), kind(p_kind), flags(p_flags) {
-}
+    : baseline(p_baseline), ctrl(p_ctrl), kind(p_kind), flags(p_flags) {}
 
 bool Segment::is_flat(float tol) const {
     F32x4 uv = F32x4::splat(3.0) * ctrl.value - baseline.value - baseline.value - baseline.value.zwxy();
@@ -112,7 +110,7 @@ Segment Segment::transform(Transform2 transform) const {
             flags};
 }
 
-Vec2<float> Segment::sample(float t) const {
+Vec2F Segment::sample(float t) const {
     Segment a, b;
     split(t, a, b);
 

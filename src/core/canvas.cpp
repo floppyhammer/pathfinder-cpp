@@ -19,7 +19,7 @@ struct ShadowBlurRenderTargetInfo {
     ColorU color;
 
     /// Shadow bounds.
-    Rect<int> bounds;
+    RectI bounds;
 
     /// Blur size.
     float sigma = 0;
@@ -34,7 +34,7 @@ struct ShadowBlurRenderTargetInfo {
 ShadowBlurRenderTargetInfo push_shadow_blur_render_targets(const std::shared_ptr<Driver> &driver,
                                                            Scene &scene,
                                                            State &current_state,
-                                                           Rect<float> outline_bounds) {
+                                                           RectF outline_bounds) {
     ShadowBlurRenderTargetInfo shadow_blur_info;
 
     if (current_state.shadow_blur == 0.f) {
@@ -137,7 +137,7 @@ Canvas::Canvas(const std::shared_ptr<Driver> &p_driver) {
 
     renderer->set_up_pipelines();
 
-    scene = std::make_shared<Scene>(0, Rect<float>(0, 0, 0, 0));
+    scene = std::make_shared<Scene>(0, RectF(0, 0, 0, 0));
 }
 
 void Canvas::set_empty_dest_texture(uint32_t p_width, uint32_t p_height) {
@@ -321,7 +321,7 @@ void Canvas::set_shadow_color(const ColorU &p_shadow_color) {
     current_state.shadow_color = p_shadow_color;
 }
 
-Vec2<float> Canvas::shadow_offset() const {
+Vec2F Canvas::shadow_offset() const {
     return current_state.shadow_offset;
 }
 
@@ -361,9 +361,9 @@ void Canvas::set_global_composite_operation(BlendMode new_composite_operation) {
     current_state.global_composite_operation = new_composite_operation;
 }
 
-void Canvas::draw_image(const Image &image, const Rect<float> &dst_location) {
+void Canvas::draw_image(const Image &image, const RectF &dst_location) {
     auto pattern = Pattern::from_image(image);
-    auto src_rect = Rect<float>(Vec2<float>(0.0, 0.0), image.size.to_f32());
+    auto src_rect = RectF(Vec2F(0.0, 0.0), image.size.to_f32());
 
     auto old_fill_paint = fill_paint();
 
@@ -441,7 +441,7 @@ std::shared_ptr<Scene> Canvas::replace_scene(const std::shared_ptr<Scene> &new_s
 }
 
 void Canvas::set_size(const Vec2<int> &new_size) {
-    auto new_view_box = Rect<int>(Vec2<int>(), new_size).to_f32();
+    auto new_view_box = RectI(Vec2<int>(), new_size).to_f32();
     //    scene.set_bounds(new_view_box);
     scene->set_view_box(new_view_box);
 }
@@ -450,12 +450,12 @@ Vec2<int> Canvas::get_size() const {
     return scene->get_view_box().size().ceil();
 }
 
-void Canvas::set_clipping_box(const Rect<float> &box) {
+void Canvas::set_clipping_box(const RectF &box) {
     clipping_box = box;
 }
 
 void Canvas::unset_clipping_box() {
-    clipping_box = Rect<float>();
+    clipping_box = RectF();
 }
 
 // Path2d
@@ -482,7 +482,7 @@ void Path2d::bezier_curve_to(float cx0, float cy0, float cx1, float cy1, float x
     current_contour.push_cubic({cx0, cy0}, {cx1, cy1}, {x, y});
 }
 
-void Path2d::add_line(const Vec2<float> &start, const Vec2<float> &end) {
+void Path2d::add_line(const Vec2F &start, const Vec2F &end) {
     if (start == end) return;
 
     move_to(start.x, start.y);
@@ -491,7 +491,7 @@ void Path2d::add_line(const Vec2<float> &start, const Vec2<float> &end) {
 
 const float CIRCLE_RATIO = 0.552284749831; // 4.0f * (sqrt(2.0f) - 1.0f) / 3.0f
 
-void Path2d::add_rect(const Rect<float> &rect, float corner_radius) {
+void Path2d::add_rect(const RectF &rect, float corner_radius) {
     if (rect.size().x == 0 || rect.size().y == 0) return;
 
     if (corner_radius <= 0) {
@@ -541,7 +541,7 @@ void Path2d::add_rect(const Rect<float> &rect, float corner_radius) {
     close_path();
 }
 
-void Path2d::add_circle(const Vec2<float> &center, float radius) {
+void Path2d::add_circle(const Vec2F &center, float radius) {
     if (radius == 0) return;
 
     // See https://stackoverflow.com/questions/1734745/how-to-create-circle-with-b%C3%A9zier-curves.

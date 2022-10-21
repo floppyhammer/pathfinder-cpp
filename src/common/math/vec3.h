@@ -30,6 +30,8 @@ struct Vec3 {
     }
 };
 
+typedef Vec3<float> Vec3F;
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_VEC3_H

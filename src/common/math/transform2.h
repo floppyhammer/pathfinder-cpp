@@ -11,29 +11,29 @@ namespace Pathfinder {
 struct Transform2 {
 private:
     Mat2x2<float> matrix;
-    Vec2<float> vector;
+    Vec2F vector;
 
 public:
     Transform2();
 
     explicit Transform2(float xform[6]);
 
-    Transform2(Mat2x2<float> p_matrix, Vec2<float> p_vector);
+    Transform2(Mat2x2<float> p_matrix, Vec2F p_vector);
 
-    static Transform2 from_scale(const Vec2<float> &scale) {
-        return {Mat2x2<float>::from_scale(scale), Vec2<float>(0)};
+    static Transform2 from_scale(const Vec2F &scale) {
+        return {Mat2x2<float>::from_scale(scale), Vec2F(0)};
     }
 
     static Transform2 from_rotation(float theta) {
-        return {Mat2x2<float>::from_rotation(theta), Vec2<float>(0)};
+        return {Mat2x2<float>::from_rotation(theta), Vec2F(0)};
     }
 
-    static Transform2 from_translation(const Vec2<float> &translation) {
+    static Transform2 from_translation(const Vec2F &translation) {
         return {Mat2x2<float>::identity(), translation};
     }
 
     static Transform2 from_rotation_vector(const UnitVector &p_vector) {
-        return {Mat2x2<float>::from_rotation_vector(p_vector), Vec2<float>(0)};
+        return {Mat2x2<float>::from_rotation_vector(p_vector), Vec2F(0)};
     }
 
     bool is_identity() const;
@@ -45,7 +45,7 @@ public:
      * @param p_vector Translation
      * @return New transform
      */
-    Transform2 translate(Vec2<float> p_vector) const;
+    Transform2 translate(Vec2F p_vector) const;
 
     /**
      * Left-multiply a rotation matrix.
@@ -54,7 +54,7 @@ public:
      */
     Transform2 rotate(float theta) const;
 
-    Vec2<float> get_position() const;
+    Vec2F get_position() const;
 
     inline float m11() const {
         return matrix.m11();
@@ -80,11 +80,11 @@ public:
         return vector.y;
     }
 
-    inline Vec2<float> operator*(const Vec2<float> &p_vector) const {
+    inline Vec2F operator*(const Vec2F &p_vector) const {
         return {matrix * p_vector + vector};
     }
 
-    inline Rect<float> operator*(const Rect<float> &p_rect) const {
+    inline RectF operator*(const RectF &p_rect) const {
         auto upper_left = *this * p_rect.origin();
         auto upper_right = *this * p_rect.upper_right();
         auto lower_left = *this * p_rect.lower_left();

@@ -519,15 +519,14 @@ void RendererD3D9::draw_tiles(uint32_t tiles_count,
         target_framebuffer = render_target.framebuffer;
     }
 
-    Vec2<float> target_framebuffer_size = {(float)target_framebuffer->get_width(),
-                                           (float)target_framebuffer->get_height()};
+    Vec2F target_framebuffer_size = {(float)target_framebuffer->get_width(), (float)target_framebuffer->get_height()};
 
     // Update uniform buffers.
     {
         // MVP (with only the model matrix).
         auto model_mat = Mat4x4<float>(1.f);
-        model_mat = model_mat.translate(Vec3<float>(-1.f, -1.f, 0.f)); // Move to top-left.
-        model_mat = model_mat.scale(Vec3<float>(2.f / target_framebuffer_size.x, 2.f / target_framebuffer_size.y, 1.f));
+        model_mat = model_mat.translate(Vec3F(-1.f, -1.f, 0.f)); // Move to top-left.
+        model_mat = model_mat.scale(Vec3F(2.f / target_framebuffer_size.x, 2.f / target_framebuffer_size.y, 1.f));
 
         std::array<float, 6> ubo_data = {(float)z_buffer_texture->get_width(),
                                          (float)z_buffer_texture->get_height(),

@@ -94,11 +94,11 @@ void TextureRect::draw(const std::shared_ptr<Pathfinder::Driver> &driver,
     // The actual application order of these matrices is reverse.
     auto model_mat = Pathfinder::Mat4x4<float>(1.0f);
     model_mat = model_mat.translate(
-        Pathfinder::Vec3<float>(position.x / viewport_size.x * 2.0f, position.y / viewport_size.y * 2.0f, 0.0f));
-    model_mat = model_mat.translate(Pathfinder::Vec3<float>(-1.0, -1.0, 0.0f));
-    model_mat = model_mat.scale(Pathfinder::Vec3<float>(scale.x, scale.y, 1.0f));
+        Pathfinder::Vec3F(position.x / viewport_size.x * 2.0f, position.y / viewport_size.y * 2.0f, 0.0f));
+    model_mat = model_mat.translate(Pathfinder::Vec3F(-1.0, -1.0, 0.0f));
+    model_mat = model_mat.scale(Pathfinder::Vec3F(scale.x, scale.y, 1.0f));
     model_mat = model_mat.scale(
-        Pathfinder::Vec3<float>(size.x / viewport_size.x * 2.0f, size.y / viewport_size.y * 2.0f, 1.0f));
+        Pathfinder::Vec3F(size.x / viewport_size.x * 2.0f, size.y / viewport_size.y * 2.0f, 1.0f));
 
     auto mvp_mat = model_mat;
     // -------------------------------------------------

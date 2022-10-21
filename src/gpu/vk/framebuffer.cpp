@@ -34,8 +34,11 @@ FramebufferVk::FramebufferVk(VkDevice p_device, VkRenderPass render_pass, const 
     descriptor.sampler = texture_vk->get_sampler();
 }
 
-FramebufferVk::FramebufferVk(
-    VkDevice p_device, VkRenderPass render_pass, uint32_t p_width, uint32_t p_height, VkImageView image_view)
+FramebufferVk::FramebufferVk(VkDevice p_device,
+                             VkRenderPass render_pass,
+                             uint32_t p_width,
+                             uint32_t p_height,
+                             VkImageView image_view)
     : Framebuffer(p_width, p_height) {
     device = p_device;
 

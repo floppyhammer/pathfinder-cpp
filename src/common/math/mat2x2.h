@@ -22,10 +22,10 @@ struct Mat2x2 {
     }
 
     static Mat2x2 identity() {
-        return Mat2x2<float>::from_scale(Vec2<float>(1));
+        return Mat2x2<float>::from_scale(Vec2F(1));
     }
 
-    static Mat2x2 from_scale(Vec2<float> p_scale) {
+    static Mat2x2 from_scale(Vec2F p_scale) {
         return {p_scale.x, 0.0, 0.0, p_scale.y};
     }
 
@@ -80,7 +80,7 @@ struct Mat2x2 {
         return v[0] == b.v[0] && v[1] == b.v[1] && v[2] == b.v[2] && v[3] == b.v[3];
     }
 
-    inline Vec2<float> operator*(const Vec2<float> &other) const {
+    inline Vec2F operator*(const Vec2F &other) const {
         return {v[0] * other.x + v[2] * other.y, v[1] * other.x + v[3] * other.y};
     }
 };

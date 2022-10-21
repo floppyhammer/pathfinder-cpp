@@ -20,12 +20,12 @@ struct Vec2 {
 
     Vec2(T p_x, T p_y) : x(p_x), y(p_y){};
 
-    inline Vec2<int> floor() const {
-        return {(int)std::floor(x), (int)std::floor(y)};
+    inline Vec2<int32_t> floor() const {
+        return {(int32_t)std::floor(x), (int32_t)std::floor(y)};
     }
 
-    inline Vec2<int> ceil() const {
-        return {(int)std::ceil(x), (int)std::ceil(y)};
+    inline Vec2<int32_t> ceil() const {
+        return {(int32_t)std::ceil(x), (int32_t)std::ceil(y)};
     }
 
     inline Vec2 abs() const {
@@ -36,8 +36,8 @@ struct Vec2 {
         return {(float)x, (float)y};
     }
 
-    inline Vec2<int> to_i32() const {
-        return {(int)x, (int)y};
+    inline Vec2<int32_t> to_i32() const {
+        return {(int32_t)x, (int32_t)y};
     }
 
     inline Vec2 min(const Vec2 &other) const {
@@ -157,7 +157,7 @@ inline Vec2<T> lerp(const Vec2<T> &a, const Vec2<T> &b, float t) {
 }
 
 typedef Vec2<float> Vec2F;
-typedef Vec2<int> Vec2I;
+typedef Vec2<int32_t> Vec2I;
 
 } // namespace Pathfinder
 

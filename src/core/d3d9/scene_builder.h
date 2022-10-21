@@ -15,7 +15,7 @@ namespace Pathfinder {
 /// For draw path and clip path.
 struct PathBuildParams {
     uint32_t path_id;
-    Rect<float> view_box;
+    RectF view_box;
     Scene *scene;
 };
 

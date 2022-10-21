@@ -65,7 +65,7 @@ void SceneSourceBuffers::upload(const std::shared_ptr<Pathfinder::Driver> &drive
     if (points_capacity < needed_points_capacity) {
         // Old buffer will be dropped automatically.
         points_buffer = driver->create_buffer(BufferType::Storage,
-                                              needed_points_capacity * sizeof(Vec2<float>),
+                                              needed_points_capacity * sizeof(Vec2F),
                                               MemoryProperty::DeviceLocal);
 
         points_capacity = needed_points_capacity;
@@ -87,10 +87,7 @@ void SceneSourceBuffers::upload(const std::shared_ptr<Pathfinder::Driver> &drive
     {
         auto cmd_buffer = driver->create_command_buffer(true);
 
-        cmd_buffer->upload_to_buffer(points_buffer,
-                                     0,
-                                     segments.points.size() * sizeof(Vec2<float>),
-                                     segments.points.data());
+        cmd_buffer->upload_to_buffer(points_buffer, 0, segments.points.size() * sizeof(Vec2F), segments.points.data());
 
         cmd_buffer->upload_to_buffer(point_indices_buffer,
                                      0,

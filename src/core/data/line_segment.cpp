@@ -7,16 +7,12 @@
 #include "../../common/math/mat2x2.h"
 
 namespace Pathfinder {
-LineSegmentF::LineSegmentF(const F32x4 &p_value) : value(p_value) {
-}
+LineSegmentF::LineSegmentF(const F32x4 &p_value) : value(p_value) {}
 
-LineSegmentF::LineSegmentF(const Vec2<float> &p_from, const Vec2<float> &p_to)
-    : value(F32x4(p_from.x, p_from.y, p_to.x, p_to.y)) {
-}
+LineSegmentF::LineSegmentF(const Vec2F &p_from, const Vec2F &p_to) : value(F32x4(p_from.x, p_from.y, p_to.x, p_to.y)) {}
 
 LineSegmentF::LineSegmentF(float p_from_x, float p_from_y, float p_to_x, float p_to_y)
-    : value(F32x4(p_from_x, p_from_y, p_to_x, p_to_y)) {
-}
+    : value(F32x4(p_from_x, p_from_y, p_to_x, p_to_y)) {}
 
 LineSegmentF LineSegmentF::clamp(float min, float max) const {
     F32x4 result = value.clamp(F32x4::splat(min), F32x4::splat(max));
@@ -25,8 +21,10 @@ LineSegmentF LineSegmentF::clamp(float min, float max) const {
 }
 
 LineSegmentF LineSegmentF::round() const {
-    auto result = F32x4(
-        std::round(value.get<0>()), std::round(value.get<1>()), std::round(value.get<2>()), std::round(value.get<3>()));
+    auto result = F32x4(std::round(value.get<0>()),
+                        std::round(value.get<1>()),
+                        std::round(value.get<2>()),
+                        std::round(value.get<3>()));
 
     return LineSegmentF(result);
 }
@@ -64,11 +62,11 @@ float LineSegmentF::max_y() const {
     return std::max(from().y, to().y);
 }
 
-void LineSegmentF::set_from(const Vec2<float> &point) {
+void LineSegmentF::set_from(const Vec2F &point) {
     value = F32x4(point.x, point.y, value.zw().x, value.zw().y);
 }
 
-void LineSegmentF::set_to(const Vec2<float> &point) {
+void LineSegmentF::set_to(const Vec2F &point) {
     value = F32x4(value.xy().x, value.xy().y, point.x, point.y);
 }
 
@@ -93,7 +91,7 @@ LineSegmentF LineSegmentF::offset(float distance) const {
     if (vector().is_zero()) {
         return *this;
     } else {
-        return *this + vector().yx().normalize() * Vec2<float>(-distance, distance);
+        return *this + vector().yx().normalize() * Vec2F(-distance, distance);
     }
 }
 } // namespace Pathfinder

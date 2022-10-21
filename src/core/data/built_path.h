@@ -24,7 +24,7 @@ struct BuiltPathData {
 
 struct BuiltPath {
     BuiltPathData data;
-    Rect<int> tile_bounds;
+    RectI tile_bounds;
     FillRule fill_rule = FillRule::Winding;
     std::shared_ptr<uint32_t> clip_path_id;
     uint8_t ctrl_byte = 0;
@@ -33,8 +33,8 @@ struct BuiltPath {
     BuiltPath() = default;
 
     BuiltPath(uint32_t path_id,
-              Rect<float> path_bounds,
-              Rect<float> view_box_bounds,
+              RectF path_bounds,
+              RectF view_box_bounds,
               FillRule p_fill_rule,
               const std::shared_ptr<uint32_t>& clip_path_id,
               const TilingPathInfo& tiling_path_info);

@@ -13,7 +13,7 @@ struct UnitVector {
 
     UnitVector(float p_x, float p_y);
 
-    explicit UnitVector(const Vec2<float> &p_value);
+    explicit UnitVector(const Vec2F &p_value);
 
     static UnitVector from_angle(float theta) {
         return {std::cos(theta), std::sin(theta)};

@@ -17,8 +17,11 @@ public:
     FramebufferVk(VkDevice p_device, VkRenderPass render_pass, const std::shared_ptr<Texture> &p_texture);
 
     /// Swap chain framebuffer.
-    FramebufferVk(
-        VkDevice p_device, VkRenderPass render_pass, uint32_t p_width, uint32_t p_height, VkImageView image_view);
+    FramebufferVk(VkDevice p_device,
+                  VkRenderPass render_pass,
+                  uint32_t p_width,
+                  uint32_t p_height,
+                  VkImageView image_view);
 
     ~FramebufferVk();
 

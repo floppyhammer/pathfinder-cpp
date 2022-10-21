@@ -3,7 +3,7 @@
 #ifdef PATHFINDER_USE_D3D11
 
 namespace Pathfinder {
-void init_backdrops(std::vector<BackdropInfoD3D11> &backdrops, const uint32_t path_index, const Rect<int> &tile_rect) {
+void init_backdrops(std::vector<BackdropInfoD3D11> &backdrops, const uint32_t path_index, const RectI &tile_rect) {
     // Doing reserve might decrease performance.
     // backdrops.reserve(backdrops.size() + tile_rect.width());
 

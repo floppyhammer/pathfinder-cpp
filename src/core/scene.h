@@ -49,7 +49,7 @@ class SceneBuilder;
 /// The scene of paths to be rendered.
 class Scene {
 public:
-    explicit Scene(uint32_t p_id, Rect<float> p_view_box);
+    explicit Scene(uint32_t p_id, RectF p_view_box);
 
     std::vector<DisplayItem> display_list;
 
@@ -108,10 +108,10 @@ public:
     Paint get_paint(uint32_t paint_id) const;
 
     /// Returns the view box, which defines the visible portion of the scene.
-    Rect<float> get_view_box();
+    RectF get_view_box();
 
     /// Changes the view box.
-    void set_view_box(const Rect<float> &new_view_box);
+    void set_view_box(const RectF &new_view_box);
 
     /// Build the scene by SceneBuilder.
     void build(std::shared_ptr<Driver> &driver);
@@ -122,10 +122,10 @@ public:
 private:
     /// Path clipping control.
     /// This can be used to make scrollable elements and clipped text.
-    Rect<float> bounds;
+    RectF bounds;
 
     /// Scene-wide clipping control.
-    Rect<float> view_box;
+    RectF view_box;
 
     /// Scene builder.
     std::shared_ptr<SceneBuilder> scene_builder;

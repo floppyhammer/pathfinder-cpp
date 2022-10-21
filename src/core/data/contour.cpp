@@ -1,7 +1,7 @@
 #include "contour.h"
 
 namespace Pathfinder {
-Vec2<float> Contour::position_of_last(int index) {
+Vec2F Contour::position_of_last(int index) {
     return points[points.size() - index];
 }
 
@@ -32,7 +32,7 @@ void Contour::push_segment(const Segment &segment, PushSegmentFlags p_flags) {
     push_point(segment.baseline.to(), PointFlag::ON_CURVE_POINT, update_bounds);
 }
 
-void Contour::update_bounds(Rect<float> &p_bounds) const {
+void Contour::update_bounds(RectF &p_bounds) const {
     // The bounds to union is not valid.
     if (!p_bounds.is_valid()) {
         p_bounds = bounds;
@@ -60,7 +60,7 @@ void Contour::close() {
     closed = true;
 }
 
-void Contour::push_point(const Vec2<float> &point, PointFlag flag, bool update_bounds) {
+void Contour::push_point(const Vec2F &point, PointFlag flag, bool update_bounds) {
     if (update_bounds) {
         auto first = points.empty();
         union_rect(bounds, point, first);
@@ -70,16 +70,16 @@ void Contour::push_point(const Vec2<float> &point, PointFlag flag, bool update_b
     flags.push_back(flag);
 }
 
-void Contour::push_endpoint(const Vec2<float> &to) {
+void Contour::push_endpoint(const Vec2F &to) {
     push_point(to, PointFlag::ON_CURVE_POINT, true);
 }
 
-void Contour::push_quadratic(const Vec2<float> &ctrl0, const Vec2<float> &to) {
+void Contour::push_quadratic(const Vec2F &ctrl0, const Vec2F &to) {
     push_point(ctrl0, PointFlag::CONTROL_POINT_0, true);
     push_point(to, PointFlag::ON_CURVE_POINT, true);
 }
 
-void Contour::push_cubic(const Vec2<float> &ctrl0, const Vec2<float> &ctrl1, const Vec2<float> &to) {
+void Contour::push_cubic(const Vec2F &ctrl0, const Vec2F &ctrl1, const Vec2F &to) {
     push_point(ctrl0, PointFlag::CONTROL_POINT_0, true);
     push_point(ctrl1, PointFlag::CONTROL_POINT_1, true);
     push_point(to, PointFlag::ON_CURVE_POINT, true);
@@ -94,9 +94,7 @@ void Contour::transform(const Transform2 &transform) {
     }
 }
 
-SegmentsIter::SegmentsIter(const std::vector<Vec2<float>> &p_points,
-                           const std::vector<PointFlag> &p_flags,
-                           bool p_closed)
+SegmentsIter::SegmentsIter(const std::vector<Vec2F> &p_points, const std::vector<PointFlag> &p_flags, bool p_closed)
     : points(p_points), flags(p_flags), closed(p_closed) {}
 
 Segment SegmentsIter::get_next(bool force_closed) {

@@ -35,24 +35,24 @@ struct LineSegmentF {
 
     explicit LineSegmentF(const F32x4 &p_value);
 
-    LineSegmentF(const Vec2<float> &p_from, const Vec2<float> &p_to);
+    LineSegmentF(const Vec2F &p_from, const Vec2F &p_to);
 
     LineSegmentF(float p_from_x, float p_from_y, float p_to_x, float p_to_y);
 
-    inline Vec2<float> from() const {
+    inline Vec2F from() const {
         return value.xy();
     }
 
-    inline Vec2<float> to() const {
+    inline Vec2F to() const {
         return value.zw();
     }
 
     /// Get line segment vector.
-    inline Vec2<float> vector() const {
+    inline Vec2F vector() const {
         return to() - from();
     }
 
-    inline Vec2<float> sample(float t) const {
+    inline Vec2F sample(float t) const {
         return from() + vector() * t;
     }
 
@@ -74,9 +74,9 @@ struct LineSegmentF {
 
     float max_y() const;
 
-    void set_from(const Vec2<float> &point);
+    void set_from(const Vec2F &point);
 
-    void set_to(const Vec2<float> &point);
+    void set_to(const Vec2F &point);
 
     float square_length() const;
 
@@ -84,11 +84,11 @@ struct LineSegmentF {
 
     LineSegmentF offset(float distance) const;
 
-    inline LineSegmentF operator+(const Vec2<float> &v) const {
+    inline LineSegmentF operator+(const Vec2F &v) const {
         return {from() + v, to() + v};
     }
 
-    inline LineSegmentF operator*(const Vec2<float> &v) const {
+    inline LineSegmentF operator*(const Vec2F &v) const {
         return {from() * v, to() * v};
     }
 };

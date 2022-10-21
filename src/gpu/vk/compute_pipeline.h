@@ -13,8 +13,7 @@ class ComputePipelineVk : public ComputePipeline {
     friend class DriverVk;
 
 public:
-    ComputePipelineVk(VkDevice p_device) : device(p_device) {
-    }
+    ComputePipelineVk(VkDevice p_device) : device(p_device) {}
 
     ~ComputePipelineVk() {
         vkDestroyDescriptorSetLayout(device, descriptor_set_layout, nullptr);

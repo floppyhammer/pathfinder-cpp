@@ -6,8 +6,8 @@
 namespace Pathfinder {
 
 BuiltPath::BuiltPath(uint32_t path_id,
-                     Rect<float> path_bounds,
-                     Rect<float> view_box_bounds,
+                     RectF path_bounds,
+                     RectF view_box_bounds,
                      FillRule p_fill_rule,
                      const std::shared_ptr<uint32_t>& clip_path_id,
                      const TilingPathInfo& tiling_path_info)
@@ -18,7 +18,7 @@ BuiltPath::BuiltPath(uint32_t path_id,
 
     ctrl_byte = tiling_path_info.to_ctrl();
 
-    Rect<float> tile_map_bounds = path_bounds;
+    RectF tile_map_bounds = path_bounds;
 
     tile_bounds = round_rect_out_to_tile_bounds(tile_map_bounds);
 

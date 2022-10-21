@@ -25,7 +25,7 @@ enum class PaintCompositeOp {
     DestIn,
 };
 
-Rect<float> rect_to_uv(const Rect<uint32_t> &rect, const Vec2<float> &texture_scale);
+RectF rect_to_uv(const Rect<uint32_t> &rect, const Vec2F &texture_scale);
 
 /// The contents of an overlay: either a gradient or a pattern.
 struct PaintContents {
@@ -120,7 +120,7 @@ struct PaintColorTextureMetadata {
     TextureLocation location;
 
     /// The scale for the page this paint is on.
-    Vec2<float> page_scale;
+    Vec2F page_scale;
 
     std::shared_ptr<Texture> color_texture;
 

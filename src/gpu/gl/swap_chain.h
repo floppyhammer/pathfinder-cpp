@@ -50,8 +50,7 @@ public:
     #endif
     }
 
-    inline void cleanup() override {
-    }
+    inline void cleanup() override {}
 
 private:
     #ifndef __ANDROID__

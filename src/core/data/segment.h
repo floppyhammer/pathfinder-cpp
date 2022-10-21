@@ -36,7 +36,7 @@ struct Segment {
         return {p_baseline, LineSegmentF(), SegmentKind::Line, SegmentFlags::NONE};
     }
 
-    inline static Segment quadratic(const LineSegmentF &p_baseline, const Vec2<float> &p_ctrl) {
+    inline static Segment quadratic(const LineSegmentF &p_baseline, const Vec2F &p_ctrl) {
         return {p_baseline, LineSegmentF(p_ctrl, p_ctrl), SegmentKind::Quadratic, SegmentFlags::NONE};
     }
 
@@ -63,14 +63,17 @@ struct Segment {
 
     Segment to_cubic() const;
 
-    Vec2<float> sample(float t) const;
+    Vec2F sample(float t) const;
 
     bool error_is_within_tolerance(const Segment &other, float distance) const;
 
     Segment offset_once(float distance) const;
 
-    void add_to_contour(
-        float distance, LineJoin join, Vec2<float> join_point, float join_miter_limit, Contour &contour) const;
+    void add_to_contour(float distance,
+                        LineJoin join,
+                        Vec2F join_point,
+                        float join_miter_limit,
+                        Contour &contour) const;
 
     void offset(float distance, LineJoin join, float join_miter_limit, Contour &contour) const;
 
@@ -85,9 +88,9 @@ struct Segment {
 
     /// Returns a cubic Bézier segment that approximates a quarter of an arc, centered on the +x axis.
     static Segment quarter_circle_arc() {
-        auto p0 = Vec2<float>(std::sqrt(2.0f) * 0.5f);
-        auto p1 = Vec2<float>(-std::sqrt(2.0f) / 6.0f + 4.0f / 3.0f, 7.0f * std::sqrt(2.0f) / 6.0f - 4.0f / 3.0f);
-        auto flip = Vec2<float>(1.0, -1.0);
+        auto p0 = Vec2F(std::sqrt(2.0f) * 0.5f);
+        auto p1 = Vec2F(-std::sqrt(2.0f) / 6.0f + 4.0f / 3.0f, 7.0f * std::sqrt(2.0f) / 6.0f - 4.0f / 3.0f);
+        auto flip = Vec2F(1.0, -1.0);
 
         auto p2 = p1 * flip;
         auto p3 = p0 * flip;
@@ -107,16 +110,16 @@ struct Segment {
         //
         // https://www.tinaja.com/glib/bezcirc2.pdf
         if (cos_sweep_angle >= 1.0 - EPSILON) {
-            return Segment::line(LineSegmentF(Vec2<float>(1.0, 0.0), Vec2<float>(1.0, 0.0)));
+            return Segment::line(LineSegmentF(Vec2F(1.0, 0.0), Vec2F(1.0, 0.0)));
         }
 
-        auto term = Vec2<float>(cos_sweep_angle, -cos_sweep_angle);
+        auto term = Vec2F(cos_sweep_angle, -cos_sweep_angle);
 
-        auto signs_xy = Vec2<float>(1.0, -1.0);
-        auto signs_zw = Vec2<float>(1.0, 1.0);
+        auto signs_xy = Vec2F(1.0, -1.0);
+        auto signs_zw = Vec2F(1.0, 1.0);
 
-        auto p3 = ((term + 1.0f) * Vec2<float>(0.5f)).sqrt() * signs_xy;
-        auto p0 = ((term + 1.0f) * Vec2<float>(0.5f)).sqrt() * signs_zw;
+        auto p3 = ((term + 1.0f) * Vec2F(0.5f)).sqrt() * signs_xy;
+        auto p0 = ((term + 1.0f) * Vec2F(0.5f)).sqrt() * signs_zw;
 
         auto p0x = p0.x;
         auto p0y = p0.y;
@@ -124,8 +127,8 @@ struct Segment {
         auto p1x = 4.0f - p0x;
         auto p1y = (1.0f - p0x) * (3.0f - p0x) / p0y;
 
-        auto p2 = Vec2<float>(p1x, -p1y) * (1.0f / 3.0f);
-        auto p1 = Vec2<float>(p1x, p1y) * (1.0f / 3.0f);
+        auto p2 = Vec2F(p1x, -p1y) * (1.0f / 3.0f);
+        auto p1 = Vec2F(p1x, p1y) * (1.0f / 3.0f);
 
         return Segment::cubic(LineSegmentF(p3, p0), LineSegmentF(p2, p1));
     }

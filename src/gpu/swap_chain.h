@@ -9,8 +9,7 @@
 namespace Pathfinder {
 class SwapChain {
 public:
-    SwapChain(uint32_t width, uint32_t height) : extent({width, height}) {
-    }
+    SwapChain(uint32_t width, uint32_t height) : extent({width, height}) {}
 
     /// Swap chain framebuffer size.
     Vec2<uint32_t> extent;

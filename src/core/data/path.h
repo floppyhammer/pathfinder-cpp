@@ -16,7 +16,7 @@ public:
     std::vector<Contour> contours;
 
     /// Bounding box.
-    Rect<float> bounds;
+    RectF bounds;
 
 public:
     /// Applies an affine transform to this shape and all its paths.

@@ -18,7 +18,7 @@ struct Mat4x4 {
         }
     }
 
-    static Mat4x4 from_scale(const Vec3<float> &p_scale) {
+    static Mat4x4 from_scale(const Vec3F &p_scale) {
         auto mat = Mat4x4(1);
 
         mat.v[0] = p_scale.x;
@@ -28,7 +28,7 @@ struct Mat4x4 {
         return mat;
     }
 
-    static Mat4x4 from_translation(const Vec3<float> &p_translation) {
+    static Mat4x4 from_translation(const Vec3F &p_translation) {
         auto mat = Mat4x4(1);
 
         mat.v[12] = p_translation.x;

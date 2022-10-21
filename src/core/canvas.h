@@ -34,7 +34,7 @@ struct State {
 
     ColorU shadow_color;
     float shadow_blur = 0;
-    Vec2<float> shadow_offset;
+    Vec2F shadow_offset;
 
     float global_alpha = 1;
     BlendMode global_composite_operation;
@@ -60,11 +60,11 @@ public:
 
     // Advanced geometries.
     // -----------------------------------------------
-    void add_line(const Vec2<float> &start, const Vec2<float> &end);
+    void add_line(const Vec2F &start, const Vec2F &end);
 
-    void add_rect(const Rect<float> &rect, float corner_radius = 0);
+    void add_rect(const RectF &rect, float corner_radius = 0);
 
-    void add_circle(const Vec2<float> &center, float radius);
+    void add_circle(const Vec2F &center, float radius);
     // -----------------------------------------------
 
     Outline into_outline();
@@ -133,7 +133,7 @@ public:
 
     void set_shadow_color(const ColorU &p_shadow_color);
 
-    Vec2<float> shadow_offset() const;
+    Vec2F shadow_offset() const;
 
     void set_shadow_offset(float p_shadow_offset_x, float p_shadow_offset_y);
 
@@ -156,7 +156,7 @@ public:
     // ------------------------------------------------
 
     // Drawing images
-    void draw_image(const Image &image, const Rect<float> &dst_location);
+    void draw_image(const Image &image, const RectF &dst_location);
 
     /// Set the inner scene's view box.
     /// Global control of path clipping.
@@ -166,7 +166,7 @@ public:
 
     /// Local control of path clipping.
     /// Will force bounds of outlines drawn henceforward be within the set clipping box.
-    void set_clipping_box(const Rect<float> &box);
+    void set_clipping_box(const RectF &box);
 
     void unset_clipping_box();
 
@@ -213,7 +213,7 @@ private:
     std::shared_ptr<Texture> dest_texture;
 
     // TODO: Should be replaced with clip path.
-    Rect<float> clipping_box;
+    RectF clipping_box;
 
     /// Scene renderer.
     std::shared_ptr<Renderer> renderer;

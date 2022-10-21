@@ -16,7 +16,7 @@ public:
           uint32_t path_id,
           Outline p_outline,
           FillRule fill_rule,
-          const Rect<float>& view_box,
+          const RectF& view_box,
           const std::shared_ptr<uint32_t>& clip_path_id,
           const std::vector<BuiltPath>& built_clip_paths,
           TilingPathInfo path_info);

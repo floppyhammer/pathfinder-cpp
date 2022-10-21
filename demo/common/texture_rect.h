@@ -26,9 +26,9 @@ public:
               const std::shared_ptr<Pathfinder::CommandBuffer> &cmd_buffer,
               const Pathfinder::Vec2<uint32_t> &framebuffer_size);
 
-    Pathfinder::Vec2<float> position{0};
-    Pathfinder::Vec2<float> size;
-    Pathfinder::Vec2<float> scale{1};
+    Pathfinder::Vec2F position{0};
+    Pathfinder::Vec2F size;
+    Pathfinder::Vec2F scale{1};
 
 private:
     std::shared_ptr<Pathfinder::Texture> texture;

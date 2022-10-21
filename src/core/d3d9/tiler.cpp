@@ -43,7 +43,7 @@ struct Outcode {
     }
 };
 
-Outcode compute_outcode(const Vec2<float> &point, const Rect<float> &rect) {
+Outcode compute_outcode(const Vec2F &point, const RectF &rect) {
     Outcode outcode;
 
     if (point.x < rect.min_x()) {
@@ -62,7 +62,7 @@ Outcode compute_outcode(const Vec2<float> &point, const Rect<float> &rect) {
 }
 
 /// Clips a line segment to an axis-aligned rectangle using Cohen-Sutherland clipping.
-bool clip_line_segment_to_rect(LineSegmentF &line_segment, Rect<float> rect) {
+bool clip_line_segment_to_rect(LineSegmentF &line_segment, RectF rect) {
     auto outcode_from = compute_outcode(line_segment.from(), rect);
     auto outcode_to = compute_outcode(line_segment.to(), rect);
 
@@ -81,7 +81,7 @@ bool clip_line_segment_to_rect(LineSegmentF &line_segment, Rect<float> rect) {
 
         // If we should clip the from point.
         auto clip_from = outcode_from.flag > outcode_to.flag;
-        Vec2<float> point{};
+        Vec2F point{};
         Outcode outcode;
 
         if (clip_from) {
@@ -93,29 +93,25 @@ bool clip_line_segment_to_rect(LineSegmentF &line_segment, Rect<float> rect) {
         }
 
         if (outcode.contains(Outcode::LEFT)) {
-            point = Vec2<float>(
-                rect.min_x(),
-                lerp(line_segment.from().y,
-                     line_segment.to().y,
-                     (rect.min_x() - line_segment.from().x) / (line_segment.to().x - line_segment.from().x)));
+            point = Vec2F(rect.min_x(),
+                          lerp(line_segment.from().y,
+                               line_segment.to().y,
+                               (rect.min_x() - line_segment.from().x) / (line_segment.to().x - line_segment.from().x)));
         } else if (outcode.contains(Outcode::RIGHT)) {
-            point = Vec2<float>(
-                rect.max_x(),
-                lerp(line_segment.from().y,
-                     line_segment.to().y,
-                     (rect.max_x() - line_segment.from().x) / (line_segment.to().x - line_segment.from().x)));
+            point = Vec2F(rect.max_x(),
+                          lerp(line_segment.from().y,
+                               line_segment.to().y,
+                               (rect.max_x() - line_segment.from().x) / (line_segment.to().x - line_segment.from().x)));
         } else if (outcode.contains(Outcode::TOP)) {
-            point = Vec2<float>(
-                lerp(line_segment.from().x,
-                     line_segment.to().x,
-                     (rect.min_y() - line_segment.from().y) / (line_segment.to().y - line_segment.from().y)),
-                rect.min_y());
+            point = Vec2F(lerp(line_segment.from().x,
+                               line_segment.to().x,
+                               (rect.min_y() - line_segment.from().y) / (line_segment.to().y - line_segment.from().y)),
+                          rect.min_y());
         } else if (outcode.contains(Outcode::BOTTOM)) {
-            point = Vec2<float>(
-                lerp(line_segment.from().x,
-                     line_segment.to().x,
-                     (rect.max_y() - line_segment.from().y) / (line_segment.to().y - line_segment.from().y)),
-                rect.max_y());
+            point = Vec2F(lerp(line_segment.from().x,
+                               line_segment.to().x,
+                               (rect.max_y() - line_segment.from().y) / (line_segment.to().y - line_segment.from().y)),
+                          rect.max_y());
         }
 
         if (clip_from) {
@@ -153,7 +149,7 @@ void process_line_segment(LineSegmentF p_line_segment,
     }
 
     // Tile size.
-    const auto tile_size = Vec2<float>(TILE_WIDTH, TILE_HEIGHT);
+    const auto tile_size = Vec2F(TILE_WIDTH, TILE_HEIGHT);
 
     F32x4 tile_line_segment = p_line_segment.value * F32x4::splat(1.0f / TILE_WIDTH);
 
@@ -171,7 +167,7 @@ void process_line_segment(LineSegmentF p_line_segment,
     // Compute `first_tile_crossing = (from_tile_coords + vec2i(vector.x >= 0 ? 1 : 0, vector.y >= 0 ? 1 : 0)) *
     // tile_size`.
     const auto first_tile_crossing =
-        (from_tile_coords.to_f32() + Vec2<float>(vector.x >= 0 ? 1 : 0, vector.y >= 0 ? 1 : 0)) * tile_size;
+        (from_tile_coords.to_f32() + Vec2F(vector.x >= 0 ? 1 : 0, vector.y >= 0 ? 1 : 0)) * tile_size;
 
     // Value of t at which the ray crosses the first vertical/horizontal tile boundary.
     auto t_max = (first_tile_crossing - p_line_segment.from()) / vector;
@@ -312,7 +308,7 @@ Tiler::Tiler(SceneBuilderD3D9 &p_scene_builder,
              uint32_t path_id,
              Outline p_outline,
              FillRule fill_rule,
-             const Rect<float> &view_box,
+             const RectF &view_box,
              const std::shared_ptr<uint32_t> &clip_path_id,
              const std::vector<BuiltPath> &built_clip_paths,
              TilingPathInfo path_info)

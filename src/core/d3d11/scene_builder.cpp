@@ -134,7 +134,7 @@ DrawTileBatchD3D11 build_tile_batches_for_draw_path_display_item(
 
     // This is a temporary value for test.
     // FIXME: Fix hardcoded transform.
-    auto transform = Transform2::from_translation(Vec2<float>(0, 0));
+    auto transform = Transform2::from_translation(Vec2F(0, 0));
 
     // Create a new batch if necessary.
     draw_tile_batch.tile_batch_data = TileBatchDataD3D11(next_batch_id, PathSource::Draw);

@@ -87,7 +87,7 @@ void OutlineStrokeToFill::offset() {
         push_stroked_contour(new_contours, stroker, closed);
     }
 
-    Rect<float> new_bounds;
+    RectF new_bounds;
 
     for (auto &p : new_contours) {
         p.update_bounds(new_bounds);
@@ -133,7 +133,7 @@ void OutlineStrokeToFill::add_cap(Contour &contour) const {
     auto p1 = contour.position_of_last(1);
 
     // Determine the ending gradient.
-    Vec2<float> p0{};
+    Vec2F p0{};
     auto p0_index = contour.points.size() - 2;
 
     while (true) {
@@ -156,7 +156,7 @@ void OutlineStrokeToFill::add_cap(Contour &contour) const {
             auto offset = gradient * (width * 0.5f);
 
             auto p2 = p1 + offset;
-            auto p3 = p2 + gradient.yx() * Vec2<float>(-width, width);
+            auto p3 = p2 + gradient.yx() * Vec2F(-width, width);
             auto p4 = p3 - offset;
 
             contour.push_endpoint(p2);
@@ -165,9 +165,9 @@ void OutlineStrokeToFill::add_cap(Contour &contour) const {
         } break;
         case LineCap::Round: {
             auto scale = width * 0.5f;
-            auto offset = gradient.yx() * Vec2<float>(-1.0, 1.0);
+            auto offset = gradient.yx() * Vec2F(-1.0, 1.0);
             auto translation = p1 + offset * (width * 0.5f);
-            auto transform = Transform2::from_scale(Vec2<float>(scale, scale)).translate(translation);
+            auto transform = Transform2::from_scale(Vec2F(scale, scale)).translate(translation);
             auto chord = LineSegmentF(-offset, offset);
 
             contour.push_arc_from_unit_chord(transform, chord, ArcDirection::CW);
@@ -191,11 +191,7 @@ bool Contour::might_need_join(LineJoin join) const {
     }
 }
 
-void Contour::add_join(float distance,
-                       LineJoin join,
-                       Vec2<float> join_point,
-                       LineSegmentF next_tangent,
-                       float miter_limit) {
+void Contour::add_join(float distance, LineJoin join, Vec2F join_point, LineSegmentF next_tangent, float miter_limit) {
     auto p0 = position_of_last(2);
     auto p1 = position_of_last(1);
 
@@ -226,7 +222,7 @@ void Contour::add_join(float distance,
         } break;
         case LineJoin::Round: {
             auto scale = std::abs(distance);
-            auto transform = Transform2::from_scale(Vec2<float>(scale)).translate(join_point);
+            auto transform = Transform2::from_scale(Vec2F(scale)).translate(join_point);
             auto chord_from = (prev_tangent.to() - join_point).normalize();
             auto chord_to = (next_tangent.to() - join_point).normalize();
             auto chord = LineSegmentF(chord_from, chord_to);
@@ -238,8 +234,8 @@ void Contour::add_join(float distance,
 void Contour::push_arc_from_unit_chord(Transform2 &transform, LineSegmentF chord, const ArcDirection direction) {
     auto direction_transform = Transform2();
     if (direction == ArcDirection::CCW) {
-        chord = chord * Vec2<float>(1.0f, -1.0f);
-        direction_transform = Transform2::from_scale(Vec2<float>(1.0, -1.0));
+        chord = chord * Vec2F(1.0f, -1.0f);
+        direction_transform = Transform2::from_scale(Vec2F(1.0, -1.0));
     }
 
     auto vector = UnitVector(chord.from());
@@ -251,7 +247,7 @@ void Contour::push_arc_from_unit_chord(Transform2 &transform, LineSegmentF chord
 
         Segment segment;
         if (!last) {
-            sweep_vector = UnitVector(Vec2<float>(0.0f, 1.0f));
+            sweep_vector = UnitVector(Vec2F(0.0f, 1.0f));
             segment = Segment::quarter_circle_arc();
         } else {
             segment = Segment::arc_from_cos(sweep_vector.x);
@@ -288,7 +284,7 @@ Segment Segment::offset_once(float distance) const {
         segment_1 = segment_1.offset(distance);
 
         float t;
-        Vec2<float> local_ctrl =
+        Vec2F local_ctrl =
             segment_0.intersection_t(segment_1, t) ? segment_0.sample(t) : lerp(segment_0.to(), segment_1.from(), 0.5f);
 
         auto local_baseline = LineSegmentF(segment_0.from(), segment_1.to());
@@ -303,7 +299,7 @@ Segment Segment::offset_once(float distance) const {
         segment_1 = segment_1.offset(distance);
 
         float t;
-        Vec2<float> local_ctrl =
+        Vec2F local_ctrl =
             segment_0.intersection_t(segment_1, t) ? segment_0.sample(t) : lerp(segment_0.to(), segment_1.from(), 0.5f);
 
         auto local_baseline = LineSegmentF(segment_0.from(), segment_1.to());
@@ -318,7 +314,7 @@ Segment Segment::offset_once(float distance) const {
         segment_1 = segment_1.offset(distance);
 
         float t;
-        Vec2<float> local_ctrl =
+        Vec2F local_ctrl =
             segment_0.intersection_t(segment_1, t) ? segment_0.sample(t) : lerp(segment_0.to(), segment_1.from(), 0.5f);
 
         auto local_baseline = LineSegmentF(segment_0.from(), segment_1.to());
@@ -333,7 +329,7 @@ Segment Segment::offset_once(float distance) const {
     segment_1 = segment_1.offset(distance);
     segment_2 = segment_2.offset(distance);
 
-    Vec2<float> ctrl_0, ctrl_1;
+    Vec2F ctrl_0, ctrl_1;
     float t0, t1;
     if (segment_0.intersection_t(segment_1, t0) && segment_1.intersection_t(segment_2, t1)) {
         ctrl_0 = segment_0.sample(t0);
@@ -385,7 +381,7 @@ bool Segment::error_is_within_tolerance(const Segment &other, float distance) co
 
 void Segment::add_to_contour(float distance,
                              LineJoin join,
-                             Vec2<float> join_point,
+                             Vec2F join_point,
                              float join_miter_limit,
                              Contour &contour) const {
     // Add join if necessary.
@@ -394,7 +390,7 @@ void Segment::add_to_contour(float distance,
 
         // NB: If you change the representation of quadratic curves,
         // you will need to change this.
-        Vec2<float> p4 = is_line() ? baseline.to() : ctrl.from();
+        Vec2F p4 = is_line() ? baseline.to() : ctrl.from();
 
         contour.add_join(distance, join, join_point, LineSegmentF(p4, p3), join_miter_limit);
     }

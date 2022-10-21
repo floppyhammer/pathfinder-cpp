@@ -137,11 +137,11 @@ struct Rect {
         return {(float)left, (float)top, (float)right, (float)bottom};
     }
 
-    inline Rect<int> to_i32() const {
-        return {(int)round(left), (int)round(top), (int)round(right), (int)round(bottom)};
+    inline Rect<int32_t> to_i32() const {
+        return {int32_t(round(left)), int32_t(round(top)), int32_t(round(right)), int32_t(round(bottom))};
     }
 
-    inline Rect<int> round_out() const {
+    inline Rect<int32_t> round_out() const {
         return {origin().floor(), lower_right().ceil()};
     }
 
@@ -179,24 +179,27 @@ struct Rect {
     }
 
     // The containment check is a bit different for int and float.
-    inline bool contains_point(const Vec2<float> &point) {
+    inline bool contains_point(const Vec2F &point) {
         // self.origin <= point && point <= self.lower_right
         return (left <= point.x && point.x <= right && top <= point.y && point.y <= bottom);
     }
 
-    inline bool contains_point(const Vec2<int> &point) {
+    inline bool contains_point(const Vec2<int32_t> &point) {
         // self.origin <= point && point <= self.lower_right - 1
         return (left <= point.x && point.x <= right - 1 && top <= point.y && point.y <= bottom - 1);
     }
 };
 
-inline void union_rect(Rect<float> &bounds, Vec2<float> new_point, bool first_point = false) {
+inline void union_rect(Rect<float> &bounds, Vec2F new_point, bool first_point = false) {
     if (!bounds.is_valid() || first_point) {
         bounds = Rect<float>(new_point, new_point);
     } else {
         bounds = Rect<float>(bounds.origin().min(new_point), bounds.lower_right().max(new_point));
     }
 }
+
+typedef Rect<int32_t> RectI;
+typedef Rect<float> RectF;
 
 } // namespace Pathfinder
 

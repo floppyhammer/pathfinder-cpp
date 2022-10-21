@@ -3,7 +3,7 @@
 namespace Pathfinder {
 
 Transform2::Transform2() {
-    *this = Transform2::from_scale(Vec2<float>(1));
+    *this = Transform2::from_scale(Vec2F(1));
 }
 
 Transform2::Transform2(float xform[6]) {
@@ -11,9 +11,9 @@ Transform2::Transform2(float xform[6]) {
     vector = {xform[4], xform[5]};
 }
 
-Transform2::Transform2(Mat2x2<float> p_matrix, Vec2<float> p_vector) : matrix(p_matrix), vector(p_vector) {}
+Transform2::Transform2(Mat2x2<float> p_matrix, Vec2F p_vector) : matrix(p_matrix), vector(p_vector) {}
 
-Transform2 Transform2::translate(Vec2<float> p_vector) const {
+Transform2 Transform2::translate(Vec2F p_vector) const {
     return Transform2::from_translation(p_vector) * *this;
 }
 
@@ -22,7 +22,7 @@ Transform2 Transform2::rotate(float theta) const {
 }
 
 bool Transform2::is_identity() const {
-    return matrix == Mat2x2<float>::from_scale({1, 1}) && vector == Vec2<float>();
+    return matrix == Mat2x2<float>::from_scale({1, 1}) && vector == Vec2F();
 }
 
 Transform2 Transform2::inverse() const {
@@ -31,7 +31,7 @@ Transform2 Transform2::inverse() const {
     return {matrix_inv, vector_inv};
 }
 
-Vec2<float> Transform2::get_position() const {
+Vec2F Transform2::get_position() const {
     return vector;
 }
 

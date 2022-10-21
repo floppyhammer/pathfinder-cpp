@@ -14,14 +14,14 @@ struct DenseTileMap {
     std::vector<T> data;
 
     // Tile map region.
-    Rect<int> rect;
+    RectI rect;
 
     DenseTileMap() = default;
 
-    DenseTileMap(const std::vector<T> &p_data, const Rect<int> &p_rect) : data(p_data), rect(p_rect) {}
+    DenseTileMap(const std::vector<T> &p_data, const RectI &p_rect) : data(p_data), rect(p_rect) {}
 
     /// Constructor for TileObjectPrimitive.
-    DenseTileMap(const Rect<int> &p_rect, uint32_t p_path_id, uint32_t p_paint_id, uint8_t p_ctrl_byte) : rect(p_rect) {
+    DenseTileMap(const RectI &p_rect, uint32_t p_path_id, uint32_t p_paint_id, uint8_t p_ctrl_byte) : rect(p_rect) {
         data = std::vector<T>(rect.width() * rect.height(), T());
 
         for (int y = rect.min_y(); y < rect.max_y(); y++) {
@@ -38,7 +38,7 @@ struct DenseTileMap {
     }
 
     /// Constructor for Clip.
-    DenseTileMap(const Rect<int> &p_rect,
+    DenseTileMap(const RectI &p_rect,
                  AlphaTileId dest_tile_id,
                  int32_t dest_backdrop,
                  AlphaTileId src_tile_id,
@@ -59,7 +59,7 @@ struct DenseTileMap {
     }
 
     /// A quick way to build z buffer.
-    static inline DenseTileMap z_builder(const Rect<int> &p_rect) {
+    static inline DenseTileMap z_builder(const RectI &p_rect) {
         return {std::vector<T>(p_rect.width() * p_rect.height(), 0), p_rect};
     }
 

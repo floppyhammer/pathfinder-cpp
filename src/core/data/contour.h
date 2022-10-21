@@ -19,10 +19,10 @@ class Contour {
 public:
     Contour() = default;
 
-    std::vector<Vec2<float>> points;
+    std::vector<Vec2F> points;
     std::vector<PointFlag> flags;
 
-    Rect<float> bounds = Rect<float>();
+    RectF bounds = RectF();
 
     /// If we should connect the end point to the start point.
     bool closed = false;
@@ -31,27 +31,27 @@ public:
 
     bool might_need_join(LineJoin join) const;
 
-    Vec2<float> position_of_last(int index);
+    Vec2F position_of_last(int index);
 
-    void add_join(float distance, LineJoin join, Vec2<float> join_point, LineSegmentF next_tangent, float miter_limit);
+    void add_join(float distance, LineJoin join, Vec2F join_point, LineSegmentF next_tangent, float miter_limit);
 
     /// Adds a new on-curve point at the given position to this contour.
-    void push_endpoint(const Vec2<float> &to);
+    void push_endpoint(const Vec2F &to);
 
     /// Adds a new quadratic Bézier curve to the given on-curve position and control point to this
     /// contour.
-    void push_quadratic(const Vec2<float> &ctrl0, const Vec2<float> &to);
+    void push_quadratic(const Vec2F &ctrl0, const Vec2F &to);
 
     /// Adds a new cubic Bézier curve to the given on-curve position and control points to this
     /// contour.
-    void push_cubic(const Vec2<float> &ctrl0, const Vec2<float> &ctrl1, const Vec2<float> &to);
+    void push_cubic(const Vec2F &ctrl0, const Vec2F &ctrl1, const Vec2F &to);
 
     /// Marks this contour as closed, which results in an implicit line from the end back to the
     /// starting point.
     void close();
 
     /// Push a point with a flag.
-    void push_point(const Vec2<float> &point, PointFlag flag, bool update_bounds);
+    void push_point(const Vec2F &point, PointFlag flag, bool update_bounds);
 
     /// Push a segment as points and flags.
     void push_segment(const Segment &segment, PushSegmentFlags p_flags);
@@ -60,7 +60,7 @@ public:
 
     /// Use this function to keep bounds up to date when mutating contours.
     /// See `Outline::transform()` for an example of use.
-    void update_bounds(Rect<float> &p_bounds) const;
+    void update_bounds(RectF &p_bounds) const;
 
     /**
      * Convert points in a contour to segments.
@@ -79,7 +79,7 @@ public:
 /// An iterator used to traverse segments efficiently in a contour.
 class SegmentsIter {
 public:
-    SegmentsIter(const std::vector<Vec2<float>> &p_points, const std::vector<PointFlag> &p_flags, bool p_closed);
+    SegmentsIter(const std::vector<Vec2F> &p_points, const std::vector<PointFlag> &p_flags, bool p_closed);
 
     /// Get next segment in the contour.
     Segment get_next(bool force_closed = false);
@@ -89,7 +89,7 @@ public:
 
 private:
     /// Contour data.
-    const std::vector<Vec2<float>> &points;
+    const std::vector<Vec2F> &points;
     const std::vector<PointFlag> &flags;
 
     /// If the contour is closed.

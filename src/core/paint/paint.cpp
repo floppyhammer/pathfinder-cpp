@@ -4,7 +4,7 @@
 
 namespace Pathfinder {
 
-Rect<float> rect_to_uv(const Rect<uint32_t> &rect, const Vec2<float> &texture_scale) {
+RectF rect_to_uv(const Rect<uint32_t> &rect, const Vec2F &texture_scale) {
     return rect.to_f32() * texture_scale;
 }
 
@@ -51,7 +51,7 @@ PaintFilter PaintMetadata::filter() const {
 
             // Contract rect.
             auto amount = Vec2F(0.0, color_texture_metadata->page_scale.y * 0.5f);
-            uv_rect = Rect<float>(uv_rect.origin() + amount, uv_rect.lower_right() - amount);
+            uv_rect = RectF(uv_rect.origin() + amount, uv_rect.lower_right() - amount);
 
             filter.gradient_filter.uv_origin = uv_rect.origin();
         } break;

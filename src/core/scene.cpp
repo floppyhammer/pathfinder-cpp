@@ -6,7 +6,7 @@
 
 namespace Pathfinder {
 
-Scene::Scene(uint32_t p_id, Rect<float> p_view_box) : id(p_id), view_box(p_view_box), palette(Palette(p_id)) {
+Scene::Scene(uint32_t p_id, RectF p_view_box) : id(p_id), view_box(p_view_box), palette(Palette(p_id)) {
     // Set up a scene builder.
 #ifndef PATHFINDER_USE_D3D11
     scene_builder = std::make_shared<SceneBuilderD3D9>(this);
@@ -88,11 +88,11 @@ void Scene::pop_render_target() {
     display_list.push_back(item);
 }
 
-Rect<float> Scene::get_view_box() {
+RectF Scene::get_view_box() {
     return view_box;
 }
 
-void Scene::set_view_box(const Rect<float> &new_view_box) {
+void Scene::set_view_box(const RectF &new_view_box) {
     if (new_view_box == view_box) {
         return;
     }

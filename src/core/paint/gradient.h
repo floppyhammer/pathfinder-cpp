@@ -35,7 +35,7 @@ struct GradientRadial {
 
     /// The radii of the two circles. The first value may be zero to start the gradient at the
     /// center of the circle.
-    Vec2<float> radii;
+    Vec2F radii;
 
     /// Transform from radial gradient space into screen space.
     ///
@@ -99,7 +99,7 @@ struct Gradient {
     /// representing the center of the circle for `line`; otherwise, to create a radial gradient
     /// with two circles, pass a `LineSegment2F`. To start the gradient at the center of the
     /// circle, pass zero for the first radius.
-    static Gradient radial(const LineSegmentF &line, const Vec2<float> &radii) {
+    static Gradient radial(const LineSegmentF &line, const Vec2F &radii) {
         Gradient gradient;
         gradient.geometry.type = GradientGeometry::Type::Radial;
         gradient.geometry.radial.line = line;

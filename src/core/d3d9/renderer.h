@@ -63,7 +63,8 @@ private:
     /// Where to draw the mask texture.
     std::shared_ptr<Framebuffer> mask_framebuffer;
 
-    std::shared_ptr<RenderPass> mask_render_pass_clear, mask_render_pass_load, dest_render_pass_clear, dest_render_pass_load;
+    std::shared_ptr<RenderPass> mask_render_pass_clear, mask_render_pass_load, dest_render_pass_clear,
+        dest_render_pass_load;
 
 private:
     void create_tile_clip_copy_pipeline();

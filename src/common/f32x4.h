@@ -27,7 +27,7 @@ struct F32x4 {
 
     explicit F32x4(__m128 p_v) : v(p_v) {}
 
-    F32x4(Vec2<float> a, Vec2<float> b) {
+    F32x4(Vec2F a, Vec2F b) {
         v = _mm_setr_ps(a.x, a.y, b.x, b.y);
     }
 
@@ -71,11 +71,11 @@ struct F32x4 {
         return _mm_cvtss_f32(_mm_shuffle_ps(v, v, _MM_SHUFFLE(i, i, i, i)));
     }
 
-    inline Vec2<float> xy() const {
+    inline Vec2F xy() const {
         return {get<0>(), get<1>()};
     }
 
-    inline Vec2<float> zw() const {
+    inline Vec2F zw() const {
         return zwxy().xy();
     }
 
@@ -173,7 +173,7 @@ namespace Pathfinder {
 struct F32x4 {
     float v[4] = {0};
 
-    F32x4(Vec2<float> a, Vec2<float> b) {
+    F32x4(Vec2F a, Vec2F b) {
         v[0] = a.x;
         v[1] = a.y;
         v[2] = b.x;
@@ -225,11 +225,11 @@ struct F32x4 {
         return v[i];
     }
 
-    inline Vec2<float> xy() const {
+    inline Vec2F xy() const {
         return {v[0], v[1]};
     }
 
-    inline Vec2<float> zw() const {
+    inline Vec2F zw() const {
         return {v[2], v[3]};
     }
 

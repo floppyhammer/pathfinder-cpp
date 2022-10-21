@@ -14,6 +14,8 @@
 
 using std::vector;
 
+//! Data that will be sent directly to GPU.
+
 namespace Pathfinder {
 
 struct GlobalPathId {
@@ -64,7 +66,7 @@ struct BackdropInfoD3D11 {
 };
 
 struct PropagateMetadataD3D11 {
-    Rect<int32_t> tile_rect;
+    RectI tile_rect;
     uint32_t tile_offset = 0;
     uint32_t path_index = 0;
     uint32_t z_write = 0;
@@ -100,17 +102,17 @@ struct TilePathInfoD3D11 {
 /// Information about a batch of tiles to be prepared on GPU.
 struct PrepareTilesInfoD3D11 {
     /// Initial backdrop values for each tile column, packed together.
-    std::vector<BackdropInfoD3D11> backdrops;
+    vector<BackdropInfoD3D11> backdrops;
 
     /// Mapping from path index to metadata needed to compute propagation on GPU.
     /// This contains indices into the `tiles` vector.
-    std::vector<PropagateMetadataD3D11> propagate_metadata;
+    vector<PropagateMetadataD3D11> propagate_metadata;
 
     /// Metadata about each path that will be diced (flattened).
-    std::vector<DiceMetadataD3D11> dice_metadata;
+    vector<DiceMetadataD3D11> dice_metadata;
 
     /// Sparse information about all the allocated tiles.
-    std::vector<TilePathInfoD3D11> tile_path_info;
+    vector<TilePathInfoD3D11> tile_path_info;
 
     /// A transform to apply to the segments.
     Transform2 transform;
@@ -204,8 +206,8 @@ struct SegmentIndicesD3D11 {
 };
 
 struct SegmentsD3D11 {
-    std::vector<Vec2<float>> points;
-    std::vector<SegmentIndicesD3D11> indices;
+    vector<Vec2F> points;
+    vector<SegmentIndicesD3D11> indices;
 
     /// Add a outline as segments.
     Range add_path(const Outline &outline);

@@ -9,7 +9,7 @@ void Outline::transform(const Transform2 &transform) {
         return;
     }
 
-    Rect<float> new_bounds;
+    RectF new_bounds;
 
     for (auto &contour : contours) {
         contour.transform(transform);

@@ -138,7 +138,7 @@ Paint convert_nsvg_paint(NSVGpaint nsvg_paint) {
 }
 
 SvgScene::SvgScene() {
-    scene = std::make_shared<Scene>(0, Rect<float>());
+    scene = std::make_shared<Scene>(0, RectF());
 }
 
 void SvgScene::load_file(std::vector<char> input, Canvas &canvas) {

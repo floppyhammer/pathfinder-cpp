@@ -8,8 +8,8 @@
 namespace Pathfinder {
 
 ObjectBuilder::ObjectBuilder(uint32_t path_id,
-                             Rect<float> path_bounds,
-                             const Rect<float> &view_box_bounds,
+                             RectF path_bounds,
+                             const RectF &view_box_bounds,
                              FillRule fill_rule,
                              const std::shared_ptr<uint32_t> &clip_path_id,
                              const TilingPathInfo &path_info)
@@ -25,7 +25,7 @@ void ObjectBuilder::add_fill(SceneBuilderD3D9 &scene_builder, LineSegmentF p_seg
 
     // Compute the upper left corner of the tile.
     auto tile_size = F32x4::splat(TILE_WIDTH);
-    auto tile_upper_left = F32x4(tile_coords.to_f32(), Vec2<float>()).xyxy() * tile_size;
+    auto tile_upper_left = F32x4(tile_coords.to_f32(), Vec2F()).xyxy() * tile_size;
 
     // To tile's local coordinates.
     F32x4 segment = (p_segment.value - tile_upper_left) * F32x4::splat(256.0);

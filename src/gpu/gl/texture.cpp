@@ -19,8 +19,15 @@ TextureGl::TextureGl(uint32_t p_width, uint32_t p_height, TextureFormat p_format
     #ifdef PATHFINDER_USE_D3D11
     glTexStorage2D(GL_TEXTURE_2D, 1, to_gl_texture_format(p_format), width, height);
     #else
-    glTexImage2D(
-        GL_TEXTURE_2D, 0, to_gl_texture_format(p_format), width, height, 0, GL_RGBA, to_gl_data_type(type), nullptr);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 to_gl_texture_format(p_format),
+                 width,
+                 height,
+                 0,
+                 GL_RGBA,
+                 to_gl_data_type(type),
+                 nullptr);
     #endif
 
     // Set texture sampler.

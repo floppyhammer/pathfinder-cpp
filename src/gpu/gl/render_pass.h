@@ -10,8 +10,7 @@ class RenderPassGl : public RenderPass {
     friend class DriverGl;
 
 public:
-    explicit RenderPassGl(AttachmentLoadOp p_load_op) : load_op(p_load_op) {
-    }
+    explicit RenderPassGl(AttachmentLoadOp p_load_op) : load_op(p_load_op) {}
 
     inline AttachmentLoadOp get_attachment_load_op() const {
         return load_op;

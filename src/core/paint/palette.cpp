@@ -65,11 +65,11 @@ FilterParams compute_filter_params(const PaintFilter &filter,
                 auto gauss_coeff_y = std::exp(-0.5f * sigma_inv * sigma_inv);
                 auto gauss_coeff_z = gauss_coeff_y * gauss_coeff_y;
 
-                auto src_offset = direction == BlurDirection::X ? Vec2<float>(1.0, 0.0) : Vec2<float>(0.0, 1.0);
+                auto src_offset = direction == BlurDirection::X ? Vec2F(1.0, 0.0) : Vec2F(0.0, 1.0);
 
                 auto support = std::ceil(1.5f * sigma) * 2.f;
 
-                filter_params.p0 = F32x4(src_offset, Vec2<float>(support, 0.0));
+                filter_params.p0 = F32x4(src_offset, Vec2F(support, 0.0));
                 filter_params.p1 = F32x4(gauss_coeff_x, gauss_coeff_y, gauss_coeff_z, 0.0);
                 filter_params.ctrl = ctrl | (COMBINER_CTRL_FILTER_BLUR << COMBINER_CTRL_COLOR_FILTER_SHIFT);
             } else {
@@ -413,7 +413,7 @@ void Palette::calculate_texture_transforms(std::vector<PaintMetadata> &p_paint_m
                 auto gradient_geometry = overlay->contents.gradient.geometry;
 
                 // TODO: Use a texture manager.
-                auto texture_scale = Vec2<float>(1.f / GRADIENT_TILE_LENGTH, 1.f / GRADIENT_TILE_LENGTH);
+                auto texture_scale = Vec2F(1.f / GRADIENT_TILE_LENGTH, 1.f / GRADIENT_TILE_LENGTH);
 
                 color_texture_metadata->page_scale = texture_scale;
 
@@ -436,20 +436,19 @@ void Palette::calculate_texture_transforms(std::vector<PaintMetadata> &p_paint_m
                 Transform2 transform;
 
                 if (pattern.source.type == PatternSource::Type::Image) {
-                    auto texture_scale = Vec2<float>(1.f / texture_rect.width(), 1.f / texture_rect.height());
+                    auto texture_scale = Vec2F(1.f / texture_rect.width(), 1.f / texture_rect.height());
 
                     auto texture_origin_uv = rect_to_uv(texture_rect, texture_scale).origin();
 
                     transform = Transform2::from_scale(texture_scale).translate(texture_origin_uv) *
                                 pattern.transform.inverse();
                 } else {
-                    auto texture_scale = Vec2<float>(1.f / texture_rect.width(), 1.f / texture_rect.height());
+                    auto texture_scale = Vec2F(1.f / texture_rect.width(), 1.f / texture_rect.height());
 
                     auto texture_origin_uv = rect_to_uv(texture_rect, texture_scale).lower_left();
 
                     transform = Transform2::from_translation(texture_origin_uv) *
-                                Transform2::from_scale(texture_scale * Vec2<float>(1.0, -1.0)) *
-                                pattern.transform.inverse();
+                                Transform2::from_scale(texture_scale * Vec2F(1.0, -1.0)) * pattern.transform.inverse();
                 };
 
                 color_texture_metadata->transform = transform;

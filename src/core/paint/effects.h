@@ -63,9 +63,9 @@ struct PaintFilter {
         /// The line that the circles lie along.
         LineSegmentF line;
         /// The radii of the circles at the two endpoints.
-        Vec2<float> radii;
+        Vec2F radii;
         /// The origin of the linearized gradient in the texture.
-        Vec2<float> uv_origin;
+        Vec2F uv_origin;
     };
 
     RadialGradient gradient_filter; // For RadialGradient type.

@@ -102,8 +102,9 @@ void PlatformVk::init_window() {
     window = glfwCreateWindow(width, height, "Pathfinder (Vulkan)", nullptr, nullptr);
 
     // Center the window.
-    glfwSetWindowPos(
-        window, monitor_x + (video_mode->width - width) / 2, monitor_y + (video_mode->height - height) / 2);
+    glfwSetWindowPos(window,
+                     monitor_x + (video_mode->width - width) / 2,
+                     monitor_y + (video_mode->height - height) / 2);
 
     // Show the window.
     glfwShowWindow(window);
@@ -242,8 +243,10 @@ SwapchainSupportDetails PlatformVk::query_swapchain_support(VkPhysicalDevice p_p
 
     if (present_mode_count != 0) {
         details.present_modes.resize(present_mode_count);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(
-            p_physical_device, surface, &present_mode_count, details.present_modes.data());
+        vkGetPhysicalDeviceSurfacePresentModesKHR(p_physical_device,
+                                                  surface,
+                                                  &present_mode_count,
+                                                  details.present_modes.data());
     }
 
     return details;
