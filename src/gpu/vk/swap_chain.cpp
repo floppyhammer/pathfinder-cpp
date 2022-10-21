@@ -176,8 +176,9 @@ void SwapChainVk::create_image_views() {
 }
 
 void SwapChainVk::create_render_pass() {
-    render_pass = driver->create_render_pass(
-        vk_to_texture_format(swapchain_image_format), AttachmentLoadOp::Clear, TextureLayout::PRESENT_SRC);
+    render_pass = driver->create_render_pass(vk_to_texture_format(swapchain_image_format),
+                                             AttachmentLoadOp::Clear,
+                                             TextureLayout::PresentSrc);
 }
 
 void SwapChainVk::create_framebuffers() {
@@ -189,8 +190,11 @@ void SwapChainVk::create_framebuffers() {
         auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
 
         // No texture for swap chain framebuffer.
-        auto framebuffer_vk = std::make_shared<FramebufferVk>(
-            device, render_pass_vk->get_vk_render_pass(), extent.x, extent.y, swapchain_image_views[i]);
+        auto framebuffer_vk = std::make_shared<FramebufferVk>(device,
+                                                              render_pass_vk->get_vk_render_pass(),
+                                                              extent.x,
+                                                              extent.y,
+                                                              swapchain_image_views[i]);
 
         framebuffers.push_back(framebuffer_vk);
     }
@@ -227,8 +231,12 @@ bool SwapChainVk::acquire_swapchain_image(uint32_t &image_index) {
     vkWaitForFences(device, 1, &in_flight_fences[current_frame], VK_TRUE, UINT64_MAX);
 
     // Retrieve the index of the next available presentable image.
-    VkResult result = vkAcquireNextImageKHR(
-        device, swapchain, UINT64_MAX, image_available_semaphores[current_frame], VK_NULL_HANDLE, &image_index);
+    VkResult result = vkAcquireNextImageKHR(device,
+                                            swapchain,
+                                            UINT64_MAX,
+                                            image_available_semaphores[current_frame],
+                                            VK_NULL_HANDLE,
+                                            &image_index);
 
     current_image = image_index;
 

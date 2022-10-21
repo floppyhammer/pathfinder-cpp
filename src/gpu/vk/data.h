@@ -86,40 +86,40 @@ const std::array<VkFormat, 32> vk_formats = {
 
 inline VkImageLayout to_vk_layout(TextureLayout layout) {
     switch (layout) {
-        case TextureLayout::PRESENT_SRC:
+        case TextureLayout::PresentSrc:
             return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-        case TextureLayout::SHADER_READ_ONLY:
+        case TextureLayout::ShaderReadOnly:
             return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        case TextureLayout::TRANSFER_SRC:
+        case TextureLayout::TransferSrc:
             return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-        case TextureLayout::TRANSFER_DST:
+        case TextureLayout::TransferDst:
             return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-        case TextureLayout::GENERAL:
+        case TextureLayout::General:
             return VK_IMAGE_LAYOUT_GENERAL;
-        case TextureLayout::UNDEFINED:
+        case TextureLayout::Undefined:
             return VK_IMAGE_LAYOUT_UNDEFINED;
-        case TextureLayout::COLOR_ATTACHMENT:
+        case TextureLayout::ColorAttachment:
             return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     }
 }
 
 inline VkFormat to_vk_format(DataType type, uint32_t count) {
     switch (type) {
-        case DataType::BYTE:
+        case DataType::i8:
             return vk_formats[count - 1];
-        case DataType::UNSIGNED_BYTE:
+        case DataType::u8:
             return vk_formats[4 + count - 1];
-        case DataType::SHORT:
+        case DataType::i16:
             return vk_formats[8 + count - 1];
-        case DataType::UNSIGNED_SHORT:
+        case DataType::u16:
             return vk_formats[12 + count - 1];
-        case DataType::INT:
+        case DataType::i32:
             return vk_formats[16 + count - 1];
-        case DataType::UNSIGNED_INT:
+        case DataType::u32:
             return vk_formats[20 + count - 1];
-        case DataType::FLOAT:
+        case DataType::f32:
             return vk_formats[24 + count - 1];
-        case DataType::HALF_FLOAT:
+        case DataType::f16:
             return vk_formats[28 + count - 1];
         default:
             abort();
@@ -137,10 +137,10 @@ inline VkBlendFactor to_vk_blend_factor(BlendFactor factor) {
 
 inline VkMemoryPropertyFlagBits to_vk_memory_property(MemoryProperty property) {
     switch (property) {
-        case MemoryProperty::HOST_VISIBLE_AND_COHERENT:
+        case MemoryProperty::HostVisibleAndCoherent:
             return static_cast<VkMemoryPropertyFlagBits>(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                                                          VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-        case MemoryProperty::DEVICE_LOCAL:
+        case MemoryProperty::DeviceLocal:
             return VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
     }
 }

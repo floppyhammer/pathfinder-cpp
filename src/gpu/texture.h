@@ -10,8 +10,7 @@ namespace Pathfinder {
 class Texture {
 public:
     Texture(uint32_t p_width, uint32_t p_height, TextureFormat p_format)
-        : width(p_width), height(p_height), format(p_format) {
-    }
+        : width(p_width), height(p_height), format(p_format) {}
 
     inline uint32_t get_width() const {
         return width;
@@ -43,7 +42,7 @@ protected:
 
     TextureFormat format;
 
-    TextureLayout layout = TextureLayout::UNDEFINED;
+    TextureLayout layout = TextureLayout::Undefined;
 };
 
 } // namespace Pathfinder

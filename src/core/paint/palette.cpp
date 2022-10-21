@@ -172,7 +172,7 @@ void upload_texture_metadata(const std::shared_ptr<Texture> &metadata_texture,
 
     auto cmd_buffer = driver->create_command_buffer(true);
     cmd_buffer->add_callback(callback);
-    cmd_buffer->upload_to_texture(metadata_texture, region_rect, raw_texels, TextureLayout::SHADER_READ_ONLY);
+    cmd_buffer->upload_to_texture(metadata_texture, region_rect, raw_texels, TextureLayout::ShaderReadOnly);
     cmd_buffer->submit(driver);
 }
 
@@ -206,7 +206,7 @@ Paint Palette::get_paint(uint32_t paint_id) const {
 
 RenderTarget Palette::push_render_target(const std::shared_ptr<Driver> &driver, const Vec2<int> &render_target_size) {
     auto render_pass =
-        driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Clear, TextureLayout::SHADER_READ_ONLY);
+        driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Clear, TextureLayout::ShaderReadOnly);
 
     // Create a new framebuffer.
     auto target_texture = driver->create_texture(render_target_size.x, render_target_size.y, TextureFormat::Rgba8Unorm);
@@ -342,7 +342,7 @@ std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr
                             pattern.source.image.texture,
                             Rect<uint32_t>(0, 0, pattern.source.image.size.x, pattern.source.image.size.y),
                             pattern.source.image.pixels.data(),
-                            TextureLayout::SHADER_READ_ONLY);
+                            TextureLayout::ShaderReadOnly);
 
                         cmd_buffer->submit(driver);
                     } else { // Render target

@@ -66,7 +66,7 @@ void SceneSourceBuffers::upload(const std::shared_ptr<Pathfinder::Driver> &drive
         // Old buffer will be dropped automatically.
         points_buffer = driver->create_buffer(BufferType::Storage,
                                               needed_points_capacity * sizeof(Vec2<float>),
-                                              MemoryProperty::DEVICE_LOCAL);
+                                              MemoryProperty::DeviceLocal);
 
         points_capacity = needed_points_capacity;
     }
@@ -76,7 +76,7 @@ void SceneSourceBuffers::upload(const std::shared_ptr<Pathfinder::Driver> &drive
         // Old buffer will be dropped automatically.
         point_indices_buffer = driver->create_buffer(BufferType::Storage,
                                                      needed_point_indices_capacity * sizeof(SegmentIndicesD3D11),
-                                                     MemoryProperty::DEVICE_LOCAL);
+                                                     MemoryProperty::DeviceLocal);
 
         point_indices_capacity = needed_point_indices_capacity;
     }
@@ -113,21 +113,16 @@ RendererD3D11::RendererD3D11(const std::shared_ptr<Pathfinder::Driver> &driver) 
     allocated_fill_count = INITIAL_ALLOCATED_FILL_COUNT;
 
     // Create uniform buffers.
-    bin_ub = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
-    bound_ub =
-        driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
-    dice_ub0 =
-        driver->create_buffer(BufferType::Uniform, 12 * sizeof(float), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
-    dice_ub1 =
-        driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
-    fill_ub =
-        driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
+    bin_ub = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HostVisibleAndCoherent);
+    bound_ub = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HostVisibleAndCoherent);
+    dice_ub0 = driver->create_buffer(BufferType::Uniform, 12 * sizeof(float), MemoryProperty::HostVisibleAndCoherent);
+    dice_ub1 = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HostVisibleAndCoherent);
+    fill_ub = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HostVisibleAndCoherent);
     propagate_ub =
-        driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
-    sort_ub =
-        driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
-    tile_ub0 = driver->create_buffer(BufferType::Uniform, 8 * sizeof(float), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
-    tile_ub1 = driver->create_buffer(BufferType::Uniform, 8 * sizeof(float), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
+        driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HostVisibleAndCoherent);
+    sort_ub = driver->create_buffer(BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HostVisibleAndCoherent);
+    tile_ub0 = driver->create_buffer(BufferType::Uniform, 8 * sizeof(float), MemoryProperty::HostVisibleAndCoherent);
+    tile_ub1 = driver->create_buffer(BufferType::Uniform, 8 * sizeof(float), MemoryProperty::HostVisibleAndCoherent);
 
     // Unlike D3D9, we use RGBA8 instead of RGBA16F for the mask texture.
     mask_texture = driver->create_texture(MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT, TextureFormat::Rgba8Unorm);
@@ -369,9 +364,9 @@ void RendererD3D11::draw_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer
 
     auto cmd_buffer = driver->create_command_buffer(true);
 
-    cmd_buffer->transition_layout(mask_texture, TextureLayout::SHADER_READ_ONLY);
+    cmd_buffer->transition_layout(mask_texture, TextureLayout::ShaderReadOnly);
 
-    cmd_buffer->transition_layout(dest_texture, TextureLayout::GENERAL);
+    cmd_buffer->transition_layout(dest_texture, TextureLayout::General);
 
     cmd_buffer->begin_compute_pass();
 
@@ -396,7 +391,7 @@ std::shared_ptr<Buffer> RendererD3D11::allocate_z_buffer() {
     // SSBOs to 8 (#373).
     // Add FILL_INDIRECT_DRAW_PARAMS_SIZE in case tile size is zero.
     auto size = tile_size().area() + FILL_INDIRECT_DRAW_PARAMS_SIZE;
-    auto buffer_id = driver->create_buffer(BufferType::Storage, size * sizeof(int32_t), MemoryProperty::DEVICE_LOCAL);
+    auto buffer_id = driver->create_buffer(BufferType::Storage, size * sizeof(int32_t), MemoryProperty::DeviceLocal);
 
     return buffer_id;
 }
@@ -404,14 +399,14 @@ std::shared_ptr<Buffer> RendererD3D11::allocate_z_buffer() {
 std::shared_ptr<Buffer> RendererD3D11::allocate_first_tile_map() {
     auto size = tile_size().area();
     auto buffer_id =
-        driver->create_buffer(BufferType::Storage, size * sizeof(FirstTileD3D11), MemoryProperty::DEVICE_LOCAL);
+        driver->create_buffer(BufferType::Storage, size * sizeof(FirstTileD3D11), MemoryProperty::DeviceLocal);
 
     return buffer_id;
 }
 
 std::shared_ptr<Buffer> RendererD3D11::allocate_alpha_tile_info(uint32_t index_count) {
     auto buffer_id =
-        driver->create_buffer(BufferType::Storage, index_count * sizeof(AlphaTileD3D11), MemoryProperty::DEVICE_LOCAL);
+        driver->create_buffer(BufferType::Storage, index_count * sizeof(AlphaTileD3D11), MemoryProperty::DeviceLocal);
 
     return buffer_id;
 }
@@ -422,7 +417,7 @@ PropagateMetadataBufferIDsD3D11 RendererD3D11::upload_propagate_metadata(
     auto propagate_metadata_storage_id =
         driver->create_buffer(BufferType::Storage,
                               propagate_metadata.size() * sizeof(PropagateMetadataD3D11),
-                              MemoryProperty::DEVICE_LOCAL);
+                              MemoryProperty::DeviceLocal);
 
     auto cmd_buffer = driver->create_command_buffer(true);
     cmd_buffer->upload_to_buffer(propagate_metadata_storage_id,
@@ -433,7 +428,7 @@ PropagateMetadataBufferIDsD3D11 RendererD3D11::upload_propagate_metadata(
 
     auto backdrops_storage_id = driver->create_buffer(BufferType::Storage,
                                                       backdrops.size() * sizeof(BackdropInfoD3D11),
-                                                      MemoryProperty::DEVICE_LOCAL);
+                                                      MemoryProperty::DeviceLocal);
 
     return {propagate_metadata_storage_id, backdrops_storage_id};
 }
@@ -451,7 +446,7 @@ void RendererD3D11::upload_initial_backdrops(const std::shared_ptr<Buffer> &back
 void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
     // Upload tiles to GPU or allocate them as appropriate.
     auto tiles_d3d11_buffer_id =
-        driver->create_buffer(BufferType::Storage, batch.tile_count * sizeof(TileD3D11), MemoryProperty::DEVICE_LOCAL);
+        driver->create_buffer(BufferType::Storage, batch.tile_count * sizeof(TileD3D11), MemoryProperty::DeviceLocal);
 
     // Allocate a Z-buffer.
     auto z_buffer_id = allocate_z_buffer();
@@ -545,12 +540,12 @@ MicrolineBufferIDsD3D11 RendererD3D11::dice_segments(std::vector<DiceMetadataD3D
     // Allocate some general buffers.
     auto microline_buffer_id = driver->create_buffer(BufferType::Storage,
                                                      allocated_microline_count * sizeof(MicrolineD3D11),
-                                                     MemoryProperty::DEVICE_LOCAL);
+                                                     MemoryProperty::DeviceLocal);
     auto dice_metadata_buffer_id = driver->create_buffer(BufferType::Storage,
                                                          dice_metadata.size() * sizeof(DiceMetadataD3D11),
-                                                         MemoryProperty::DEVICE_LOCAL);
+                                                         MemoryProperty::DeviceLocal);
     auto indirect_draw_params_buffer_id =
-        driver->create_buffer(BufferType::Storage, 8 * sizeof(uint32_t), MemoryProperty::DEVICE_LOCAL);
+        driver->create_buffer(BufferType::Storage, 8 * sizeof(uint32_t), MemoryProperty::DeviceLocal);
 
     // Get scene source buffers.
     auto &scene_source_buffers = path_source == PathSource::Draw ? scene_buffers.draw : scene_buffers.clip;
@@ -646,7 +641,7 @@ void RendererD3D11::bound(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
     // This is a staging buffer, which will be freed in the end of this function.
     auto path_info_buffer_id = driver->create_buffer(BufferType::Storage,
                                                      tile_path_info.size() * sizeof(TilePathInfoD3D11),
-                                                     MemoryProperty::DEVICE_LOCAL);
+                                                     MemoryProperty::DeviceLocal);
     cmd_buffer->upload_to_buffer(path_info_buffer_id,
                                  0,
                                  tile_path_info.size() * sizeof(TilePathInfoD3D11),
@@ -688,7 +683,7 @@ FillBufferInfoD3D11 RendererD3D11::bin_segments(MicrolineBufferIDsD3D11 &microli
 
     // What will be the output of this function.
     auto fill_vertex_buffer_id =
-        driver->create_buffer(BufferType::Storage, allocated_fill_count * sizeof(Fill), MemoryProperty::DEVICE_LOCAL);
+        driver->create_buffer(BufferType::Storage, allocated_fill_count * sizeof(Fill), MemoryProperty::DeviceLocal);
 
     // Upload fill indirect draw params to header of the Z-buffer.
     // This is in the Z-buffer, not its own buffer, to work around the 8 SSBO limitation on
@@ -871,7 +866,7 @@ void RendererD3D11::draw_fills(FillBufferInfoD3D11 &fill_storage_info,
 
     cmd_buffer = driver->create_command_buffer(true);
 
-    cmd_buffer->transition_layout(mask_texture, TextureLayout::GENERAL);
+    cmd_buffer->transition_layout(mask_texture, TextureLayout::General);
 
     cmd_buffer->begin_compute_pass();
 

@@ -19,22 +19,22 @@ inline GLint to_gl_blend_factor(BlendFactor blend_factor) {
 
 inline GLint to_gl_data_type(DataType data_type) {
     switch (data_type) {
-        case DataType::BYTE:
+        case DataType::i8:
             return GL_BYTE;
-        case DataType::UNSIGNED_BYTE:
+        case DataType::u8:
             return GL_UNSIGNED_BYTE;
-        case DataType::SHORT:
+        case DataType::i16:
             return GL_SHORT;
-        case DataType::UNSIGNED_SHORT:
+        case DataType::u16:
             return GL_UNSIGNED_SHORT;
-        case DataType::INT:
+        case DataType::i32:
             return GL_INT;
-        case DataType::UNSIGNED_INT:
+        case DataType::u32:
             return GL_UNSIGNED_INT;
-        case DataType::FLOAT:
-            return GL_FLOAT;
-        case DataType::HALF_FLOAT:
+        case DataType::f16:
             return GL_HALF_FLOAT;
+        case DataType::f32:
+            return GL_FLOAT;
     }
 }
 

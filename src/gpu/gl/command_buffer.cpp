@@ -139,20 +139,20 @@ void CommandBufferGl::submit(const std::shared_ptr<Driver> &p_driver) {
                     last_vbo = vbo;
 
                     switch (attrib.type) {
-                        case DataType::BYTE:
-                        case DataType::UNSIGNED_BYTE:
-                        case DataType::SHORT:
-                        case DataType::UNSIGNED_SHORT:
-                        case DataType::INT:
-                        case DataType::UNSIGNED_INT: {
+                        case DataType::i8:
+                        case DataType::u8:
+                        case DataType::i16:
+                        case DataType::u16:
+                        case DataType::i32:
+                        case DataType::u32: {
                             glVertexAttribIPointer(location,
                                                    attrib.size,
                                                    to_gl_data_type(attrib.type),
                                                    attrib.stride,
                                                    (void *)attrib.offset);
                         } break;
-                        case DataType::HALF_FLOAT:
-                        case DataType::FLOAT: {
+                        case DataType::f16:
+                        case DataType::f32: {
                             glVertexAttribPointer(location,
                                                   attrib.size,
                                                   to_gl_data_type(attrib.type),

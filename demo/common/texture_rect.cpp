@@ -30,10 +30,10 @@ TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
 
     vertex_buffer = driver->create_buffer(Pathfinder::BufferType::Vertex,
                                           sizeof(vertices),
-                                          Pathfinder::MemoryProperty::DEVICE_LOCAL);
+                                          Pathfinder::MemoryProperty::DeviceLocal);
     uniform_buffer = driver->create_buffer(Pathfinder::BufferType::Uniform,
                                            16 * sizeof(float),
-                                           Pathfinder::MemoryProperty::HOST_VISIBLE_AND_COHERENT);
+                                           Pathfinder::MemoryProperty::HostVisibleAndCoherent);
 
     auto cmd_buffer = driver->create_command_buffer(true);
     cmd_buffer->upload_to_buffer(vertex_buffer, 0, sizeof(vertices), (void *)vertices);
@@ -57,10 +57,10 @@ TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
         uint32_t stride = 4 * sizeof(float);
 
         attribute_descriptions.push_back(
-            {0, 2, Pathfinder::DataType::FLOAT, stride, 0, Pathfinder::VertexInputRate::Vertex});
+            {0, 2, Pathfinder::DataType::f32, stride, 0, Pathfinder::VertexInputRate::Vertex});
 
         attribute_descriptions.push_back(
-            {0, 2, Pathfinder::DataType::FLOAT, stride, 2 * sizeof(float), Pathfinder::VertexInputRate::Vertex});
+            {0, 2, Pathfinder::DataType::f32, stride, 2 * sizeof(float), Pathfinder::VertexInputRate::Vertex});
 
         auto blend_state = Pathfinder::BlendState::from_over();
 
@@ -105,7 +105,7 @@ void TextureRect::draw(const std::shared_ptr<Pathfinder::Driver> &driver,
 
     auto one_time_cmd_buffer = driver->create_command_buffer(true);
     one_time_cmd_buffer->upload_to_buffer(uniform_buffer, 0, 16 * sizeof(float), &mvp_mat);
-    one_time_cmd_buffer->transition_layout(texture, Pathfinder::TextureLayout::SHADER_READ_ONLY);
+    one_time_cmd_buffer->transition_layout(texture, Pathfinder::TextureLayout::ShaderReadOnly);
     one_time_cmd_buffer->submit(driver);
 
     cmd_buffer->bind_render_pipeline(pipeline);

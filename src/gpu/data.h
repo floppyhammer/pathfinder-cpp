@@ -30,22 +30,14 @@
 namespace Pathfinder {
 
 enum class DataType {
-    /// i8
-    BYTE,
-    /// u8
-    UNSIGNED_BYTE,
-    /// i16
-    SHORT,
-    /// u16
-    UNSIGNED_SHORT,
-    /// i32
-    INT,
-    /// u32
-    UNSIGNED_INT,
-    /// f32
-    FLOAT,
-    /// f16
-    HALF_FLOAT,
+    i8,
+    u8,
+    i16,
+    u16,
+    i32,
+    u32,
+    f16,
+    f32,
 };
 
 /// Texture format in GPU memory.
@@ -58,13 +50,18 @@ enum class TextureFormat {
 };
 
 enum class TextureLayout {
-    UNDEFINED,
-    PRESENT_SRC,
-    COLOR_ATTACHMENT,
-    SHADER_READ_ONLY,
-    TRANSFER_SRC,
-    TRANSFER_DST,
-    GENERAL,
+    Undefined,
+    /// Present.
+    PresentSrc,
+    /// Render target.
+    ColorAttachment,
+    /// Sampler.
+    ShaderReadOnly,
+    /// Data transfer.
+    TransferSrc,
+    TransferDst,
+    /// Compute image.
+    General,
 };
 
 enum class ShaderStage {
@@ -137,8 +134,8 @@ struct BlendState {
 };
 
 enum class VertexInputRate {
-    Vertex = 0,
-    Instance = 1,
+    Vertex,
+    Instance,
 };
 
 struct VertexInputAttributeDescription {
@@ -159,8 +156,11 @@ enum class DescriptorType {
 };
 
 enum class MemoryProperty {
-    HOST_VISIBLE_AND_COHERENT,
-    DEVICE_LOCAL,
+    /// Visible: can be mapped for host access.
+    /// Coherent: host cache management commands are not needed.
+    HostVisibleAndCoherent,
+    /// Most efficient for device access.
+    DeviceLocal,
 };
 
 enum class BufferType {
@@ -201,10 +201,10 @@ inline DataType texture_format_to_data_type(TextureFormat format) {
         case TextureFormat::Bgra8Unorm:
         case TextureFormat::Rgba8Srgb:
         case TextureFormat::Bgra8Srgb: {
-            return DataType::UNSIGNED_BYTE;
+            return DataType::u8;
         }
         case TextureFormat::Rgba16Float: {
-            return DataType::HALF_FLOAT;
+            return DataType::f16;
         }
     }
 }

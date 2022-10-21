@@ -48,31 +48,30 @@ std::shared_ptr<Texture> upload_z_buffer(const std::shared_ptr<Driver> &driver,
     auto z_buffer_texture =
         driver->create_texture(z_buffer_map.rect.width(), z_buffer_map.rect.height(), TextureFormat::Rgba8Unorm);
 
-    cmd_buffer->upload_to_texture(z_buffer_texture, {}, z_buffer_map.data.data(), TextureLayout::SHADER_READ_ONLY);
+    cmd_buffer->upload_to_texture(z_buffer_texture, {}, z_buffer_map.data.data(), TextureLayout::ShaderReadOnly);
 
     return z_buffer_texture;
 }
 
 RendererD3D9::RendererD3D9(const std::shared_ptr<Driver> &p_driver) : Renderer(p_driver) {
-    mask_render_pass_clear = driver->create_render_pass(TextureFormat::Rgba16Float,
-                                                        AttachmentLoadOp::Clear,
-                                                        TextureLayout::SHADER_READ_ONLY);
+    mask_render_pass_clear =
+        driver->create_render_pass(TextureFormat::Rgba16Float, AttachmentLoadOp::Clear, TextureLayout::ShaderReadOnly);
 
     mask_render_pass_load =
-        driver->create_render_pass(TextureFormat::Rgba16Float, AttachmentLoadOp::Load, TextureLayout::SHADER_READ_ONLY);
+        driver->create_render_pass(TextureFormat::Rgba16Float, AttachmentLoadOp::Load, TextureLayout::ShaderReadOnly);
 
     dest_render_pass_clear =
-        driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Clear, TextureLayout::SHADER_READ_ONLY);
+        driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Clear, TextureLayout::ShaderReadOnly);
 
     dest_render_pass_load =
-        driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Load, TextureLayout::SHADER_READ_ONLY);
+        driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Load, TextureLayout::ShaderReadOnly);
 
     auto mask_texture =
         driver->create_texture(MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT, TextureFormat::Rgba16Float);
     mask_framebuffer = driver->create_framebuffer(mask_render_pass_clear, mask_texture);
 
     // Quad vertex buffer. Shared by fills and tiles drawing.
-    quad_vertex_buffer = driver->create_buffer(BufferType::Vertex, 12 * sizeof(uint16_t), MemoryProperty::DEVICE_LOCAL);
+    quad_vertex_buffer = driver->create_buffer(BufferType::Vertex, 12 * sizeof(uint16_t), MemoryProperty::DeviceLocal);
 
     auto cmd_buffer = driver->create_command_buffer(true);
     cmd_buffer->upload_to_buffer(quad_vertex_buffer, 0, 12 * sizeof(uint16_t), QUAD_VERTEX_POSITIONS);
@@ -105,16 +104,15 @@ void RendererD3D9::set_up_pipelines() {
             attribute_descriptions.reserve(3);
 
             // Quad vertex.
-            attribute_descriptions.push_back(
-                {0, 2, DataType::UNSIGNED_SHORT, 2 * sizeof(uint16_t), 0, VertexInputRate::Vertex});
+            attribute_descriptions.push_back({0, 2, DataType::u16, 2 * sizeof(uint16_t), 0, VertexInputRate::Vertex});
 
             // Vertex stride for the second vertex buffer.
             uint32_t stride = sizeof(Fill);
 
             // Attributes in the second buffer.
-            attribute_descriptions.push_back({1, 4, DataType::UNSIGNED_SHORT, stride, 0, VertexInputRate::Instance});
+            attribute_descriptions.push_back({1, 4, DataType::u16, stride, 0, VertexInputRate::Instance});
             attribute_descriptions.push_back(
-                {1, 1, DataType::UNSIGNED_INT, stride, offsetof(Fill, link), VertexInputRate::Instance});
+                {1, 1, DataType::u32, stride, offsetof(Fill, link), VertexInputRate::Instance});
         }
 
         // Set descriptor set.
@@ -149,37 +147,28 @@ void RendererD3D9::set_up_pipelines() {
             attribute_descriptions.reserve(6);
 
             // Quad vertex.
-            attribute_descriptions.push_back(
-                {0, 2, DataType::UNSIGNED_SHORT, 2 * sizeof(uint16_t), 0, VertexInputRate::Vertex});
+            attribute_descriptions.push_back({0, 2, DataType::u16, 2 * sizeof(uint16_t), 0, VertexInputRate::Vertex});
 
             // Vertex stride for the second vertex buffer.
             uint32_t stride = sizeof(TileObjectPrimitive);
 
             // Attributes in the second buffer.
-            attribute_descriptions.push_back({1, 2, DataType::SHORT, stride, 0, VertexInputRate::Instance});
-            attribute_descriptions.push_back({1,
-                                              4,
-                                              DataType::UNSIGNED_BYTE,
-                                              stride,
-                                              offsetof(TileObjectPrimitive, alpha_tile_id),
-                                              VertexInputRate::Instance});
+            attribute_descriptions.push_back({1, 2, DataType::i16, stride, 0, VertexInputRate::Instance});
             attribute_descriptions.push_back(
-                {1, 2, DataType::BYTE, stride, offsetof(TileObjectPrimitive, ctrl), VertexInputRate::Instance});
+                {1, 4, DataType::u8, stride, offsetof(TileObjectPrimitive, alpha_tile_id), VertexInputRate::Instance});
             attribute_descriptions.push_back(
-                {1, 1, DataType::INT, stride, offsetof(TileObjectPrimitive, path_id), VertexInputRate::Instance});
-            attribute_descriptions.push_back({1,
-                                              1,
-                                              DataType::UNSIGNED_INT,
-                                              stride,
-                                              offsetof(TileObjectPrimitive, metadata_id),
-                                              VertexInputRate::Instance});
+                {1, 2, DataType::i8, stride, offsetof(TileObjectPrimitive, ctrl), VertexInputRate::Instance});
+            attribute_descriptions.push_back(
+                {1, 1, DataType::i32, stride, offsetof(TileObjectPrimitive, path_id), VertexInputRate::Instance});
+            attribute_descriptions.push_back(
+                {1, 1, DataType::u32, stride, offsetof(TileObjectPrimitive, metadata_id), VertexInputRate::Instance});
         }
 
         // Create uniform buffers.
         tile_transform_ub =
-            driver->create_buffer(BufferType::Uniform, 16 * sizeof(float), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
+            driver->create_buffer(BufferType::Uniform, 16 * sizeof(float), MemoryProperty::HostVisibleAndCoherent);
         tile_varying_sizes_ub =
-            driver->create_buffer(BufferType::Uniform, 8 * sizeof(float), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
+            driver->create_buffer(BufferType::Uniform, 8 * sizeof(float), MemoryProperty::HostVisibleAndCoherent);
 
         // Set descriptor set.
         {
@@ -248,11 +237,10 @@ void RendererD3D9::create_tile_clip_copy_pipeline() {
     {
         attribute_descriptions.reserve(2);
 
-        attribute_descriptions.push_back(
-            {0, 2, DataType::UNSIGNED_SHORT, 2 * sizeof(uint16_t), 0, VertexInputRate::Vertex});
+        attribute_descriptions.push_back({0, 2, DataType::u16, 2 * sizeof(uint16_t), 0, VertexInputRate::Vertex});
 
         // Set stride based on Clip.
-        attribute_descriptions.push_back({1, 1, DataType::INT, sizeof(Clip) / 2, 0, VertexInputRate::Instance});
+        attribute_descriptions.push_back({1, 1, DataType::i32, sizeof(Clip) / 2, 0, VertexInputRate::Instance});
     }
 
     // Create descriptor set.
@@ -289,17 +277,16 @@ void RendererD3D9::create_tile_clip_combine_pipeline() {
     {
         attribute_descriptions.reserve(5);
 
-        attribute_descriptions.push_back(
-            {0, 2, DataType::UNSIGNED_SHORT, 2 * sizeof(uint16_t), 0, VertexInputRate::Vertex});
+        attribute_descriptions.push_back({0, 2, DataType::u16, 2 * sizeof(uint16_t), 0, VertexInputRate::Vertex});
 
         uint32_t stride = sizeof(Clip);
-        attribute_descriptions.push_back({1, 1, DataType::INT, stride, 0, VertexInputRate::Instance});
+        attribute_descriptions.push_back({1, 1, DataType::i32, stride, 0, VertexInputRate::Instance});
         attribute_descriptions.push_back(
-            {1, 1, DataType::INT, stride, offsetof(Clip, dest_backdrop), VertexInputRate::Instance});
+            {1, 1, DataType::i32, stride, offsetof(Clip, dest_backdrop), VertexInputRate::Instance});
         attribute_descriptions.push_back(
-            {1, 1, DataType::INT, stride, offsetof(Clip, src_tile_id), VertexInputRate::Instance});
+            {1, 1, DataType::i32, stride, offsetof(Clip, src_tile_id), VertexInputRate::Instance});
         attribute_descriptions.push_back(
-            {1, 1, DataType::INT, stride, offsetof(Clip, src_backdrop), VertexInputRate::Instance});
+            {1, 1, DataType::i32, stride, offsetof(Clip, src_backdrop), VertexInputRate::Instance});
     }
 
     // We have to disable blend for tile clip combine.
@@ -350,7 +337,7 @@ void RendererD3D9::upload_fills(const std::vector<Fill> &fills, const std::share
 
     // If we need to allocate a new fill vertex buffer.
     if (fill_vertex_buffer == nullptr || byte_size > fill_vertex_buffer->size) {
-        fill_vertex_buffer = driver->create_buffer(BufferType::Vertex, byte_size, MemoryProperty::DEVICE_LOCAL);
+        fill_vertex_buffer = driver->create_buffer(BufferType::Vertex, byte_size, MemoryProperty::DeviceLocal);
     }
 
     cmd_buffer->upload_to_buffer(fill_vertex_buffer, 0, byte_size, (void *)fills.data());
@@ -362,7 +349,7 @@ void RendererD3D9::upload_tiles(const std::vector<TileObjectPrimitive> &tiles,
 
     // If we need to allocate a new tile vertex buffer.
     if (tile_vertex_buffer == nullptr || byte_size > tile_vertex_buffer->size) {
-        tile_vertex_buffer = driver->create_buffer(BufferType::Vertex, byte_size, MemoryProperty::DEVICE_LOCAL);
+        tile_vertex_buffer = driver->create_buffer(BufferType::Vertex, byte_size, MemoryProperty::DeviceLocal);
     }
 
     cmd_buffer->upload_to_buffer(tile_vertex_buffer, 0, byte_size, (void *)tiles.data());
@@ -438,7 +425,7 @@ ClipBufferInfo RendererD3D9::upload_clip_tiles(const std::vector<Clip> &clips, c
 
     auto byte_size = sizeof(Clip) * clips.size();
 
-    info.clip_buffer = driver->create_buffer(BufferType::Vertex, byte_size, MemoryProperty::DEVICE_LOCAL);
+    info.clip_buffer = driver->create_buffer(BufferType::Vertex, byte_size, MemoryProperty::DeviceLocal);
 
     auto cmd_buffer = driver->create_command_buffer(true);
 

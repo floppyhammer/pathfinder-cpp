@@ -4,12 +4,12 @@
 
 #include <array>
 
-#include "paint/palette.h"
 #include "../common/io.h"
 #include "../common/math/basic.h"
 #include "../gpu/command_buffer.h"
 #include "../gpu/platform.h"
 #include "../shaders/generated/area_lut_png.h"
+#include "paint/palette.h"
 
 namespace Pathfinder {
 
@@ -23,7 +23,7 @@ void Renderer::set_up() {
     // Uniform buffer.
     {
         fixed_sizes_ub =
-            driver->create_buffer(BufferType::Uniform, 8 * sizeof(float), MemoryProperty::HOST_VISIBLE_AND_COHERENT);
+            driver->create_buffer(BufferType::Uniform, 8 * sizeof(float), MemoryProperty::HostVisibleAndCoherent);
 
         // Upload data to the uniform buffer with fixed data.
         std::array<float, 6> fixed_sizes_ubo_data = {MASK_FRAMEBUFFER_WIDTH,
@@ -40,7 +40,7 @@ void Renderer::set_up() {
 
     area_lut_texture = driver->create_texture(image_data->width, image_data->height, TextureFormat::Rgba8Unorm);
 
-    cmd_buffer->upload_to_texture(area_lut_texture, {}, image_data->data, TextureLayout::SHADER_READ_ONLY);
+    cmd_buffer->upload_to_texture(area_lut_texture, {}, image_data->data, TextureLayout::ShaderReadOnly);
 
     cmd_buffer->submit(driver);
 }

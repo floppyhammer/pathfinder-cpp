@@ -17,9 +17,9 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+
 CommandBufferVk::CommandBufferVk(VkCommandBuffer p_command_buffer, VkDevice p_device)
-    : vk_command_buffer(p_command_buffer), device(p_device) {
-}
+    : vk_command_buffer(p_command_buffer), device(p_device) {}
 
 void CommandBufferVk::upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
                                        uint32_t offset,
@@ -30,7 +30,7 @@ void CommandBufferVk::upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
     }
 
     // Update buffer by memory mapping.
-    if (buffer->get_memory_property() == MemoryProperty::HOST_VISIBLE_AND_COHERENT) {
+    if (buffer->get_memory_property() == MemoryProperty::HostVisibleAndCoherent) {
         auto buffer_vk = static_cast<BufferVk *>(buffer.get());
 
         void *mapped_data;
@@ -291,7 +291,7 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &p_driver) {
                                                          texture_vk->get_image(),
                                                          VK_IMAGE_LAYOUT_UNDEFINED,
                                                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-                texture_vk->set_layout(TextureLayout::TRANSFER_DST);
+                texture_vk->set_layout(TextureLayout::TransferDst);
 
                 // Execute the buffer to image copy operation.
                 {
@@ -315,8 +315,9 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &p_driver) {
                         region.imageSubresource.layerCount = 1;
                         // Selects the initial x, y, z offsets in texels of the subregion of the source or destination
                         // image data.
-                        region.imageOffset = {
-                            static_cast<int32_t>(args.offset_x), static_cast<int32_t>(args.offset_y), 0};
+                        region.imageOffset = {static_cast<int32_t>(args.offset_x),
+                                              static_cast<int32_t>(args.offset_y),
+                                              0};
                         // Size in texels of the image to copy in width, height and depth.
                         region.imageExtent = {args.width, args.height, 1};
                     }
@@ -336,7 +337,7 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &p_driver) {
                                                          texture_vk->get_image(),
                                                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                                          VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-                texture_vk->set_layout(TextureLayout::SHADER_READ_ONLY);
+                texture_vk->set_layout(TextureLayout::ShaderReadOnly);
 
                 // Callback to clean up staging resources.
                 auto callback = [driver, staging_buffer, staging_buffer_memory] {
@@ -389,6 +390,7 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &p_driver) {
 
     callbacks.clear();
 }
+
 } // namespace Pathfinder
 
 #endif
