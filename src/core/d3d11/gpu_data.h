@@ -127,7 +127,7 @@ enum class PathSource {
 /// Information about clips applied to paths in a batch.
 struct ClippedPathInfo {
     /// The ID of the batch containing the clips.
-    uint32_t clip_batch_i;
+    uint32_t clip_batch_id;
 
     /// The number of paths that have clips.
     uint32_t clipped_path_count;

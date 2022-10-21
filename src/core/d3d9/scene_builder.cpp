@@ -247,7 +247,11 @@ BuiltDrawPath SceneBuilderD3D9::build_draw_path_on_cpu(const DrawPathBuildParams
     // Add generated fills from the tile generation step.
     send_fills(tiler.object_builder.fills);
 
-    return {tiler.object_builder.built_path, path_object.blend_mode, path_object.fill_rule, true};
+    return {tiler.object_builder.built_path,
+            path_object.clip_path,
+            path_object.blend_mode,
+            path_object.fill_rule,
+            true};
 }
 
 void SceneBuilderD3D9::build_tile_batches(const std::vector<BuiltDrawPath> &built_paths) {

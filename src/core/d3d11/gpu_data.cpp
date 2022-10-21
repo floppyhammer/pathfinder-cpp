@@ -55,6 +55,7 @@ uint32_t TileBatchDataD3D11::push(const BuiltPath &path,
     segment_count += segment_range.end - segment_range.start;
 
     // Handle clip.
+
     uint32_t clip_batch_id;
     if (batch_clip_path_id) {
         clip_batch_id = batch_clip_path_id->batch_id;
@@ -63,7 +64,11 @@ uint32_t TileBatchDataD3D11::push(const BuiltPath &path,
     }
 
     if (clipped_path_info == nullptr) {
+        clipped_path_info = std::make_shared<ClippedPathInfo>(ClippedPathInfo{clip_batch_id, 0, 0, nullptr});
     }
+
+    clipped_path_info->clipped_path_count += 1;
+    clipped_path_info->max_clipped_tile_count += path.tile_bounds.area();
 
     return batch_path_index;
 }

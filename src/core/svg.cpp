@@ -195,7 +195,7 @@ void SvgScene::load_file(std::vector<char> input, Canvas &canvas) {
         // TEST: Add clip path.
         if (true) {
             Path2d clip_path;
-            clip_path.add_rect({{}, {720, 360}});
+            clip_path.add_rect({{}, {360, 360}});
             canvas.clip_path(clip_path, FillRule::Winding);
         }
 

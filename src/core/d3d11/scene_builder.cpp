@@ -31,15 +31,24 @@ shared_ptr<GlobalPathId> add_clip_path_to_batch(Scene &scene,
                                                 LastSceneInfo &last_scene,
                                                 ClipBatchesD3D11 &clip_batches_d3d11);
 
-BuiltDrawPath prepare_draw_path_for_gpu_binning(Scene &scene,
-                                                uint32_t draw_path_id,
-                                                const Transform2 &transform,
-                                                const std::vector<PaintMetadata> &paint_metadata) {
+std::shared_ptr<BuiltDrawPath> prepare_draw_path_for_gpu_binning(Scene &scene,
+                                                                 uint32_t draw_path_id,
+                                                                 const Transform2 &transform,
+                                                                 const std::vector<PaintMetadata> &paint_metadata) {
     auto effective_view_box = scene.get_view_box();
 
     auto &draw_path = scene.draw_paths[draw_path_id];
 
     auto path_bounds = transform * draw_path.outline.bounds;
+
+    // Clip the draw path by the view box.
+    auto intersection = path_bounds.intersection(effective_view_box);
+
+    if (intersection.is_valid()) {
+        path_bounds = intersection;
+    } else {
+        return nullptr;
+    }
 
     auto paint_id = draw_path.paint;
 
@@ -47,10 +56,12 @@ BuiltDrawPath prepare_draw_path_for_gpu_binning(Scene &scene,
     path_info.type = TilingPathInfo::Type::Draw;
     path_info.info.paint_id = paint_id;
 
-    auto built_path = BuiltPath(draw_path_id, path_bounds, effective_view_box, draw_path.fill_rule, nullptr, path_info);
+    auto built_path =
+        BuiltPath(draw_path_id, path_bounds, effective_view_box, draw_path.fill_rule, draw_path.clip_path, path_info);
 
     // FIXME: Fix hardcoded blend mode.
-    return {built_path, BlendMode::SrcOver, draw_path.fill_rule, true};
+    return std::make_shared<BuiltDrawPath>(
+        BuiltDrawPath{built_path, draw_path.clip_path, BlendMode::SrcOver, draw_path.fill_rule, true});
 }
 
 PreparedClipPath prepare_clip_path_for_gpu_binning(Scene &scene,
@@ -87,7 +98,8 @@ shared_ptr<GlobalPathId> add_clip_path_to_batch(Scene &scene,
                                                 ClipBatchesD3D11 &clip_batches_d3d11) {
     if (clip_path_id) {
         auto &map = clip_batches_d3d11.clip_id_to_path_batch_index;
-        if (map.find(*clip_path_id) == map.end()) {
+
+        if (map.find(*clip_path_id) != map.end()) {
             auto clip_path_batch_index = map[*clip_path_id];
             return std::make_shared<GlobalPathId>(GlobalPathId{clip_level, clip_path_batch_index});
         } else {
@@ -129,14 +141,12 @@ DrawTileBatchD3D11 build_tile_batches_for_draw_path_display_item(
     LastSceneInfo &last_scene,
     uint32_t &next_batch_id,
     const shared_ptr<ClipBatchesD3D11> &clip_batches_d3d11) {
-    // New draw tile batch.
+    // Create a new batch.
     DrawTileBatchD3D11 draw_tile_batch;
 
-    // This is a temporary value for test.
-    // FIXME: Fix hardcoded transform.
+    // FIXME: This is a temporary value for test.
     auto transform = Transform2::from_translation(Vec2F(0, 0));
 
-    // Create a new batch if necessary.
     draw_tile_batch.tile_batch_data = TileBatchDataD3D11(next_batch_id, PathSource::Draw);
     draw_tile_batch.metadata_texture = scene.palette.metadata_texture;
     draw_tile_batch.tile_batch_data.prepare_info.transform = transform;
@@ -144,15 +154,21 @@ DrawTileBatchD3D11 build_tile_batches_for_draw_path_display_item(
     for (auto draw_path_id = draw_path_id_range.start; draw_path_id < draw_path_id_range.end; draw_path_id++) {
         auto draw_path = prepare_draw_path_for_gpu_binning(scene, draw_path_id, transform, paint_metadata);
 
+        // Skip if the draw path is outside the view box.
+        if (draw_path == nullptr) {
+            continue;
+        }
+
         // For paint overlay.
         {
             // Get paint.
-            auto paint_id = draw_path.path.paint_id;
+            auto paint_id = draw_path->path.paint_id;
             Paint paint = scene.palette.get_paint(paint_id);
 
             auto overlay = paint.get_overlay();
 
             // Set color texture.
+            // TODO: Improve this.
             if (overlay) {
                 if (overlay->contents.type == PaintContents::Type::Gradient) {
                     auto gradient = overlay->contents.gradient;
@@ -173,14 +189,13 @@ DrawTileBatchD3D11 build_tile_batches_for_draw_path_display_item(
         }
 
         // Add clip path if necessary.
-
         shared_ptr<GlobalPathId> clip_path;
         if (clip_batches_d3d11) {
             clip_path =
-                add_clip_path_to_batch(scene, draw_path.clip_path_id, 0, transform, last_scene, *clip_batches_d3d11);
+                add_clip_path_to_batch(scene, draw_path->clip_path_id, 0, transform, last_scene, *clip_batches_d3d11);
         }
 
-        draw_tile_batch.tile_batch_data.push(draw_path.path, draw_path_id, clip_path, draw_path.occludes, last_scene);
+        draw_tile_batch.tile_batch_data.push(draw_path->path, draw_path_id, clip_path, draw_path->occludes, last_scene);
     }
 
     next_batch_id += 1;
