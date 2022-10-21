@@ -8,6 +8,7 @@
 #undef max
 
 namespace Pathfinder {
+
 template <typename T>
 struct Vec2 {
     T x = 0;
@@ -157,6 +158,7 @@ inline Vec2<T> lerp(const Vec2<T> &a, const Vec2<T> &b, float t) {
 
 typedef Vec2<float> Vec2F;
 typedef Vec2<int> Vec2I;
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_VEC2_H

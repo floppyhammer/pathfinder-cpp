@@ -6,6 +6,7 @@
 #include <vector>
 
 namespace Pathfinder {
+
 class Timestamp {
 private:
     std::chrono::time_point<std::chrono::steady_clock> start_time;
@@ -26,6 +27,7 @@ public:
 
     void set_enabled(bool p_enabled);
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_TIMESTAMP_H

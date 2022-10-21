@@ -20,7 +20,7 @@ struct ImageData {
 
     static std::shared_ptr<ImageData> from_memory(const std::vector<char> &bytes, bool flip_y);
 
-    static std::shared_ptr<ImageData> from_file(const char *file_path, bool flip_y);
+    static std::shared_ptr<ImageData> from_file(const std::string &file_path, bool flip_y);
 
     std::vector<ColorU> to_rgba_pixels() const;
 

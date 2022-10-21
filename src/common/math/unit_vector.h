@@ -6,6 +6,7 @@
 #include "vec2.h"
 
 namespace Pathfinder {
+
 struct UnitVector {
     float x;
     float y;
@@ -27,6 +28,7 @@ struct UnitVector {
     /// Half angle formula.
     UnitVector halve_angle() const;
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_UNIT_VECTOR_H

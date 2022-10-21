@@ -9,12 +9,15 @@
 #include "logger.h"
 
 namespace Pathfinder {
+
 Timestamp::Timestamp() {
     start_time = std::chrono::steady_clock::now();
 }
 
 void Timestamp::record(const std::string &p_label) {
-    if (!enabled) return;
+    if (!enabled) {
+        return;
+    }
 
     std::chrono::time_point<std::chrono::steady_clock> current_time = std::chrono::steady_clock::now();
 
@@ -35,7 +38,9 @@ void Timestamp::reset() {
 }
 
 void Timestamp::print() {
-    if (!enabled) return;
+    if (!enabled) {
+        return;
+    }
 
     for (int i = 0; i < records.size(); i++) {
         std::ostringstream string_stream;
@@ -47,4 +52,5 @@ void Timestamp::print() {
 void Timestamp::set_enabled(bool p_enabled) {
     enabled = p_enabled;
 }
+
 } // namespace Pathfinder

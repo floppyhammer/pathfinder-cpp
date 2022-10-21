@@ -1,6 +1,7 @@
 #include "color.h"
 
 namespace Pathfinder {
+
 // ColorU
 // --------------------
 ColorU::ColorU(uint32_t p_color) {
@@ -19,11 +20,9 @@ ColorU::ColorU(ColorF p_color) {
     r = static_cast<uint8_t>(p_color.r * 255.f);
 }
 
-ColorU::ColorU(uint8_t p_r, uint8_t p_g, uint8_t p_b, uint8_t p_a) : r(p_r), g(p_g), b(p_b), a(p_a) {
-}
+ColorU::ColorU(uint8_t p_r, uint8_t p_g, uint8_t p_b, uint8_t p_a) : r(p_r), g(p_g), b(p_b), a(p_a) {}
 
-ColorU::ColorU(uint8_t p_r, uint8_t p_g, uint8_t p_b) : r(p_r), g(p_g), b(p_b), a(255) {
-}
+ColorU::ColorU(uint8_t p_r, uint8_t p_g, uint8_t p_b) : r(p_r), g(p_g), b(p_b), a(255) {}
 
 uint32_t ColorU::to_u32() const {
     uint32_t rgba = (r << 24u) + (g << 16u) + (b << 8u) + a;
@@ -47,7 +46,16 @@ bool ColorU::is_opaque() const {
 
 // ColorF
 // --------------------
-ColorF::ColorF(float p_r, float p_g, float p_b, float p_a) : r(p_r), g(p_g), b(p_b), a(p_a) {
+ColorF::ColorF(float p_r, float p_g, float p_b, float p_a) : r(p_r), g(p_g), b(p_b), a(p_a) {}
+
+ColorF ColorF::lerp(const ColorF& other, float t) const {
+    return {
+        r + (other.r - r) * t,
+        g + (other.g - g) * t,
+        b + (other.b - b) * t,
+        a + (other.a - a) * t,
+    };
 }
 // --------------------
+
 } // namespace Pathfinder

@@ -1,6 +1,8 @@
 #ifndef PATHFINDER_I32X4_H
 #define PATHFINDER_I32X4_H
 
+#include <cstdint>
+
 #include "global_macros.h"
 
 #ifdef __ANDROID__
@@ -9,18 +11,18 @@
 #else
     #include <emmintrin.h>
     #include <xmmintrin.h>
-//#include <immintrin.h> // Required by AVX2, which we won't be using due its absence on ARM.
+// #include <immintrin.h> // Required by AVX2, which we won't be using due its absence on ARM.
 #endif
 
 namespace Pathfinder {
+
 /// Four 32-bit ints (SIMD).
 struct I32x4 {
     __m128i v = _mm_setzero_si128();
 
     I32x4() = default;
 
-    explicit I32x4(__m128i p_v) : v(p_v) {
-    }
+    explicit I32x4(__m128i p_v) : v(p_v) {}
 
     I32x4(int32_t x, int32_t y, int32_t z, int32_t w) {
         v = _mm_setr_epi32(x, y, z, w);
@@ -68,6 +70,7 @@ struct I32x4 {
         *this = *this - b;
     }
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_I32X4_H

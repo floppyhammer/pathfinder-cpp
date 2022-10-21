@@ -72,24 +72,8 @@ std::shared_ptr<ImageData> ImageData::from_memory(const std::vector<char> &bytes
     return image_data;
 }
 
-std::shared_ptr<ImageData> ImageData::from_file(const char *file_path, bool flip_y) {
-    stbi_set_flip_vertically_on_load(flip_y);
-
-    int32_t img_width, img_height, img_channels;
-    unsigned char *img_data = stbi_load(file_path, &img_width, &img_height, &img_channels, 0);
-
-    if (!img_data) {
-        Logger::error("Failed to load image from file!", "ImageData");
-        throw std::runtime_error(std::string("Failed to load image from disk: ") + std::string(file_path));
-    }
-
-    auto image_data = std::make_shared<ImageData>();
-    image_data->width = img_width;
-    image_data->height = img_height;
-    image_data->channel_count = img_channels;
-    image_data->data = img_data;
-
-    return image_data;
+std::shared_ptr<ImageData> ImageData::from_file(const std::string &file_path, bool flip_y) {
+    return ImageData::from_memory(load_file_as_bytes(file_path), flip_y);
 }
 
 ImageData::~ImageData() {

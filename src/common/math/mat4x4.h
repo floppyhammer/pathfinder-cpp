@@ -4,6 +4,7 @@
 #include "vec3.h"
 
 namespace Pathfinder {
+
 /// A 4x4 matrix, in column-major order.
 template <typename T>
 struct Mat4x4 {
@@ -61,6 +62,7 @@ struct Mat4x4 {
         return *this * Mat4x4<float>::from_scale(p_scale);
     }
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_MAT4x4_H

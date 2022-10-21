@@ -7,13 +7,13 @@
 #define PATHFINDER_LOG_TAG "Pathfinder"
 #ifdef __ANDROID__
     #include <android/log.h>
+
     #define PATHFINDER_LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, PATHFINDER_LOG_TAG, __VA_ARGS__)
     #define PATHFINDER_LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, PATHFINDER_LOG_TAG, __VA_ARGS__)
     #define PATHFINDER_LOGI(...) __android_log_print(ANDROID_LOG_INFO, PATHFINDER_LOG_TAG, __VA_ARGS__)
     #define PATHFINDER_LOGW(...) __android_log_print(ANDROID_LOG_WARN, PATHFINDER_LOG_TAG, __VA_ARGS__)
     #define PATHFINDER_LOGE(...) __android_log_print(ANDROID_LOG_ERROR, PATHFINDER_LOG_TAG, __VA_ARGS__)
 #else
-
     #include <cstdio>
 
     #define PATHFINDER_LOGV(...)            \
@@ -39,6 +39,7 @@
 #endif
 
 namespace Pathfinder {
+
 class Logger {
 public:
     static Logger *get_singleton() {
@@ -97,6 +98,7 @@ public:
 
     void operator=(Logger const &) = delete;
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_LOGGER_H

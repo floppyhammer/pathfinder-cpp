@@ -4,6 +4,7 @@
 #include <cstdint>
 
 namespace Pathfinder {
+
 const float PI = 3.141592653589f;
 
 /// Convert degree to radian.
@@ -45,6 +46,7 @@ inline float lerp(float a, float b, float t) {
 inline int alignup_i32(int32_t a, int32_t b) {
     return (a + b - 1) / b;
 }
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_BASIC_MATH_H

@@ -4,6 +4,7 @@
 #include "unit_vector.h"
 
 namespace Pathfinder {
+
 /// A 2x2 matrix, in column-major order.
 /// | x z |
 /// | y w |
@@ -83,6 +84,7 @@ struct Mat2x2 {
         return {v[0] * other.x + v[2] * other.y, v[1] * other.x + v[3] * other.y};
     }
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_MAT2X2_H

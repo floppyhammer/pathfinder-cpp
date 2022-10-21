@@ -2,6 +2,7 @@
 #define PATHFINDER_VEC3_H
 
 namespace Pathfinder {
+
 template <typename T>
 struct Vec3 {
     T x = 0;
@@ -28,6 +29,7 @@ struct Vec3 {
         z += b.z;
     }
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_VEC3_H

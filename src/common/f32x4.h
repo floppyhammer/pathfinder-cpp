@@ -9,7 +9,6 @@
 #undef max
 
 #ifdef PATHFINDER_ENABLE_SIMD
-
     #ifdef __ANDROID__
         // A C/C++ header file that converts Intel SSE intrinsics to Arm/Aarch64 NEON intrinsics.
         #include <sse2neon.h>
@@ -19,14 +18,14 @@
     #endif
 
 namespace Pathfinder {
+
 /// Four 32-bit floats (SIMD).
 struct F32x4 {
     __m128 v = _mm_setzero_ps();
 
     F32x4() = default;
 
-    explicit F32x4(__m128 p_v) : v(p_v) {
-    }
+    explicit F32x4(__m128 p_v) : v(p_v) {}
 
     F32x4(Vec2<float> a, Vec2<float> b) {
         v = _mm_setr_ps(a.x, a.y, b.x, b.y);
@@ -163,11 +162,13 @@ struct F32x4 {
         *this = *this - b;
     }
 };
+
 } // namespace Pathfinder
 
 #else
 
 namespace Pathfinder {
+
 /// Four 32-bit floats (Scalar, i.e. no SIMD).
 struct F32x4 {
     float v[4] = {0};
@@ -276,6 +277,7 @@ struct F32x4 {
         return {v[0] / b.v[0], v[1] / b.v[1], v[2] / b.v[2], v[3] / b.v[3]};
     }
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_ENABLE_SIMD

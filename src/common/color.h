@@ -17,14 +17,7 @@ struct ColorF {
 
     ColorF(float p_r, float p_g, float p_b, float p_a);
 
-    ColorF lerp(ColorF other, float t) const {
-        return {
-            r + (other.r - r) * t,
-            g + (other.g - g) * t,
-            b + (other.b - b) * t,
-            a + (other.a - a) * t,
-        };
-    }
+    ColorF lerp(const ColorF& other, float t) const;
 
     static ColorF red() {
         return {1, 0, 0, 1};
@@ -72,10 +65,10 @@ struct ColorU {
 
     ColorF to_f32() const;
 
-    /// Not transparent.
+    /// Check for transparency.
     bool is_opaque() const;
 
-    inline bool operator<(const ColorU &rhs) const {
+    inline bool operator<(const ColorU& rhs) const {
         return to_u32() < rhs.to_u32();
     }
 
@@ -99,6 +92,7 @@ struct ColorU {
         return {0, 0, 0, 255};
     }
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_COLOR_H

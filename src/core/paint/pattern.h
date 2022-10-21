@@ -36,7 +36,6 @@ struct RenderTarget {
 struct Image {
     Vec2<uint32_t> size;
     std::vector<ColorU> pixels;
-    bool is_opaque = true;
 
     // TODO: This should not be here.
     mutable std::shared_ptr<Texture> texture;
@@ -45,8 +44,10 @@ struct Image {
 /// Where a raster image pattern comes from.
 struct PatternSource {
     enum class Type {
-        Image,        // From a CPU image.
-        RenderTarget, // From a GPU framebuffer.
+        /// CPU image.
+        Image,
+        /// GPU framebuffer.
+        RenderTarget,
     } type = Type::RenderTarget;
 
     /// A image whose pixels are stored in CPU memory.
@@ -59,11 +60,8 @@ struct PatternSource {
 
     /// Returns true if this pattern is obviously opaque.
     inline bool is_opaque() const {
-        if (type == Type::Image) {
-            return image.is_opaque;
-        } else {
-            return true;
-        }
+        // We assume all images and render targets are opaque for the sake of simplicity.
+        return true;
     }
 };
 

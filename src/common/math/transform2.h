@@ -7,6 +7,7 @@
 #include "vec2.h"
 
 namespace Pathfinder {
+
 struct Transform2 {
 private:
     Mat2x2<float> matrix;
@@ -98,6 +99,7 @@ public:
         return {matrix * other.matrix, *this * other.vector};
     }
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_TRANSFORM2_H
