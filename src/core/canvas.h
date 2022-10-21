@@ -160,9 +160,9 @@ public:
 
     /// Set the inner scene's view box.
     /// Global control of path clipping.
-    void set_size(const Vec2<int> &size);
+    void set_size(const Vec2I &size);
 
-    Vec2<int> get_size() const;
+    Vec2I get_size() const;
 
     /// Local control of path clipping.
     /// Will force bounds of outlines drawn henceforward be within the set clipping box.

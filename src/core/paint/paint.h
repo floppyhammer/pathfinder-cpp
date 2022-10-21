@@ -139,7 +139,7 @@ struct PaintColorTextureMetadata {
     /// How much of a border there needs to be around the image.
     ///
     /// The border ensures clamp-to-edge yields the right result.
-    Vec2<int> border;
+    Vec2I border;
 };
 
 /// Built from paints.

@@ -204,7 +204,7 @@ Paint Palette::get_paint(uint32_t paint_id) const {
     return paints[paint_id];
 }
 
-RenderTarget Palette::push_render_target(const std::shared_ptr<Driver> &driver, const Vec2<int> &render_target_size) {
+RenderTarget Palette::push_render_target(const std::shared_ptr<Driver> &driver, const Vec2I &render_target_size) {
     auto render_pass =
         driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Clear, TextureLayout::ShaderReadOnly);
 
@@ -318,13 +318,13 @@ std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr
                 color_texture_metadata->sampling_flags = sampling_flags;
                 color_texture_metadata->transform = Transform2();
                 color_texture_metadata->composite_op = overlay->composite_op;
-                color_texture_metadata->border = Vec2<int>();
+                color_texture_metadata->border = Vec2I();
 
                 gradient.tile_texture = gradient_tile_texture;
             } else { // Pattern
                 const auto &pattern = overlay->contents.pattern;
 
-                auto border = Vec2<int>(pattern.repeat_x() ? 0 : 1, pattern.repeat_y() ? 0 : 1);
+                auto border = Vec2I(pattern.repeat_x() ? 0 : 1, pattern.repeat_y() ? 0 : 1);
 
                 TextureLocation texture_location;
                 {

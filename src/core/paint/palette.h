@@ -24,7 +24,7 @@ public:
 
     Paint get_paint(uint32_t paint_id) const;
 
-    RenderTarget push_render_target(const std::shared_ptr<Driver> &p_driver, const Vec2<int> &render_target_size);
+    RenderTarget push_render_target(const std::shared_ptr<Driver> &p_driver, const Vec2I &render_target_size);
 
     std::shared_ptr<Framebuffer> get_render_target(uint32_t render_target_id) const;
 

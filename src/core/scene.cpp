@@ -72,7 +72,7 @@ void Scene::append_scene(const Scene &p_scene) {
     is_dirty = true;
 }
 
-RenderTarget Scene::push_render_target(const std::shared_ptr<Driver> &driver, Vec2<int> render_target_size) {
+RenderTarget Scene::push_render_target(const std::shared_ptr<Driver> &driver, Vec2I render_target_size) {
     DisplayItem item{};
     item.type = DisplayItem::Type::PushRenderTarget;
     item.render_target = palette.push_render_target(driver, render_target_size);

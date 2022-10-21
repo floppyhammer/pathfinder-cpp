@@ -63,7 +63,7 @@ struct DenseTileMap {
         return {std::vector<T>(p_rect.width() * p_rect.height(), 0), p_rect};
     }
 
-    inline T *get(const Vec2<int> &coords) {
+    inline T *get(const Vec2I &coords) {
         int index = coords_to_index_unchecked(coords);
 
         if (index < data.size()) {
@@ -74,7 +74,7 @@ struct DenseTileMap {
     }
 
     // This is similar to finding an element index in a matrix by row and column.
-    inline int coords_to_index_unchecked(const Vec2<int> &coords) {
+    inline int coords_to_index_unchecked(const Vec2I &coords) {
         return (coords.y - rect.min_y()) * rect.size().x + coords.x - rect.min_x();
     }
 

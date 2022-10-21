@@ -440,13 +440,13 @@ std::shared_ptr<Scene> Canvas::replace_scene(const std::shared_ptr<Scene> &new_s
     return taken_scene;
 }
 
-void Canvas::set_size(const Vec2<int> &new_size) {
-    auto new_view_box = RectI(Vec2<int>(), new_size).to_f32();
+void Canvas::set_size(const Vec2I &new_size) {
+    auto new_view_box = RectI(Vec2I(), new_size).to_f32();
     //    scene.set_bounds(new_view_box);
     scene->set_view_box(new_view_box);
 }
 
-Vec2<int> Canvas::get_size() const {
+Vec2I Canvas::get_size() const {
     return scene->get_view_box().size().ceil();
 }
 

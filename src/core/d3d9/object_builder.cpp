@@ -17,7 +17,7 @@ ObjectBuilder::ObjectBuilder(uint32_t path_id,
     built_path = BuiltPath(path_id, path_bounds, view_box_bounds, fill_rule, clip_path_id, path_info);
 }
 
-void ObjectBuilder::add_fill(SceneBuilderD3D9 &scene_builder, LineSegmentF p_segment, Vec2<int> tile_coords) {
+void ObjectBuilder::add_fill(SceneBuilderD3D9 &scene_builder, LineSegmentF p_segment, Vec2I tile_coords) {
     // Ensure this fill is in bounds. If not, cull it.
     if (!built_path.tile_bounds.contains_point(tile_coords)) {
         return;
@@ -64,14 +64,14 @@ void ObjectBuilder::add_fill(SceneBuilderD3D9 &scene_builder, LineSegmentF p_seg
     });
 }
 
-int ObjectBuilder::tile_coords_to_local_index_unchecked(const Vec2<int> &coords) const {
+int ObjectBuilder::tile_coords_to_local_index_unchecked(const Vec2I &coords) const {
     auto tile_rect = built_path.tile_bounds;
     auto offset = coords - tile_rect.origin();
     return offset.x + tile_rect.width() * offset.y;
 }
 
 AlphaTileId ObjectBuilder::get_or_allocate_alpha_tile_index(SceneBuilderD3D9 &scene_builder,
-                                                            const Vec2<int> &tile_coords) {
+                                                            const Vec2I &tile_coords) {
     // Tile index in the tile bounds.
     auto local_tile_index = tile_coords_to_local_index_unchecked(tile_coords);
 
@@ -95,7 +95,7 @@ AlphaTileId ObjectBuilder::get_or_allocate_alpha_tile_index(SceneBuilderD3D9 &sc
     return alpha_tile_id;
 }
 
-void ObjectBuilder::adjust_alpha_tile_backdrop(const Vec2<int> &tile_coords, int8_t delta) {
+void ObjectBuilder::adjust_alpha_tile_backdrop(const Vec2I &tile_coords, int8_t delta) {
     auto &tiles = built_path.data.tiles;
     auto &backdrops = built_path.data.backdrops;
 

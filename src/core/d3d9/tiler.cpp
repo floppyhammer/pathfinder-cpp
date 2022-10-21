@@ -161,7 +161,7 @@ void process_line_segment(LineSegmentF p_line_segment,
     const auto vector = p_line_segment.vector();
 
     // Step is the direction to advance the tile.
-    const auto step = Vec2<int>(vector.x < 0 ? -1 : 1, vector.y < 0 ? -1 : 1);
+    const auto step = Vec2I(vector.x < 0 ? -1 : 1, vector.y < 0 ? -1 : 1);
 
     // Real coordinates of the top left of the first tile crossing.
     // Compute `first_tile_crossing = (from_tile_coords + vec2i(vector.x >= 0 ? 1 : 0, vector.y >= 0 ? 1 : 0)) *
@@ -367,7 +367,7 @@ void Tiler::prepare_tiles() {
         // Current tile.
         auto &draw_tile = tiles.data[draw_tile_index];
 
-        auto tile_coords = Vec2<int>(draw_tile.tile_x, draw_tile.tile_y);
+        auto tile_coords = Vec2I(draw_tile.tile_x, draw_tile.tile_y);
 
         // Current column.
         auto column = draw_tile_index % tiles_across;
