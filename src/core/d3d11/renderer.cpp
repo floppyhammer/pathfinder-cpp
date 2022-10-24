@@ -633,31 +633,37 @@ MicrolineBufferIDsD3D11 RendererD3D11::dice_segments(std::vector<DiceMetadataD3D
 void RendererD3D11::bound(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
                           uint32_t tile_count,
                           std::vector<TilePathInfoD3D11> &tile_path_info) {
-    auto cmd_buffer = driver->create_command_buffer(true);
-
-    // This is a staging buffer, which will be freed in the end of this function.
+    // This is a staging buffer, which will be freed at the end of this function.
     auto path_info_buffer_id = driver->create_buffer(BufferType::Storage,
                                                      tile_path_info.size() * sizeof(TilePathInfoD3D11),
                                                      MemoryProperty::DeviceLocal);
-    cmd_buffer->upload_to_buffer(path_info_buffer_id,
-                                 0,
-                                 tile_path_info.size() * sizeof(TilePathInfoD3D11),
-                                 tile_path_info.data());
 
-    // Update uniform buffers.
-    std::array<int32_t, 2> ubo_data = {static_cast<int32_t>(tile_path_info.size()), static_cast<int32_t>(tile_count)};
-    cmd_buffer->upload_to_buffer(bound_ub, 0, 2 * sizeof(int32_t), ubo_data.data());
-
-    cmd_buffer->submit(driver);
-
-    // Bind storage buffers.
+    // Upload uniform buffer data.
     {
-        bound_descriptor_set->add_or_update_storage(ShaderStage::Compute, 0, path_info_buffer_id); // Read only.
-        bound_descriptor_set->add_or_update_storage(ShaderStage::Compute, 1,
-                                                    tiles_d3d11_buffer_id); // Write only.
+        auto cmd_buffer = driver->create_command_buffer(true);
+
+        cmd_buffer->upload_to_buffer(path_info_buffer_id,
+                                     0,
+                                     tile_path_info.size() * sizeof(TilePathInfoD3D11),
+                                     tile_path_info.data());
+
+        // Update uniform buffers.
+        std::array<int32_t, 2> ubo_data = {static_cast<int32_t>(tile_path_info.size()),
+                                           static_cast<int32_t>(tile_count)};
+        cmd_buffer->upload_to_buffer(bound_ub, 0, 2 * sizeof(int32_t), ubo_data.data());
+
+        cmd_buffer->submit(driver);
     }
 
-    cmd_buffer = driver->create_command_buffer(true);
+    // Update the descriptor set.
+    {
+        // Read only.
+        bound_descriptor_set->add_or_update_storage(ShaderStage::Compute, 0, path_info_buffer_id);
+        // Write only.
+        bound_descriptor_set->add_or_update_storage(ShaderStage::Compute, 1, tiles_d3d11_buffer_id);
+    }
+
+    auto cmd_buffer = driver->create_command_buffer(true);
 
     cmd_buffer->begin_compute_pass();
 
@@ -676,43 +682,47 @@ FillBufferInfoD3D11 RendererD3D11::bin_segments(MicrolineBufferIDsD3D11 &microli
                                                 PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids,
                                                 const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
                                                 const std::shared_ptr<Buffer> &z_buffer_id) {
-    auto cmd_buffer = driver->create_command_buffer(true);
-
     // What will be the output of this function.
     auto fill_vertex_buffer_id =
         driver->create_buffer(BufferType::Storage, allocated_fill_count * sizeof(Fill), MemoryProperty::DeviceLocal);
 
-    // Upload fill indirect draw params to header of the Z-buffer.
-    // This is in the Z-buffer, not its own buffer, to work around the 8 SSBO limitation on
-    // some drivers (#373).
     uint32_t indirect_draw_params[8] = {6, 0, 0, 0, 0, microline_storage.count, 0, 0};
 
-    cmd_buffer->upload_to_buffer(z_buffer_id, 0, 8 * sizeof(uint32_t), indirect_draw_params);
-
-    // Update uniform buffers.
-    std::array<int32_t, 2> ubo_data = {(int32_t)microline_storage.count, (int32_t)allocated_fill_count};
-    cmd_buffer->upload_to_buffer(bin_ub, 0, 2 * sizeof(int32_t), ubo_data.data());
-
-    cmd_buffer->submit(driver);
-
-    // Bind storage buffers.
+    // Upload buffer data.
     {
-        bin_descriptor_set->add_or_update_storage(ShaderStage::Compute, 0,
-                                                  microline_storage.buffer_id); // Read only.
-        bin_descriptor_set->add_or_update_storage(ShaderStage::Compute,
-                                                  1,
-                                                  propagate_metadata_buffer_ids.propagate_metadata); // Read only.
-        bin_descriptor_set->add_or_update_storage(ShaderStage::Compute, 2, z_buffer_id);             // Read write.
-        bin_descriptor_set->add_or_update_storage(ShaderStage::Compute, 3,
-                                                  fill_vertex_buffer_id); // Write only.
-        bin_descriptor_set->add_or_update_storage(ShaderStage::Compute, 4,
-                                                  tiles_d3d11_buffer_id); // Read write.
-        bin_descriptor_set->add_or_update_storage(ShaderStage::Compute,
-                                                  5,
-                                                  propagate_metadata_buffer_ids.backdrops); // Read write.
+        auto cmd_buffer = driver->create_command_buffer(true);
+
+        // Upload fill indirect draw params to header of the Z-buffer.
+        // This is in the Z-buffer, not its own buffer, to work around the 8 SSBO limitation on
+        // some drivers (#373).
+        cmd_buffer->upload_to_buffer(z_buffer_id, 0, 8 * sizeof(uint32_t), indirect_draw_params);
+
+        // Update uniform buffers.
+        std::array<int32_t, 2> ubo_data = {(int32_t)microline_storage.count, (int32_t)allocated_fill_count};
+        cmd_buffer->upload_to_buffer(bin_ub, 0, 2 * sizeof(int32_t), ubo_data.data());
+
+        cmd_buffer->submit(driver);
     }
 
-    cmd_buffer = driver->create_command_buffer(true);
+    // Update the descriptor set.
+    {
+        // Read only.
+        bin_descriptor_set->add_or_update_storage(ShaderStage::Compute, 0, microline_storage.buffer_id);
+        // Read only.
+        bin_descriptor_set->add_or_update_storage(ShaderStage::Compute,
+                                                  1,
+                                                  propagate_metadata_buffer_ids.propagate_metadata);
+        // Read write.
+        bin_descriptor_set->add_or_update_storage(ShaderStage::Compute, 2, z_buffer_id);
+        // Write only.
+        bin_descriptor_set->add_or_update_storage(ShaderStage::Compute, 3, fill_vertex_buffer_id);
+        // Read write.
+        bin_descriptor_set->add_or_update_storage(ShaderStage::Compute, 4, tiles_d3d11_buffer_id);
+        // Read write.
+        bin_descriptor_set->add_or_update_storage(ShaderStage::Compute, 5, propagate_metadata_buffer_ids.backdrops);
+    }
+
+    auto cmd_buffer = driver->create_command_buffer(true);
 
     cmd_buffer->begin_compute_pass();
 
@@ -726,9 +736,12 @@ FillBufferInfoD3D11 RendererD3D11::bin_segments(MicrolineBufferIDsD3D11 &microli
 
     cmd_buffer->submit(driver);
 
-    cmd_buffer = driver->create_command_buffer(true);
-    cmd_buffer->read_buffer(z_buffer_id, 0, 8 * sizeof(uint32_t), indirect_draw_params);
-    cmd_buffer->submit(driver);
+    // Read buffer.
+    {
+        cmd_buffer = driver->create_command_buffer(true);
+        cmd_buffer->read_buffer(z_buffer_id, 0, 8 * sizeof(uint32_t), indirect_draw_params);
+        cmd_buffer->submit(driver);
+    }
 
     // How many fills we need.
     auto needed_fill_count = indirect_draw_params[FILL_INDIRECT_DRAW_PARAMS_INSTANCE_COUNT_INDEX];
@@ -749,57 +762,61 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
                                                        const std::shared_ptr<Buffer> &first_tile_map_buffer_id,
                                                        const std::shared_ptr<Buffer> &alpha_tiles_buffer_id,
                                                        PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids) {
-    auto cmd_buffer = driver->create_command_buffer(true);
-
-    // TODO(pcwalton): Zero out the Z-buffer on GPU?
-    auto z_buffer_size = tile_size();
-    auto tile_area = z_buffer_size.area();
-    auto z_buffer_data = std::vector<int32_t>(tile_area, 0);
-    cmd_buffer->upload_to_buffer(z_buffer_id, 0, tile_area * sizeof(int32_t), z_buffer_data.data());
-
-    // TODO(pcwalton): Initialize the first tiles buffer on GPU?
-    auto first_tile_map = std::vector<FirstTileD3D11>(tile_area, FirstTileD3D11());
-    cmd_buffer->upload_to_buffer(first_tile_map_buffer_id,
-                                 0,
-                                 tile_area * sizeof(FirstTileD3D11),
-                                 first_tile_map.data());
-
-    // Update uniform buffers.
-    auto framebuffer_tile_size0 = framebuffer_tile_size();
-    std::array<int32_t, 4> ubo_data = {(int32_t)framebuffer_tile_size0.x,
-                                       (int32_t)framebuffer_tile_size0.y,
-                                       (int32_t)column_count,
-                                       (int32_t)alpha_tile_count};
-    cmd_buffer->upload_to_buffer(propagate_ub, 0, 4 * sizeof(int32_t), ubo_data.data());
-
-    cmd_buffer->submit(driver);
-
-    // Bind storage buffers.
+    // Upload data to buffers.
     {
-        propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute,
-                                                        0,
-                                                        propagate_metadata_buffer_ids.propagate_metadata); // Read only.
-        propagate_descriptor_set->add_or_update_storage(
-            ShaderStage::Compute,
-            1,
-            propagate_metadata_buffer_ids.propagate_metadata); // Clip metadata, read only.
-        propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute,
-                                                        2,
-                                                        propagate_metadata_buffer_ids.backdrops); // Read only.
-        propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute, 3,
-                                                        tiles_d3d11_buffer_id); // Read write.
-        propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute,
-                                                        4,
-                                                        tiles_d3d11_buffer_id); // Clip tiles, read write.
-        propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute, 5, z_buffer_id); // Read write.
-        propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute,
-                                                        6,
-                                                        first_tile_map_buffer_id); // Read write.
-        propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute, 7,
-                                                        alpha_tiles_buffer_id); // Write only.
+        auto cmd_buffer = driver->create_command_buffer(true);
+
+        // TODO(pcwalton): Zero out the Z-buffer on GPU?
+        auto z_buffer_size = tile_size();
+        auto tile_area = z_buffer_size.area();
+        auto z_buffer_data = std::vector<int32_t>(tile_area, 0);
+        cmd_buffer->upload_to_buffer(z_buffer_id, 0, tile_area * sizeof(int32_t), z_buffer_data.data());
+
+        // TODO(pcwalton): Initialize the first tiles buffer on GPU?
+        auto first_tile_map = std::vector<FirstTileD3D11>(tile_area, FirstTileD3D11());
+        cmd_buffer->upload_to_buffer(first_tile_map_buffer_id,
+                                     0,
+                                     tile_area * sizeof(FirstTileD3D11),
+                                     first_tile_map.data());
+
+        // Update uniform buffers.
+        auto framebuffer_tile_size0 = framebuffer_tile_size();
+        std::array<int32_t, 4> ubo_data = {(int32_t)framebuffer_tile_size0.x,
+                                           (int32_t)framebuffer_tile_size0.y,
+                                           (int32_t)column_count,
+                                           (int32_t)alpha_tile_count};
+        cmd_buffer->upload_to_buffer(propagate_ub, 0, 4 * sizeof(int32_t), ubo_data.data());
+
+        cmd_buffer->submit(driver);
     }
 
-    cmd_buffer = driver->create_command_buffer(true);
+    // Update the descriptor set.
+    {
+        // Read only.
+        propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute,
+                                                        0,
+                                                        propagate_metadata_buffer_ids.propagate_metadata);
+        // Clip metadata, read only.
+        propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute,
+                                                        1,
+                                                        propagate_metadata_buffer_ids.propagate_metadata);
+        // Read only.
+        propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute,
+                                                        2,
+                                                        propagate_metadata_buffer_ids.backdrops);
+        // Read and write.
+        propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute, 3, tiles_d3d11_buffer_id);
+        // Clip tiles, read and write.
+        propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute, 4, tiles_d3d11_buffer_id);
+        // Read and write.
+        propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute, 5, z_buffer_id);
+        // Read and write.
+        propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute, 6, first_tile_map_buffer_id);
+        // Write only.
+        propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute, 7, alpha_tiles_buffer_id);
+    }
+
+    auto cmd_buffer = driver->create_command_buffer(true);
 
     cmd_buffer->begin_compute_pass();
 
@@ -813,12 +830,19 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
 
     cmd_buffer->submit(driver);
 
-    cmd_buffer = driver->create_command_buffer(true);
+    uint32_t fill_indirect_draw_params[FILL_INDIRECT_DRAW_PARAMS_SIZE];
 
-    uint32_t fill_indirect_draw_params[8];
-    cmd_buffer->read_buffer(z_buffer_id, 0, 8 * sizeof(uint32_t), fill_indirect_draw_params);
+    // Read buffer.
+    {
+        cmd_buffer = driver->create_command_buffer(true);
 
-    cmd_buffer->submit(driver);
+        cmd_buffer->read_buffer(z_buffer_id,
+                                0,
+                                FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
+                                fill_indirect_draw_params);
+
+        cmd_buffer->submit(driver);
+    }
 
     auto batch_alpha_tile_count = fill_indirect_draw_params[FILL_INDIRECT_DRAW_PARAMS_ALPHA_TILE_COUNT_INDEX];
 

@@ -168,7 +168,8 @@ void SvgScene::load_file(std::vector<char> input, Canvas &canvas) {
         for (NSVGpath *nsvg_path = nsvg_shape->paths; nsvg_path != nullptr; nsvg_path = nsvg_path->next) {
             path.move_to(nsvg_path->pts[0], nsvg_path->pts[1]);
 
-            for (int point_index = 0; point_index < nsvg_path->npts - 3; point_index += 3) {
+            // The last three points are duplicate, so we drop them by using -6 instead of -3.
+            for (int point_index = 0; point_index < nsvg_path->npts - 6; point_index += 3) {
                 // * 2 because a point has x and y components.
                 float *p = &nsvg_path->pts[point_index * 2];
                 path.bezier_curve_to(p[2], p[3], p[4], p[5], p[6], p[7]);

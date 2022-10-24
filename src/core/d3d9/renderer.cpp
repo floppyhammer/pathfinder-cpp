@@ -359,6 +359,7 @@ void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &t
     // Clear the destination framebuffer for the first time.
     need_to_clear_dest = true;
 
+    // One draw call for one batch.
     for (const auto &batch : tile_batches) {
         uint32_t tile_count = batch.tiles.size();
 
