@@ -591,15 +591,16 @@ MicrolineBufferIDsD3D11 RendererD3D11::dice_segments(std::vector<DiceMetadataD3D
 
     // Bind storage buffers.
     {
-        dice_descriptor_set->add_or_update_storage(ShaderStage::Compute,
-                                                   0,
-                                                   indirect_draw_params_buffer_id); // Read write.
-        dice_descriptor_set->add_or_update_storage(ShaderStage::Compute, 1,
-                                                   dice_metadata_buffer_id);                   // Read only.
-        dice_descriptor_set->add_or_update_storage(ShaderStage::Compute, 2, points_buffer_id); // Read only.
-        dice_descriptor_set->add_or_update_storage(ShaderStage::Compute, 3,
-                                                   point_indices_buffer_id);                      // Read only.
-        dice_descriptor_set->add_or_update_storage(ShaderStage::Compute, 4, microline_buffer_id); // Write only.
+        // Read and write.
+        dice_descriptor_set->add_or_update_storage(ShaderStage::Compute, 0, indirect_draw_params_buffer_id);
+        // Read only.
+        dice_descriptor_set->add_or_update_storage(ShaderStage::Compute, 1, dice_metadata_buffer_id);
+        // Read only.
+        dice_descriptor_set->add_or_update_storage(ShaderStage::Compute, 2, points_buffer_id);
+        // Read only.
+        dice_descriptor_set->add_or_update_storage(ShaderStage::Compute, 3, point_indices_buffer_id);
+        // Write only.
+        dice_descriptor_set->add_or_update_storage(ShaderStage::Compute, 4, microline_buffer_id);
     }
 
     cmd_buffer = driver->create_command_buffer(true);
@@ -722,13 +723,13 @@ FillBufferInfoD3D11 RendererD3D11::bin_segments(MicrolineBufferIDsD3D11 &microli
         bin_descriptor_set->add_or_update_storage(ShaderStage::Compute,
                                                   1,
                                                   propagate_metadata_buffer_ids.propagate_metadata);
-        // Read write.
+        // Read and write.
         bin_descriptor_set->add_or_update_storage(ShaderStage::Compute, 2, z_buffer_id);
         // Write only.
         bin_descriptor_set->add_or_update_storage(ShaderStage::Compute, 3, fill_vertex_buffer_id);
-        // Read write.
+        // Read and write.
         bin_descriptor_set->add_or_update_storage(ShaderStage::Compute, 4, tiles_d3d11_buffer_id);
-        // Read write.
+        // Read and write.
         bin_descriptor_set->add_or_update_storage(ShaderStage::Compute, 5, propagate_metadata_buffer_ids.backdrops);
     }
 
@@ -756,7 +757,7 @@ FillBufferInfoD3D11 RendererD3D11::bin_segments(MicrolineBufferIDsD3D11 &microli
         cmd_buffer->submit(driver);
     }
 
-    // How many fills we need.
+    // Get the actual fill count.
     auto needed_fill_count = indirect_draw_params[FILL_INDIRECT_DRAW_PARAMS_INSTANCE_COUNT_INDEX];
 
     // If we didn't allocate enough space for the needed fills, we need to call this function again.
@@ -783,7 +784,12 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
         auto z_buffer_size = tile_size();
         auto tile_area = z_buffer_size.area();
         auto z_buffer_data = std::vector<int32_t>(tile_area, 0);
-        cmd_buffer->upload_to_buffer(z_buffer_id, 0, tile_area * sizeof(int32_t), z_buffer_data.data());
+
+        // Note the offset for the fill indirect params.
+        cmd_buffer->upload_to_buffer(z_buffer_id,
+                                     FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
+                                     tile_area * sizeof(int32_t),
+                                     z_buffer_data.data());
 
         // TODO(pcwalton): Initialize the first tiles buffer on GPU?
         auto first_tile_map = std::vector<FirstTileD3D11>(tile_area, FirstTileD3D11());
@@ -877,7 +883,7 @@ void RendererD3D11::draw_fills(FillBufferInfoD3D11 &fill_storage_info,
     auto alpha_tile_range = propagate_tiles_info.alpha_tile_range;
 
     // This setup is a workaround for the annoying 64K limit of compute invocation in OpenGL.
-    uint32_t local_alpha_tile_count = alpha_tile_range.end - alpha_tile_range.start;
+    uint32_t _alpha_tile_count = alpha_tile_range.end - alpha_tile_range.start;
 
     auto cmd_buffer = driver->create_command_buffer(true);
 
@@ -908,9 +914,7 @@ void RendererD3D11::draw_fills(FillBufferInfoD3D11 &fill_storage_info,
 
     cmd_buffer->bind_descriptor_set(fill_descriptor_set);
 
-    cmd_buffer->dispatch(std::min(local_alpha_tile_count, 1u << 15u),
-                         (local_alpha_tile_count + (1 << 15) - 1) >> 15,
-                         1);
+    cmd_buffer->dispatch(std::min(_alpha_tile_count, 1u << 15u), (_alpha_tile_count + (1 << 15) - 1) >> 15, 1);
 
     cmd_buffer->end_compute_pass();
 
@@ -929,13 +933,14 @@ void RendererD3D11::sort_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer
 
     cmd_buffer->submit(driver);
 
-    // Update descriptor set.
+    // Update the descriptor set.
     {
-        sort_descriptor_set->add_or_update_storage(ShaderStage::Compute, 0,
-                                                   tiles_d3d11_buffer_id); // Read write.
-        sort_descriptor_set->add_or_update_storage(ShaderStage::Compute, 1,
-                                                   first_tile_map_buffer_id);             // Read write.
-        sort_descriptor_set->add_or_update_storage(ShaderStage::Compute, 2, z_buffer_id); // Read only.
+        // Read and write.
+        sort_descriptor_set->add_or_update_storage(ShaderStage::Compute, 0, tiles_d3d11_buffer_id);
+        // Read and write.
+        sort_descriptor_set->add_or_update_storage(ShaderStage::Compute, 1, first_tile_map_buffer_id);
+        // Read only.
+        sort_descriptor_set->add_or_update_storage(ShaderStage::Compute, 2, z_buffer_id);
     }
 
     cmd_buffer = driver->create_command_buffer(true);

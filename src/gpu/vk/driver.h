@@ -68,7 +68,9 @@ public:
     void copy_vk_buffer(VkCommandBuffer command_buffer,
                         VkBuffer src_buffer,
                         VkBuffer dst_buffer,
-                        VkDeviceSize size) const;
+                        VkDeviceSize size,
+                        VkDeviceSize src_offset = 0,
+                        VkDeviceSize dst_offset = 0) const;
 
 private:
     /// The graphics card that we'll end up selecting will be stored in a VkPhysicalDevice handle.

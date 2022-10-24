@@ -701,11 +701,13 @@ VkFormat DriverVk::find_depth_format() const {
 void DriverVk::copy_vk_buffer(VkCommandBuffer command_buffer,
                               VkBuffer src_buffer,
                               VkBuffer dst_buffer,
-                              VkDeviceSize size) const {
+                              VkDeviceSize size,
+                              VkDeviceSize src_offset,
+                              VkDeviceSize dst_offset) const {
     // Send copy command.
     VkBufferCopy copy_region{};
-    copy_region.srcOffset = 0;
-    copy_region.dstOffset = 0;
+    copy_region.srcOffset = src_offset;
+    copy_region.dstOffset = dst_offset;
     copy_region.size = size;
 
     vkCmdCopyBuffer(command_buffer, src_buffer, dst_buffer, 1, &copy_region);

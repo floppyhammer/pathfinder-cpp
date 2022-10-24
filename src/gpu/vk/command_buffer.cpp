@@ -227,7 +227,12 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &p_driver) {
                 driver->copy_data_to_memory(args.data, staging_buffer_memory, args.data_size);
                 // ---------------------------------
 
-                driver->copy_vk_buffer(vk_command_buffer, staging_buffer, buffer_vk->get_vk_buffer(), args.data_size);
+                driver->copy_vk_buffer(vk_command_buffer,
+                                       staging_buffer,
+                                       buffer_vk->get_vk_buffer(),
+                                       args.data_size,
+                                       0,
+                                       args.offset);
 
                 // Callback to clean up staging resources.
                 auto callback = [driver, staging_buffer, staging_buffer_memory] {
