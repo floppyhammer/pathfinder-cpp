@@ -541,8 +541,9 @@ MicrolineBufferIDsD3D11 RendererD3D11::dice_segments(std::vector<DiceMetadataD3D
     auto dice_metadata_buffer_id = driver->create_buffer(BufferType::Storage,
                                                          dice_metadata.size() * sizeof(DiceMetadataD3D11),
                                                          MemoryProperty::DeviceLocal);
-    auto indirect_draw_params_buffer_id =
-        driver->create_buffer(BufferType::Storage, 8 * sizeof(uint32_t), MemoryProperty::DeviceLocal);
+    auto indirect_draw_params_buffer_id = driver->create_buffer(BufferType::Storage,
+                                                                FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
+                                                                MemoryProperty::DeviceLocal);
 
     // Get scene source buffers.
     auto &scene_source_buffers = path_source == PathSource::Draw ? scene_buffers.draw : scene_buffers.clip;
@@ -554,7 +555,10 @@ MicrolineBufferIDsD3D11 RendererD3D11::dice_segments(std::vector<DiceMetadataD3D
     uint32_t indirect_compute_params[8] = {0, 0, 0, 0, point_indices_count, 0, 0, 0};
 
     auto cmd_buffer = driver->create_command_buffer(true);
-    cmd_buffer->upload_to_buffer(indirect_draw_params_buffer_id, 0, 8 * sizeof(uint32_t), indirect_compute_params);
+    cmd_buffer->upload_to_buffer(indirect_draw_params_buffer_id,
+                                 0,
+                                 FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
+                                 indirect_compute_params);
 
     // Upload dice metadata.
     cmd_buffer->upload_to_buffer(dice_metadata_buffer_id,
@@ -614,7 +618,10 @@ MicrolineBufferIDsD3D11 RendererD3D11::dice_segments(std::vector<DiceMetadataD3D
 
     // Read indirect draw params back to CPU memory.
     cmd_buffer = driver->create_command_buffer(true);
-    cmd_buffer->read_buffer(indirect_draw_params_buffer_id, 0, 8 * sizeof(uint32_t), indirect_compute_params);
+    cmd_buffer->read_buffer(indirect_draw_params_buffer_id,
+                            0,
+                            FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
+                            indirect_compute_params);
     cmd_buffer->submit(driver);
 
     // Fetch microline count from indirect draw params.
@@ -686,7 +693,7 @@ FillBufferInfoD3D11 RendererD3D11::bin_segments(MicrolineBufferIDsD3D11 &microli
     auto fill_vertex_buffer_id =
         driver->create_buffer(BufferType::Storage, allocated_fill_count * sizeof(Fill), MemoryProperty::DeviceLocal);
 
-    uint32_t indirect_draw_params[8] = {6, 0, 0, 0, 0, microline_storage.count, 0, 0};
+    uint32_t indirect_draw_params[FILL_INDIRECT_DRAW_PARAMS_SIZE] = {6, 0, 0, 0, 0, microline_storage.count, 0, 0};
 
     // Upload buffer data.
     {
@@ -695,7 +702,10 @@ FillBufferInfoD3D11 RendererD3D11::bin_segments(MicrolineBufferIDsD3D11 &microli
         // Upload fill indirect draw params to header of the Z-buffer.
         // This is in the Z-buffer, not its own buffer, to work around the 8 SSBO limitation on
         // some drivers (#373).
-        cmd_buffer->upload_to_buffer(z_buffer_id, 0, 8 * sizeof(uint32_t), indirect_draw_params);
+        cmd_buffer->upload_to_buffer(z_buffer_id,
+                                     0,
+                                     FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
+                                     indirect_draw_params);
 
         // Update uniform buffers.
         std::array<int32_t, 2> ubo_data = {(int32_t)microline_storage.count, (int32_t)allocated_fill_count};
@@ -739,7 +749,10 @@ FillBufferInfoD3D11 RendererD3D11::bin_segments(MicrolineBufferIDsD3D11 &microli
     // Read buffer.
     {
         cmd_buffer = driver->create_command_buffer(true);
-        cmd_buffer->read_buffer(z_buffer_id, 0, 8 * sizeof(uint32_t), indirect_draw_params);
+        cmd_buffer->read_buffer(z_buffer_id,
+                                0,
+                                FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
+                                indirect_draw_params);
         cmd_buffer->submit(driver);
     }
 
