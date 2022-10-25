@@ -14,28 +14,31 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
     canvas->set_size({window_width, window_height});
     canvas->set_empty_dest_texture(window_width, window_height);
 
-    {
-        Pathfinder::Path2d path;
-        path.add_rect(Pathfinder::RectF(Pathfinder::Vec2F(0.0, 0.0), Pathfinder::Vec2F(360.0, 360.0)));
+    // Minimal path test.
+    if (false) {
+        {
+            Pathfinder::Path2d path;
+            path.add_rect(Pathfinder::RectF(Pathfinder::Vec2F(0.0, 0.0), Pathfinder::Vec2F(360.0, 360.0)));
 
-        canvas->clip_path(path, Pathfinder::FillRule::Winding);
+            canvas->clip_path(path, Pathfinder::FillRule::Winding);
+        }
+
+        Pathfinder::Path2d path;
+        path.move_to(260.0, 260.0);
+        path.line_to(460.0, 260.0);
+        path.line_to(460.0, 460.0);
+        path.line_to(260.0, 460.0);
+        path.close_path();
+
+        // Set brush.
+        canvas->set_line_width(10.0);
+        canvas->set_stroke_paint(Pathfinder::Paint::from_color(Pathfinder::ColorU::black()));
+
+        canvas->stroke_path(path);
     }
 
-    Pathfinder::Path2d path;
-    path.move_to(260.0, 260.0);
-    path.line_to(460.0, 260.0);
-    path.line_to(460.0, 460.0);
-    path.line_to(260.0, 460.0);
-    path.close_path();
-
-    // Set brush.
-    canvas->set_line_width(10.0);
-    canvas->set_stroke_paint(Pathfinder::Paint::from_color(Pathfinder::ColorU::black()));
-
-    canvas->stroke_path(path);
-
     // SVG test.
-    if (false) {
+    if (true) {
         Pathfinder::SvgScene svg_scene;
         svg_scene.load_file(p_svg_input, *canvas);
         canvas->set_scene(svg_scene.get_scene());

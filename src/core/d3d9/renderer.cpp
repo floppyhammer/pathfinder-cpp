@@ -253,10 +253,11 @@ void RendererD3D9::create_tile_clip_copy_pipeline() {
         descriptor_set->add_or_update_sampler(ShaderStage::Fragment, 1, "uSrc");
     }
 
+    // We have to disable blend for tile clip copy.
     tile_clip_copy_pipeline = driver->create_render_pipeline(tile_clip_copy_vert_source,
                                                              tile_clip_copy_frag_source,
                                                              attribute_descriptions,
-                                                             BlendState::from_equal(),
+                                                             {false},
                                                              descriptor_set,
                                                              mask_render_pass_clear);
 }
@@ -289,9 +290,6 @@ void RendererD3D9::create_tile_clip_combine_pipeline() {
             {1, 1, DataType::i32, stride, offsetof(Clip, src_backdrop), VertexInputRate::Instance});
     }
 
-    // We have to disable blend for tile clip combine.
-    BlendState blend_state = {false};
-
     // Create descriptor set.
     auto descriptor_set = tile_clip_combine_descriptor_set = driver->create_descriptor_set();
     {
@@ -302,10 +300,11 @@ void RendererD3D9::create_tile_clip_combine_pipeline() {
         descriptor_set->add_or_update_sampler(ShaderStage::Fragment, 1, "uSrc");
     }
 
+    // We have to disable blend for tile clip combine.
     tile_clip_combine_pipeline = driver->create_render_pipeline(vert_source,
                                                                 frag_source,
                                                                 attribute_descriptions,
-                                                                blend_state,
+                                                                {false},
                                                                 descriptor_set,
                                                                 mask_render_pass_clear);
 }

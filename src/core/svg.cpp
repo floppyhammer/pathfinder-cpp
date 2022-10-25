@@ -199,7 +199,7 @@ void SvgScene::load_file(std::vector<char> input, Canvas &canvas) {
             std::vector<float>(nsvg_shape->strokeDashArray, nsvg_shape->strokeDashArray + nsvg_shape->strokeDashCount));
 
         // TEST: Add clip path.
-        if (true) {
+        if (false) {
             Path2d clip_path;
             clip_path.add_rect({{}, {360, 360}});
             canvas.clip_path(clip_path, FillRule::Winding);

@@ -14,7 +14,7 @@ struct Tiler {
 public:
     Tiler(SceneBuilderD3D9& p_scene_builder,
           uint32_t path_id,
-          Outline p_outline,
+          const Outline& p_outline,
           FillRule fill_rule,
           const RectF& view_box,
           const std::shared_ptr<uint32_t>& clip_path_id,

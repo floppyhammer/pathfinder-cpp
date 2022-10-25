@@ -306,7 +306,7 @@ void process_segment(Segment &p_segment, SceneBuilderD3D9 &p_scene_builder, Obje
 
 Tiler::Tiler(SceneBuilderD3D9 &p_scene_builder,
              uint32_t path_id,
-             Outline p_outline,
+             const Outline &p_outline,
              FillRule fill_rule,
              const RectF &view_box,
              const std::shared_ptr<uint32_t> &clip_path_id,
@@ -376,7 +376,7 @@ void Tiler::prepare_tiles() {
         auto delta = draw_tile.backdrop;
 
         auto draw_alpha_tile_id = draw_tile.alpha_tile_id;
-        int8_t draw_tile_backdrop = backdrops[column];
+        int8_t draw_tile_backdrop = int8_t(backdrops[column]);
 
         // Handle clip path.
         if (clip_path) {
