@@ -3,6 +3,7 @@
 #include "../common/logger.h"
 
 namespace Pathfinder {
+
 void CommandBuffer::begin_render_pass(const std::shared_ptr<RenderPass> &render_pass,
                                       const std::shared_ptr<Framebuffer> &framebuffer,
                                       ColorF clear_color) {
@@ -200,4 +201,5 @@ void CommandBuffer::transition_layout(std::shared_ptr<Texture> &texture, Texture
         abort();
     }
 }
+
 } // namespace Pathfinder

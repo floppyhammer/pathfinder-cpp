@@ -12,12 +12,6 @@ using std::vector;
 
 namespace Pathfinder {
 
-struct ClipBatchesD3D11 {
-    // Will be submitted in reverse (LIFO) order.
-    vector<TileBatchDataD3D11> prepare_batches;
-    unordered_map<uint32_t, uint32_t> clip_id_to_path_batch_index;
-};
-
 struct PreparedClipPath {
     BuiltPath built_path;
     shared_ptr<GlobalPathId> subclip_id;
@@ -213,6 +207,7 @@ void SceneBuilderD3D11::build(const std::shared_ptr<Driver> &driver) {
         scene->id,
         scene->epoch,
         built_segments.draw_segment_ranges,
+        built_segments.clip_segment_ranges
     };
 
     shared_ptr<vector<BuiltDrawPath>> built_paths;
@@ -230,8 +225,7 @@ void SceneBuilderD3D11::build_tile_batches(LastSceneInfo &last_scene,
 
     uint32_t next_batch_id = 0;
 
-    shared_ptr<ClipBatchesD3D11> clip_batches_d3d11;
-    if (built_paths == nullptr) {
+    if (built_paths == nullptr) { // Always holds true.
         clip_batches_d3d11 = std::make_shared<ClipBatchesD3D11>();
     }
 

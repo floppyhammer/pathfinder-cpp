@@ -22,6 +22,14 @@ struct BuiltSegments {
 
     static BuiltSegments from_scene(Scene &scene) {
         BuiltSegments built_segments;
+
+        built_segments.clip_segment_ranges.reserve(scene.clip_paths.size());
+
+        for (const auto &clip_path : scene.clip_paths) {
+            auto range = built_segments.clip_segments.add_path(clip_path.outline);
+            built_segments.clip_segment_ranges.push_back(range);
+        }
+
         built_segments.draw_segment_ranges.reserve(scene.draw_paths.size());
 
         for (const auto &draw_path : scene.draw_paths) {
@@ -33,11 +41,19 @@ struct BuiltSegments {
     }
 };
 
+struct ClipBatchesD3D11 {
+    // Will be submitted in reverse (LIFO) order.
+    vector<TileBatchDataD3D11> prepare_batches;
+    unordered_map<uint32_t, uint32_t> clip_id_to_path_batch_index;
+};
+
 class SceneBuilderD3D11 : public SceneBuilder {
 public:
     explicit SceneBuilderD3D11(Scene *p_scene) : SceneBuilder(p_scene) {}
 
     BuiltSegments built_segments;
+
+    shared_ptr<ClipBatchesD3D11> clip_batches_d3d11;
 
     // Sent to renderer to draw tiles.
     std::vector<DrawTileBatchD3D11> tile_batches;

@@ -42,6 +42,7 @@ struct LastSceneInfo {
     uint32_t scene_id;
     SceneEpoch scene_epoch;
     std::vector<Range> draw_segment_ranges;
+    std::vector<Range> clip_segment_ranges;
 };
 
 class SceneBuilder;

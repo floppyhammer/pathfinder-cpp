@@ -22,8 +22,6 @@ public:
 private:
     std::shared_ptr<Pathfinder::Driver> driver;
 
-    Pathfinder::SvgScene svg_scene;
-
     std::chrono::time_point<std::chrono::steady_clock> last_time;
     std::chrono::time_point<std::chrono::steady_clock> last_time_printed_fps;
 };

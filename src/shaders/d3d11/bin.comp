@@ -93,8 +93,9 @@ void addFill(vec4 lineSegment, ivec2 tileCoords, ivec4 pathTileRect, uint pathTi
 
     // Clip line. If too narrow, cull.
     uvec4 scaledLocalLine = uvec4((lineSegment - vec4(tileCoords.xyxy * ivec4(16))) * vec4(256.0));
-    if (scaledLocalLine.x == scaledLocalLine.z)
+    if (scaledLocalLine.x == scaledLocalLine.z) {
         return;
+    }
 
     // Bump instance count.
     uint fillIndex = atomicAdd(iIndirectDrawParams[1], 1u);
@@ -137,8 +138,9 @@ vec4 unpackMicroline(uvec4 packedMicroline, out uint outPathIndex) {
 
 void main() {
     uint segmentIndex = gl_GlobalInvocationID.x;
-    if (segmentIndex >= uint(uMicrolineCount))
+    if (segmentIndex >= uint(uMicrolineCount)) {
         return;
+    }
 
     uint pathIndex;
     vec4 lineSegment = unpackMicroline(iMicrolines[segmentIndex], pathIndex);
@@ -183,8 +185,9 @@ void main() {
         float nextT = min(nextStepDirection == STEP_DIRECTION_X ? tMax.x : tMax.y, 1.0);
 
         // If we've reached the end tile, don't step at all.
-        if (tileCoords == toTileCoords)
+        if (tileCoords == toTileCoords) {
             nextStepDirection = STEP_DIRECTION_NONE;
+        }
 
         vec2 nextPosition = mix(lineSegment.xy, lineSegment.zw, nextT);
 
@@ -202,8 +205,9 @@ void main() {
             auxiliarySegment = vec4(vec2(tileCoords * tileSize), clippedLineSegment.xy);
             haveAuxiliarySegment = true;
         }
-        if (haveAuxiliarySegment)
+        if (haveAuxiliarySegment) {
             addFill(auxiliarySegment, tileCoords, pathTileRect, pathTileOffset);
+        }
 
         // Adjust backdrop if necessary.
         //

@@ -37,7 +37,9 @@ uint32_t TileBatchDataD3D11::push(const BuiltPath &path,
 
     init_backdrops(prepare_info.backdrops, batch_path_index, path.tile_bounds);
 
-    auto &segment_ranges = last_scene.draw_segment_ranges;
+    auto &segment_ranges =
+        path_source == PathSource::Draw ? last_scene.draw_segment_ranges : last_scene.clip_segment_ranges;
+
     auto &segment_range = segment_ranges[global_path_id];
 
     prepare_info.dice_metadata.push_back({global_path_id, static_cast<uint32_t>(segment_range.start), segment_count});
@@ -60,7 +62,7 @@ uint32_t TileBatchDataD3D11::push(const BuiltPath &path,
     if (batch_clip_path_id) {
         clip_batch_id = batch_clip_path_id->batch_id;
     } else {
-        clip_batch_id = batch_path_index;
+        return batch_path_index;
     }
 
     if (clipped_path_info == nullptr) {

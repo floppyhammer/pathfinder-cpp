@@ -6,6 +6,7 @@
 #include "../../gpu/descriptor_set.h"
 #include "../renderer.h"
 #include "../scene.h"
+#include "data.h"
 #include "gpu_data.h"
 #include "scene_builder.h"
 
@@ -128,7 +129,8 @@ private:
                                             const std::shared_ptr<Buffer> &z_buffer_id,
                                             const std::shared_ptr<Buffer> &first_tile_map_buffer_id,
                                             const std::shared_ptr<Buffer> &alpha_tiles_buffer_id,
-                                            PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids);
+                                            PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids,
+                                            const shared_ptr<ClipBufferIDs> &clip_buffer_ids);
 
     void draw_fills(FillBufferInfoD3D11 &fill_storage_info,
                     const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,

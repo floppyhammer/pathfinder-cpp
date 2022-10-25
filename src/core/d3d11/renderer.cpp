@@ -84,7 +84,7 @@ void SceneSourceBuffers::upload(const std::shared_ptr<Pathfinder::Driver> &drive
     point_indices_count = segments.indices.size();
 
     // Upload data.
-    {
+    if (needed_points_capacity != 0 && needed_point_indices_capacity != 0) {
         auto cmd_buffer = driver->create_command_buffer(true);
 
         cmd_buffer->upload_to_buffer(points_buffer, 0, segments.points.size() * sizeof(Vec2F), segments.points.data());
@@ -102,7 +102,7 @@ void SceneBuffers::upload(const std::shared_ptr<Pathfinder::Driver> &driver,
                           SegmentsD3D11 &draw_segments,
                           SegmentsD3D11 &clip_segments) {
     draw.upload(driver, draw_segments);
-    // clip.upload(driver, clip_segments);
+    clip.upload(driver, clip_segments);
 }
 
 RendererD3D11::RendererD3D11(const std::shared_ptr<Pathfinder::Driver> &driver) : Renderer(driver) {
@@ -249,7 +249,9 @@ void RendererD3D11::set_up_pipelines() {
 void RendererD3D11::draw(const std::shared_ptr<SceneBuilder> &p_scene_builder) {
     auto *scene_builder = static_cast<SceneBuilderD3D11 *>(p_scene_builder.get());
 
-    if (scene_builder->built_segments.draw_segments.points.empty()) return;
+    if (scene_builder->built_segments.draw_segments.points.empty()) {
+        return;
+    }
 
     // RenderCommand::UploadSceneD3D11
     upload_scene(scene_builder->built_segments.draw_segments, scene_builder->built_segments.clip_segments);
@@ -257,6 +259,18 @@ void RendererD3D11::draw(const std::shared_ptr<SceneBuilder> &p_scene_builder) {
     alpha_tile_count = 0;
     need_to_clear_dest = true;
 
+    // Prepare clip tiles.
+    {
+        auto &prepare_batches = scene_builder->clip_batches_d3d11->prepare_batches;
+
+        for (auto iter = prepare_batches.rbegin(); iter != prepare_batches.rend(); ++iter) {
+            if (iter->path_count > 0) {
+                prepare_tiles(*iter);
+            }
+        }
+    }
+
+    // Draw tiles.
     for (auto &batch : scene_builder->tile_batches) {
         prepare_and_draw_tiles(batch);
     }
@@ -445,6 +459,18 @@ void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
     auto tiles_d3d11_buffer_id =
         driver->create_buffer(BufferType::Storage, batch.tile_count * sizeof(TileD3D11), MemoryProperty::DeviceLocal);
 
+    // Fetch and/or allocate clip storage as needed.
+    shared_ptr<ClipBufferIDs> clip_buffer_ids;
+    if (batch.clipped_path_info) {
+        auto clip_batch_id = batch.clipped_path_info->clip_batch_id;
+
+        auto clip_tile_batch_info = tile_batch_info[clip_batch_id];
+        auto metadata = clip_tile_batch_info.propagate_metadata_buffer_id;
+        auto tiles = clip_tile_batch_info.tiles_d3d11_buffer_id;
+
+        clip_buffer_ids = std::make_shared<ClipBufferIDs>(ClipBufferIDs{metadata, tiles});
+    }
+
     // Allocate a Z-buffer.
     auto z_buffer_id = allocate_z_buffer();
 
@@ -507,7 +533,8 @@ void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
                                                 z_buffer_id,
                                                 first_tile_map_buffer_id,
                                                 alpha_tiles_buffer_id,
-                                                propagate_metadata_buffer_ids);
+                                                propagate_metadata_buffer_ids,
+                                                clip_buffer_ids);
 
     propagate_metadata_buffer_ids.backdrops.reset();
 
@@ -775,7 +802,8 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
                                                        const std::shared_ptr<Buffer> &z_buffer_id,
                                                        const std::shared_ptr<Buffer> &first_tile_map_buffer_id,
                                                        const std::shared_ptr<Buffer> &alpha_tiles_buffer_id,
-                                                       PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids) {
+                                                       PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids,
+                                                       const shared_ptr<ClipBufferIDs> &clip_buffer_ids) {
     // Upload data to buffers.
     {
         auto cmd_buffer = driver->create_command_buffer(true);
@@ -815,24 +843,33 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
         propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute,
                                                         0,
                                                         propagate_metadata_buffer_ids.propagate_metadata);
-        // Clip metadata, read only.
-        propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute,
-                                                        1,
-                                                        propagate_metadata_buffer_ids.propagate_metadata);
         // Read only.
         propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute,
                                                         2,
                                                         propagate_metadata_buffer_ids.backdrops);
         // Read and write.
         propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute, 3, tiles_d3d11_buffer_id);
-        // Clip tiles, read and write.
-        propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute, 4, tiles_d3d11_buffer_id);
         // Read and write.
         propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute, 5, z_buffer_id);
         // Read and write.
         propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute, 6, first_tile_map_buffer_id);
         // Write only.
         propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute, 7, alpha_tiles_buffer_id);
+
+        if (clip_buffer_ids) {
+            auto clip_metadata_buffer = clip_buffer_ids->metadata;
+            auto clip_tile_buffer = clip_buffer_ids->tiles;
+
+            // Read only.
+            propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute, 1, clip_metadata_buffer);
+            // Read and write.
+            propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute, 4, clip_tile_buffer);
+        } else { // Placeholders.
+            propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute,
+                                                            1,
+                                                            propagate_metadata_buffer_ids.propagate_metadata);
+            propagate_descriptor_set->add_or_update_storage(ShaderStage::Compute, 4, tiles_d3d11_buffer_id);
+        }
     }
 
     auto cmd_buffer = driver->create_command_buffer(true);
@@ -897,11 +934,12 @@ void RendererD3D11::draw_fills(FillBufferInfoD3D11 &fill_storage_info,
 
     // Update descriptor set.
     {
-        fill_descriptor_set->add_or_update_storage(ShaderStage::Compute,
-                                                   0,
-                                                   fill_storage_info.fill_vertex_buffer_id);        // Read only.
-        fill_descriptor_set->add_or_update_storage(ShaderStage::Compute, 1, tiles_d3d11_buffer_id); // Read only.
-        fill_descriptor_set->add_or_update_storage(ShaderStage::Compute, 2, alpha_tiles_buffer_id); // Read only.
+        // Read only.
+        fill_descriptor_set->add_or_update_storage(ShaderStage::Compute, 0, fill_storage_info.fill_vertex_buffer_id);
+        // Read only.
+        fill_descriptor_set->add_or_update_storage(ShaderStage::Compute, 1, tiles_d3d11_buffer_id);
+        // Read only.
+        fill_descriptor_set->add_or_update_storage(ShaderStage::Compute, 2, alpha_tiles_buffer_id);
     }
 
     cmd_buffer = driver->create_command_buffer(true);
