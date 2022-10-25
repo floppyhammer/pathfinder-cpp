@@ -14,16 +14,23 @@ namespace Pathfinder {
 
 /// For draw path and clip path.
 struct PathBuildParams {
-    uint32_t path_id;
+    uint32_t path_id{};
     RectF view_box;
-    Scene *scene;
+    Scene *scene{};
 };
 
 /// For draw path only.
 struct DrawPathBuildParams {
+    // We have to make an explicit constructor because of the reference memebers.
+    DrawPathBuildParams(PathBuildParams p_path_build_params,
+                        std::vector<PaintMetadata> &p_paint_metadata,
+                        std::vector<BuiltPath> &p_built_clip_paths)
+        : path_build_params(p_path_build_params), paint_metadata(p_paint_metadata),
+          built_clip_paths(p_built_clip_paths) {}
+
     PathBuildParams path_build_params;
-    std::vector<PaintMetadata> paint_metadata; // TODO: Make these references.
-    std::vector<BuiltPath> built_clip_paths;
+    std::vector<PaintMetadata> &paint_metadata;
+    std::vector<BuiltPath> &built_clip_paths;
 };
 
 /// Builds a scene into rendering data.

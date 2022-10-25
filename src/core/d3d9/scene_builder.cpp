@@ -141,7 +141,7 @@ vector<BuiltDrawPath> SceneBuilderD3D9::build_paths_on_cpu(vector<PaintMetadata>
     {
         // Parallel build.
         auto task = [this, &built_clip_paths, &clip_paths_count, &view_box](int begin) {
-            for (int path_index = begin; path_index < clip_paths_count; path_index += PATHFINDER_THREADS) {
+            for (uint32_t path_index = begin; path_index < clip_paths_count; path_index += PATHFINDER_THREADS) {
                 PathBuildParams params;
                 params.path_id = path_index;
                 params.view_box = view_box;
@@ -167,13 +167,8 @@ vector<BuiltDrawPath> SceneBuilderD3D9::build_paths_on_cpu(vector<PaintMetadata>
         // Parallel build.
         auto task =
             [this, &built_draw_paths, &draw_paths_count, &view_box, &paint_metadata, &built_clip_paths](int begin) {
-                for (int path_index = begin; path_index < draw_paths_count; path_index += PATHFINDER_THREADS) {
-                    DrawPathBuildParams params;
-                    params.paint_metadata = paint_metadata;
-                    params.built_clip_paths = built_clip_paths;
-                    params.path_build_params.path_id = path_index;
-                    params.path_build_params.view_box = view_box;
-                    params.path_build_params.scene = scene;
+                for (uint32_t path_index = begin; path_index < draw_paths_count; path_index += PATHFINDER_THREADS) {
+                    auto params = DrawPathBuildParams({path_index, view_box, scene}, paint_metadata, built_clip_paths);
 
                     built_draw_paths[path_index] = build_draw_path_on_cpu(params);
                 }
