@@ -64,22 +64,29 @@ struct DenseTileMap {
     }
 
     inline T *get(const Vec2I &coords) {
-        int index = coords_to_index_unchecked(coords);
+        auto index = coords_to_index(coords);
 
-        if (index < data.size()) {
-            return &data[index];
+        // We have to make sure the index we get is valid.
+        if (index) {
+            return &data[*index];
         } else {
             return nullptr;
         }
     }
 
-    // This is similar to finding an element index in a matrix by row and column.
-    inline int coords_to_index_unchecked(const Vec2I &coords) {
-        return (coords.y - rect.min_y()) * rect.size().x + coords.x - rect.min_x();
+    /// A safe call to find index by coordinates.
+    inline std::shared_ptr<size_t> coords_to_index(const Vec2I &coords) {
+        if (rect.contains_point(coords)) {
+            return std::make_shared<size_t>(coords_to_index_unchecked(coords));
+        } else {
+            return nullptr;
+        }
     }
 
-    inline int coords_to_index_unchecked(int p_x, int p_y) {
-        return (p_y - rect.min_y()) * rect.size().x + p_x - rect.min_x();
+    /// An unsafe call to index by coordinates.
+    /// The tile map's top and bottom bounds are not considered.
+    inline int coords_to_index_unchecked(const Vec2I &coords) {
+        return (coords.y - rect.min_y()) * rect.size().x + coords.x - rect.min_x();
     }
 };
 

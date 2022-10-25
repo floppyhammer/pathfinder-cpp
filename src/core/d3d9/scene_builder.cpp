@@ -74,7 +74,7 @@ DrawTileBatchD3D9 build_tile_batches_for_draw_path_display_item(Scene &scene,
             // Set z buffer value.
             // ----------------------------------------------------------
             // Get tile index in the vector.
-            auto z_buffer_index = draw_tile_batch.z_buffer_data.coords_to_index_unchecked(tile.tile_x, tile.tile_y);
+            auto z_buffer_index = draw_tile_batch.z_buffer_data.coords_to_index_unchecked({tile.tile_x, tile.tile_y});
             auto z_value = &draw_tile_batch.z_buffer_data.data[z_buffer_index];
 
             // Store the biggest draw_path_id as the z value, which means the solid tile of this path is the topmost.
