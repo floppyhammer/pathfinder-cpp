@@ -8,6 +8,7 @@
 #include "../../common/color.h"
 #include "../../common/math/transform2.h"
 #include "../../common/math/vec2.h"
+#include "../../gpu/driver.h"
 #include "../../gpu/framebuffer.h"
 #include "../../gpu/render_pass.h"
 #include "effects.h"
@@ -26,15 +27,40 @@ struct RenderTarget {
     std::shared_ptr<RenderPass> render_pass;
     /// Framebuffer.
     std::shared_ptr<Framebuffer> framebuffer;
-    /// The ID of the render target, including the ID of the scene it came from.
-    uint32_t id = 0;
     /// The device pixel size of the render target.
-    Vec2<uint32_t> size;
+    Vec2I size;
+
+    RenderTarget() = default;
+
+    RenderTarget(const std::shared_ptr<Driver> &driver, Vec2I p_size) {
+        size = p_size;
+
+        render_pass = driver->create_render_pass(TextureFormat::Rgba8Unorm,
+                                                 AttachmentLoadOp::Clear,
+                                                 TextureLayout::ShaderReadOnly);
+
+        auto target_texture = driver->create_texture(size.x, size.y, TextureFormat::Rgba8Unorm);
+
+        // Create a new framebuffer.
+        framebuffer = driver->create_framebuffer(render_pass, target_texture);
+    }
+};
+
+/// Identifies a drawing surface for vector graphics that can be later used as a pattern.
+struct RenderTargetId {
+    /// The ID of the scene that this render target ID belongs to.
+    uint32_t scene;
+    /// The ID of the render target within this scene.
+    uint32_t render_target;
+
+    bool operator<(const RenderTargetId &rhs) const {
+        return scene < rhs.scene && render_target < rhs.render_target;
+    }
 };
 
 /// A raster image, in 32-bit RGBA (8 bits per channel), non-premultiplied form.
 struct Image {
-    Vec2<uint32_t> size;
+    Vec2I size;
     std::vector<ColorU> pixels;
 
     // TODO: This should not be here.
@@ -56,7 +82,8 @@ struct PatternSource {
     /// Previously-rendered vector content.
     ///
     /// This value allows you to render content and then later use that content as a pattern.
-    RenderTarget render_target;
+    RenderTargetId render_target_id;
+    Vec2I size;
 
     /// Returns true if this pattern is obviously opaque.
     inline bool is_opaque() const {
@@ -107,10 +134,11 @@ struct Pattern {
     /// Creates a new pattern from the given render target with the given size.
     ///
     /// The transform is initialized to the identity transform. There is no filter.
-    static inline Pattern from_render_target(const RenderTarget &render_target) {
+    static inline Pattern from_render_target(RenderTargetId id, Vec2I size) {
         PatternSource source;
         source.type = PatternSource::Type::RenderTarget;
-        source.render_target = render_target;
+        source.render_target_id = id;
+        source.size = size;
 
         return Pattern::from_source(source);
     }
@@ -128,12 +156,12 @@ struct Pattern {
     }
 
     /// Returns the underlying pixel size of this pattern, not taking transforms into account.
-    inline Vec2<uint32_t> get_size() const {
+    inline Vec2I get_size() const {
         switch (source.type) {
             case PatternSource::Type::Image:
                 return source.image.size;
             case PatternSource::Type::RenderTarget:
-                return source.render_target.size;
+                return source.size;
         }
     }
 

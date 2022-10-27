@@ -161,7 +161,7 @@ public:
                                   void *data) = 0;
 
     void upload_to_texture(const std::shared_ptr<Texture> &texture,
-                           Rect<uint32_t> region,
+                           RectI region,
                            const void *data,
                            TextureLayout dst_layout);
 

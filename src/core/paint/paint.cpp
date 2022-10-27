@@ -4,7 +4,7 @@
 
 namespace Pathfinder {
 
-RectF rect_to_uv(const Rect<uint32_t> &rect, const Vec2F &texture_scale) {
+RectF rect_to_uv(const RectI &rect, const Vec2F &texture_scale) {
     return rect.to_f32() * texture_scale;
 }
 

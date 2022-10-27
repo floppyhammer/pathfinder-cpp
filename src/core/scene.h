@@ -27,8 +27,7 @@ struct DisplayItem {
         PopRenderTarget,
     } type = Type::DrawPaths;
 
-    // TODO: Make this an ID.
-    RenderTarget render_target; // For PushRenderTarget.
+    RenderTargetId render_target_id; // For PushRenderTarget.
 
     Range path_range; // For DrawPaths.
 };
@@ -81,11 +80,13 @@ public:
     /// Defines a clip path. Returns an ID that can be used to later clip draw paths.
     uint32_t push_clip_path(const ClipPath &clip_path);
 
+    void push_draw_path_with_index(uint32_t draw_path_id);
+
     /// Directs subsequent draw paths to draw to the given render target instead of the output.
     ///
     /// Render targets form a stack. All `push_draw_path()` commands go to the render target at the
     /// top of the stack.
-    RenderTarget push_render_target(const std::shared_ptr<Driver> &driver, Vec2I render_target_size);
+    RenderTargetId push_render_target(const RenderTarget &render_target);
 
     /// Removes the most-recently-pushed render target from the top of the stack.
     ///
@@ -94,7 +95,8 @@ public:
     void pop_render_target();
 
     /**
-     * Add all shapes in a scene to this one.
+     * Add all elements in a scene to this one.
+     * This includes draw paths, clip paths, render targets, and paints.
      * @param p_scene Scene to append.
      */
     void append_scene(const Scene &p_scene);

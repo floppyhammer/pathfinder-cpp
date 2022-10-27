@@ -161,7 +161,7 @@ void upload_texture_metadata(const std::shared_ptr<Texture> &metadata_texture,
 
     // Update the region that contains info instead of the whole texture.
     auto region_rect =
-        Rect<uint32_t>(0, 0, TEXTURE_METADATA_TEXTURE_WIDTH, texels.size() / (4 * TEXTURE_METADATA_TEXTURE_WIDTH));
+        RectI(0, 0, TEXTURE_METADATA_TEXTURE_WIDTH, texels.size() / (4 * TEXTURE_METADATA_TEXTURE_WIDTH));
 
     // Don't use a vector as we need to delay the de-allocation until the image data is uploaded to GPU.
     auto raw_texels = new half[texels.size()];
@@ -204,27 +204,29 @@ Paint Palette::get_paint(uint32_t paint_id) const {
     return paints[paint_id];
 }
 
-RenderTarget Palette::push_render_target(const std::shared_ptr<Driver> &driver, const Vec2I &render_target_size) {
-    auto render_pass =
-        driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Clear, TextureLayout::ShaderReadOnly);
+RenderTargetId Palette::push_render_target(const RenderTarget &render_target) {
+    //    auto render_pass =
+    //        driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Clear,
+    //        TextureLayout::ShaderReadOnly);
+    //
+    //    // Create a new framebuffer.
+    //    auto target_texture = driver->create_texture(render_target_size.x, render_target_size.y,
+    //    TextureFormat::Rgba8Unorm); auto framebuffer = driver->create_framebuffer(render_pass, target_texture);
+    //
 
-    // Create a new framebuffer.
-    auto target_texture = driver->create_texture(render_target_size.x, render_target_size.y, TextureFormat::Rgba8Unorm);
-    auto framebuffer = driver->create_framebuffer(render_pass, target_texture);
-
-    RenderTarget render_target;
-    render_target.id = render_targets.size();
-    render_target.render_pass = render_pass;
-    render_target.framebuffer = framebuffer;
-    render_target.size = {(uint32_t)render_target_size.x, (uint32_t)render_target_size.y};
-
-    render_targets.push_back(framebuffer);
-
-    return render_target;
+    //
+    //    RenderTarget render_target;
+    //    render_target.id = render_targets.size();
+    //    render_target.render_pass = render_pass;
+    //    render_target.framebuffer = framebuffer;
+    //    render_target.size = {(uint32_t)render_target_size.x, (uint32_t)render_target_size.y};
+    uint32_t id = render_targets.size();
+    render_targets.push_back(render_target);
+    return {scene_id, id};
 }
 
-std::shared_ptr<Framebuffer> Palette::get_render_target(uint32_t render_target_id) const {
-    return render_targets[render_target_id];
+RenderTarget Palette::get_render_target(RenderTargetId id) const {
+    return render_targets[id.render_target];
 }
 
 std::vector<PaintMetadata> Palette::build_paint_info(const std::shared_ptr<Driver> &driver) {
@@ -330,7 +332,7 @@ std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr
                 {
                     // Image
                     if (pattern.source.type == PatternSource::Type::Image) {
-                        texture_location.rect = Rect<uint32_t>({}, pattern.source.image.size);
+                        texture_location.rect = RectI({}, pattern.source.image.size);
 
                         pattern.source.image.texture = driver->create_texture(pattern.source.image.size.x,
                                                                               pattern.source.image.size.y,
@@ -340,13 +342,13 @@ std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr
 
                         cmd_buffer->upload_to_texture(
                             pattern.source.image.texture,
-                            Rect<uint32_t>(0, 0, pattern.source.image.size.x, pattern.source.image.size.y),
+                            RectI(0, 0, pattern.source.image.size.x, pattern.source.image.size.y),
                             pattern.source.image.pixels.data(),
                             TextureLayout::ShaderReadOnly);
 
                         cmd_buffer->submit(driver);
                     } else { // Render target
-                        texture_location.rect = Rect<uint32_t>({}, pattern.source.render_target.size);
+                        texture_location.rect = RectI({}, pattern.source.size);
                     }
                 }
 

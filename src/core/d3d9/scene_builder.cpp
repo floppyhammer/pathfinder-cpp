@@ -51,8 +51,10 @@ DrawTileBatchD3D9 build_tile_batches_for_draw_path_display_item(Scene &scene,
                     if (pattern.source.type == PatternSource::Type::Image) {
                         draw_tile_batch.color_texture = pattern.source.image.texture;
                     } else { // Source is a render target.
-                        draw_tile_batch.color_texture =
-                            overlay->contents.pattern.source.render_target.framebuffer->get_texture();
+                        auto render_target =
+                            scene.palette.get_render_target(overlay->contents.pattern.source.render_target_id);
+
+                        draw_tile_batch.color_texture = render_target.framebuffer->get_texture();
                     }
                 }
             }
@@ -252,16 +254,16 @@ void SceneBuilderD3D9::build_tile_batches(const std::vector<BuiltDrawPath> &buil
     // Clear batches.
     tile_batches.clear();
 
-    std::vector<RenderTarget> render_target_stack;
+    std::vector<RenderTargetId> render_target_id_stack;
 
     // Build batches using the display items.
     for (const auto &display_item : scene->display_list) {
         switch (display_item.type) {
             case DisplayItem::Type::PushRenderTarget: {
-                render_target_stack.push_back(display_item.render_target);
+                render_target_id_stack.push_back(display_item.render_target_id);
             } break;
             case DisplayItem::Type::PopRenderTarget: {
-                render_target_stack.pop_back();
+                render_target_id_stack.pop_back();
             } break;
             case DisplayItem::Type::DrawPaths: {
                 // Create a new batch.
@@ -269,8 +271,10 @@ void SceneBuilderD3D9::build_tile_batches(const std::vector<BuiltDrawPath> &buil
                     build_tile_batches_for_draw_path_display_item(*scene, built_paths, display_item.path_range);
 
                 // Set render target. Pick the one on the top of the stack.
-                if (!render_target_stack.empty()) {
-                    tile_batch.render_target = render_target_stack.back();
+                if (!render_target_id_stack.empty()) {
+                    auto render_target = scene->palette.get_render_target(render_target_id_stack.back());
+
+                    tile_batch.render_target = render_target;
                 }
 
                 tile_batches.push_back(tile_batch);

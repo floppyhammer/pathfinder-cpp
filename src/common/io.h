@@ -24,7 +24,7 @@ struct ImageData {
 
     std::vector<ColorU> to_rgba_pixels() const;
 
-    uint32_t width, height, channel_count;
+    int32_t width, height, channel_count;
 
     unsigned char *data;
 };

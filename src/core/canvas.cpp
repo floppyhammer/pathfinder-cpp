@@ -11,16 +11,13 @@
 
 namespace Pathfinder {
 struct ShadowBlurRenderTargetInfo {
-    /// Render targets.
-    RenderTarget id_x;
-    RenderTarget id_y;
-
+    /// Render target ids.
+    RenderTargetId id_x;
+    RenderTargetId id_y;
     /// Shadow color.
     ColorU color;
-
     /// Shadow bounds.
     RectI bounds;
-
     /// Blur size.
     float sigma = 0;
 };
@@ -46,8 +43,8 @@ ShadowBlurRenderTargetInfo push_shadow_blur_render_targets(const std::shared_ptr
     // Bounds expansion caused by blurring.
     auto bounds = outline_bounds.dilate(sigma * 3.f).round_out().to_i32();
 
-    shadow_blur_info.id_y = scene.push_render_target(driver, bounds.size());
-    shadow_blur_info.id_x = scene.push_render_target(driver, bounds.size());
+    shadow_blur_info.id_y = scene.push_render_target(RenderTarget(driver, bounds.size()));
+    shadow_blur_info.id_x = scene.push_render_target(RenderTarget(driver, bounds.size()));
 
     shadow_blur_info.sigma = sigma;
     shadow_blur_info.bounds = bounds;
@@ -67,8 +64,8 @@ void composite_shadow_blur_render_targets(Scene &scene, const ShadowBlurRenderTa
         return;
     }
 
-    auto pattern_x = Pattern::from_render_target(info.id_x);
-    auto pattern_y = Pattern::from_render_target(info.id_y);
+    auto pattern_x = Pattern::from_render_target(info.id_x, info.bounds.size());
+    auto pattern_y = Pattern::from_render_target(info.id_y, info.bounds.size());
     pattern_y.apply_transform(Transform2::from_translation(info.bounds.origin().to_f32()));
 
     auto filter = PatternFilter();

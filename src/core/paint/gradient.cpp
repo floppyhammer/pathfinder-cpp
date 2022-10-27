@@ -87,7 +87,7 @@ TextureLocation GradientTileBuilder::allocate(const Gradient &gradient) {
     // Texture location that we should write to.
     auto location = TextureLocation{
         tile.page,
-        Rect<uint32_t>(0, tile.next_index, GRADIENT_TILE_LENGTH, tile.next_index + 1),
+        RectI(0, tile.next_index, GRADIENT_TILE_LENGTH, tile.next_index + 1),
     };
 
     // Update which row we should write next.
@@ -114,7 +114,7 @@ void GradientTileBuilder::upload(const std::shared_ptr<Driver> &driver, const st
     // FIXME: We only have one texture for now.
     for (auto &tile : tiles) {
         cmd_buffer->upload_to_texture(texture,
-                                      Rect<uint32_t>(0, 0, GRADIENT_TILE_LENGTH, GRADIENT_TILE_LENGTH),
+                                      RectI(0, 0, GRADIENT_TILE_LENGTH, GRADIENT_TILE_LENGTH),
                                       tile.texels.data(),
                                       TextureLayout::ShaderReadOnly);
     }

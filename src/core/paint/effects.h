@@ -255,7 +255,7 @@ struct TextureLocation {
     /// Which texture.
     uint32_t page{};
     /// Region in the texture.
-    Rect<uint32_t> rect{};
+    RectI rect{};
 };
 
 struct TextureSamplingFlags {

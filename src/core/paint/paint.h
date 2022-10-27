@@ -25,7 +25,7 @@ enum class PaintCompositeOp {
     DestIn,
 };
 
-RectF rect_to_uv(const Rect<uint32_t> &rect, const Vec2F &texture_scale);
+RectF rect_to_uv(const RectI &rect, const Vec2F &texture_scale);
 
 /// The contents of an overlay: either a gradient or a pattern.
 struct PaintContents {

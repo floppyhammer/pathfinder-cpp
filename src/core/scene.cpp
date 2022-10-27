@@ -58,28 +58,96 @@ uint32_t Scene::push_clip_path(const ClipPath &clip_path) {
     return clip_path_id;
 }
 
-void Scene::append_scene(const Scene &p_scene) {
-    if (p_scene.draw_paths.empty()) return;
+void Scene::push_draw_path_with_index(uint32_t draw_path_id) {
+    auto new_path_bounds = draw_paths[draw_path_id].outline.bounds;
 
-    // Extend paths.
-    draw_paths.reserve(draw_paths.size() + p_scene.draw_paths.size());
-    draw_paths.insert(std::end(draw_paths), std::begin(p_scene.draw_paths), std::end(p_scene.draw_paths));
+    bounds = bounds.union_rect(new_path_bounds);
 
-    // Combine bounds.
-    bounds = bounds.union_rect(p_scene.bounds);
+    auto end_path_id = draw_path_id + 1;
+    if (display_list.back().type == DisplayItem::Type::DrawPaths) {
+        auto &range = display_list.back().path_range;
+
+        range.end = end_path_id;
+    } else {
+        DisplayItem display_item;
+        display_item.type = DisplayItem::Type::DrawPaths;
+        display_item.path_range = {draw_path_id, end_path_id};
+
+        display_list.push_back(display_item);
+    }
+}
+
+void Scene::append_scene(const Scene &scene) {
+    if (scene.draw_paths.empty()) {
+        return;
+    }
+
+    auto merged_palette_info = palette.append_palette(scene.palette);
+
+    // Merge clip paths.
+    vector<size_t> clip_path_mapping;
+    clip_path_mapping.reserve(scene.clip_paths.size());
+    for (auto &clip_path : scene.clip_paths) {
+        clip_path_mapping.push_back(clip_paths.size());
+        clip_paths.push_back(clip_path);
+    }
+
+    // Merge draw paths.
+    vector<size_t> draw_path_mapping;
+    draw_path_mapping.reserve(scene.draw_paths.size());
+    for (auto &draw_path : scene.draw_paths) {
+        draw_path_mapping.push_back(draw_paths.size());
+
+        auto new_draw_path = draw_path;
+        new_draw_path.paint = merged_palette_info.paint_mapping[draw_path.paint];
+        if (draw_path.clip_path) {
+            new_draw_path.clip_path = std::make_shared<uint32_t>(clip_path_mapping[*draw_path.clip_path]);
+        }
+
+        draw_paths.push_back(new_draw_path);
+    }
+
+    // Merge display items.
+    for (auto &display_item : scene.display_list) {
+        switch (display_item.type) {
+            case DisplayItem::Type::PushRenderTarget: {
+                auto old_render_target_id = display_item.render_target_id;
+                auto new_render_target_id = merged_palette_info.render_target_mapping[old_render_target_id];
+
+                DisplayItem new_display_item;
+                new_display_item.type = DisplayItem::Type::PushRenderTarget;
+                new_display_item.render_target_id = new_render_target_id;
+
+                display_list.push_back(new_display_item);
+            } break;
+            case DisplayItem::Type::PopRenderTarget: {
+                display_list.push_back(display_item);
+            } break;
+            case DisplayItem::Type::DrawPaths: {
+                auto range = display_item.path_range;
+
+                for (uint32_t old_path_index = range.start; old_path_index < range.end; old_path_index++) {
+                    auto old_draw_path_id = draw_path_mapping[old_path_index];
+                    push_draw_path_with_index(old_draw_path_id);
+                }
+            } break;
+        }
+    }
 
     // Need to rebuild the scene.
     is_dirty = true;
 }
 
-RenderTarget Scene::push_render_target(const std::shared_ptr<Driver> &driver, Vec2I render_target_size) {
+RenderTargetId Scene::push_render_target(const RenderTarget &render_target) {
+    auto render_target_id = palette.push_render_target(render_target);
+
     DisplayItem item{};
     item.type = DisplayItem::Type::PushRenderTarget;
-    item.render_target = palette.push_render_target(driver, render_target_size);
+    item.render_target_id = render_target_id;
 
     display_list.push_back(item);
 
-    return item.render_target;
+    return render_target_id;
 }
 
 void Scene::pop_render_target() {

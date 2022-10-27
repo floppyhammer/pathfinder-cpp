@@ -125,10 +125,10 @@ void CommandBuffer::end_compute_pass() {
 }
 
 void CommandBuffer::upload_to_texture(const std::shared_ptr<Texture> &texture,
-                                      Rect<uint32_t> p_region,
+                                      RectI p_region,
                                       const void *data,
                                       TextureLayout dst_layout) {
-    auto whole_region = Rect<uint32_t>(0, 0, texture->get_width(), texture->get_height());
+    auto whole_region = RectI(0, 0, texture->get_width(), texture->get_height());
 
     // Invalid region represents the whole texture.
     auto region = p_region.is_valid() ? p_region : whole_region;
