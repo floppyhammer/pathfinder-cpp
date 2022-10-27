@@ -6,13 +6,13 @@
 #include "../../gpu/descriptor_set.h"
 #include "../renderer.h"
 #include "../scene.h"
-#include "data.h"
 #include "gpu_data.h"
 #include "scene_builder.h"
 
 #ifdef PATHFINDER_USE_D3D11
 
 namespace Pathfinder {
+
 struct TileBatchInfoD3D11 {
     uint32_t tile_count;
     std::shared_ptr<Buffer> z_buffer_id;
@@ -64,6 +64,13 @@ struct PropagateTilesInfoD3D11 {
 struct MaskStorage {
     uint64_t framebuffer_id;
     uint32_t allocated_page_count;
+};
+
+struct ClipBufferIDs {
+    /// Optional
+    shared_ptr<Buffer> metadata;
+
+    shared_ptr<Buffer> tiles;
 };
 
 class RendererD3D11 : public Renderer {
@@ -191,6 +198,7 @@ private:
 
     std::vector<TileBatchInfoD3D11> tile_batch_info;
 };
+
 } // namespace Pathfinder
 
 #endif

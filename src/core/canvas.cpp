@@ -10,6 +10,7 @@
 #include "stroke.h"
 
 namespace Pathfinder {
+
 struct ShadowBlurRenderTargetInfo {
     /// Render target ids.
     RenderTargetId id_x;

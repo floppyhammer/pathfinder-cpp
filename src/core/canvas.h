@@ -3,7 +3,6 @@
 
 #include <memory>
 
-#include "../gpu/driver.h"
 #include "d3d11/renderer.h"
 #include "d3d11/scene_builder.h"
 #include "d3d9/renderer.h"

@@ -7,6 +7,7 @@
 #include "data.h"
 
 namespace Pathfinder {
+
 // Everything above 16 MB is allocated exactly for general buffer.
 const uint64_t MAX_BUFFER_SIZE_CLASS = 16 * 1024 * 1024;
 

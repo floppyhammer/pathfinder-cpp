@@ -1,6 +1,8 @@
 #ifndef PATHFINDER_PATTERN_H
 #define PATHFINDER_PATTERN_H
 
+//! Raster image patterns.
+
 #include <cstdint>
 #include <utility>
 #include <vector>
@@ -13,38 +15,7 @@
 #include "../../gpu/render_pass.h"
 #include "effects.h"
 
-//! Raster image patterns.
-
 namespace Pathfinder {
-
-/// A raster image target that can be rendered to and later reused as a pattern.
-///
-/// This can be useful for creating "stamps" or "symbols" that are rendered once and reused. It can
-/// also be useful for image effects that require many paths to be processed at once; e.g. opacity
-/// applied to a group of paths.
-struct RenderTarget {
-    /// Render pass.
-    std::shared_ptr<RenderPass> render_pass;
-    /// Framebuffer.
-    std::shared_ptr<Framebuffer> framebuffer;
-    /// The device pixel size of the render target.
-    Vec2I size;
-
-    RenderTarget() = default;
-
-    RenderTarget(const std::shared_ptr<Driver> &driver, Vec2I p_size) {
-        size = p_size;
-
-        render_pass = driver->create_render_pass(TextureFormat::Rgba8Unorm,
-                                                 AttachmentLoadOp::Clear,
-                                                 TextureLayout::ShaderReadOnly);
-
-        auto target_texture = driver->create_texture(size.x, size.y, TextureFormat::Rgba8Unorm);
-
-        // Create a new framebuffer.
-        framebuffer = driver->create_framebuffer(render_pass, target_texture);
-    }
-};
 
 /// Identifies a drawing surface for vector graphics that can be later used as a pattern.
 struct RenderTargetId {
@@ -65,6 +36,31 @@ struct Image {
 
     // TODO: This should not be here.
     mutable std::shared_ptr<Texture> texture;
+};
+
+/// A raster image target that can be rendered to and later reused as a pattern.
+///
+/// This can be useful for creating "stamps" or "symbols" that are rendered once and reused. It can
+/// also be useful for image effects that require many paths to be processed at once; e.g. opacity
+/// applied to a group of paths.
+struct RenderTarget {
+    /// Render pass.
+    std::shared_ptr<RenderPass> render_pass;
+    /// Framebuffer.
+    std::shared_ptr<Framebuffer> framebuffer;
+
+    RenderTarget() = default;
+
+    RenderTarget(const std::shared_ptr<Driver> &driver, Vec2I size) {
+        render_pass = driver->create_render_pass(TextureFormat::Rgba8Unorm,
+                                                 AttachmentLoadOp::Clear,
+                                                 TextureLayout::ShaderReadOnly);
+
+        auto target_texture = driver->create_texture(size.x, size.y, TextureFormat::Rgba8Unorm);
+
+        // Create a new framebuffer.
+        framebuffer = driver->create_framebuffer(render_pass, target_texture);
+    }
 };
 
 /// Where a raster image pattern comes from.

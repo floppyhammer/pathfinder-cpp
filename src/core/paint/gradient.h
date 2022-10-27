@@ -1,6 +1,8 @@
 #ifndef PATHFINDER_GRADIENT_H
 #define PATHFINDER_GRADIENT_H
 
+//! Gradient effects that paths can be filled with.
+
 #include <utility>
 #include <vector>
 
@@ -9,8 +11,6 @@
 #include "../../gpu/driver.h"
 #include "../data/line_segment.h"
 #include "effects.h"
-
-//! Gradient effects that paths can be filled with.
 
 namespace Pathfinder {
 

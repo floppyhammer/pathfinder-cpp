@@ -205,21 +205,6 @@ Paint Palette::get_paint(uint32_t paint_id) const {
 }
 
 RenderTargetId Palette::push_render_target(const RenderTarget &render_target) {
-    //    auto render_pass =
-    //        driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Clear,
-    //        TextureLayout::ShaderReadOnly);
-    //
-    //    // Create a new framebuffer.
-    //    auto target_texture = driver->create_texture(render_target_size.x, render_target_size.y,
-    //    TextureFormat::Rgba8Unorm); auto framebuffer = driver->create_framebuffer(render_pass, target_texture);
-    //
-
-    //
-    //    RenderTarget render_target;
-    //    render_target.id = render_targets.size();
-    //    render_target.render_pass = render_pass;
-    //    render_target.framebuffer = framebuffer;
-    //    render_target.size = {(uint32_t)render_target_size.x, (uint32_t)render_target_size.y};
     uint32_t id = render_targets.size();
     render_targets.push_back(render_target);
     return {scene_id, id};

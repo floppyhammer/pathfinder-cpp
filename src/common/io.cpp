@@ -33,7 +33,7 @@ std::string load_file_as_string(const std::string &file_path) {
         throw std::runtime_error(std::string("Failed to load string from disk: ") + std::string(file_path));
     }
 
-    return output;
+    return std::move(output);
 }
 
 std::vector<char> load_file_as_bytes(const std::string &file_path) {
@@ -43,7 +43,7 @@ std::vector<char> load_file_as_bytes(const std::string &file_path) {
 
     input.close();
 
-    return bytes;
+    return std::move(bytes);
 }
 
 std::shared_ptr<ImageData> ImageData::from_memory(const std::vector<char> &bytes, bool flip_y) {

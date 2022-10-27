@@ -1,7 +1,5 @@
 #include "paint.h"
 
-#include <stdexcept>
-
 namespace Pathfinder {
 
 RectF rect_to_uv(const RectI &rect, const Vec2F &texture_scale) {

@@ -3,10 +3,10 @@
 
 #include "common/global_macros.h"
 #include "common/io.h"
+#include "common/math/basic.h"
 #include "common/math/rect.h"
 #include "common/math/vec2.h"
 #include "common/math/vec3.h"
-#include "common/math/basic.h"
 #include "core/canvas.h"
 #include "core/svg.h"
 #include "gpu/framebuffer.h"

@@ -3,7 +3,7 @@
 App::App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
          int window_width,
          int window_height,
-         const std::vector<char> &p_svg_input) {
+         const std::vector<char> &svg_input) {
     // Set logger level.
     Pathfinder::Logger::set_level(Pathfinder::Logger::Level::INFO);
 
@@ -40,7 +40,7 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
     // SVG test.
     if (true) {
         Pathfinder::SvgScene svg_scene;
-        svg_scene.load_file(p_svg_input, *canvas);
+        svg_scene.load_file(svg_input, *canvas);
         canvas->set_scene(svg_scene.get_scene());
     }
 

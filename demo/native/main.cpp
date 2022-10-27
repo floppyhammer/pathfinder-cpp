@@ -1,8 +1,8 @@
 #include "../common/app.h"
 #include "../src/gpu/platform.h"
 
-uint32_t WINDOW_WIDTH = 1280;
-uint32_t WINDOW_HEIGHT = 720;
+int32_t WINDOW_WIDTH = 1280;
+int32_t WINDOW_HEIGHT = 720;
 
 int main() {
 #ifdef PATHFINDER_USE_VULKAN
@@ -33,7 +33,9 @@ int main() {
         platform->poll_events();
 
         // Acquire next swap chain image.
-        if (!swap_chain->acquire_image()) continue;
+        if (!swap_chain->acquire_image()) {
+            continue;
+        }
 
         app.update();
 

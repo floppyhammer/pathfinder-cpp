@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <mutex>
+#include <vector>
 
 #include "../data/built_path.h"
 #include "../scene_builder.h"

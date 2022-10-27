@@ -4,6 +4,8 @@
 #include "d3d9/scene_builder.h"
 #include "renderer.h"
 
+using std::vector;
+
 namespace Pathfinder {
 
 Scene::Scene(uint32_t p_id, RectF p_view_box) : id(p_id), view_box(p_view_box), palette(Palette(p_id)) {

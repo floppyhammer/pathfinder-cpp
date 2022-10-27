@@ -1,6 +1,8 @@
 #ifndef PATHFINDER_D3D11_GPU_DATA_H
 #define PATHFINDER_D3D11_GPU_DATA_H
 
+//! Data that will be sent directly to GPU.
+
 #include <vector>
 
 #include "../../common/math/rect.h"
@@ -13,8 +15,6 @@
 #ifdef PATHFINDER_USE_D3D11
 
 using std::vector;
-
-//! Data that will be sent directly to GPU.
 
 namespace Pathfinder {
 
@@ -57,10 +57,8 @@ struct AlphaTileD3D11 {
 
 struct BackdropInfoD3D11 {
     int32_t initial_backdrop;
-
     /// Column number, where 0 is the leftmost column in the tile rect.
     int32_t tile_x_offset;
-
     /// Together with the `TileBatchId`, uniquely identifies a path on the renderer side.
     uint32_t path_index;
 };
