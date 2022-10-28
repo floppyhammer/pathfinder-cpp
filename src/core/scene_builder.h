@@ -10,7 +10,7 @@ class Scene;
 
 class SceneBuilder {
 public:
-    explicit SceneBuilder(Scene* p_scene) : scene(p_scene) {}
+    explicit SceneBuilder(Scene* _scene) : scene(_scene) {}
 
     /// Build everything we need for rendering.
     virtual void build(const std::shared_ptr<Driver>& driver) = 0;

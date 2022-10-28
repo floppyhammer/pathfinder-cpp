@@ -83,7 +83,7 @@ public:
 
     std::shared_ptr<Texture> get_dest_texture() override;
 
-    void set_dest_texture(const std::shared_ptr<Texture> &texture) override;
+    void set_dest_texture(const std::shared_ptr<Texture> &new_texture) override;
 
 private:
     /// RenderCommand::DrawTilesD3D11(draw_tile_batch)

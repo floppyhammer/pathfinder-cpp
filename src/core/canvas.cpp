@@ -131,8 +131,6 @@ Canvas::Canvas(const std::shared_ptr<Driver> &p_driver) {
     renderer = std::make_shared<RendererD3D11>(p_driver);
 #endif
 
-    renderer->set_up();
-
     renderer->set_up_pipelines();
 
     scene = std::make_shared<Scene>(0, RectF(0, 0, 0, 0));

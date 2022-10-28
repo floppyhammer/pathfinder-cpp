@@ -26,33 +26,27 @@ void upload_texture_metadata(const std::shared_ptr<Texture> &metadata_texture,
 /// multiple scenes prepared for rendering.
 class Renderer {
 public:
-    explicit Renderer(const std::shared_ptr<Driver> &p_driver);
-
-    /// Set up.
-    void set_up();
+    explicit Renderer(const std::shared_ptr<Driver> &_driver);
 
     virtual void set_up_pipelines() = 0;
 
     virtual std::shared_ptr<Texture> get_dest_texture() = 0;
 
-    virtual void set_dest_texture(const std::shared_ptr<Texture> &texture) = 0;
+    virtual void set_dest_texture(const std::shared_ptr<Texture> &new_texture) = 0;
 
-    virtual void draw(const std::shared_ptr<SceneBuilder> &p_scene_builder) = 0;
+    virtual void draw(const std::shared_ptr<SceneBuilder> &_scene_builder) = 0;
 
     std::shared_ptr<Driver> driver;
 
 protected:
     /// If we should clear the dest framebuffer or texture.
-    bool need_to_clear_dest = true;
+    bool clear_dest_texture = true;
 
     /// Pre-defined texture used to draw the mask texture. Shared by D3D9 and D3D10.
     std::shared_ptr<Texture> area_lut_texture;
 
-    //    /// Texture to store metadata. Shared by D3D9 and D3D10.
-    //    std::shared_ptr<Texture> metadata_texture;
-
     /// Uniform buffer containing some constants. Shared by D3D9 and D3D10.
-    std::shared_ptr<Buffer> fixed_sizes_ub{};
+    std::shared_ptr<Buffer> constants_ub{};
 };
 
 } // namespace Pathfinder

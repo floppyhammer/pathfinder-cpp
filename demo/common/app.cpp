@@ -1,13 +1,13 @@
 #include "app.h"
 
-App::App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
+App::App(const std::shared_ptr<Pathfinder::Driver> &_driver,
          int window_width,
          int window_height,
          const std::vector<char> &svg_input) {
     // Set logger level.
     Pathfinder::Logger::set_level(Pathfinder::Logger::Level::INFO);
 
-    driver = p_driver;
+    driver = _driver;
 
     // Set up a canvas.
     canvas = std::make_shared<Pathfinder::Canvas>(driver);
@@ -15,13 +15,13 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
     canvas->set_empty_dest_texture(window_width, window_height);
 
     // Minimal path test.
-    if (false) {
-        {
-            Pathfinder::Path2d path;
-            path.add_rect(Pathfinder::RectF(Pathfinder::Vec2F(0.0, 0.0), Pathfinder::Vec2F(360.0, 360.0)));
-
-            canvas->clip_path(path, Pathfinder::FillRule::Winding);
-        }
+    if (true) {
+//        {
+//            Pathfinder::Path2d path;
+//            path.add_rect(Pathfinder::RectF(Pathfinder::Vec2F(0.0, 0.0), Pathfinder::Vec2F(360.0, 360.0)));
+//
+//            canvas->clip_path(path, Pathfinder::FillRule::Winding);
+//        }
 
         Pathfinder::Path2d path;
         path.move_to(260.0, 260.0);
@@ -41,7 +41,12 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
     if (true) {
         Pathfinder::SvgScene svg_scene;
         svg_scene.load_file(svg_input, *canvas);
-        canvas->set_scene(svg_scene.get_scene());
+
+        // TEST: Replace scene.
+//        canvas->set_scene(svg_scene.get_scene());
+
+        // TEST: Append scene.
+        canvas->get_scene()->append_scene(*svg_scene.get_scene());
     }
 
     // Timers.

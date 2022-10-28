@@ -79,11 +79,6 @@ RendererD3D9::RendererD3D9(const std::shared_ptr<Driver> &p_driver) : Renderer(p
 }
 
 void RendererD3D9::set_dest_texture(const std::shared_ptr<Texture> &texture) {
-    //        auto dest_texture = driver->create_texture(
-    //                width,
-    //                height,
-    //                TextureFormat::RGBA8_UNORM
-    //        );
     dest_framebuffer = driver->create_framebuffer(dest_render_pass_clear, texture);
 }
 
@@ -119,7 +114,7 @@ void RendererD3D9::set_up_pipelines() {
         {
             fill_descriptor_set = driver->create_descriptor_set();
 
-            fill_descriptor_set->add_or_update_uniform(ShaderStage::Vertex, 0, "bFixedSizes", fixed_sizes_ub);
+            fill_descriptor_set->add_or_update_uniform(ShaderStage::Vertex, 0, "bConstantSizes", constants_ub);
             fill_descriptor_set->add_or_update_sampler(ShaderStage::Fragment, 1, "uAreaLUT", area_lut_texture);
         }
 
@@ -183,10 +178,7 @@ void RendererD3D9::set_up_pipelines() {
                                                        "bVaryingSizes",
                                                        tile_varying_sizes_ub);
 
-            tile_descriptor_set->add_or_update_uniform(ShaderStage::VertexAndFragment,
-                                                       4,
-                                                       "bFixedSizes",
-                                                       fixed_sizes_ub);
+            tile_descriptor_set->add_or_update_uniform(ShaderStage::VertexAndFragment, 4, "bConstantSizes", constants_ub);
 
             // Textures.
 
@@ -247,7 +239,7 @@ void RendererD3D9::create_tile_clip_copy_pipeline() {
     auto descriptor_set = tile_clip_copy_descriptor_set = driver->create_descriptor_set();
     {
         // Uniform buffer.
-        descriptor_set->add_or_update_uniform(ShaderStage::Vertex, 0, "bFixedSizes", fixed_sizes_ub);
+        descriptor_set->add_or_update_uniform(ShaderStage::Vertex, 0, "bConstantSizes", constants_ub);
 
         // Sampler.
         descriptor_set->add_or_update_sampler(ShaderStage::Fragment, 1, "uSrc");
@@ -294,7 +286,7 @@ void RendererD3D9::create_tile_clip_combine_pipeline() {
     auto descriptor_set = tile_clip_combine_descriptor_set = driver->create_descriptor_set();
     {
         // Uniform buffer.
-        descriptor_set->add_or_update_uniform(ShaderStage::Vertex, 0, "bFixedSizes", fixed_sizes_ub);
+        descriptor_set->add_or_update_uniform(ShaderStage::Vertex, 0, "bConstantSizes", constants_ub);
 
         // Sampler.
         descriptor_set->add_or_update_sampler(ShaderStage::Fragment, 1, "uSrc");
@@ -309,8 +301,8 @@ void RendererD3D9::create_tile_clip_combine_pipeline() {
                                                                 mask_render_pass_clear);
 }
 
-void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &p_scene_builder) {
-    auto *scene_builder = static_cast<SceneBuilderD3D9 *>(p_scene_builder.get());
+void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &_scene_builder) {
+    auto *scene_builder = static_cast<SceneBuilderD3D9 *>(_scene_builder.get());
 
     // We are supposed to do this before the builder finishes building.
     // However, it seems not providing much performance boost.
@@ -356,7 +348,7 @@ void RendererD3D9::upload_tiles(const std::vector<TileObjectPrimitive> &tiles,
 
 void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &tile_batches) {
     // Clear the destination framebuffer for the first time.
-    need_to_clear_dest = true;
+    clear_dest_texture = true;
 
     // One draw call for one batch.
     for (const auto &batch : tile_batches) {
@@ -506,13 +498,13 @@ void RendererD3D9::draw_tiles(uint32_t tiles_count,
 
     // If no specific RenderTarget is given.
     if (render_target.framebuffer == nullptr) {
-        cmd_buffer->begin_render_pass(need_to_clear_dest ? dest_render_pass_clear : dest_render_pass_load,
+        cmd_buffer->begin_render_pass(clear_dest_texture ? dest_render_pass_clear : dest_render_pass_load,
                                       dest_framebuffer,
                                       ColorF());
 
         target_framebuffer = dest_framebuffer;
 
-        need_to_clear_dest = false;
+        clear_dest_texture = false;
     } else { // Otherwise, we need to render to that render target.
         cmd_buffer->begin_render_pass(dest_render_pass_clear, render_target.framebuffer, ColorF());
 

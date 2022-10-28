@@ -34,11 +34,11 @@ public:
     void set_up_pipelines() override;
 
     /// We need to call this for each scene.
-    void draw(const std::shared_ptr<SceneBuilder> &p_scene_builder) override;
+    void draw(const std::shared_ptr<SceneBuilder> &_scene_builder) override;
 
     std::shared_ptr<Texture> get_dest_texture() override;
 
-    void set_dest_texture(const std::shared_ptr<Texture> &texture) override;
+    void set_dest_texture(const std::shared_ptr<Texture> &new_texture) override;
 
 private:
     /// Vertex buffers.

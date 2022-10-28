@@ -49,13 +49,13 @@ struct ClipBatchesD3D11 {
 
 class SceneBuilderD3D11 : public SceneBuilder {
 public:
-    explicit SceneBuilderD3D11(Scene *p_scene) : SceneBuilder(p_scene) {}
+    explicit SceneBuilderD3D11(Scene *_scene) : SceneBuilder(_scene) {}
 
     BuiltSegments built_segments;
 
     shared_ptr<ClipBatchesD3D11> clip_batches_d3d11;
 
-    // Sent to renderer to draw tiles.
+    // Will be sent to renderer to draw tiles.
     std::vector<DrawTileBatchD3D11> tile_batches;
 
     void build(const std::shared_ptr<Driver> &driver) override;

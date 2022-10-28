@@ -230,7 +230,7 @@ void RendererD3D11::set_up_pipelines() {
             tile_descriptor_set->add_or_update_sampler(ShaderStage::Compute, 5, "uMaskTexture0", mask_texture);
             tile_descriptor_set->add_or_update_sampler(ShaderStage::Compute, 6, "uGammaLUT");
             tile_descriptor_set->add_or_update_image(ShaderStage::Compute, 7, "uDestImage");
-            tile_descriptor_set->add_or_update_uniform(ShaderStage::Compute, 8, "bFixedUniform", fixed_sizes_ub);
+            tile_descriptor_set->add_or_update_uniform(ShaderStage::Compute, 8, "bConstantsUniform", constants_ub);
             tile_descriptor_set->add_or_update_uniform(ShaderStage::Compute, 9, "bUniform0", tile_ub0);
             tile_descriptor_set->add_or_update_uniform(ShaderStage::Compute, 10, "bUniform1", tile_ub1);
         }
@@ -246,8 +246,8 @@ void RendererD3D11::set_up_pipelines() {
     tile_pipeline = driver->create_compute_pipeline(tile_source, tile_descriptor_set);                // 7
 }
 
-void RendererD3D11::draw(const std::shared_ptr<SceneBuilder> &p_scene_builder) {
-    auto *scene_builder = static_cast<SceneBuilderD3D11 *>(p_scene_builder.get());
+void RendererD3D11::draw(const std::shared_ptr<SceneBuilder> &_scene_builder) {
+    auto *scene_builder = static_cast<SceneBuilderD3D11 *>(_scene_builder.get());
 
     if (scene_builder->built_segments.draw_segments.points.empty()) {
         return;
@@ -257,7 +257,7 @@ void RendererD3D11::draw(const std::shared_ptr<SceneBuilder> &p_scene_builder) {
     upload_scene(scene_builder->built_segments.draw_segments, scene_builder->built_segments.clip_segments);
 
     alpha_tile_count = 0;
-    need_to_clear_dest = true;
+    clear_dest_texture = true;
 
     // Prepare clip tiles.
     {
@@ -283,8 +283,8 @@ std::shared_ptr<Texture> RendererD3D11::get_dest_texture() {
     return dest_texture;
 }
 
-void RendererD3D11::set_dest_texture(const std::shared_ptr<Texture> &texture) {
-    dest_texture = texture;
+void RendererD3D11::set_dest_texture(const std::shared_ptr<Texture> &new_texture) {
+    dest_texture = new_texture;
 }
 
 void RendererD3D11::upload_scene(SegmentsD3D11 &draw_segments, SegmentsD3D11 &clip_segments) {
@@ -325,8 +325,8 @@ void RendererD3D11::draw_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer
     if (render_target.framebuffer == nullptr) {
         target_size = dest_texture->get_size();
         target_texture = dest_texture;
-        clear_op = need_to_clear_dest ? LOAD_ACTION_CLEAR : LOAD_ACTION_LOAD;
-        need_to_clear_dest = false;
+        clear_op = clear_dest_texture ? LOAD_ACTION_CLEAR : LOAD_ACTION_LOAD;
+        clear_dest_texture = false;
     } else {
         target_size = render_target.framebuffer->get_size();
         target_texture = render_target.framebuffer->get_texture();
@@ -367,10 +367,10 @@ void RendererD3D11::draw_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer
                                                    color_texture ? color_texture : metadata_texture);
         tile_descriptor_set->add_or_update_sampler(ShaderStage::Compute, 6, "uGammaLUT", metadata_texture);
         tile_descriptor_set->add_or_update_image(ShaderStage::Compute, 7, "", target_texture);
-
-        tile_descriptor_set->add_or_update_storage(ShaderStage::Compute, 0, tiles_d3d11_buffer_id); // Read only.
-        tile_descriptor_set->add_or_update_storage(ShaderStage::Compute, 1,
-                                                   first_tile_map_buffer_id); // Read only.
+        // Read only.
+        tile_descriptor_set->add_or_update_storage(ShaderStage::Compute, 0, tiles_d3d11_buffer_id);
+        // Read only.
+        tile_descriptor_set->add_or_update_storage(ShaderStage::Compute, 1, first_tile_map_buffer_id);
     }
 
     auto cmd_buffer = driver->create_command_buffer(true);

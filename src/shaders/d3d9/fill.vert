@@ -14,9 +14,9 @@
 // except according to those terms.
 
 #ifdef VULKAN
-    layout(binding = 0) uniform bFixedSizes {
+    layout(binding = 0) uniform bConstantSizes {
 #else
-    layout(std140) uniform bFixedSizes {
+    layout(std140) uniform bConstantSizes {
 #endif
     vec2 uFramebufferSize; // Fixed as (4096, 1024).
     vec2 uTileSize; // Fixed as (16, 16).

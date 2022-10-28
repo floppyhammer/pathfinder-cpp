@@ -173,9 +173,10 @@ enum class BufferType {
 enum class StorageBufferUsage {
     Read,
     Write,
-    ReadWrite,
+    ReadAndWrite,
 };
 
+/// Operation to perform to the output attachment at the start of a renderpass.
 enum class AttachmentLoadOp {
     Load,
     Clear,

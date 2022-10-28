@@ -20,9 +20,9 @@ precision highp sampler2D;
 #endif
 
 #ifdef VULKAN
-layout(binding = 0) uniform bFixedSizes {
+layout(binding = 0) uniform bConstantSizes {
 #else
-layout(std140) uniform bFixedSizes {
+layout(std140) uniform bConstantSizes {
 #endif
     vec2 uFramebufferSize; // Fixed as (4096, 1024).
     vec2 pad0; // Not used here.

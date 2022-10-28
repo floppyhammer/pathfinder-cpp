@@ -13,29 +13,25 @@
 
 namespace Pathfinder {
 
-Renderer::Renderer(const std::shared_ptr<Driver> &p_driver) {
-    driver = p_driver;
-}
+Renderer::Renderer(const std::shared_ptr<Driver> &_driver) {
+    driver = _driver;
 
-void Renderer::set_up() {
     auto cmd_buffer = driver->create_command_buffer(true);
 
-    // Uniform buffer.
-    {
-        fixed_sizes_ub =
-            driver->create_buffer(BufferType::Uniform, 8 * sizeof(float), MemoryProperty::HostVisibleAndCoherent);
+    // Uniform buffer for some constants.
+    constants_ub =
+        driver->create_buffer(BufferType::Uniform, 8 * sizeof(float), MemoryProperty::HostVisibleAndCoherent);
 
-        // Upload data to the uniform buffer with fixed data.
-        std::array<float, 6> fixed_sizes_ubo_data = {MASK_FRAMEBUFFER_WIDTH,
-                                                     MASK_FRAMEBUFFER_HEIGHT,
-                                                     TILE_WIDTH,
-                                                     TILE_HEIGHT,
-                                                     TEXTURE_METADATA_TEXTURE_WIDTH,
-                                                     TEXTURE_METADATA_TEXTURE_HEIGHT};
+    std::array<float, 6> constants = {MASK_FRAMEBUFFER_WIDTH,
+                                      MASK_FRAMEBUFFER_HEIGHT,
+                                      TILE_WIDTH,
+                                      TILE_HEIGHT,
+                                      TEXTURE_METADATA_TEXTURE_WIDTH,
+                                      TEXTURE_METADATA_TEXTURE_HEIGHT};
 
-        cmd_buffer->upload_to_buffer(fixed_sizes_ub, 0, 6 * sizeof(float), fixed_sizes_ubo_data.data());
-    }
+    cmd_buffer->upload_to_buffer(constants_ub, 0, 6 * sizeof(float), constants.data());
 
+    // Area-Lut texture.
     auto image_data = ImageData::from_memory({std::begin(area_lut_png), std::end(area_lut_png)}, false);
 
     area_lut_texture = driver->create_texture(image_data->width, image_data->height, TextureFormat::Rgba8Unorm);

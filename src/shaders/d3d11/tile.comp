@@ -30,7 +30,7 @@ layout(rgba8, binding = 7) uniform writeonly image2D uDestImage;
 layout(rgba8, binding = 7) uniform image2D uDestImage;
 #endif
 
-layout(std140, binding = 8) uniform bFixedUniform {
+layout(std140, binding = 8) uniform bConstantsUniform {
     vec2 uMaskTextureSize0;
     vec2 uTileSize;
     vec2 uTextureMetadataSize;

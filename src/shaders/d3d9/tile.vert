@@ -45,9 +45,9 @@ layout(std140) uniform bVaryingSizes {
 };
 
 #ifdef VULKAN
-layout(binding = 4) uniform bFixedSizes {
+layout(binding = 4) uniform bConstantSizes {
 #else
-layout(std140) uniform bFixedSizes {
+layout(std140) uniform bConstantSizes {
 #endif
     vec2 uMaskTextureSize0; // Fixed as (4096, 1024). Not used here.
     vec2 uTileSize; // Fixed as (16, 16).
