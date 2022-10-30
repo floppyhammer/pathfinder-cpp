@@ -66,11 +66,13 @@ void Scene::push_draw_path_with_index(uint32_t draw_path_id) {
     bounds = bounds.union_rect(new_path_bounds);
 
     auto end_path_id = draw_path_id + 1;
-    if (display_list.back().type == DisplayItem::Type::DrawPaths) {
+
+    // Get the last DrawPaths display item.
+    if (!display_list.empty() && display_list.back().type == DisplayItem::Type::DrawPaths) {
         auto &range = display_list.back().path_range;
 
         range.end = end_path_id;
-    } else {
+    } else { // If there's none.
         DisplayItem display_item;
         display_item.type = DisplayItem::Type::DrawPaths;
         display_item.path_range = {draw_path_id, end_path_id};
