@@ -27,15 +27,15 @@ Paint Scene::get_paint(uint32_t paint_id) const {
     return palette.get_paint(paint_id);
 }
 
-uint32_t Scene::push_draw_path(const DrawPath &p_path) {
+uint32_t Scene::push_draw_path(const DrawPath &draw_path) {
     // Get the path index in the scene.
     auto draw_path_index = draw_paths.size();
 
     // Push the path.
-    draw_paths.push_back(p_path);
+    draw_paths.push_back(draw_path);
 
     // Update the scene bounds.
-    bounds = bounds.union_rect(p_path.outline.bounds);
+    bounds = bounds.union_rect(draw_path.outline.bounds);
 
     // Update the display list.
     if (!display_list.empty() && display_list.back().type == DisplayItem::Type::DrawPaths) {

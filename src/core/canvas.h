@@ -66,6 +66,7 @@ public:
     void add_circle(const Vec2F &center, float radius);
     // -----------------------------------------------
 
+    /// Returns the outline.
     Outline into_outline();
 
 private:

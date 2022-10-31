@@ -141,14 +141,14 @@ SvgScene::SvgScene() {
     scene = std::make_shared<Scene>(0, RectF());
 }
 
-void SvgScene::load_file(std::vector<char> input, Canvas &canvas) {
-    if (input.empty()) {
+void SvgScene::load_from_memory(std::vector<char> bytes, Canvas &canvas) {
+    if (bytes.empty()) {
         Logger::error("SVG input is empty!", "SvgScene");
         return;
     }
 
     // Load as a NanoSVG image.
-    NSVGimage *image = nsvgParse(input.data(), "px", 96);
+    NSVGimage *image = nsvgParse(bytes.data(), "px", 96);
 
     // Check if image loading is successful.
     if (image == nullptr) {

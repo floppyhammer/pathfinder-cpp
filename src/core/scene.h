@@ -46,7 +46,8 @@ struct LastSceneInfo {
 
 class SceneBuilder;
 
-/// The scene of paths to be rendered.
+/// The vector scene to be rendered.
+/// You can see scenes as an analogy of SVG images.
 class Scene {
 public:
     explicit Scene(uint32_t _id, RectF _view_box);
@@ -72,10 +73,10 @@ public:
      * Adds a shape to the scene, to be drawn on top of all previously-added shapes.
      * If a render target is on the stack (see `push_render_target()`), the path goes to the
      * render target. Otherwise, it goes to the main output.
-     * @param p_path Draw path to add.
+     * @param draw_path The draw path to add.
      * @return An ID which can later be used to retrieve the path.
      */
-    uint32_t push_draw_path(const DrawPath &p_path);
+    uint32_t push_draw_path(const DrawPath &draw_path);
 
     /// Defines a clip path. Returns an ID that can be used to later clip draw paths.
     uint32_t push_clip_path(const ClipPath &clip_path);

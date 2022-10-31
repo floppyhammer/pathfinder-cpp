@@ -6,6 +6,7 @@
 
 namespace Pathfinder {
 
+/// Analogy to a SVG image.
 class SvgScene {
 public:
     SvgScene();
@@ -15,7 +16,7 @@ public:
      * @note We need a copy of the input vector as its content will be modified.
      * @param input SVG file content, a copy by value is needed.
      */
-    void load_file(std::vector<char> input, Canvas &canvas);
+    void load_from_memory(std::vector<char> bytes, Canvas &canvas);
 
     std::shared_ptr<Scene> get_scene() const;
 
