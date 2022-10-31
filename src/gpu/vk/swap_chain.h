@@ -13,11 +13,12 @@
     #ifndef __ANDROID__
 
 namespace Pathfinder {
+
 class SwapChainVk : public SwapChain {
     friend class DriverVk;
 
 public:
-    SwapChainVk(uint32_t p_width, uint32_t p_height, PlatformVk *p_platform, DriverVk *p_driver);
+    SwapChainVk(int32_t width, int32_t height, PlatformVk *_platform, DriverVk *_driver);
 
     std::shared_ptr<RenderPass> get_render_pass() override;
 
@@ -114,6 +115,7 @@ private:
 
     void cleanup() override;
 };
+
 } // namespace Pathfinder
 
     #endif

@@ -9,18 +9,17 @@ namespace Pathfinder {
 
 class Texture {
 public:
-    Texture(uint32_t p_width, uint32_t p_height, TextureFormat p_format)
-        : width(p_width), height(p_height), format(p_format) {}
+    Texture(int32_t _width, int32_t _height, TextureFormat _format) : width(_width), height(_height), format(_format) {}
 
-    inline uint32_t get_width() const {
+    inline int32_t get_width() const {
         return width;
     }
 
-    inline uint32_t get_height() const {
+    inline int32_t get_height() const {
         return height;
     }
 
-    inline Vec2<uint32_t> get_size() const {
+    inline Vec2I get_size() const {
         return {width, height};
     }
 
@@ -37,8 +36,8 @@ public:
     }
 
 protected:
-    uint32_t width;
-    uint32_t height;
+    int32_t width;
+    int32_t height;
 
     TextureFormat format;
 

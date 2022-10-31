@@ -7,12 +7,13 @@
 #include "render_pass.h"
 
 namespace Pathfinder {
+
 class SwapChain {
 public:
-    SwapChain(uint32_t width, uint32_t height) : extent({width, height}) {}
+    SwapChain(int32_t width, int32_t height) : extent({width, height}) {}
 
     /// Swap chain framebuffer size.
-    Vec2<uint32_t> extent;
+    Vec2I extent;
 
     /// Currently available image in the chain.
     uint32_t current_image{};
@@ -49,6 +50,7 @@ public:
     /// Clean up swap chain resources.
     virtual void cleanup() = 0;
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_GPU_SWAP_CHAIN_H

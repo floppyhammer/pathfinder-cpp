@@ -121,23 +121,22 @@ void composite_shadow_blur_render_targets(Scene &scene, const ShadowBlurRenderTa
     scene.push_draw_path(path_y);
 }
 
-Canvas::Canvas(const std::shared_ptr<Driver> &p_driver) {
-    driver = p_driver;
-
-    // Set up a renderer.
+Canvas::Canvas(const std::shared_ptr<Driver> &_driver) : driver(_driver) {
+    // Create the renderer.
 #ifndef PATHFINDER_USE_D3D11
-    renderer = std::make_shared<RendererD3D9>(p_driver);
+    renderer = std::make_shared<RendererD3D9>(driver);
 #else
-    renderer = std::make_shared<RendererD3D11>(p_driver);
+    renderer = std::make_shared<RendererD3D11>(driver);
 #endif
 
+    // Set up pipelines.
     renderer->set_up_pipelines();
 
     scene = std::make_shared<Scene>(0, RectF(0, 0, 0, 0));
 }
 
-void Canvas::set_empty_dest_texture(uint32_t p_width, uint32_t p_height) {
-    set_dest_texture(driver->create_texture(p_width, p_height, TextureFormat::Rgba8Unorm));
+void Canvas::set_empty_dest_texture(uint32_t width, uint32_t height) {
+    set_dest_texture(driver->create_texture(width, height, TextureFormat::Rgba8Unorm));
 }
 
 void Canvas::push_path(Outline &outline, PathOp path_op, FillRule fill_rule) {
@@ -273,80 +272,80 @@ float Canvas::line_width() const {
     return current_state.line_width;
 }
 
-void Canvas::set_line_width(float p_line_width) {
-    current_state.line_width = p_line_width;
+void Canvas::set_line_width(float new_line_width) {
+    current_state.line_width = new_line_width;
 }
 
 LineCap Canvas::line_cap() const {
     return current_state.line_cap;
 }
 
-void Canvas::set_line_cap(LineCap p_line_cap) {
-    current_state.line_cap = p_line_cap;
+void Canvas::set_line_cap(LineCap new_line_cap) {
+    current_state.line_cap = new_line_cap;
 }
 
 LineJoin Canvas::line_join() const {
     return current_state.line_join;
 }
 
-void Canvas::set_line_join(LineJoin p_line_join) {
-    current_state.line_join = p_line_join;
+void Canvas::set_line_join(LineJoin new_line_join) {
+    current_state.line_join = new_line_join;
 }
 
 float Canvas::miter_limit() const {
     return current_state.miter_limit;
 }
 
-void Canvas::set_miter_limit(float p_miter_limit) {
-    current_state.miter_limit = p_miter_limit;
+void Canvas::set_miter_limit(float new_miter_limit) {
+    current_state.miter_limit = new_miter_limit;
 }
 
 float Canvas::shadow_blur() const {
     return current_state.shadow_blur;
 }
 
-void Canvas::set_shadow_blur(float p_shadow_blur) {
-    current_state.shadow_blur = p_shadow_blur;
+void Canvas::set_shadow_blur(float new_shadow_blur) {
+    current_state.shadow_blur = new_shadow_blur;
 }
 
 ColorU Canvas::shadow_color() const {
     return current_state.shadow_color;
 }
 
-void Canvas::set_shadow_color(const ColorU &p_shadow_color) {
-    current_state.shadow_color = p_shadow_color;
+void Canvas::set_shadow_color(const ColorU &new_shadow_color) {
+    current_state.shadow_color = new_shadow_color;
 }
 
 Vec2F Canvas::shadow_offset() const {
     return current_state.shadow_offset;
 }
 
-void Canvas::set_shadow_offset(float p_shadow_offset_x, float p_shadow_offset_y) {
-    current_state.shadow_offset = {p_shadow_offset_x, p_shadow_offset_y};
+void Canvas::set_shadow_offset(const Vec2F &new_shadow_offset) {
+    current_state.shadow_offset = new_shadow_offset;
 }
 
 std::vector<float> Canvas::line_dash() const {
     return current_state.line_dash;
 }
 
-void Canvas::set_line_dash(const std::vector<float> &p_line_dash) {
-    current_state.line_dash = p_line_dash;
+void Canvas::set_line_dash(const std::vector<float> &new_line_dash) {
+    current_state.line_dash = new_line_dash;
 }
 
 float Canvas::line_dash_offset() const {
     return current_state.line_dash_offset;
 }
 
-void Canvas::set_line_dash_offset(float p_line_dash_offset) {
-    current_state.line_dash_offset = p_line_dash_offset;
+void Canvas::set_line_dash_offset(float new_line_dash_offset) {
+    current_state.line_dash_offset = new_line_dash_offset;
 }
 
 Transform2 Canvas::get_transform() const {
     return current_state.transform;
 }
 
-void Canvas::set_transform(const Transform2 &p_transform) {
-    current_state.transform = p_transform;
+void Canvas::set_transform(const Transform2 &new_transform) {
+    current_state.transform = new_transform;
 }
 
 void Canvas::set_global_alpha(float new_global_alpha) {
@@ -376,16 +375,17 @@ void Canvas::clear() {
     take_scene();
 }
 
-void Canvas::resize_dest_texture(float p_size_x, float p_size_y) {
-    if (p_size_x <= 0 || p_size_y <= 0) {
+void Canvas::resize_dest_texture(const Vec2I &new_size) {
+    if (new_size.x <= 0 || new_size.y <= 0) {
+        Logger::error("Invalid dest texture size!", "Canvas");
         return;
     }
 
-    if (dest_texture->get_width() == p_size_x && dest_texture->get_height() == p_size_y) {
+    if (dest_texture->get_size() == new_size) {
         return;
     }
 
-    set_dest_texture(driver->create_texture(p_size_x, p_size_y, TextureFormat::Bgra8Unorm));
+    set_dest_texture(driver->create_texture(new_size.x, new_size.y, TextureFormat::Bgra8Unorm));
 }
 
 std::shared_ptr<Scene> Canvas::get_scene() const {
@@ -446,14 +446,6 @@ Vec2I Canvas::get_size() const {
     return scene->get_view_box().size().ceil();
 }
 
-void Canvas::set_clipping_box(const RectF &box) {
-    clipping_box = box;
-}
-
-void Canvas::unset_clipping_box() {
-    clipping_box = RectF();
-}
-
 // Path2d
 // -----------------------------
 
@@ -470,11 +462,11 @@ void Path2d::line_to(float x, float y) {
     current_contour.push_endpoint({x, y});
 }
 
-void Path2d::quadratic_curve_to(float cx, float cy, float x, float y) {
+void Path2d::quadratic_to(float cx, float cy, float x, float y) {
     current_contour.push_quadratic({cx, cy}, {x, y});
 }
 
-void Path2d::bezier_curve_to(float cx0, float cy0, float cx1, float cy1, float x, float y) {
+void Path2d::cubic_to(float cx0, float cy0, float cx1, float cy1, float x, float y) {
     current_contour.push_cubic({cx0, cy0}, {cx1, cy1}, {x, y});
 }
 
@@ -507,33 +499,33 @@ void Path2d::add_rect(const RectF &rect, float corner_radius) {
     float adjusted_radius = corner_radius * CIRCLE_RATIO;
 
     move_to(rect.min_x(), rect.min_y() + corner_radius);
-    bezier_curve_to(rect.min_x(),
-                    rect.min_y() + corner_radius - adjusted_radius,
-                    rect.min_x() + corner_radius - adjusted_radius,
-                    rect.min_y(),
-                    rect.min_x() + corner_radius,
-                    rect.min_y());
+    cubic_to(rect.min_x(),
+             rect.min_y() + corner_radius - adjusted_radius,
+             rect.min_x() + corner_radius - adjusted_radius,
+             rect.min_y(),
+             rect.min_x() + corner_radius,
+             rect.min_y());
     line_to(rect.max_x() - corner_radius, rect.min_y());
-    bezier_curve_to(rect.max_x() - corner_radius + adjusted_radius,
-                    rect.min_y(),
-                    rect.max_x(),
-                    rect.min_y() + corner_radius - adjusted_radius,
-                    rect.max_x(),
-                    rect.min_y() + corner_radius);
+    cubic_to(rect.max_x() - corner_radius + adjusted_radius,
+             rect.min_y(),
+             rect.max_x(),
+             rect.min_y() + corner_radius - adjusted_radius,
+             rect.max_x(),
+             rect.min_y() + corner_radius);
     line_to(rect.max_x(), rect.max_y() - corner_radius);
-    bezier_curve_to(rect.max_x(),
-                    rect.max_y() - corner_radius + adjusted_radius,
-                    rect.max_x() - corner_radius + adjusted_radius,
-                    rect.max_y(),
-                    rect.max_x() - corner_radius,
-                    rect.max_y());
+    cubic_to(rect.max_x(),
+             rect.max_y() - corner_radius + adjusted_radius,
+             rect.max_x() - corner_radius + adjusted_radius,
+             rect.max_y(),
+             rect.max_x() - corner_radius,
+             rect.max_y());
     line_to(rect.min_x() + corner_radius, rect.max_y());
-    bezier_curve_to(rect.min_x() + corner_radius - adjusted_radius,
-                    rect.max_y(),
-                    rect.min_x(),
-                    rect.max_y() - corner_radius + adjusted_radius,
-                    rect.min_x(),
-                    rect.max_y() - corner_radius);
+    cubic_to(rect.min_x() + corner_radius - adjusted_radius,
+             rect.max_y(),
+             rect.min_x(),
+             rect.max_y() - corner_radius + adjusted_radius,
+             rect.min_x(),
+             rect.max_y() - corner_radius);
     close_path();
 }
 
@@ -544,30 +536,30 @@ void Path2d::add_circle(const Vec2F &center, float radius) {
     float adjusted_radius = radius * CIRCLE_RATIO;
 
     move_to(center.x, center.y - radius);
-    bezier_curve_to(center.x + adjusted_radius,
-                    center.y - radius,
-                    center.x + radius,
-                    center.y - adjusted_radius,
-                    center.x + radius,
-                    center.y);
-    bezier_curve_to(center.x + radius,
-                    center.y + adjusted_radius,
-                    center.x + adjusted_radius,
-                    center.y + radius,
-                    center.x,
-                    center.y + radius);
-    bezier_curve_to(center.x - adjusted_radius,
-                    center.y + radius,
-                    center.x - radius,
-                    center.y + adjusted_radius,
-                    center.x - radius,
-                    center.y);
-    bezier_curve_to(center.x - radius,
-                    center.y - adjusted_radius,
-                    center.x - adjusted_radius,
-                    center.y - radius,
-                    center.x,
-                    center.y - radius);
+    cubic_to(center.x + adjusted_radius,
+             center.y - radius,
+             center.x + radius,
+             center.y - adjusted_radius,
+             center.x + radius,
+             center.y);
+    cubic_to(center.x + radius,
+             center.y + adjusted_radius,
+             center.x + adjusted_radius,
+             center.y + radius,
+             center.x,
+             center.y + radius);
+    cubic_to(center.x - adjusted_radius,
+             center.y + radius,
+             center.x - radius,
+             center.y + adjusted_radius,
+             center.x - radius,
+             center.y);
+    cubic_to(center.x - radius,
+             center.y - adjusted_radius,
+             center.x - adjusted_radius,
+             center.y - radius,
+             center.x,
+             center.y - radius);
     close_path();
 }
 

@@ -8,8 +8,8 @@ using std::vector;
 
 namespace Pathfinder {
 
-Scene::Scene(uint32_t p_id, RectF p_view_box) : id(p_id), view_box(p_view_box), palette(Palette(p_id)) {
-    // Set up a scene builder.
+Scene::Scene(uint32_t _id, RectF _view_box) : id(_id), view_box(_view_box), palette(Palette(_id)) {
+    // Create the scene builder.
 #ifndef PATHFINDER_USE_D3D11
     scene_builder = std::make_shared<SceneBuilderD3D9>(this);
 #else

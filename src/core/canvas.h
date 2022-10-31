@@ -52,9 +52,9 @@ public:
 
     void line_to(float x, float y);
 
-    void quadratic_curve_to(float cx, float cy, float x, float y);
+    void quadratic_to(float cx, float cy, float x, float y);
 
-    void bezier_curve_to(float cx, float cy, float cx1, float cy1, float x, float y);
+    void cubic_to(float cx, float cy, float cx1, float cy1, float x, float y);
     // -----------------------------------------------
 
     // Advanced geometries.
@@ -79,66 +79,66 @@ private:
 /// Normally, we only need one canvas to render multiple scenes.
 class Canvas {
 public:
-    Canvas(const std::shared_ptr<Driver> &p_driver);
+    explicit Canvas(const std::shared_ptr<Driver> &_driver);
 
     /// Clears the current canvas.
     void clear();
 
-    void set_empty_dest_texture(uint32_t p_width, uint32_t p_height);
+    void set_empty_dest_texture(uint32_t width, uint32_t height);
 
     // Canvas state.
     // ------------------------------------------------
     // Line styles
     float line_width() const;
 
-    void set_line_width(float p_line_width);
+    void set_line_width(float new_line_width);
 
     LineCap line_cap() const;
 
-    void set_line_cap(LineCap p_line_cap);
+    void set_line_cap(LineCap new_line_cap);
 
     LineJoin line_join() const;
 
-    void set_line_join(LineJoin p_line_join);
+    void set_line_join(LineJoin new_line_join);
 
     float miter_limit() const;
 
-    void set_miter_limit(float p_miter_limit);
+    void set_miter_limit(float new_miter_limit);
 
     std::vector<float> line_dash() const;
 
-    void set_line_dash(const std::vector<float> &p_line_dash);
+    void set_line_dash(const std::vector<float> &new_line_dash);
 
     float line_dash_offset() const;
 
-    void set_line_dash_offset(float p_line_dash_offset);
+    void set_line_dash_offset(float new_line_dash_offset);
 
     // Fill and stroke styles
     Paint fill_paint() const;
 
-    void set_fill_paint(const Paint &p_fill_paint);
+    void set_fill_paint(const Paint &new_fill_paint);
 
     Paint stroke_paint() const;
 
-    void set_stroke_paint(const Paint &p_stroke_paint);
+    void set_stroke_paint(const Paint &new_stroke_paint);
 
     // Shadows
 
     float shadow_blur() const;
 
-    void set_shadow_blur(float p_shadow_blur);
+    void set_shadow_blur(float new_shadow_blur);
 
     ColorU shadow_color() const;
 
-    void set_shadow_color(const ColorU &p_shadow_color);
+    void set_shadow_color(const ColorU &new_shadow_color);
 
     Vec2F shadow_offset() const;
 
-    void set_shadow_offset(float p_shadow_offset_x, float p_shadow_offset_y);
+    void set_shadow_offset(const Vec2F &new_shadow_offset);
 
     Transform2 get_transform() const;
 
-    void set_transform(const Transform2 &p_transform);
+    void set_transform(const Transform2 &new_transform);
 
     void set_global_alpha(float new_global_alpha);
 
@@ -169,7 +169,7 @@ public:
 
     void unset_clipping_box();
 
-    void resize_dest_texture(float p_size_x, float p_size_y);
+    void resize_dest_texture(const Vec2I &new_size);
 
     /// Returns the inner scene.
     std::shared_ptr<Scene> get_scene() const;
@@ -210,9 +210,6 @@ private:
     std::vector<State> saved_states;
 
     std::shared_ptr<Texture> dest_texture;
-
-    // TODO: Should be replaced with clip path.
-    RectF clipping_box;
 
     /// Scene renderer.
     std::shared_ptr<Renderer> renderer;

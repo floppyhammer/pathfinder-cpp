@@ -50,9 +50,9 @@ const int32_t LOAD_ACTION_LOAD = 1;
 const uint32_t INITIAL_ALLOCATED_MICROLINE_COUNT = 1024 * 16;
 const uint32_t INITIAL_ALLOCATED_FILL_COUNT = 1024 * 16;
 
-Vec2<uint32_t> pixel_size_to_tile_size(Vec2<uint32_t> pixel_size) {
+Vec2I pixel_size_to_tile_size(Vec2I pixel_size) {
     // Round up.
-    auto tile_size = Vec2<uint32_t>(TILE_WIDTH - 1, TILE_HEIGHT - 1);
+    auto tile_size = Vec2I(TILE_WIDTH - 1, TILE_HEIGHT - 1);
     auto size = pixel_size + tile_size;
     return {size.x / TILE_WIDTH, size.y / TILE_HEIGHT};
 }
@@ -318,7 +318,7 @@ void RendererD3D11::draw_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer
     auto framebuffer_tile_size0 = framebuffer_tile_size();
 
     // Decide render target.
-    Vec2<uint32_t> target_size;
+    Vec2I target_size;
     std::shared_ptr<Texture> target_texture;
     int clear_op;
     // If no specific RenderTarget is given, we render to the destination texture.
@@ -392,8 +392,8 @@ void RendererD3D11::draw_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer
     cmd_buffer->submit(driver);
 }
 
-Vec2<uint32_t> RendererD3D11::tile_size() const {
-    auto temp = dest_texture->get_size() + Vec2<uint32_t>(TILE_WIDTH - 1, TILE_HEIGHT - 1);
+Vec2I RendererD3D11::tile_size() const {
+    auto temp = dest_texture->get_size() + Vec2I(TILE_WIDTH - 1, TILE_HEIGHT - 1);
     return {temp.x / TILE_WIDTH, temp.y / TILE_HEIGHT};
 }
 
@@ -909,7 +909,7 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
     return {Range(alpha_tile_start, alpha_tile_end)};
 }
 
-Vec2<uint32_t> RendererD3D11::framebuffer_tile_size() {
+Vec2I RendererD3D11::framebuffer_tile_size() {
     return pixel_size_to_tile_size(dest_texture->get_size());
 }
 

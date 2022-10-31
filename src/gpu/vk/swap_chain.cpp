@@ -9,10 +9,10 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-SwapChainVk::SwapChainVk(uint32_t p_width, uint32_t p_height, PlatformVk *p_platform, DriverVk *p_driver)
-    : SwapChain(p_width, p_height) {
-    platform = p_platform;
-    driver = p_driver;
+SwapChainVk::SwapChainVk(int32_t width, int32_t height, PlatformVk *_platform, DriverVk *_driver)
+    : SwapChain(width, height) {
+    platform = _platform;
+    driver = _driver;
 
     // Swap chain related resources.
     init_swapchain();
@@ -163,7 +163,7 @@ void SwapChainVk::create_swapchain() {
     vkGetSwapchainImagesKHR(device, swapchain, &image_count, swapchain_images.data());
 
     swapchain_image_format = surface_format.format;
-    extent = {vk_extent.width, vk_extent.height};
+    extent = {int32_t(vk_extent.width), int32_t(vk_extent.height)};
 }
 
 void SwapChainVk::create_image_views() {

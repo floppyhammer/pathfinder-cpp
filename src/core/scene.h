@@ -49,7 +49,7 @@ class SceneBuilder;
 /// The scene of paths to be rendered.
 class Scene {
 public:
-    explicit Scene(uint32_t p_id, RectF p_view_box);
+    explicit Scene(uint32_t _id, RectF _view_box);
 
     std::vector<DisplayItem> display_list;
 

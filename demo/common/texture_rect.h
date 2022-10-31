@@ -17,16 +17,16 @@ class TextureRect {
 public:
     TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
                 const std::shared_ptr<Pathfinder::RenderPass> &render_pass,
-                uint32_t width,
-                uint32_t height);
+                float width,
+                float height);
 
     void set_texture(std::shared_ptr<Pathfinder::Texture> p_texture);
 
     void draw(const std::shared_ptr<Pathfinder::Driver> &driver,
               const std::shared_ptr<Pathfinder::CommandBuffer> &cmd_buffer,
-              const Pathfinder::Vec2<uint32_t> &framebuffer_size);
+              const Pathfinder::Vec2I &framebuffer_size);
 
-    Pathfinder::Vec2F position{0};
+    Pathfinder::Vec2F position;
     Pathfinder::Vec2F size;
     Pathfinder::Vec2F scale{1};
 

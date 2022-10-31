@@ -27,21 +27,21 @@ public:
     /// Get the unique resource ID for the framebuffer, which is only used for hashing.
     virtual unsigned long long get_unique_id() = 0;
 
-    inline uint32_t get_width() const {
+    inline int32_t get_width() const {
         return width;
     }
 
-    inline uint32_t get_height() const {
+    inline int32_t get_height() const {
         return height;
     }
 
-    inline Vec2<uint32_t> get_size() const {
+    inline Vec2I get_size() const {
         return {width, height};
     }
 
 protected:
-    uint32_t width;
-    uint32_t height;
+    int32_t width;
+    int32_t height;
 
     std::shared_ptr<Texture> texture;
 };

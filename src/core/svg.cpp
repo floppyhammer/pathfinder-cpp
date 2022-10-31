@@ -177,7 +177,7 @@ void SvgScene::load_file(std::vector<char> input, Canvas &canvas) {
                     continue;
                 }
 
-                path.bezier_curve_to(p[2], p[3], p[4], p[5], p[6], p[7]);
+                path.cubic_to(p[2], p[3], p[4], p[5], p[6], p[7]);
             }
 
             if (nsvg_path->closed) {

@@ -20,7 +20,7 @@ public:
 
     virtual std::shared_ptr<Buffer> create_buffer(BufferType type, size_t size, MemoryProperty property) = 0;
 
-    virtual std::shared_ptr<Texture> create_texture(uint32_t p_width, uint32_t p_height, TextureFormat p_format) = 0;
+    virtual std::shared_ptr<Texture> create_texture(uint32_t _width, uint32_t _height, TextureFormat _format) = 0;
 
     virtual std::shared_ptr<CommandBuffer> create_command_buffer(bool one_time) = 0;
 

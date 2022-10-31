@@ -156,8 +156,8 @@ inline Vec2<T> lerp(const Vec2<T> &a, const Vec2<T> &b, float t) {
     return {a.x + t * (b.x - a.x), a.y + t * (b.y - a.y)};
 }
 
-typedef Vec2<float> Vec2F;
 typedef Vec2<int32_t> Vec2I;
+typedef Vec2<float> Vec2F;
 
 } // namespace Pathfinder
 

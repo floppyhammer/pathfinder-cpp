@@ -28,8 +28,8 @@ ColorU Paint::get_base_color() const {
     return base_color;
 }
 
-void Paint::set_base_color(const ColorU &p_color) {
-    base_color = p_color;
+void Paint::set_base_color(const ColorU &color) {
+    base_color = color;
 }
 
 std::shared_ptr<PaintOverlay> Paint::get_overlay() const {

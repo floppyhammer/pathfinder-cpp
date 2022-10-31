@@ -173,9 +173,9 @@ private:
     PropagateMetadataBufferIDsD3D11 upload_propagate_metadata(std::vector<PropagateMetadataD3D11> &propagate_metadata,
                                                               std::vector<BackdropInfoD3D11> &backdrops);
 
-    Vec2<uint32_t> tile_size() const;
+    Vec2I tile_size() const;
 
-    Vec2<uint32_t> framebuffer_tile_size();
+    Vec2I framebuffer_tile_size();
 
     // Unlike D3D9, we only need mask/dest textures instead of mask/dest framebuffers.
     std::shared_ptr<Texture> mask_texture, dest_texture;

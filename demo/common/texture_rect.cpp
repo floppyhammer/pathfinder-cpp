@@ -17,8 +17,8 @@
 
 TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
                          const std::shared_ptr<Pathfinder::RenderPass> &render_pass,
-                         uint32_t width,
-                         uint32_t height) {
+                         float width,
+                         float height) {
     size.x = width;
     size.y = height;
 
@@ -88,7 +88,7 @@ void TextureRect::set_texture(std::shared_ptr<Pathfinder::Texture> p_texture) {
 
 void TextureRect::draw(const std::shared_ptr<Pathfinder::Driver> &driver,
                        const std::shared_ptr<Pathfinder::CommandBuffer> &cmd_buffer,
-                       const Pathfinder::Vec2<uint32_t> &viewport_size) {
+                       const Pathfinder::Vec2I &viewport_size) {
     // Get MVP matrix.
     // -------------------------------------------------
     // The actual application order of these matrices is reverse.
@@ -97,8 +97,8 @@ void TextureRect::draw(const std::shared_ptr<Pathfinder::Driver> &driver,
         Pathfinder::Vec3F(position.x / viewport_size.x * 2.0f, position.y / viewport_size.y * 2.0f, 0.0f));
     model_mat = model_mat.translate(Pathfinder::Vec3F(-1.0, -1.0, 0.0f));
     model_mat = model_mat.scale(Pathfinder::Vec3F(scale.x, scale.y, 1.0f));
-    model_mat = model_mat.scale(
-        Pathfinder::Vec3F(size.x / viewport_size.x * 2.0f, size.y / viewport_size.y * 2.0f, 1.0f));
+    model_mat =
+        model_mat.scale(Pathfinder::Vec3F(size.x / viewport_size.x * 2.0f, size.y / viewport_size.y * 2.0f, 1.0f));
 
     auto mvp_mat = model_mat;
     // -------------------------------------------------

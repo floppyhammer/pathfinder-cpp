@@ -85,7 +85,7 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &p_driver) {
                 renderPassInfo.framebuffer = framebuffer_vk->get_vk_framebuffer(); // Set target framebuffer.
                 renderPassInfo.renderArea.offset = {0, 0};
                 // Has to be larger than the area we're going to draw.
-                renderPassInfo.renderArea.extent = VkExtent2D{args.extent.x, args.extent.y};
+                renderPassInfo.renderArea.extent = VkExtent2D{uint32_t(args.extent.x), uint32_t(args.extent.y)};
 
                 // Clear color.
                 std::array<VkClearValue, 1> clearValues{};

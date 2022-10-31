@@ -51,7 +51,7 @@ struct Command {
         struct {
             RenderPass *render_pass;
             Framebuffer *framebuffer;
-            Vec2<uint32_t> extent;
+            Vec2I extent;
             ColorF clear_color;
         } begin_render_pass{};
         struct {

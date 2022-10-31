@@ -102,7 +102,7 @@ public:
     ColorU get_base_color() const;
 
     /// Changes the base color of this paint.
-    void set_base_color(const ColorU &p_color);
+    void set_base_color(const ColorU &color);
 
     /// Returns the paint overlay, which is the portion of the paint on top of the base color.
     std::shared_ptr<PaintOverlay> get_overlay() const;

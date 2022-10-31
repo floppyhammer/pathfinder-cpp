@@ -21,19 +21,19 @@ struct Rect {
     Rect() = default;
 
     // Valid if initialized.
-    Rect(T p_left, T p_top, T p_right, T p_bottom) : left(p_left), top(p_top), right(p_right), bottom(p_bottom) {}
+    Rect(T _left, T _top, T _right, T _bottom) : left(_left), top(_top), right(_right), bottom(_bottom) {}
 
-    Rect(Vec2<T> p_left_top, Vec2<T> p_right_bottom)
-        : left(p_left_top.x), top(p_left_top.y), right(p_right_bottom.x), bottom(p_right_bottom.y) {}
+    Rect(Vec2<T> left_top, Vec2<T> right_bottom)
+        : left(left_top.x), top(left_top.y), right(right_bottom.x), bottom(right_bottom.y) {}
 
-    explicit Rect(T value[4]) : left(value[0]), top(value[1]), right(value[2]), bottom(value[3]) {}
+    explicit Rect(T values[4]) : left(values[0]), top(values[1]), right(values[2]), bottom(values[3]) {}
 
     template <typename U>
-    explicit Rect(Rect<U> p_rect) {
-        left = static_cast<T>(p_rect.left);
-        top = static_cast<T>(p_rect.top);
-        right = static_cast<T>(p_rect.right);
-        bottom = static_cast<T>(p_rect.bottom);
+    explicit Rect(const Rect<U> &other) {
+        left = static_cast<T>(other.left);
+        top = static_cast<T>(other.top);
+        right = static_cast<T>(other.right);
+        bottom = static_cast<T>(other.bottom);
     }
 
     template <typename U>
@@ -68,8 +68,8 @@ struct Rect {
     }
 
     template <typename U>
-    inline bool operator==(const Rect<U> &r) const {
-        return left == r.left && top == r.top && right == r.right && bottom == r.bottom;
+    inline bool operator==(const Rect<U> &rhs) const {
+        return left == rhs.left && top == rhs.top && right == rhs.right && bottom == rhs.bottom;
     }
 
     friend std::ostream &operator<<(std::ostream &os, const Rect &r) {
@@ -184,7 +184,7 @@ struct Rect {
         return (left <= point.x && point.x <= right && top <= point.y && point.y <= bottom);
     }
 
-    inline bool contains_point(const Vec2<int32_t> &point) {
+    inline bool contains_point(const Vec2I &point) {
         // self.origin <= point && point <= self.lower_right - 1
         return (left <= point.x && point.x <= right - 1 && top <= point.y && point.y <= bottom - 1);
     }
@@ -198,6 +198,7 @@ inline void union_rect(Rect<float> &bounds, Vec2F new_point, bool first_point = 
     }
 }
 
+// Try not to use other extended types unless the function `contains_point` is taken care of.
 typedef Rect<int32_t> RectI;
 typedef Rect<float> RectF;
 
