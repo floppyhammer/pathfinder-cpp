@@ -81,7 +81,7 @@ void Scene::push_draw_path_with_index(uint32_t draw_path_id) {
     }
 }
 
-void Scene::append_scene(const Scene &scene) {
+void Scene::append_scene(const Scene &scene, const Transform2 &transform) {
     if (scene.draw_paths.empty()) {
         return;
     }
@@ -93,7 +93,11 @@ void Scene::append_scene(const Scene &scene) {
     clip_path_mapping.reserve(scene.clip_paths.size());
     for (auto &clip_path : scene.clip_paths) {
         clip_path_mapping.push_back(clip_paths.size());
-        clip_paths.push_back(clip_path);
+
+        auto new_clip_path = clip_path;
+        new_clip_path.outline.transform(transform);
+
+        clip_paths.push_back(new_clip_path);
     }
 
     // Merge draw paths.
@@ -107,6 +111,8 @@ void Scene::append_scene(const Scene &scene) {
         if (draw_path.clip_path) {
             new_draw_path.clip_path = std::make_shared<uint32_t>(clip_path_mapping[*draw_path.clip_path]);
         }
+
+        new_draw_path.outline.transform(transform);
 
         draw_paths.push_back(new_draw_path);
     }

@@ -97,9 +97,11 @@ public:
     /**
      * Add all elements in a scene to this one.
      * This includes draw paths, clip paths, render targets, and paints.
-     * @param p_scene Scene to append.
+     * TODO(floppyhammer): We need to apply the transform to gradient paints as well if there's any.
+     * @param scene Scene to append.
+     * @param transform Additional transform for the appended scene.
      */
-    void append_scene(const Scene &p_scene);
+    void append_scene(const Scene &scene, const Transform2 &transform);
 
     /**
      * Defines a new paint, which specifies how paths are to be filled or stroked.
@@ -124,7 +126,6 @@ public:
 
 private:
     /// Path clipping control.
-    /// This can be used to make scrollable elements and clipped text.
     RectF bounds;
 
     /// Scene-wide clipping control.

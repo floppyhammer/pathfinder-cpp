@@ -16,12 +16,12 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &_driver,
 
     // Minimal path test.
     if (true) {
-//        {
-//            Pathfinder::Path2d path;
-//            path.add_rect(Pathfinder::RectF(Pathfinder::Vec2F(0.0, 0.0), Pathfinder::Vec2F(360.0, 360.0)));
-//
-//            canvas->clip_path(path, Pathfinder::FillRule::Winding);
-//        }
+        //        {
+        //            Pathfinder::Path2d path;
+        //            path.add_rect(Pathfinder::RectF(Pathfinder::Vec2F(0.0, 0.0), Pathfinder::Vec2F(360.0, 360.0)));
+        //
+        //            canvas->clip_path(path, Pathfinder::FillRule::Winding);
+        //        }
 
         Pathfinder::Path2d path;
         path.move_to(260.0, 260.0);
@@ -43,10 +43,10 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &_driver,
         svg_scene.load_file(svg_input, *canvas);
 
         // TEST: Replace scene.
-//        canvas->set_scene(svg_scene.get_scene());
+        //        canvas->set_scene(svg_scene.get_scene());
 
         // TEST: Append scene.
-        canvas->get_scene()->append_scene(*svg_scene.get_scene());
+        canvas->get_scene()->append_scene(*svg_scene.get_scene(), Pathfinder::Transform2());
     }
 
     // Timers.
