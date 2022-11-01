@@ -270,8 +270,6 @@ void SceneBuilderD3D9::build_tile_batches(const std::vector<BuiltDrawPath> &buil
                         auto render_target = scene->palette.get_render_target(render_target_stack.back());
 
                         batch.render_target = render_target;
-                    } else {
-                        Logger::error("Found no render target on the stack!", "Scene Builder");
                     }
 
                     tile_batches.push_back(batch);
