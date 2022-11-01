@@ -41,6 +41,7 @@ struct Image {
 /// also be useful for image effects that require many paths to be processed at once; e.g. opacity
 /// applied to a group of paths.
 struct RenderTarget {
+    Vec2I size;
     /// Render pass.
     std::shared_ptr<RenderPass> render_pass;
     /// Framebuffer.
@@ -48,7 +49,9 @@ struct RenderTarget {
 
     RenderTarget() = default;
 
-    RenderTarget(const std::shared_ptr<Driver> &driver, Vec2I size) {
+    RenderTarget(const std::shared_ptr<Driver> &driver, const Vec2I &_size) {
+        size = _size;
+
         render_pass = driver->create_render_pass(TextureFormat::Rgba8Unorm,
                                                  AttachmentLoadOp::Clear,
                                                  TextureLayout::ShaderReadOnly);

@@ -135,8 +135,8 @@ Canvas::Canvas(const std::shared_ptr<Driver> &_driver) : driver(_driver) {
     scene = std::make_shared<Scene>(0, RectF(0, 0, 0, 0));
 }
 
-void Canvas::set_empty_dest_texture(uint32_t width, uint32_t height) {
-    set_dest_texture(driver->create_texture(width, height, TextureFormat::Rgba8Unorm));
+void Canvas::set_new_render_target(const Vec2I &size) {
+    set_render_target(RenderTarget(driver, size));
 }
 
 void Canvas::push_path(Outline &outline, PathOp path_op, FillRule fill_rule) {
@@ -413,34 +413,36 @@ void Canvas::draw_subimage(const Image &image, const RectF &src_rect, const Rect
     current_state.fill_paint = old_fill_paint;
 }
 
-void Canvas::clear() {
-    take_scene();
+void Canvas::draw_render_target(const RenderTarget &render_target, const RectF &dst_rect) {
+    auto render_target_id = scene->push_render_target(render_target);
+
+    auto pattern = Pattern::from_render_target(render_target_id, render_target.size);
+
+    // Save the current fill paint.
+    auto old_fill_paint = current_state.fill_paint;
+
+    current_state.fill_paint = Paint::from_pattern(pattern);
+    fill_rect(dst_rect);
+
+    // Restore the previous fill paint.
+    current_state.fill_paint = old_fill_paint;
 }
 
-void Canvas::resize_dest_texture(const Vec2I &new_size) {
-    if (new_size.x <= 0 || new_size.y <= 0) {
-        Logger::error("Invalid dest texture size!", "Canvas");
-        return;
-    }
-
-    if (dest_texture->get_size() == new_size) {
-        return;
-    }
-
-    set_dest_texture(driver->create_texture(new_size.x, new_size.y, TextureFormat::Bgra8Unorm));
+void Canvas::clear() {
+    take_scene();
 }
 
 std::shared_ptr<Scene> Canvas::get_scene() const {
     return scene;
 }
 
-void Canvas::set_dest_texture(const std::shared_ptr<Texture> &texture) {
-    dest_texture = texture;
-    renderer->set_dest_texture(texture);
+void Canvas::set_render_target(const RenderTarget &new_render_target) {
+    default_render_target = new_render_target;
+    renderer->set_dest_texture(default_render_target.framebuffer->get_texture());
 }
 
-std::shared_ptr<Texture> Canvas::get_dest_texture() {
-    return dest_texture;
+RenderTarget Canvas::get_render_target() {
+    return default_render_target;
 }
 
 void Canvas::save_state() {

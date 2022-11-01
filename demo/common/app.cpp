@@ -12,7 +12,7 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &_driver,
     // Set up a canvas.
     canvas = std::make_shared<Pathfinder::Canvas>(driver);
     canvas->set_size({window_width, window_height});
-    canvas->set_empty_dest_texture(window_width, window_height);
+    canvas->set_new_render_target({window_width, window_height});
 
     // TEST: Clip path.
     if (false) {

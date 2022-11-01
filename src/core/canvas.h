@@ -85,7 +85,7 @@ public:
     /// Clears the current canvas.
     void clear();
 
-    void set_empty_dest_texture(uint32_t width, uint32_t height);
+    void set_new_render_target(const Vec2I &size);
 
     // Canvas state.
     // ------------------------------------------------
@@ -169,13 +169,13 @@ public:
 
     void draw_subimage(const Image &image, const RectF &src_rect, const RectF &dst_rect);
 
+    void draw_render_target(const RenderTarget &render_target, const RectF &dst_rect);
+
     /// Set the inner scene's view box.
     /// Global control of path clipping.
     void set_size(const Vec2I &size);
 
     Vec2I get_size() const;
-
-    void resize_dest_texture(const Vec2I &new_size);
 
     /// Returns the inner scene.
     std::shared_ptr<Scene> get_scene() const;
@@ -187,9 +187,11 @@ public:
 
     std::shared_ptr<Scene> replace_scene(const std::shared_ptr<Scene> &new_scene);
 
-    void set_dest_texture(const std::shared_ptr<Texture> &texture);
+    /// Sets the render target where the final drawing will go to.
+    void set_render_target(const RenderTarget &new_render_target);
 
-    std::shared_ptr<Texture> get_dest_texture();
+    /// Returns the default render target of the canvas, which can be used to create a pattern.
+    RenderTarget get_render_target();
 
     // Canvas state
 
@@ -232,7 +234,7 @@ private:
     State current_state;
     std::vector<State> saved_states;
 
-    std::shared_ptr<Texture> dest_texture;
+    RenderTarget default_render_target;
 
     /// Scene renderer.
     std::shared_ptr<Renderer> renderer;
