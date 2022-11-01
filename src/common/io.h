@@ -15,12 +15,12 @@ std::string load_file_as_string(const std::string &file_path);
 
 std::vector<char> load_file_as_bytes(const std::string &file_path);
 
-struct ImageData {
-    ~ImageData();
+struct ImageBuffer {
+    ~ImageBuffer();
 
-    static std::shared_ptr<ImageData> from_memory(const std::vector<char> &bytes, bool flip_y);
+    static std::shared_ptr<ImageBuffer> from_memory(const std::vector<char> &bytes, bool flip_y);
 
-    static std::shared_ptr<ImageData> from_file(const std::string &file_path, bool flip_y);
+    static std::shared_ptr<ImageBuffer> from_file(const std::string &file_path, bool flip_y);
 
     std::vector<ColorU> to_rgba_pixels() const;
 

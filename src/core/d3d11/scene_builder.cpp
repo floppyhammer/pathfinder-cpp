@@ -55,7 +55,7 @@ std::shared_ptr<BuiltDrawPath> prepare_draw_path_for_gpu_binning(Scene &scene,
 
     // FIXME: Fix hardcoded blend mode.
     return std::make_shared<BuiltDrawPath>(
-        BuiltDrawPath{built_path, draw_path.clip_path, BlendMode::SrcOver, draw_path.fill_rule, true});
+        BuiltDrawPath{built_path, draw_path.clip_path, BlendMode::SrcOver, nullptr, draw_path.fill_rule, true});
 }
 
 PreparedClipPath prepare_clip_path_for_gpu_binning(Scene &scene,
@@ -128,24 +128,22 @@ shared_ptr<GlobalPathId> add_clip_path_to_batch(Scene &scene,
 }
 
 /// Create tile batches.
-DrawTileBatchD3D11 build_tile_batches_for_draw_path_display_item(
+vector<DrawTileBatchD3D11> build_tile_batches_for_draw_path_display_item(
     Scene &scene,
     Range draw_path_id_range,
     const std::vector<PaintMetadata> &paint_metadata,
     LastSceneInfo &last_scene,
     uint32_t &next_batch_id,
     const shared_ptr<ClipBatchesD3D11> &clip_batches_d3d11) {
-    // Create a new batch.
-    DrawTileBatchD3D11 draw_tile_batch;
+    vector<DrawTileBatchD3D11> flushed_draw_tile_batches;
 
-    // FIXME: This is a temporary value for test.
-    auto transform = Transform2::from_translation(Vec2F(0, 0));
-
-    draw_tile_batch.tile_batch_data = TileBatchDataD3D11(next_batch_id, PathSource::Draw);
-    draw_tile_batch.metadata_texture = scene.palette.metadata_texture;
-    draw_tile_batch.tile_batch_data.prepare_info.transform = transform;
+    // New draw tile batch.
+    shared_ptr<DrawTileBatchD3D11> draw_tile_batch;
 
     for (auto draw_path_id = draw_path_id_range.start; draw_path_id < draw_path_id_range.end; draw_path_id++) {
+        // FIXME: This is a temporary value for test.
+        auto transform = Transform2::from_translation(Vec2F(0, 0));
+
         auto draw_path = prepare_draw_path_for_gpu_binning(scene, draw_path_id, transform, paint_metadata);
 
         // Skip if the draw path is outside the view box.
@@ -153,34 +151,57 @@ DrawTileBatchD3D11 build_tile_batches_for_draw_path_display_item(
             continue;
         }
 
-        // For paint overlay.
-        {
-            // Get paint.
-            auto paint_id = draw_path->path.paint_id;
-            Paint paint = scene.palette.get_paint(paint_id);
+        // If we should create a new batch.
+        bool flush_needed = false;
 
-            auto overlay = paint.get_overlay();
+        // Try to reuse the current batch if we can.
+        if (draw_tile_batch) {
+            flush_needed = fixup_batch_for_new_path_if_possible(draw_tile_batch->color_texture, *draw_path);
+        }
 
-            // Set color texture.
-            // TODO: Improve this.
-            if (overlay) {
-                if (overlay->contents.type == PaintContents::Type::Gradient) {
-                    auto gradient = overlay->contents.gradient;
+        // If we couldn't reuse the batch, flush it.
+        if (flush_needed) {
+            flushed_draw_tile_batches.push_back(*draw_tile_batch);
+            draw_tile_batch = nullptr;
+        }
 
-                    draw_tile_batch.color_texture = gradient.tile_texture;
-                } else {
-                    auto pattern = overlay->contents.pattern;
+        if (draw_tile_batch == nullptr) {
+            draw_tile_batch = std::make_shared<DrawTileBatchD3D11>();
 
-                    // Source is an image.
-                    if (pattern.source.type == PatternSource::Type::Image) {
-                        draw_tile_batch.color_texture = pattern.source.image.texture;
-                    } else { // Source is a render target.
-                        auto render_target =
-                            scene.palette.get_render_target(overlay->contents.pattern.source.render_target_id);
-                        draw_tile_batch.color_texture = render_target.framebuffer->get_texture();
+            draw_tile_batch->tile_batch_data = TileBatchDataD3D11(next_batch_id, PathSource::Draw);
+            draw_tile_batch->metadata_texture = scene.palette.metadata_texture;
+            draw_tile_batch->tile_batch_data.prepare_info.transform = transform;
+
+            // For paint overlay.
+            {
+                // Get paint.
+                auto paint_id = draw_path->path.paint_id;
+                Paint paint = scene.palette.get_paint(paint_id);
+
+                auto overlay = paint.get_overlay();
+
+                // Set color texture.
+                // TODO: Improve this.
+                if (overlay) {
+                    if (overlay->contents.type == PaintContents::Type::Gradient) {
+                        auto gradient = overlay->contents.gradient;
+
+                        draw_tile_batch->color_texture = gradient.tile_texture;
+                    } else {
+                        auto pattern = overlay->contents.pattern;
+
+                        // Source is an image.
+                        if (pattern.source.type == PatternSource::Type::Image) {
+                            draw_tile_batch->color_texture = pattern.source.image.texture;
+                        } else { // Source is a render target.
+                            auto render_target =
+                                scene.palette.get_render_target(overlay->contents.pattern.source.render_target_id);
+                            draw_tile_batch->color_texture = render_target.framebuffer->get_texture();
+                        }
                     }
                 }
             }
+            next_batch_id += 1;
         }
 
         // Add clip path if necessary.
@@ -190,12 +211,18 @@ DrawTileBatchD3D11 build_tile_batches_for_draw_path_display_item(
                 add_clip_path_to_batch(scene, draw_path->clip_path_id, 0, transform, last_scene, *clip_batches_d3d11);
         }
 
-        draw_tile_batch.tile_batch_data.push(draw_path->path, draw_path_id, clip_path, draw_path->occludes, last_scene);
+        draw_tile_batch->tile_batch_data.push(draw_path->path,
+                                              draw_path_id,
+                                              clip_path,
+                                              draw_path->occludes,
+                                              last_scene);
     }
 
-    next_batch_id += 1;
+    if (draw_tile_batch) {
+        flushed_draw_tile_batches.push_back(*draw_tile_batch);
+    }
 
-    return draw_tile_batch;
+    return flushed_draw_tile_batches;
 }
 
 void SceneBuilderD3D11::build(const std::shared_ptr<Driver> &driver) {
@@ -218,7 +245,7 @@ void SceneBuilderD3D11::build_tile_batches(LastSceneInfo &last_scene,
     // Clear batches.
     tile_batches.clear();
 
-    std::vector<RenderTargetId> render_target_id_stack;
+    std::vector<RenderTargetId> render_target_stack;
 
     uint32_t next_batch_id = 0;
 
@@ -230,26 +257,28 @@ void SceneBuilderD3D11::build_tile_batches(LastSceneInfo &last_scene,
     for (const auto &display_item : scene->display_list) {
         switch (display_item.type) {
             case DisplayItem::Type::PushRenderTarget: {
-                render_target_id_stack.push_back(display_item.render_target_id);
+                render_target_stack.push_back(display_item.render_target_id);
             } break;
             case DisplayItem::Type::PopRenderTarget: {
-                render_target_id_stack.pop_back();
+                render_target_stack.pop_back();
             } break;
             case DisplayItem::Type::DrawPaths: {
-                auto tile_batch = build_tile_batches_for_draw_path_display_item(*scene,
-                                                                                display_item.path_range,
-                                                                                paint_metadata,
-                                                                                last_scene,
-                                                                                next_batch_id,
-                                                                                clip_batches_d3d11);
+                auto batches = build_tile_batches_for_draw_path_display_item(*scene,
+                                                                             display_item.range,
+                                                                             paint_metadata,
+                                                                             last_scene,
+                                                                             next_batch_id,
+                                                                             clip_batches_d3d11);
 
-                // Set render target. Render to screen if there's no render targets on the stack.
-                if (!render_target_id_stack.empty()) {
-                    auto render_target = scene->palette.get_render_target(render_target_id_stack.back());
-                    tile_batch.render_target = render_target;
+                for (auto &batch : batches) {
+                    // Set render target. Render to screen if there's no render targets on the stack.
+                    if (!render_target_stack.empty()) {
+                        auto render_target = scene->palette.get_render_target(render_target_stack.back());
+                        batch.render_target = render_target;
+                    }
+
+                    tile_batches.push_back(batch);
                 }
-
-                tile_batches.push_back(tile_batch);
             } break;
         }
     }

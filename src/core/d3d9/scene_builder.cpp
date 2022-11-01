@@ -14,26 +14,8 @@ using std::vector;
 
 namespace Pathfinder {
 
-/// Check if we need a new batch due to color texture change.
-bool fixup_batch_for_new_path_if_possible(shared_ptr<Texture> &batch_color_texture, const BuiltDrawPath &draw_path) {
-    if (draw_path.color_texture) {
-        // If the current batch doesn't have a color texture.
-        if (batch_color_texture == nullptr) {
-            // Update batch color texture.
-            batch_color_texture = draw_path.color_texture;
-            return true;
-        }
-
-        // If the current batch has a different color texture than that of the draw path.
-        if (draw_path.color_texture != batch_color_texture) {
-            return false;
-        }
-    }
-    return true;
-}
-
-/// Create tile batches.
-vector<DrawTileBatchD3D9> build_tile_batches_for_draw_path_display_item(Scene &scene,
+/// Create tile batches. Different batches use different color textures.
+vector<DrawTileBatchD3D9> build_tile_batches_for_draw_path_display_item(const Scene &scene,
                                                                         const std::vector<BuiltDrawPath> &built_paths,
                                                                         Range draw_path_range) {
     vector<DrawTileBatchD3D9> flushed_draw_tile_batches;
@@ -298,31 +280,33 @@ void SceneBuilderD3D9::build_tile_batches(const std::vector<BuiltDrawPath> &buil
     // Clear batches.
     tile_batches.clear();
 
-    std::vector<RenderTargetId> render_target_id_stack;
+    std::vector<RenderTargetId> render_target_stack;
 
     // Build batches using the display items.
     for (const auto &display_item : scene->display_list) {
         switch (display_item.type) {
             case DisplayItem::Type::PushRenderTarget: {
-                render_target_id_stack.push_back(display_item.render_target_id);
+                render_target_stack.push_back(display_item.render_target_id);
             } break;
             case DisplayItem::Type::PopRenderTarget: {
-                render_target_id_stack.pop_back();
+                render_target_stack.pop_back();
             } break;
             case DisplayItem::Type::DrawPaths: {
-                // Create a new batch.
-                auto _tile_batches =
-                    build_tile_batches_for_draw_path_display_item(*scene, built_paths, display_item.range);
+                // Create new batches.
+                auto batches = build_tile_batches_for_draw_path_display_item(*scene, built_paths, display_item.range);
 
-                for (auto &tile_batch : _tile_batches) {
-                    // Set render target. Pick the one on the top of the stack.
-                    if (!render_target_id_stack.empty()) {
-                        auto render_target = scene->palette.get_render_target(render_target_id_stack.back());
+                for (auto &batch : batches) {
+                    // Set render target of the batches.
+                    if (!render_target_stack.empty()) {
+                        // Fetch the render target on the top of the stack.
+                        auto render_target = scene->palette.get_render_target(render_target_stack.back());
 
-                        tile_batch.render_target = render_target;
+                        batch.render_target = render_target;
+                    } else {
+                        Logger::error("Found no render target on the stack!", "Scene Builder");
                     }
 
-                    tile_batches.push_back(tile_batch);
+                    tile_batches.push_back(batch);
                 }
             } break;
         }

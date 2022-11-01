@@ -46,7 +46,7 @@ std::vector<char> load_file_as_bytes(const std::string &file_path) {
     return std::move(bytes);
 }
 
-std::shared_ptr<ImageData> ImageData::from_memory(const std::vector<char> &bytes, bool flip_y) {
+std::shared_ptr<ImageBuffer> ImageBuffer::from_memory(const std::vector<char> &bytes, bool flip_y) {
     stbi_set_flip_vertically_on_load(flip_y);
 
     int32_t img_width, img_height, img_channels;
@@ -63,7 +63,7 @@ std::shared_ptr<ImageData> ImageData::from_memory(const std::vector<char> &bytes
         throw std::runtime_error(std::string("Failed to load image from memory!"));
     }
 
-    auto image_data = std::make_shared<ImageData>();
+    auto image_data = std::make_shared<ImageBuffer>();
     image_data->width = img_width;
     image_data->height = img_height;
     image_data->channel_count = img_channels;
@@ -72,17 +72,17 @@ std::shared_ptr<ImageData> ImageData::from_memory(const std::vector<char> &bytes
     return image_data;
 }
 
-std::shared_ptr<ImageData> ImageData::from_file(const std::string &file_path, bool flip_y) {
-    return ImageData::from_memory(load_file_as_bytes(file_path), flip_y);
+std::shared_ptr<ImageBuffer> ImageBuffer::from_file(const std::string &file_path, bool flip_y) {
+    return ImageBuffer::from_memory(load_file_as_bytes(file_path), flip_y);
 }
 
-ImageData::~ImageData() {
+ImageBuffer::~ImageBuffer() {
     if (data) {
         stbi_image_free(data);
     }
 }
 
-std::vector<ColorU> ImageData::to_rgba_pixels() const {
+std::vector<ColorU> ImageBuffer::to_rgba_pixels() const {
     if (channel_count != 4) {
         Logger::error("Cannot convert ImageData to RGBA pixels due to mismatched channel count!");
         return {};

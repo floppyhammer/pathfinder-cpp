@@ -174,7 +174,7 @@ void Scene::pop_render_target() {
     display_list.push_back(item);
 }
 
-RectF Scene::get_view_box() {
+RectF Scene::get_view_box() const {
     return view_box;
 }
 

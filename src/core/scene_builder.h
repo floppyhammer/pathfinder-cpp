@@ -2,9 +2,13 @@
 #define PATHFINDER_SCENE_BUILDER_H
 
 #include "../gpu/driver.h"
+#include "data/built_path.h"
 #include "data/data.h"
 
 namespace Pathfinder {
+
+/// Check if we need a new batch due to color texture change.
+bool fixup_batch_for_new_path_if_possible(shared_ptr<Texture>& batch_color_texture, const BuiltDrawPath& draw_path);
 
 class Scene;
 

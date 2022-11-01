@@ -78,7 +78,7 @@ struct PatternSource {
     /// Previously-rendered vector content.
     ///
     /// This value allows you to render content and then later use that content as a pattern.
-    RenderTargetId render_target_id;
+    RenderTargetId render_target_id{};
     Vec2I size;
 
     /// Returns true if this pattern is obviously opaque.

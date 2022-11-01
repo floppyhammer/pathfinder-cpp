@@ -122,7 +122,7 @@ public:
     Paint get_paint(uint32_t paint_id) const;
 
     /// Returns the view box, which defines the visible portion of the scene.
-    RectF get_view_box();
+    RectF get_view_box() const;
 
     /// Changes the view box.
     void set_view_box(const RectF &new_view_box);

@@ -25,9 +25,9 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &_driver,
     // TEST: Draw image.
     if (true) {
         Pathfinder::Image image;
-        auto image_data = Pathfinder::ImageData::from_file("../assets/test.png", false);
-        image.size = {image_data->width, image_data->height};
-        image.pixels = image_data->to_rgba_pixels();
+        auto image_buffer = Pathfinder::ImageBuffer::from_file("../assets/test.png", false);
+        image.size = {image_buffer->width, image_buffer->height};
+        image.pixels = image_buffer->to_rgba_pixels();
         Pathfinder::Vec2F pos = {100, 200};
         canvas->draw_image(image, Pathfinder::RectF(pos, pos + image.size.to_f32()));
     }
