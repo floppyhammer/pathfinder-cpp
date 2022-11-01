@@ -143,6 +143,44 @@ enum class BlendMode {
     Luminosity,
 };
 
+/// Whether the backdrop is irrelevant when applying this blend mode (i.e. destination blend
+/// factor is zero when source alpha is one).
+inline bool blend_mode_occludes_backdrop(BlendMode blend_mode) {
+    switch (blend_mode) {
+        case BlendMode::SrcOver:
+        case BlendMode::Clear: {
+            return true;
+        }
+        case BlendMode::DestOver:
+        case BlendMode::DestOut:
+        case BlendMode::SrcAtop:
+        case BlendMode::Xor:
+        case BlendMode::Lighter:
+        case BlendMode::Lighten:
+        case BlendMode::Darken:
+        case BlendMode::Copy:
+        case BlendMode::SrcIn:
+        case BlendMode::DestIn:
+        case BlendMode::SrcOut:
+        case BlendMode::DestAtop:
+        case BlendMode::Multiply:
+        case BlendMode::Screen:
+        case BlendMode::HardLight:
+        case BlendMode::Overlay:
+        case BlendMode::ColorDodge:
+        case BlendMode::ColorBurn:
+        case BlendMode::SoftLight:
+        case BlendMode::Difference:
+        case BlendMode::Exclusion:
+        case BlendMode::Hue:
+        case BlendMode::Saturation:
+        case BlendMode::Color:
+        case BlendMode::Luminosity: {
+            return false;
+        }
+    }
+}
+
 const int32_t COMBINER_CTRL_COLOR_COMBINE_SRC_IN = 0x1;
 const int32_t COMBINER_CTRL_COLOR_COMBINE_DEST_IN = 0x2;
 

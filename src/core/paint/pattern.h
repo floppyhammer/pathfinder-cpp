@@ -33,9 +33,6 @@ struct RenderTargetId {
 struct Image {
     Vec2I size;
     std::vector<ColorU> pixels;
-
-    // TODO: This should not be here.
-    mutable std::shared_ptr<Texture> texture;
 };
 
 /// A raster image target that can be rendered to and later reused as a pattern.

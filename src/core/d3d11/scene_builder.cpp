@@ -45,6 +45,7 @@ std::shared_ptr<BuiltDrawPath> prepare_draw_path_for_gpu_binning(Scene &scene,
     }
 
     auto paint_id = draw_path.paint;
+    auto &_paint_metadata = paint_metadata[paint_id];
 
     TilingPathInfo path_info{};
     path_info.type = TilingPathInfo::Type::Draw;
@@ -53,9 +54,7 @@ std::shared_ptr<BuiltDrawPath> prepare_draw_path_for_gpu_binning(Scene &scene,
     auto built_path =
         BuiltPath(draw_path_id, path_bounds, effective_view_box, draw_path.fill_rule, draw_path.clip_path, path_info);
 
-    // FIXME: Fix hardcoded blend mode.
-    return std::make_shared<BuiltDrawPath>(
-        BuiltDrawPath{built_path, draw_path.clip_path, BlendMode::SrcOver, nullptr, draw_path.fill_rule, true});
+    return std::make_shared<BuiltDrawPath>(built_path, draw_path, _paint_metadata);
 }
 
 PreparedClipPath prepare_clip_path_for_gpu_binning(Scene &scene,
@@ -156,7 +155,7 @@ vector<DrawTileBatchD3D11> build_tile_batches_for_draw_path_display_item(
 
         // Try to reuse the current batch if we can.
         if (draw_tile_batch) {
-            flush_needed = fixup_batch_for_new_path_if_possible(draw_tile_batch->color_texture, *draw_path);
+            flush_needed = !fixup_batch_for_new_path_if_possible(draw_tile_batch->color_texture, *draw_path);
         }
 
         // If we couldn't reuse the batch, flush it.
@@ -171,36 +170,8 @@ vector<DrawTileBatchD3D11> build_tile_batches_for_draw_path_display_item(
             draw_tile_batch->tile_batch_data = TileBatchDataD3D11(next_batch_id, PathSource::Draw);
             draw_tile_batch->metadata_texture = scene.palette.metadata_texture;
             draw_tile_batch->tile_batch_data.prepare_info.transform = transform;
+            draw_tile_batch->color_texture = draw_path->color_texture;
 
-            // For paint overlay.
-            {
-                // Get paint.
-                auto paint_id = draw_path->path.paint_id;
-                Paint paint = scene.palette.get_paint(paint_id);
-
-                auto overlay = paint.get_overlay();
-
-                // Set color texture.
-                // TODO: Improve this.
-                if (overlay) {
-                    if (overlay->contents.type == PaintContents::Type::Gradient) {
-                        auto gradient = overlay->contents.gradient;
-
-                        draw_tile_batch->color_texture = gradient.tile_texture;
-                    } else {
-                        auto pattern = overlay->contents.pattern;
-
-                        // Source is an image.
-                        if (pattern.source.type == PatternSource::Type::Image) {
-                            draw_tile_batch->color_texture = pattern.source.image.texture;
-                        } else { // Source is a render target.
-                            auto render_target =
-                                scene.palette.get_render_target(overlay->contents.pattern.source.render_target_id);
-                            draw_tile_batch->color_texture = render_target.framebuffer->get_texture();
-                        }
-                    }
-                }
-            }
             next_batch_id += 1;
         }
 

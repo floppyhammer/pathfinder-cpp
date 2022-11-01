@@ -60,4 +60,12 @@ PaintFilter PaintMetadata::filter() const {
     return filter;
 }
 
+std::shared_ptr<Texture> PaintMetadata::tile_batch_texture() const {
+    if (color_texture_metadata) {
+        return color_texture_metadata->color_texture;
+    }
+
+    return nullptr;
+}
+
 } // namespace Pathfinder

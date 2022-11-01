@@ -123,6 +123,7 @@ struct PaintColorTextureMetadata {
     /// The scale for the page this paint is on.
     Vec2F page_scale;
 
+    /// Will be used during tile batch building.
     std::shared_ptr<Texture> color_texture;
 
     /// The transform to apply to screen coordinates to translate them into UVs.
@@ -157,6 +158,8 @@ struct PaintMetadata {
     bool is_opaque = true;
 
     PaintFilter filter() const;
+
+    std::shared_ptr<Texture> tile_batch_texture() const;
 };
 
 } // namespace Pathfinder

@@ -207,6 +207,7 @@ public:
 
         auto render_target = RenderTarget(driver, subscene_size);
         auto render_target_id = scene->push_render_target(render_target);
+
         scene->append_scene(*subscene, transform);
         scene->pop_render_target();
 

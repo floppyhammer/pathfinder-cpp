@@ -68,6 +68,7 @@ public:
 
                 if (contents.type == PaintContents::Type::Pattern) {
                     if (contents.pattern.source.type == PatternSource::Type::RenderTarget) {
+                        // TODO
                         abort();
                     } else {
                         new_paint_id = push_paint(old_paint);

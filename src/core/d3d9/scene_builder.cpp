@@ -32,7 +32,7 @@ vector<DrawTileBatchD3D9> build_tile_batches_for_draw_path_display_item(const Sc
 
         // Try to reuse the current batch if we can.
         if (draw_tile_batch) {
-            flush_needed = fixup_batch_for_new_path_if_possible(draw_tile_batch->color_texture, draw_path);
+            flush_needed = !fixup_batch_for_new_path_if_possible(draw_tile_batch->color_texture, draw_path);
         }
 
         // If we couldn't reuse the batch, flush it.
@@ -49,36 +49,6 @@ vector<DrawTileBatchD3D9> build_tile_batches_for_draw_path_display_item(const Sc
             draw_tile_batch->z_buffer_data = DenseTileMap<uint32_t>::z_builder(tile_bounds);
             draw_tile_batch->metadata_texture = scene.palette.metadata_texture;
             draw_tile_batch->color_texture = draw_path.color_texture;
-
-            // For paint overlay.
-            {
-                // Get paint.
-                auto paint_id = draw_path.path.paint_id;
-                Paint paint = scene.palette.get_paint(paint_id);
-
-                auto overlay = paint.get_overlay();
-
-                // Set color texture.
-                if (overlay) {
-                    if (overlay->contents.type == PaintContents::Type::Gradient) {
-                        auto gradient = overlay->contents.gradient;
-
-                        draw_tile_batch->color_texture = gradient.tile_texture;
-                    } else {
-                        auto pattern = overlay->contents.pattern;
-
-                        // Source is an image.
-                        if (pattern.source.type == PatternSource::Type::Image) {
-                            draw_tile_batch->color_texture = pattern.source.image.texture;
-                        } else { // Source is a render target.
-                            auto render_target =
-                                scene.palette.get_render_target(overlay->contents.pattern.source.render_target_id);
-
-                            draw_tile_batch->color_texture = render_target.framebuffer->get_texture();
-                        }
-                    }
-                }
-            }
         }
 
         for (const auto &tile : path_data.tiles.data) {
@@ -252,6 +222,9 @@ BuiltDrawPath SceneBuilderD3D9::build_draw_path_on_cpu(const DrawPathBuildParams
     path_info.info.blend_mode = path_object.blend_mode;
     path_info.info.fill_rule = path_object.fill_rule;
 
+    auto paint_id = path_object.paint;
+    auto &_paint_metadata = params.paint_metadata[paint_id];
+
     // Create a tiler for the draw path.
     Tiler tiler(*this,
                 path_id,
@@ -268,12 +241,7 @@ BuiltDrawPath SceneBuilderD3D9::build_draw_path_on_cpu(const DrawPathBuildParams
     // Add generated fills from the tile generation step.
     send_fills(tiler.object_builder.fills);
 
-    return {tiler.object_builder.built_path,
-            path_object.clip_path,
-            path_object.blend_mode,
-            nullptr,
-            path_object.fill_rule,
-            true};
+    return BuiltDrawPath(tiler.object_builder.built_path, path_object, _paint_metadata);
 }
 
 void SceneBuilderD3D9::build_tile_batches(const std::vector<BuiltDrawPath> &built_paths) {

@@ -8,8 +8,10 @@
 #include "../../common/math/rect.h"
 #include "../../gpu/texture.h"
 #include "../d3d9/data/gpu_data.h"
+#include "../paint/paint.h"
 #include "data.h"
 #include "dense_tile_map.h"
+#include "path.h"
 
 using std::shared_ptr;
 
@@ -37,20 +39,25 @@ struct BuiltPath {
               RectF path_bounds,
               RectF view_box_bounds,
               FillRule p_fill_rule,
-              const std::shared_ptr<uint32_t>& clip_path_id,
-              const TilingPathInfo& tiling_path_info);
+              const std::shared_ptr<uint32_t> &clip_path_id,
+              const TilingPathInfo &tiling_path_info);
 };
 
 /// This stores a built path with extra info related to its drawing.
 struct BuiltDrawPath {
     BuiltPath path;
     shared_ptr<uint32_t> clip_path_id;
-    BlendMode blend_mode = BlendMode::SrcIn;
-    shared_ptr<Texture> color_texture;
-    FillRule mask_0_fill_rule = FillRule::Winding;
+    BlendMode blend_mode;
+    //    Filter filter;
+    shared_ptr<Texture> color_texture; // Will be used in tile batch building.
+    TextureSamplingFlags sampling_flags;
+    FillRule mask_fill_rule;
 
     /// If the path is opaque. Used to determine z buffer.
     bool occludes = true;
+
+    BuiltDrawPath() = default;
+    BuiltDrawPath(const BuiltPath &built_path, const DrawPath &path_object, const PaintMetadata &paint_metadata);
 };
 
 } // namespace Pathfinder

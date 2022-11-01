@@ -307,7 +307,8 @@ std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr
                 color_texture_metadata->composite_op = overlay->composite_op;
                 color_texture_metadata->border = Vec2I();
 
-                gradient.tile_texture = gradient_tile_texture;
+                // Set the gradient tile texture as the color texture.
+                color_texture_metadata->color_texture = gradient_tile_texture;
             } else { // Pattern
                 const auto &pattern = overlay->contents.pattern;
 
@@ -319,14 +320,15 @@ std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr
                     if (pattern.source.type == PatternSource::Type::Image) {
                         texture_location.rect = RectI({}, pattern.source.image.size);
 
-                        pattern.source.image.texture = driver->create_texture(pattern.source.image.size.x,
-                                                                              pattern.source.image.size.y,
-                                                                              TextureFormat::Rgba8Unorm);
+                        // Set the newly created image texture as the color texture.
+                        color_texture_metadata->color_texture = driver->create_texture(pattern.source.image.size.x,
+                                                                                       pattern.source.image.size.y,
+                                                                                       TextureFormat::Rgba8Unorm);
 
                         auto cmd_buffer = driver->create_command_buffer(true);
 
                         cmd_buffer->upload_to_texture(
-                            pattern.source.image.texture,
+                            color_texture_metadata->color_texture,
                             RectI(0, 0, pattern.source.image.size.x, pattern.source.image.size.y),
                             pattern.source.image.pixels.data(),
                             TextureLayout::ShaderReadOnly);
@@ -334,6 +336,10 @@ std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr
                         cmd_buffer->submit(driver);
                     } else { // Render target
                         texture_location.rect = RectI({}, pattern.source.size);
+                        auto render_target = get_render_target(pattern.source.render_target_id);
+
+                        // Set the framebuffer texture as the color texture.
+                        color_texture_metadata->color_texture = render_target.framebuffer->get_texture();
                     }
                 }
 
