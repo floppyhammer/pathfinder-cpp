@@ -14,6 +14,7 @@
 
 namespace Pathfinder {
 
+/// Tiles in a batch use the same color texture and render target.
 struct DrawTileBatchD3D9 {
     std::vector<TileObjectPrimitive> tiles;
 

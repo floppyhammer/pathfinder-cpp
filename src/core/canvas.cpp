@@ -356,19 +356,61 @@ void Canvas::set_global_composite_operation(BlendMode new_composite_operation) {
     current_state.global_composite_operation = new_composite_operation;
 }
 
-void Canvas::draw_image(const Image &image, const RectF &dst_location) {
+void Canvas::fill_rect(const RectF &rect) {
+    Path2d path;
+    path.add_rect(rect);
+    fill_path(path, FillRule::Winding);
+}
+
+void Canvas::stroke_rect(const RectF &rect) {
+    Path2d path;
+    path.add_rect(rect);
+    stroke_path(path);
+}
+
+void Canvas::clear_rect(const RectF &rect) {
+    Path2d path;
+    path.add_rect(rect);
+
+    auto paint = Paint::from_color(ColorU::transparent_black());
+    auto paint_id = scene->push_paint(paint);
+
+    auto outline = path.into_outline();
+    outline.transform(current_state.transform);
+
+    DrawPath draw_path;
+    draw_path.outline = outline;
+    draw_path.paint = paint_id;
+    draw_path.blend_mode = BlendMode::Clear;
+    scene->push_draw_path(draw_path);
+}
+
+void Canvas::draw_image(const Image &image, const RectF &dst_rect) {
     auto pattern = Pattern::from_image(image);
-    auto src_rect = RectF(Vec2F(0.0, 0.0), image.size.to_f32());
 
-    auto old_fill_paint = fill_paint();
+    // Set the whole image as the src rect.
+    auto src_rect = RectF({}, pattern.get_size().to_f32());
 
-    set_fill_paint(Paint::from_pattern(pattern));
+    draw_subimage(image, src_rect, dst_rect);
+}
 
-    Path2d path2d;
-    path2d.add_rect(dst_location);
-    fill_path(path2d, FillRule::Winding);
+void Canvas::draw_subimage(const Image &image, const RectF &src_rect, const RectF &dst_rect) {
+    auto dst_size = dst_rect.size();
+    auto scale = dst_size / src_rect.size();
+    auto offset = dst_rect.origin() - src_rect.origin() * scale;
+    auto transform = Transform2::from_scale(scale).translate(offset);
 
-    set_fill_paint(old_fill_paint);
+    auto pattern = Pattern::from_image(image);
+    pattern.apply_transform(transform);
+
+    // Save the current fill paint.
+    auto old_fill_paint = current_state.fill_paint;
+
+    current_state.fill_paint = Paint::from_pattern(pattern);
+    fill_rect(RectF(dst_rect.origin(), dst_rect.origin() + dst_size));
+
+    // Restore the previous fill paint.
+    current_state.fill_paint = old_fill_paint;
 }
 
 void Canvas::clear() {
@@ -437,8 +479,8 @@ std::shared_ptr<Scene> Canvas::replace_scene(const std::shared_ptr<Scene> &new_s
 }
 
 void Canvas::set_size(const Vec2I &new_size) {
-    auto new_view_box = RectI(Vec2I(), new_size).to_f32();
-    //    scene.set_bounds(new_view_box);
+    auto new_view_box = RectI({}, new_size).to_f32();
+    scene->set_bounds(new_view_box);
     scene->set_view_box(new_view_box);
 }
 

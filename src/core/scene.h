@@ -29,12 +29,20 @@ struct DisplayItem {
 
     RenderTargetId render_target_id; // For PushRenderTarget.
 
-    Range path_range; // For DrawPaths.
+    Range range; // For DrawPaths.
 };
 
+/// Used to control RenderTarget changing.
 struct SceneEpoch {
-    uint64_t hi;
-    uint64_t lo;
+    uint64_t hi = 0;
+    uint64_t lo = 0;
+
+    SceneEpoch() = default;
+    SceneEpoch(uint64_t _hi, uint64_t _lo);
+
+    SceneEpoch successor() const;
+
+    void next();
 };
 
 struct LastSceneInfo {
@@ -119,6 +127,10 @@ public:
     /// Changes the view box.
     void set_view_box(const RectF &new_view_box);
 
+    RectF get_bounds();
+
+    void set_bounds(const RectF &new_bounds);
+
     /// Build the scene by SceneBuilder.
     void build(std::shared_ptr<Driver> &driver);
 
@@ -126,7 +138,6 @@ public:
     void build_and_render(std::shared_ptr<Renderer> &renderer);
 
 private:
-    /// Path clipping control.
     RectF bounds;
 
     /// Scene-wide clipping control.

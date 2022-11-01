@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "../../common/math/rect.h"
+#include "../../gpu/texture.h"
 #include "../d3d9/data/gpu_data.h"
 #include "data.h"
 #include "dense_tile_map.h"
@@ -45,6 +46,7 @@ struct BuiltDrawPath {
     BuiltPath path;
     shared_ptr<uint32_t> clip_path_id;
     BlendMode blend_mode = BlendMode::SrcIn;
+    shared_ptr<Texture> color_texture;
     FillRule mask_0_fill_rule = FillRule::Winding;
 
     /// If the path is opaque. Used to determine z buffer.

@@ -48,6 +48,7 @@ struct PaintOverlay {
 };
 
 /// Defines how a shape is to be filled: with a solid color, gradient, or pattern.
+/// A paint content change usually means a color texture change, which results in multiple tile batches.
 struct Paint {
 private:
     ColorU base_color;

@@ -14,15 +14,26 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &_driver,
     canvas->set_size({window_width, window_height});
     canvas->set_empty_dest_texture(window_width, window_height);
 
-    // Minimal path test.
-    if (true) {
-        //        {
-        //            Pathfinder::Path2d path;
-        //            path.add_rect(Pathfinder::RectF(Pathfinder::Vec2F(0.0, 0.0), Pathfinder::Vec2F(360.0, 360.0)));
-        //
-        //            canvas->clip_path(path, Pathfinder::FillRule::Winding);
-        //        }
+    // TEST: Clip path.
+    if (false) {
+        Pathfinder::Path2d path;
+        path.add_rect(Pathfinder::RectF(Pathfinder::Vec2F(0.0, 0.0), Pathfinder::Vec2F(360.0, 360.0)));
 
+        canvas->clip_path(path, Pathfinder::FillRule::Winding);
+    }
+
+    // TEST: Draw image.
+    if (true) {
+        Pathfinder::Image image;
+        auto image_data = Pathfinder::ImageData::from_file("../assets/test.png", false);
+        image.size = {image_data->width, image_data->height};
+        image.pixels = image_data->to_rgba_pixels();
+        Pathfinder::Vec2F pos = {100, 200};
+        canvas->draw_image(image, Pathfinder::RectF(pos, pos + image.size.to_f32()));
+    }
+
+    // TEST: Minimal path.
+    if (true) {
         Pathfinder::Path2d path;
         path.move_to(260.0, 260.0);
         path.line_to(460.0, 260.0);
@@ -30,17 +41,27 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &_driver,
         path.line_to(260.0, 460.0);
         path.close_path();
 
+        // TEST: Shadow/Blur.
+        if (false) {
+            canvas->set_shadow_color(Pathfinder::ColorU::red());
+            canvas->set_shadow_blur(16);
+        }
+
         // Set brush.
         canvas->set_line_width(10.0);
-        canvas->set_stroke_paint(Pathfinder::Paint::from_color(Pathfinder::ColorU::black()));
+        canvas->set_stroke_paint(Pathfinder::Paint::from_color(Pathfinder::ColorU::red()));
+        auto gradient = Pathfinder::Gradient::linear(Pathfinder::LineSegmentF({260.0, 260.0}, {460.0, 460.0}));
+        gradient.add_color_stop(Pathfinder::ColorU::red(), 0);
+        gradient.add_color_stop(Pathfinder::ColorU::blue(), 1);
+        canvas->set_stroke_paint(Pathfinder::Paint::from_gradient(gradient));
 
         canvas->stroke_path(path);
     }
 
-    // SVG test.
-    if (true) {
+    // TEST: Draw SVG.
+    if (false) {
         Pathfinder::SvgScene svg_scene;
-        svg_scene.load_file(svg_input, *canvas);
+        svg_scene.load_from_memory(svg_input, *canvas);
 
         // TEST: Replace scene.
         //        canvas->set_scene(svg_scene.get_scene());

@@ -147,8 +147,8 @@ struct Pattern {
     /// Applies the given transform to this pattern.
     ///
     /// The transform is applied after any existing transform.
-    inline void apply_transform(const Transform2 &p_transform) {
-        transform = p_transform * transform;
+    inline void apply_transform(const Transform2 &_transform) {
+        transform = _transform * transform;
     }
 
     /// Returns the underlying pixel size of this pattern, not taking transforms into account.

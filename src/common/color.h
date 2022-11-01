@@ -91,6 +91,10 @@ struct ColorU {
     static ColorU black() {
         return {0, 0, 0, 255};
     }
+
+    static ColorU transparent_black() {
+        return {0, 0, 0, 0};
+    }
 };
 
 } // namespace Pathfinder

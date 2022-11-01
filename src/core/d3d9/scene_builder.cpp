@@ -14,47 +14,86 @@ using std::vector;
 
 namespace Pathfinder {
 
+/// Check if we need a new batch due to color texture change.
+bool fixup_batch_for_new_path_if_possible(shared_ptr<Texture> &batch_color_texture, const BuiltDrawPath &draw_path) {
+    if (draw_path.color_texture) {
+        // If the current batch doesn't have a color texture.
+        if (batch_color_texture == nullptr) {
+            // Update batch color texture.
+            batch_color_texture = draw_path.color_texture;
+            return true;
+        }
+
+        // If the current batch has a different color texture than that of the draw path.
+        if (draw_path.color_texture != batch_color_texture) {
+            return false;
+        }
+    }
+    return true;
+}
+
 /// Create tile batches.
-DrawTileBatchD3D9 build_tile_batches_for_draw_path_display_item(Scene &scene,
-                                                                const std::vector<BuiltDrawPath> &built_paths,
-                                                                Range draw_path_range) {
+vector<DrawTileBatchD3D9> build_tile_batches_for_draw_path_display_item(Scene &scene,
+                                                                        const std::vector<BuiltDrawPath> &built_paths,
+                                                                        Range draw_path_range) {
+    vector<DrawTileBatchD3D9> flushed_draw_tile_batches;
+
     // New draw tile batch.
-    DrawTileBatchD3D9 draw_tile_batch;
-
-    auto tile_bounds = round_rect_out_to_tile_bounds(scene.get_view_box());
-
-    draw_tile_batch.z_buffer_data = DenseTileMap<uint32_t>::z_builder(tile_bounds);
-    draw_tile_batch.metadata_texture = scene.palette.metadata_texture;
+    shared_ptr<DrawTileBatchD3D9> draw_tile_batch;
 
     for (auto draw_path_id = draw_path_range.start; draw_path_id < draw_path_range.end; draw_path_id++) {
         const auto &draw_path = built_paths[draw_path_id];
         const auto &path_data = draw_path.path.data;
 
-        // For paint overlay.
-        {
-            // Get paint.
-            auto paint_id = draw_path.path.paint_id;
-            Paint paint = scene.palette.get_paint(paint_id);
+        // If we should create a new batch.
+        bool flush_needed = false;
 
-            auto overlay = paint.get_overlay();
+        // Try to reuse the current batch if we can.
+        if (draw_tile_batch) {
+            flush_needed = fixup_batch_for_new_path_if_possible(draw_tile_batch->color_texture, draw_path);
+        }
 
-            // Set color texture.
-            if (overlay) {
-                if (overlay->contents.type == PaintContents::Type::Gradient) {
-                    auto gradient = overlay->contents.gradient;
+        // If we couldn't reuse the batch, flush it.
+        if (flush_needed) {
+            flushed_draw_tile_batches.push_back(*draw_tile_batch);
+            draw_tile_batch = nullptr;
+        }
 
-                    draw_tile_batch.color_texture = gradient.tile_texture;
-                } else {
-                    auto pattern = overlay->contents.pattern;
+        if (draw_tile_batch == nullptr) {
+            draw_tile_batch = std::make_shared<DrawTileBatchD3D9>();
 
-                    // Source is an image.
-                    if (pattern.source.type == PatternSource::Type::Image) {
-                        draw_tile_batch.color_texture = pattern.source.image.texture;
-                    } else { // Source is a render target.
-                        auto render_target =
-                            scene.palette.get_render_target(overlay->contents.pattern.source.render_target_id);
+            auto tile_bounds = round_rect_out_to_tile_bounds(scene.get_view_box());
 
-                        draw_tile_batch.color_texture = render_target.framebuffer->get_texture();
+            draw_tile_batch->z_buffer_data = DenseTileMap<uint32_t>::z_builder(tile_bounds);
+            draw_tile_batch->metadata_texture = scene.palette.metadata_texture;
+            draw_tile_batch->color_texture = draw_path.color_texture;
+
+            // For paint overlay.
+            {
+                // Get paint.
+                auto paint_id = draw_path.path.paint_id;
+                Paint paint = scene.palette.get_paint(paint_id);
+
+                auto overlay = paint.get_overlay();
+
+                // Set color texture.
+                if (overlay) {
+                    if (overlay->contents.type == PaintContents::Type::Gradient) {
+                        auto gradient = overlay->contents.gradient;
+
+                        draw_tile_batch->color_texture = gradient.tile_texture;
+                    } else {
+                        auto pattern = overlay->contents.pattern;
+
+                        // Source is an image.
+                        if (pattern.source.type == PatternSource::Type::Image) {
+                            draw_tile_batch->color_texture = pattern.source.image.texture;
+                        } else { // Source is a render target.
+                            auto render_target =
+                                scene.palette.get_render_target(overlay->contents.pattern.source.render_target_id);
+
+                            draw_tile_batch->color_texture = render_target.framebuffer->get_texture();
+                        }
                     }
                 }
             }
@@ -66,7 +105,7 @@ DrawTileBatchD3D9 build_tile_batches_for_draw_path_display_item(Scene &scene,
                 continue;
             }
 
-            draw_tile_batch.tiles.push_back(tile);
+            draw_tile_batch->tiles.push_back(tile);
 
             // Z buffer is only meant for visible SOLID tiles and not for any ALPHA tiles.
             if (!draw_path.occludes || tile.alpha_tile_id.is_valid()) {
@@ -76,8 +115,8 @@ DrawTileBatchD3D9 build_tile_batches_for_draw_path_display_item(Scene &scene,
             // Set z buffer value.
             // ----------------------------------------------------------
             // Get tile index in the vector.
-            auto z_buffer_index = draw_tile_batch.z_buffer_data.coords_to_index_unchecked({tile.tile_x, tile.tile_y});
-            auto z_value = &draw_tile_batch.z_buffer_data.data[z_buffer_index];
+            auto z_buffer_index = draw_tile_batch->z_buffer_data.coords_to_index_unchecked({tile.tile_x, tile.tile_y});
+            auto z_value = &draw_tile_batch->z_buffer_data.data[z_buffer_index];
 
             // Store the biggest draw_path_id as the z value, which means the solid tile of this path is the topmost.
             *z_value = std::max(*z_value, (unsigned int)draw_path_id);
@@ -87,13 +126,17 @@ DrawTileBatchD3D9 build_tile_batches_for_draw_path_display_item(Scene &scene,
         if (path_data.clip_tiles) {
             for (auto &clip_tile : path_data.clip_tiles->data) {
                 if (clip_tile.dest_tile_id.is_valid() && clip_tile.src_tile_id.is_valid()) {
-                    draw_tile_batch.clips.push_back(clip_tile);
+                    draw_tile_batch->clips.push_back(clip_tile);
                 }
             }
         }
     }
 
-    return draw_tile_batch;
+    if (draw_tile_batch) {
+        flushed_draw_tile_batches.push_back(*draw_tile_batch);
+    }
+
+    return flushed_draw_tile_batches;
 }
 
 void SceneBuilderD3D9::build(const std::shared_ptr<Driver> &driver) {
@@ -246,6 +289,7 @@ BuiltDrawPath SceneBuilderD3D9::build_draw_path_on_cpu(const DrawPathBuildParams
     return {tiler.object_builder.built_path,
             path_object.clip_path,
             path_object.blend_mode,
+            nullptr,
             path_object.fill_rule,
             true};
 }
@@ -267,17 +311,19 @@ void SceneBuilderD3D9::build_tile_batches(const std::vector<BuiltDrawPath> &buil
             } break;
             case DisplayItem::Type::DrawPaths: {
                 // Create a new batch.
-                auto tile_batch =
-                    build_tile_batches_for_draw_path_display_item(*scene, built_paths, display_item.path_range);
+                auto _tile_batches =
+                    build_tile_batches_for_draw_path_display_item(*scene, built_paths, display_item.range);
 
-                // Set render target. Pick the one on the top of the stack.
-                if (!render_target_id_stack.empty()) {
-                    auto render_target = scene->palette.get_render_target(render_target_id_stack.back());
+                for (auto &tile_batch : _tile_batches) {
+                    // Set render target. Pick the one on the top of the stack.
+                    if (!render_target_id_stack.empty()) {
+                        auto render_target = scene->palette.get_render_target(render_target_id_stack.back());
 
-                    tile_batch.render_target = render_target;
+                        tile_batch.render_target = render_target;
+                    }
+
+                    tile_batches.push_back(tile_batch);
                 }
-
-                tile_batches.push_back(tile_batch);
             } break;
         }
     }

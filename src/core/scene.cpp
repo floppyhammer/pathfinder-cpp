@@ -8,6 +8,23 @@ using std::vector;
 
 namespace Pathfinder {
 
+SceneEpoch::SceneEpoch(uint64_t _hi, uint64_t _lo) {
+    hi = _hi;
+    lo = _lo;
+}
+
+SceneEpoch SceneEpoch::successor() const {
+    if (lo == std::numeric_limits<uint64_t>::max()) {
+        return {hi + 1, 0};
+    } else {
+        return {hi, lo + 1};
+    }
+}
+
+void SceneEpoch::next() {
+    *this = successor();
+}
+
 Scene::Scene(uint32_t _id, RectF _view_box) : id(_id), view_box(_view_box), palette(Palette(_id)) {
     // Create the scene builder.
 #ifndef PATHFINDER_USE_D3D11
@@ -19,7 +36,7 @@ Scene::Scene(uint32_t _id, RectF _view_box) : id(_id), view_box(_view_box), pale
 
 uint32_t Scene::push_paint(const Paint &paint) {
     auto paint_id = palette.push_paint(paint);
-
+    epoch.next();
     return paint_id;
 }
 
@@ -28,27 +45,11 @@ Paint Scene::get_paint(uint32_t paint_id) const {
 }
 
 uint32_t Scene::push_draw_path(const DrawPath &draw_path) {
-    // Get the path index in the scene.
     auto draw_path_index = draw_paths.size();
 
-    // Push the path.
     draw_paths.push_back(draw_path);
 
-    // Update the scene bounds.
-    bounds = bounds.union_rect(draw_path.outline.bounds);
-
-    // Update the display list.
-    if (!display_list.empty() && display_list.back().type == DisplayItem::Type::DrawPaths) {
-        display_list.back().path_range.end = draw_path_index + 1;
-    } else {
-        DisplayItem item;
-        item.type = DisplayItem::Type::DrawPaths;
-        item.path_range = Range(draw_path_index, draw_path_index + 1);
-        display_list.push_back(item);
-    }
-
-    // Need to rebuild the scene.
-    is_dirty = true;
+    push_draw_path_with_index(draw_path_index);
 
     return draw_path_index;
 }
@@ -57,6 +58,7 @@ uint32_t Scene::push_clip_path(const ClipPath &clip_path) {
     bounds = bounds.union_rect(clip_path.outline.bounds);
     uint32_t clip_path_id = clip_paths.size();
     clip_paths.push_back(clip_path);
+    epoch.next();
     return clip_path_id;
 }
 
@@ -69,16 +71,18 @@ void Scene::push_draw_path_with_index(uint32_t draw_path_id) {
 
     // Get the last DrawPaths display item.
     if (!display_list.empty() && display_list.back().type == DisplayItem::Type::DrawPaths) {
-        auto &range = display_list.back().path_range;
+        auto &range = display_list.back().range;
 
         range.end = end_path_id;
     } else { // If there's none.
         DisplayItem display_item;
         display_item.type = DisplayItem::Type::DrawPaths;
-        display_item.path_range = {draw_path_id, end_path_id};
+        display_item.range = {draw_path_id, end_path_id};
 
         display_list.push_back(display_item);
     }
+
+    epoch.next();
 }
 
 void Scene::append_scene(const Scene &scene, const Transform2 &transform) {
@@ -134,15 +138,18 @@ void Scene::append_scene(const Scene &scene, const Transform2 &transform) {
                 display_list.push_back(display_item);
             } break;
             case DisplayItem::Type::DrawPaths: {
-                auto range = display_item.path_range;
+                auto range = display_item.range;
 
                 for (uint32_t old_path_index = range.start; old_path_index < range.end; old_path_index++) {
-                    auto old_draw_path_id = draw_path_mapping[old_path_index];
-                    push_draw_path_with_index(old_draw_path_id);
+                    auto new_draw_path_id = draw_path_mapping[old_path_index];
+                    push_draw_path_with_index(new_draw_path_id);
                 }
             } break;
         }
     }
+
+    // Bump epoch.
+    epoch.next();
 
     // Need to rebuild the scene.
     is_dirty = true;
@@ -156,6 +163,7 @@ RenderTargetId Scene::push_render_target(const RenderTarget &render_target) {
     item.render_target_id = render_target_id;
 
     display_list.push_back(item);
+    epoch.next();
 
     return render_target_id;
 }
@@ -177,8 +185,19 @@ void Scene::set_view_box(const RectF &new_view_box) {
 
     view_box = new_view_box;
 
+    epoch.next();
+
     // We need rebuild the scene if the view box changes.
     is_dirty = true;
+}
+
+RectF Scene::get_bounds() {
+    return bounds;
+}
+
+void Scene::set_bounds(const RectF &new_bounds) {
+    bounds = new_bounds;
+    epoch.next();
 }
 
 void Scene::build(std::shared_ptr<Driver> &driver) {

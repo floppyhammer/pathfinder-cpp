@@ -68,22 +68,6 @@ Paint convert_nsvg_paint(NSVGpaint nsvg_paint) {
             break;
         case NSVG_PAINT_COLOR: {
             paint = Paint::from_color(ColorU(nsvg_paint.color));
-
-            // Image pattern test.
-            if (false) {
-                auto image_data = ImageData::from_file("../assets/test.png", false);
-
-                Image image;
-                image.pixels = image_data->to_rgba_pixels();
-                image.size = {image_data->width, image_data->height};
-
-                auto pattern = Pattern::from_image(image);
-
-                // FIXME: Should assign path transform to the pattern, but NanoSVG cannot provide it.
-                //                pattern.transform = Transform2();
-
-                paint = Paint::from_pattern(pattern);
-            }
         } break;
         case NSVG_PAINT_LINEAR_GRADIENT:
         case NSVG_PAINT_RADIAL_GRADIENT: {
@@ -187,23 +171,10 @@ void SvgScene::load_from_memory(std::vector<char> bytes, Canvas &canvas) {
 
         canvas.save_state();
 
-        // TEST: Shadow/Blur.
-        if (false) {
-            canvas.set_shadow_color(ColorU::green());
-            canvas.set_shadow_blur(8);
-        }
-
         // Set dash.
         canvas.set_line_dash_offset(nsvg_shape->strokeDashOffset);
         canvas.set_line_dash(
             std::vector<float>(nsvg_shape->strokeDashArray, nsvg_shape->strokeDashArray + nsvg_shape->strokeDashCount));
-
-        // TEST: Add clip path.
-        if (false) {
-            Path2d clip_path;
-            clip_path.add_rect({{}, {360, 360}});
-            canvas.clip_path(clip_path, FillRule::Winding);
-        }
 
         // Add fill.
         canvas.set_fill_paint(convert_nsvg_paint(nsvg_shape->fill));

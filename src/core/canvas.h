@@ -155,20 +155,25 @@ public:
     void clip_path(Path2d &path2d, FillRule fill_rule);
     // ------------------------------------------------
 
+    // Drawing rectangles
+
+    void fill_rect(const RectF &rect);
+
+    void stroke_rect(const RectF &rect);
+
+    void clear_rect(const RectF &rect);
+
     // Drawing images
-    void draw_image(const Image &image, const RectF &dst_location);
+
+    void draw_image(const Image &image, const RectF &dst_rect);
+
+    void draw_subimage(const Image &image, const RectF &src_rect, const RectF &dst_rect);
 
     /// Set the inner scene's view box.
     /// Global control of path clipping.
     void set_size(const Vec2I &size);
 
     Vec2I get_size() const;
-
-    /// Local control of path clipping.
-    /// Will force bounds of outlines drawn henceforward be within the set clipping box.
-    void set_clipping_box(const RectF &box);
-
-    void unset_clipping_box();
 
     void resize_dest_texture(const Vec2I &new_size);
 
@@ -193,6 +198,22 @@ public:
     void restore_state();
 
     void draw();
+
+    // Extensions
+
+    Pattern create_pattern_from_canvas(Canvas &canvas, const Transform2 &transform) {
+        auto subscene_size = canvas.get_size();
+        auto subscene = canvas.get_scene();
+
+        auto render_target = RenderTarget(driver, subscene_size);
+        auto render_target_id = scene->push_render_target(render_target);
+        scene->append_scene(*subscene, transform);
+        scene->pop_render_target();
+
+        auto pattern = Pattern::from_render_target(render_target_id, subscene_size);
+        pattern.apply_transform(transform);
+        return pattern;
+    }
 
 private:
     /**
