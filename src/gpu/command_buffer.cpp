@@ -184,22 +184,14 @@ void CommandBuffer::transition_layout(std::shared_ptr<Texture> &texture, Texture
         return;
     }
 
-    if (texture->get_layout() == old_layout) {
-        Command cmd;
-        cmd.type = CommandType::TransitionLayout;
+    Command cmd;
+    cmd.type = CommandType::TransitionLayout;
 
-        auto &args = cmd.args.transition_layout;
-        args.texture = texture.get();
-        args.src_layout = old_layout;
-        args.dst_layout = new_layout;
+    auto &args = cmd.args.transition_layout;
+    args.texture = texture.get();
+    args.dst_layout = new_layout;
 
-        commands.push(cmd);
-
-        texture->set_layout(new_layout);
-    } else {
-        Logger::error("Current texture layout doesn't match the transition src layout!", "CommandBufferVk");
-        abort();
-    }
+    commands.push(cmd);
 }
 
 } // namespace Pathfinder

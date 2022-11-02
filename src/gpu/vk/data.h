@@ -86,6 +86,8 @@ const std::array<VkFormat, 32> vk_formats = {
 
 inline VkImageLayout to_vk_layout(TextureLayout layout) {
     switch (layout) {
+        case TextureLayout::Undefined:
+            return VK_IMAGE_LAYOUT_UNDEFINED;
         case TextureLayout::PresentSrc:
             return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
         case TextureLayout::ShaderReadOnly:
@@ -96,8 +98,6 @@ inline VkImageLayout to_vk_layout(TextureLayout layout) {
             return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
         case TextureLayout::General:
             return VK_IMAGE_LAYOUT_GENERAL;
-        case TextureLayout::Undefined:
-            return VK_IMAGE_LAYOUT_UNDEFINED;
         case TextureLayout::ColorAttachment:
             return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     }

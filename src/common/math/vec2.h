@@ -18,7 +18,7 @@ struct Vec2 {
 
     explicit Vec2(T s) : x(s), y(s){};
 
-    Vec2(T p_x, T p_y) : x(p_x), y(p_y){};
+    Vec2(T _x, T _y) : x(_x), y(_y){};
 
     inline Vec2<int32_t> floor() const {
         return {(int32_t)std::floor(x), (int32_t)std::floor(y)};

@@ -107,7 +107,6 @@ struct Command {
         } read_buffer;
         struct {
             Texture *texture;
-            TextureLayout src_layout;
             TextureLayout dst_layout;
         } transition_layout;
     } args;

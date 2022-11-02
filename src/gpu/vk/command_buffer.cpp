@@ -18,6 +18,157 @@
 
 namespace Pathfinder {
 
+/// Correct image layout should be set even before binding, not just before submitting command buffer.
+/// Also, it can't be set during a render pass.
+void transition_image_layout(VkCommandBuffer command_buffer,
+                             VkImage image,
+                             VkImageLayout old_layout,
+                             VkImageLayout new_layout) {
+    if (old_layout == new_layout) {
+        return;
+    }
+
+    VkImageMemoryBarrier barrier{};
+    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    barrier.oldLayout = old_layout;
+    barrier.newLayout = new_layout;
+
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+    barrier.image = image;
+    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    barrier.subresourceRange.baseMipLevel = 0;
+    barrier.subresourceRange.levelCount = 1;
+    barrier.subresourceRange.baseArrayLayer = 0;
+    barrier.subresourceRange.layerCount = 1;
+
+    VkPipelineStageFlags src_stage;
+    VkPipelineStageFlags dst_stage;
+
+    if (new_layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+        //        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+        //
+        //        if (hasStencilComponent(format)) {
+        //            barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+        //        }
+    } else {
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    }
+
+    // Undefined -> Transfer dst
+    if (old_layout == VK_IMAGE_LAYOUT_UNDEFINED && new_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+        src_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        dst_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    }
+    // Transfer dst -> Sampler
+    else if (old_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
+             new_layout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+        src_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        dst_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    }
+    // Sampler -> Transfer dst
+    else if (old_layout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL &&
+             new_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+        barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+        src_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        dst_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    }
+    // Undefined -> Depth stencil attachment
+    else if (old_layout == VK_IMAGE_LAYOUT_UNDEFINED &&
+             new_layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask =
+            VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+        src_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        dst_stage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    } else if (old_layout == VK_IMAGE_LAYOUT_GENERAL && new_layout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL) {
+        barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+        src_stage = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+        dst_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    } else if (old_layout == VK_IMAGE_LAYOUT_UNDEFINED && new_layout == VK_IMAGE_LAYOUT_GENERAL) {
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+
+        src_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        dst_stage = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+    }
+    // Image -> Sampler.
+    else if (old_layout == VK_IMAGE_LAYOUT_GENERAL && new_layout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+        barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+        src_stage = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+        dst_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    }
+    // Sampler -> Image.
+    else if (old_layout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && new_layout == VK_IMAGE_LAYOUT_GENERAL) {
+        barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+
+        src_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        dst_stage = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+    }
+    // Undefined -> Sampler
+    else if (old_layout == VK_IMAGE_LAYOUT_UNDEFINED && new_layout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+        src_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        dst_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    }
+    // Undefined -> Color attachment
+    else if (old_layout == VK_IMAGE_LAYOUT_UNDEFINED && new_layout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+        src_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        dst_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    }
+    // Color attachment -> Sampler
+    else if (old_layout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL &&
+             new_layout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+        barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+        src_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dst_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    }
+    // Sampler -> Color attachment
+    else if (old_layout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL &&
+             new_layout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
+        barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+        src_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        dst_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    }
+    // Transfer dst -> Color attachment
+    else if (old_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
+             new_layout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+        src_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        dst_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    } else {
+        throw std::invalid_argument("Unsupported layout transition!");
+    }
+
+    vkCmdPipelineBarrier(command_buffer, src_stage, dst_stage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+}
+
 CommandBufferVk::CommandBufferVk(VkCommandBuffer p_command_buffer, VkDevice p_device)
     : vk_command_buffer(p_command_buffer), device(p_device) {}
 
@@ -57,8 +208,8 @@ void CommandBufferVk::upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
     commands.push(cmd);
 }
 
-void CommandBufferVk::submit(const std::shared_ptr<Driver> &p_driver) {
-    auto driver = static_cast<DriverVk *>(p_driver.get());
+void CommandBufferVk::submit(const std::shared_ptr<Driver> &_driver) {
+    auto driver = static_cast<DriverVk *>(_driver.get());
 
     // Begin recording.
     VkCommandBufferBeginInfo beginInfo{};
@@ -291,12 +442,11 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &p_driver) {
                 // Copy the pixel data to the staging buffer.
                 driver->copy_data_to_memory(args.data, staging_buffer_memory, data_size);
 
-                // Transition the image to VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL before data transfer.
-                CommandBufferVk::transition_image_layout(vk_command_buffer,
-                                                         texture_vk->get_image(),
-                                                         VK_IMAGE_LAYOUT_UNDEFINED,
-                                                         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-                texture_vk->set_layout(TextureLayout::TransferDst);
+                // Transition the image layout to data transfer dst.
+                transition_image_layout(vk_command_buffer,
+                                        texture_vk->get_image(),
+                                        to_vk_layout(texture_vk->get_layout()),
+                                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
                 // Execute the buffer to image copy operation.
                 {
@@ -336,13 +486,12 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &p_driver) {
                                            &region);
                 }
 
-                // To be able to start sampling from the texture image in the shader, we need one last transition to
-                // prepare it for shader access.
-                CommandBufferVk::transition_image_layout(vk_command_buffer,
-                                                         texture_vk->get_image(),
-                                                         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-                texture_vk->set_layout(TextureLayout::ShaderReadOnly);
+                // Transition the image layout before data transfer.
+                transition_image_layout(vk_command_buffer,
+                                        texture_vk->get_image(),
+                                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                        to_vk_layout(args.dst_layout));
+                texture_vk->set_layout(args.dst_layout);
 
                 // Callback to clean up staging resources.
                 auto callback = [driver, staging_buffer, staging_buffer_memory] {
@@ -356,10 +505,11 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &p_driver) {
 
                 auto texture_vk = static_cast<TextureVk *>(args.texture);
 
-                CommandBufferVk::transition_image_layout(vk_command_buffer,
-                                                         texture_vk->get_image(),
-                                                         to_vk_layout(args.src_layout),
-                                                         to_vk_layout(args.dst_layout));
+                transition_image_layout(vk_command_buffer,
+                                        texture_vk->get_image(),
+                                        to_vk_layout(texture_vk->get_layout()),
+                                        to_vk_layout(args.dst_layout));
+                texture_vk->set_layout(args.dst_layout);
             } break;
             case CommandType::Max:
                 break;
