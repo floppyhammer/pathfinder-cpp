@@ -50,6 +50,7 @@ private:
     /// For releasing resources in destructor.
     VkDevice device{};
 
+    /// The initial layout must be undefined.
     TextureLayout layout = TextureLayout::Undefined;
 };
 

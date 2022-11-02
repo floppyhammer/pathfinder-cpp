@@ -135,17 +135,22 @@ void CommandBuffer::end_compute_pass() {
 }
 
 void CommandBuffer::upload_to_texture(const std::shared_ptr<Texture> &texture,
-                                      RectI p_region,
+                                      RectI _region,
                                       const void *data,
                                       TextureLayout dst_layout) {
     auto whole_region = RectI(0, 0, texture->get_width(), texture->get_height());
 
     // Invalid region represents the whole texture.
-    auto region = p_region.is_valid() ? p_region : whole_region;
+    auto region = _region.is_valid() ? _region : whole_region;
 
     // Check if the region is a subset of the whole texture region.
     if (!region.union_rect(whole_region).is_valid()) {
         Logger::error("Invalid texture region when uploading data to texture!", "Command Buffer");
+        return;
+    }
+
+    // If there's no data to upload.
+    if (region.area() == 0) {
         return;
     }
 
@@ -187,15 +192,15 @@ void CommandBuffer::read_buffer(const std::shared_ptr<Buffer> &buffer,
     }
 }
 
-//void CommandBuffer::transition_layout(const std::shared_ptr<Texture> &texture, TextureLayout new_layout) {
-//    Command cmd;
-//    cmd.type = CommandType::TransitionLayout;
+// void CommandBuffer::transition_layout(const std::shared_ptr<Texture> &texture, TextureLayout new_layout) {
+//     Command cmd;
+//     cmd.type = CommandType::TransitionLayout;
 //
-//    auto &args = cmd.args.transition_layout;
-//    args.texture = texture.get();
-//    args.dst_layout = new_layout;
+//     auto &args = cmd.args.transition_layout;
+//     args.texture = texture.get();
+//     args.dst_layout = new_layout;
 //
-//    commands.push(cmd);
-//}
+//     commands.push(cmd);
+// }
 
 } // namespace Pathfinder

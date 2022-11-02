@@ -307,15 +307,20 @@ void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &_scene_builder) {
     // However, it seems not providing much performance boost.
     // So, we just leave it as it is for the sake of simplicity.
     {
-        auto cmd_buffer = driver->create_command_buffer(true);
+        // No fills to draw.
+        if (scene_builder->pending_fills.empty()) {
+            Logger::warn("No fills to draw!", "RendererD3D9");
+        } else {
+            auto cmd_buffer = driver->create_command_buffer(true);
 
-        // Upload fills to buffer.
-        upload_fills(scene_builder->pending_fills, cmd_buffer);
+            // Upload fills to buffer.
+            upload_fills(scene_builder->pending_fills, cmd_buffer);
 
-        // We can do fill drawing as soon as the fill vertex buffer is ready.
-        draw_fills(scene_builder->pending_fills.size(), cmd_buffer);
+            // We can do fill drawing as soon as the fill vertex buffer is ready.
+            draw_fills(scene_builder->pending_fills.size(), cmd_buffer);
 
-        cmd_buffer->submit(driver);
+            cmd_buffer->submit(driver);
+        }
     }
 
     // Tiles need to be drawn after fill drawing and after tile batches are prepared.
@@ -387,12 +392,6 @@ void RendererD3D9::draw_fills(uint32_t fills_count, const std::shared_ptr<Comman
     // Mask framebuffer is invalid.
     if (mask_framebuffer == nullptr) {
         Logger::error("RendererD3D9", "Invalid mask framebuffer!");
-        return;
-    }
-
-    // No fills to draw.
-    if (fills_count == 0) {
-        Logger::warn("RendererD3D9", "No fills to draw!");
         return;
     }
 
