@@ -7,6 +7,7 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+
 void DescriptorSetVk::update_vk_descriptor_set(VkDevice p_device, VkDescriptorSetLayout descriptor_set_layout) {
     device = p_device;
 
@@ -168,6 +169,7 @@ DescriptorSetVk::~DescriptorSetVk() {
         vkDestroyDescriptorPool(device, descriptor_pool, nullptr);
     }
 }
+
 } // namespace Pathfinder
 
 #endif

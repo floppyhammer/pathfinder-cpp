@@ -375,9 +375,7 @@ void RendererD3D11::draw_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer
 
     auto cmd_buffer = driver->create_command_buffer(true);
 
-    cmd_buffer->transition_layout(mask_texture, TextureLayout::ShaderReadOnly);
-
-    cmd_buffer->transition_layout(dest_texture, TextureLayout::General);
+    cmd_buffer->sync_descriptor_set(tile_descriptor_set);
 
     cmd_buffer->begin_compute_pass();
 
@@ -632,6 +630,8 @@ MicrolineBufferIDsD3D11 RendererD3D11::dice_segments(std::vector<DiceMetadataD3D
 
     cmd_buffer = driver->create_command_buffer(true);
 
+    cmd_buffer->sync_descriptor_set(dice_descriptor_set);
+
     cmd_buffer->begin_compute_pass();
 
     cmd_buffer->bind_compute_pipeline(dice_pipeline);
@@ -700,6 +700,8 @@ void RendererD3D11::bound(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
 
     auto cmd_buffer = driver->create_command_buffer(true);
 
+    cmd_buffer->sync_descriptor_set(bound_descriptor_set);
+
     cmd_buffer->begin_compute_pass();
 
     cmd_buffer->bind_compute_pipeline(bound_pipeline);
@@ -761,6 +763,8 @@ FillBufferInfoD3D11 RendererD3D11::bin_segments(MicrolineBufferIDsD3D11 &microli
     }
 
     auto cmd_buffer = driver->create_command_buffer(true);
+
+    cmd_buffer->sync_descriptor_set(bin_descriptor_set);
 
     cmd_buffer->begin_compute_pass();
 
@@ -874,6 +878,8 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
 
     auto cmd_buffer = driver->create_command_buffer(true);
 
+    cmd_buffer->sync_descriptor_set(propagate_descriptor_set);
+
     cmd_buffer->begin_compute_pass();
 
     cmd_buffer->bind_compute_pipeline(propagate_pipeline);
@@ -944,7 +950,7 @@ void RendererD3D11::draw_fills(FillBufferInfoD3D11 &fill_storage_info,
 
     cmd_buffer = driver->create_command_buffer(true);
 
-    cmd_buffer->transition_layout(mask_texture, TextureLayout::General);
+    cmd_buffer->sync_descriptor_set(fill_descriptor_set);
 
     cmd_buffer->begin_compute_pass();
 
@@ -982,6 +988,8 @@ void RendererD3D11::sort_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer
     }
 
     cmd_buffer = driver->create_command_buffer(true);
+
+    cmd_buffer->sync_descriptor_set(sort_descriptor_set);
 
     cmd_buffer->begin_compute_pass();
 

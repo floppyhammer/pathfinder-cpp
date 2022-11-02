@@ -3,11 +3,12 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-Pathfinder::RenderPassVk::RenderPassVk(VkDevice p_device,
+
+Pathfinder::RenderPassVk::RenderPassVk(VkDevice _device,
                                        TextureFormat texture_format,
                                        AttachmentLoadOp load_op,
-                                       TextureLayout final_layout) {
-    device = p_device;
+                                       bool is_swapchain_render_pass) {
+    device = _device;
 
     // Color attachment.
     // ----------------------------------------
@@ -25,9 +26,10 @@ Pathfinder::RenderPassVk::RenderPassVk(VkDevice p_device,
     colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     // The layout the attachment image subresource will be in when a render pass instance begins.
     colorAttachment.initialLayout =
-        load_op == AttachmentLoadOp::Clear ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        load_op == AttachmentLoadOp::Clear ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     // The layout the attachment image subresource will be transitioned to when a render pass instance ends.
-    colorAttachment.finalLayout = to_vk_layout(final_layout);
+    colorAttachment.finalLayout =
+        is_swapchain_render_pass ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
     VkAttachmentReference colorAttachmentRef{};
     colorAttachmentRef.attachment = 0;
@@ -71,6 +73,7 @@ RenderPassVk::~RenderPassVk() {
 VkRenderPass RenderPassVk::get_vk_render_pass() {
     return vk_render_pass;
 }
+
 } // namespace Pathfinder
 
 #endif

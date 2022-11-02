@@ -27,11 +27,6 @@ FramebufferVk::FramebufferVk(VkDevice p_device, VkRenderPass render_pass, const 
     if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &vk_framebuffer) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create framebuffer!");
     }
-
-    // Fill a descriptor for later use in a descriptor set.
-    descriptor.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    descriptor.imageView = texture_vk->get_image_view();
-    descriptor.sampler = texture_vk->get_sampler();
 }
 
 FramebufferVk::FramebufferVk(VkDevice p_device,

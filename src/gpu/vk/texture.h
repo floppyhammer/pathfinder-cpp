@@ -9,6 +9,7 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+
 class TextureVk : public Texture {
     friend class DriverVk;
 
@@ -25,6 +26,14 @@ public:
 
     VkSampler get_sampler() const;
 
+    inline TextureLayout get_layout() const {
+        return layout;
+    }
+
+    inline void set_layout(TextureLayout new_layout) {
+        layout = new_layout;
+    }
+
 private:
     /// Handle.
     VkImage image{};
@@ -40,7 +49,10 @@ private:
 
     /// For releasing resources in destructor.
     VkDevice device{};
+
+    TextureLayout layout = TextureLayout::Undefined;
 };
+
 } // namespace Pathfinder
 
 #endif

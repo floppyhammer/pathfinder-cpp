@@ -17,6 +17,7 @@
 #include "render_pipeline.h"
 
 namespace Pathfinder {
+
 class Driver;
 
 enum class CommandType {
@@ -29,6 +30,8 @@ enum class CommandType {
     DrawInstanced,
     EndRenderPass,
 
+    SyncDescriptorSet, // Should be outside a render pass.
+
     // Compute pass.
     BeginComputePass,
     BindComputePipeline,
@@ -39,7 +42,7 @@ enum class CommandType {
     UploadToBuffer,
     UploadToTexture,
     ReadBuffer,
-    TransitionLayout,
+//    TransitionLayout,
 
     Max,
 };
@@ -67,6 +70,9 @@ struct Command {
         struct {
             DescriptorSet *descriptor_set;
         } bind_descriptor_set;
+        struct {
+            DescriptorSet *descriptor_set;
+        } sync_descriptor_set;
         struct {
             uint32_t first_vertex;
             uint32_t vertex_count;
@@ -105,13 +111,16 @@ struct Command {
             uint32_t data_size;
             void *data;
         } read_buffer;
-        struct {
-            Texture *texture;
-            TextureLayout dst_layout;
-        } transition_layout;
+//        struct {
+//            Texture *texture;
+//            TextureLayout dst_layout;
+//        } transition_layout;
     } args;
 };
 
+/// Don't do any modifications to command arguments until the buffer is submitted.
+/// Maybe this command buffer will not be executed at all.
+/// Or maybe a later generated command buffer will be executed first.
 class CommandBuffer {
 public:
     // RENDER PASS
@@ -126,6 +135,7 @@ public:
     void bind_vertex_buffers(std::vector<std::shared_ptr<Buffer>> vertex_buffers);
 
     /// Bind uniform buffers and texture samplers.
+    /// Image layout should be ready before calling this.
     void bind_descriptor_set(const std::shared_ptr<DescriptorSet> &descriptor_set);
 
     /// Draw call.
@@ -134,6 +144,8 @@ public:
     void draw_instanced(uint32_t vertex_count, uint32_t instance_count);
 
     void end_render_pass();
+
+    void sync_descriptor_set(const std::shared_ptr<DescriptorSet> &descriptor_set);
 
     // COMPUTE PASS
 
@@ -166,7 +178,7 @@ public:
 
     void read_buffer(const std::shared_ptr<Buffer> &buffer, uint32_t offset, uint32_t data_size, void *data);
 
-    void transition_layout(std::shared_ptr<Texture> &texture, TextureLayout new_layout);
+//    void transition_layout(const std::shared_ptr<Texture> &texture, TextureLayout new_layout);
 
     // SUBMIT
 
@@ -188,6 +200,7 @@ protected:
     RenderPipeline *render_pipeline{};
     ComputePipeline *compute_pipeline{};
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_GPU_COMMAND_BUFFER_H

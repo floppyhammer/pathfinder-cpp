@@ -9,6 +9,7 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+
 class FramebufferVk : public Framebuffer {
     friend class DriverVk;
 
@@ -32,11 +33,9 @@ public:
 private:
     VkFramebuffer vk_framebuffer;
 
-    /// For using the color attachment of this framebuffer as a sampler.
-    VkDescriptorImageInfo descriptor;
-
     VkDevice device;
 };
+
 } // namespace Pathfinder
 
 #endif

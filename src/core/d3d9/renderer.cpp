@@ -54,17 +54,13 @@ std::shared_ptr<Texture> upload_z_buffer(const std::shared_ptr<Driver> &driver,
 }
 
 RendererD3D9::RendererD3D9(const std::shared_ptr<Driver> &p_driver) : Renderer(p_driver) {
-    mask_render_pass_clear =
-        driver->create_render_pass(TextureFormat::Rgba16Float, AttachmentLoadOp::Clear, TextureLayout::ShaderReadOnly);
+    mask_render_pass_clear = driver->create_render_pass(TextureFormat::Rgba16Float, AttachmentLoadOp::Clear, false);
 
-    mask_render_pass_load =
-        driver->create_render_pass(TextureFormat::Rgba16Float, AttachmentLoadOp::Load, TextureLayout::ShaderReadOnly);
+    mask_render_pass_load = driver->create_render_pass(TextureFormat::Rgba16Float, AttachmentLoadOp::Load, false);
 
-    dest_render_pass_clear =
-        driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Clear, TextureLayout::ShaderReadOnly);
+    dest_render_pass_clear = driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Clear, false);
 
-    dest_render_pass_load =
-        driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Load, TextureLayout::ShaderReadOnly);
+    dest_render_pass_load = driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Load, false);
 
     auto mask_texture =
         driver->create_texture(MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT, TextureFormat::Rgba16Float);
@@ -178,7 +174,10 @@ void RendererD3D9::set_up_pipelines() {
                                                        "bVaryingSizes",
                                                        tile_varying_sizes_ub);
 
-            tile_descriptor_set->add_or_update_uniform(ShaderStage::VertexAndFragment, 4, "bConstantSizes", constants_ub);
+            tile_descriptor_set->add_or_update_uniform(ShaderStage::VertexAndFragment,
+                                                       4,
+                                                       "bConstantSizes",
+                                                       constants_ub);
 
             // Textures.
 
@@ -397,6 +396,8 @@ void RendererD3D9::draw_fills(uint32_t fills_count, const std::shared_ptr<Comman
         return;
     }
 
+    cmd_buffer->sync_descriptor_set(fill_descriptor_set);
+
     cmd_buffer->begin_render_pass(mask_render_pass_clear, mask_framebuffer, ColorF());
 
     cmd_buffer->bind_render_pipeline(fill_pipeline);
@@ -447,6 +448,8 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std:
     {
         auto cmd_buffer = driver->create_command_buffer(true);
 
+        cmd_buffer->sync_descriptor_set(tile_clip_copy_descriptor_set);
+
         cmd_buffer->begin_render_pass(mask_render_pass_clear, mask_temp_framebuffer, ColorF());
 
         cmd_buffer->bind_render_pipeline(tile_clip_copy_pipeline);
@@ -472,6 +475,8 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std:
     {
         auto cmd_buffer = driver->create_command_buffer(true);
 
+        cmd_buffer->sync_descriptor_set(tile_clip_combine_descriptor_set);
+
         cmd_buffer->begin_render_pass(mask_render_pass_load, mask_framebuffer, ColorF());
 
         cmd_buffer->bind_render_pipeline(tile_clip_combine_pipeline);
@@ -495,6 +500,8 @@ void RendererD3D9::draw_tiles(uint32_t tiles_count,
                               const std::shared_ptr<Texture> &z_buffer_texture,
                               const std::shared_ptr<CommandBuffer> &cmd_buffer) {
     std::shared_ptr<Framebuffer> target_framebuffer;
+
+    cmd_buffer->sync_descriptor_set(tile_descriptor_set);
 
     // If no specific RenderTarget is given.
     if (render_target.framebuffer == nullptr) {

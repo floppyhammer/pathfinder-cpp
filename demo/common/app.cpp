@@ -23,7 +23,7 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &_driver,
     }
 
     // TEST: Draw image.
-    if (false) {
+    if (true) {
         Pathfinder::Image image;
         auto image_buffer = Pathfinder::ImageBuffer::from_file("../assets/test.png", false);
         image.size = {image_buffer->width, image_buffer->height};
@@ -59,7 +59,7 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &_driver,
     }
 
     // TEST: Draw SVG.
-    if (false) {
+    if (true) {
         Pathfinder::SvgScene svg_scene;
         svg_scene.load_from_memory(svg_input, *canvas);
 

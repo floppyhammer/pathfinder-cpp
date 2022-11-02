@@ -52,9 +52,7 @@ struct RenderTarget {
     RenderTarget(const std::shared_ptr<Driver> &driver, const Vec2I &_size) {
         size = _size;
 
-        render_pass = driver->create_render_pass(TextureFormat::Rgba8Unorm,
-                                                 AttachmentLoadOp::Clear,
-                                                 TextureLayout::ShaderReadOnly);
+        render_pass = driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Clear, false);
 
         auto target_texture = driver->create_texture(size.x, size.y, TextureFormat::Rgba8Unorm);
 

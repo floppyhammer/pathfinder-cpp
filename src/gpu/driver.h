@@ -28,7 +28,7 @@ public:
 
     virtual std::shared_ptr<RenderPass> create_render_pass(TextureFormat format,
                                                            AttachmentLoadOp load_op,
-                                                           TextureLayout final_layout) = 0;
+                                                           bool is_swapchain_render_pass) = 0;
 
     virtual std::shared_ptr<RenderPipeline> create_render_pipeline(
         const std::vector<char> &vert_source,

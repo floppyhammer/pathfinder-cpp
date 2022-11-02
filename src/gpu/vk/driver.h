@@ -21,7 +21,7 @@ public:
 
     std::shared_ptr<RenderPass> create_render_pass(TextureFormat format,
                                                    AttachmentLoadOp load_op,
-                                                   TextureLayout final_layout) override;
+                                                   bool is_swapchain_render_pass) override;
 
     std::shared_ptr<Framebuffer> create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
                                                     const std::shared_ptr<Texture> &texture) override;
@@ -98,8 +98,6 @@ private:
     VkImageView create_vk_image_view(VkImage image, VkFormat format, VkImageAspectFlags aspect_flags) const;
 
     VkSampler create_vk_sampler() const;
-
-    void create_vk_render_pass(VkFormat format, VkRenderPass &render_pass);
 
     VkFormat find_supported_format(const std::vector<VkFormat> &candidates,
                                    VkImageTiling tiling,

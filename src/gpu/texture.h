@@ -27,21 +27,11 @@ public:
         return format;
     }
 
-    inline TextureLayout get_layout() const {
-        return layout;
-    }
-
-    inline void set_layout(TextureLayout new_layout) {
-        layout = new_layout;
-    }
-
 protected:
     int32_t width;
     int32_t height;
 
     TextureFormat format;
-
-    TextureLayout layout = TextureLayout::Undefined;
 };
 
 } // namespace Pathfinder

@@ -230,6 +230,17 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &_driver) {
                 auto render_pass_vk = static_cast<RenderPassVk *>(args.render_pass);
                 auto framebuffer_vk = static_cast<FramebufferVk *>(args.framebuffer);
 
+                if (framebuffer_vk->get_texture()) {
+                    auto texture_vk = static_cast<TextureVk *>(framebuffer_vk->get_texture().get());
+
+                    transition_image_layout(vk_command_buffer,
+                                            texture_vk->get_image(),
+                                            to_vk_layout(texture_vk->get_layout()),
+                                            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+                    texture_vk->set_layout(TextureLayout::ColorAttachment);
+                }
+
                 VkRenderPassBeginInfo renderPassInfo{};
                 renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
                 renderPassInfo.renderPass = render_pass_vk->get_vk_render_pass();
@@ -340,6 +351,35 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &_driver) {
 
                 render_pipeline = nullptr;
             } break;
+            case CommandType::SyncDescriptorSet: {
+                auto &args = cmd.args.sync_descriptor_set;
+                auto descriptor_set_vk = static_cast<DescriptorSetVk *>(args.descriptor_set);
+
+                // Make all image layouts ready.
+                for (auto &d : descriptor_set_vk->get_descriptors()) {
+                    if (d.second.type == DescriptorType::Sampler) {
+                        auto texture = d.second.texture.get();
+                        auto texture_vk = static_cast<TextureVk *>(texture);
+
+                        transition_image_layout(vk_command_buffer,
+                                                texture_vk->get_image(),
+                                                to_vk_layout(texture_vk->get_layout()),
+                                                to_vk_layout(TextureLayout::ShaderReadOnly));
+
+                        texture_vk->set_layout(TextureLayout::ShaderReadOnly);
+                    } else if (d.second.type == DescriptorType::Image) {
+                        auto texture = d.second.texture.get();
+                        auto texture_vk = static_cast<TextureVk *>(texture);
+
+                        transition_image_layout(vk_command_buffer,
+                                                texture_vk->get_image(),
+                                                to_vk_layout(texture_vk->get_layout()),
+                                                to_vk_layout(TextureLayout::General));
+
+                        texture_vk->set_layout(TextureLayout::General);
+                    }
+                }
+            } break;
             case CommandType::BeginComputePass: {
             } break;
             case CommandType::BindComputePipeline: {
@@ -442,11 +482,12 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &_driver) {
                 // Copy the pixel data to the staging buffer.
                 driver->copy_data_to_memory(args.data, staging_buffer_memory, data_size);
 
-                // Transition the image layout to data transfer dst.
+                // Transition the image layout to transfer dst.
                 transition_image_layout(vk_command_buffer,
                                         texture_vk->get_image(),
                                         to_vk_layout(texture_vk->get_layout()),
                                         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+                texture_vk->set_layout(TextureLayout::TransferDst);
 
                 // Execute the buffer to image copy operation.
                 {
@@ -486,31 +527,25 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &_driver) {
                                            &region);
                 }
 
-                // Transition the image layout before data transfer.
-                transition_image_layout(vk_command_buffer,
-                                        texture_vk->get_image(),
-                                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                        to_vk_layout(args.dst_layout));
-                texture_vk->set_layout(args.dst_layout);
-
                 // Callback to clean up staging resources.
-                auto callback = [driver, staging_buffer, staging_buffer_memory] {
+                auto callback = [driver, staging_buffer, staging_buffer_memory, texture_vk] {
                     vkDestroyBuffer(driver->get_device(), staging_buffer, nullptr);
                     vkFreeMemory(driver->get_device(), staging_buffer_memory, nullptr);
                 };
                 add_callback(callback);
             } break;
-            case CommandType::TransitionLayout: {
-                auto &args = cmd.args.transition_layout;
-
-                auto texture_vk = static_cast<TextureVk *>(args.texture);
-
-                transition_image_layout(vk_command_buffer,
-                                        texture_vk->get_image(),
-                                        to_vk_layout(texture_vk->get_layout()),
-                                        to_vk_layout(args.dst_layout));
-                texture_vk->set_layout(args.dst_layout);
-            } break;
+                // TODO: Should we expose image layout?
+//            case CommandType::TransitionLayout: {
+//                auto &args = cmd.args.transition_layout;
+//
+//                auto texture_vk = static_cast<TextureVk *>(args.texture);
+//
+//                transition_image_layout(vk_command_buffer,
+//                                        texture_vk->get_image(),
+//                                        to_vk_layout(texture_vk->get_layout()),
+//                                        to_vk_layout(args.dst_layout));
+//                texture_vk->set_layout(args.dst_layout);
+//            } break;
             case CommandType::Max:
                 break;
         }
@@ -538,6 +573,11 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &_driver) {
         // Free the command buffer.
         vkFreeCommandBuffers(driver->get_device(), driver->get_command_pool(), 1, &vk_command_buffer);
     }
+
+    // Sync image layout changes.
+    //    for (auto &p : image_layout_tracker) {
+    //        p.first->set_layout(p.second);
+    //    }
 
     for (auto &callback : callbacks) {
         callback();

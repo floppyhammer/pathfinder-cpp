@@ -93,6 +93,16 @@ void CommandBuffer::end_render_pass() {
     commands.push(cmd);
 }
 
+void CommandBuffer::sync_descriptor_set(const std::shared_ptr<DescriptorSet> &descriptor_set) {
+    Command cmd;
+    cmd.type = CommandType::SyncDescriptorSet;
+
+    auto &args = cmd.args.sync_descriptor_set;
+    args.descriptor_set = descriptor_set.get();
+
+    commands.push(cmd);
+}
+
 void CommandBuffer::begin_compute_pass() {
     Command cmd;
     cmd.type = CommandType::BeginComputePass;
@@ -177,21 +187,15 @@ void CommandBuffer::read_buffer(const std::shared_ptr<Buffer> &buffer,
     }
 }
 
-void CommandBuffer::transition_layout(std::shared_ptr<Texture> &texture, TextureLayout new_layout) {
-    auto old_layout = texture->get_layout();
-
-    if (old_layout == new_layout) {
-        return;
-    }
-
-    Command cmd;
-    cmd.type = CommandType::TransitionLayout;
-
-    auto &args = cmd.args.transition_layout;
-    args.texture = texture.get();
-    args.dst_layout = new_layout;
-
-    commands.push(cmd);
-}
+//void CommandBuffer::transition_layout(const std::shared_ptr<Texture> &texture, TextureLayout new_layout) {
+//    Command cmd;
+//    cmd.type = CommandType::TransitionLayout;
+//
+//    auto &args = cmd.args.transition_layout;
+//    args.texture = texture.get();
+//    args.dst_layout = new_layout;
+//
+//    commands.push(cmd);
+//}
 
 } // namespace Pathfinder

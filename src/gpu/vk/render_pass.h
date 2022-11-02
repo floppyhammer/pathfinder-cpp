@@ -11,7 +11,10 @@ class RenderPassVk : public RenderPass {
     friend class DriverVk;
 
 public:
-    RenderPassVk(VkDevice p_device, TextureFormat texture_format, AttachmentLoadOp load_op, TextureLayout final_layout);
+    RenderPassVk(VkDevice _device,
+                 TextureFormat texture_format,
+                 AttachmentLoadOp load_op,
+                 bool is_swapchain_render_pass);
 
     ~RenderPassVk();
 

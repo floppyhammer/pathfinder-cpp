@@ -29,7 +29,7 @@ public:
 
     std::shared_ptr<RenderPass> create_render_pass(TextureFormat format,
                                                    AttachmentLoadOp load_op,
-                                                   TextureLayout final_layout) override;
+                                                   bool is_swapchain_render_pass) override;
 
     std::shared_ptr<DescriptorSet> create_descriptor_set() override;
 
