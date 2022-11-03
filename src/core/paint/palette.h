@@ -45,14 +45,14 @@ public:
         map<RenderTargetId, RenderTargetId> render_target_mapping;
         for (uint32_t old_render_target_index = 0; old_render_target_index < palette.render_targets.size();
              old_render_target_index++) {
-            auto old_render_target = palette.render_targets[old_render_target_index];
+            auto render_target = palette.render_targets[old_render_target_index];
 
             RenderTargetId old_render_target_id = {
                 palette.scene_id,
                 old_render_target_index,
             };
 
-            auto new_render_target_id = push_render_target(old_render_target);
+            auto new_render_target_id = push_render_target(render_target);
             render_target_mapping.insert({old_render_target_id, new_render_target_id});
         }
 
@@ -60,24 +60,32 @@ public:
         map<uint16_t, uint16_t> paint_mapping;
         for (uint32_t old_paint_index = 0; old_paint_index < palette.paints.size(); old_paint_index++) {
             auto old_paint_id = old_paint_index;
-            auto old_paint = palette.paints[old_paint_index];
+            auto paint = palette.paints[old_paint_index];
 
             uint32_t new_paint_id;
-            if (old_paint.get_overlay()) {
-                auto &contents = old_paint.get_overlay()->contents;
+            if (paint.get_overlay()) {
+                auto &contents = paint.get_overlay()->contents;
 
                 if (contents.type == PaintContents::Type::Pattern) {
                     if (contents.pattern.source.type == PatternSource::Type::RenderTarget) {
-                        // TODO
-                        abort();
+                        auto new_pattern = Pattern::from_render_target(contents.pattern.source.render_target_id,
+                                                                       contents.pattern.source.size);
+                        //                            new_pattern.set_filter(pattern.filter());
+                        new_pattern.apply_transform(contents.pattern.transform);
+                        new_pattern.set_repeat_x(contents.pattern.repeat_x());
+                        new_pattern.set_repeat_y(contents.pattern.repeat_y());
+                        new_pattern.set_smoothing_enabled(contents.pattern.smoothing_enabled());
+
+                        auto new_paint = Paint::from_pattern(new_pattern);
+                        push_paint(new_paint);
                     } else {
-                        new_paint_id = push_paint(old_paint);
+                        new_paint_id = push_paint(paint);
                     }
                 } else {
-                    new_paint_id = push_paint(old_paint);
+                    new_paint_id = push_paint(paint);
                 }
             } else {
-                new_paint_id = push_paint(old_paint);
+                new_paint_id = push_paint(paint);
             }
 
             paint_mapping.insert({old_paint_id, new_paint_id});
