@@ -12,7 +12,7 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &_driver,
     // Set up a canvas.
     canvas = std::make_shared<Pathfinder::Canvas>(driver);
     canvas->set_size({window_width, window_height});
-    canvas->set_new_render_target({window_width, window_height});
+    canvas->set_new_dst_texture({window_width, window_height});
 
     // TEST: Clip path.
     if (false) {
@@ -58,7 +58,28 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &_driver,
         canvas->stroke_path(path);
     }
 
-    // TEST: Draw SVG.
+    // TEST: Render target pattern.
+    if (true) {
+        auto sub_render_target_size = Pathfinder::Vec2F(400, 300);
+        auto sub_render_target = Pathfinder::RenderTarget(canvas->get_driver(), sub_render_target_size.to_i32());
+
+        auto render_target_id = canvas->get_scene()->push_render_target(sub_render_target);
+
+        Pathfinder::Path2d path;
+        path.add_circle({200, 150}, 50);
+        path.add_line({}, {200, 150});
+
+        // Set brush.
+        canvas->set_line_width(10.0);
+        canvas->set_stroke_paint(Pathfinder::Paint::from_color(Pathfinder::ColorU::red()));
+        canvas->stroke_path(path);
+
+        canvas->get_scene()->pop_render_target();
+
+        canvas->draw_render_target(render_target_id, {{}, sub_render_target_size});
+    }
+
+    // TEST: Append SVG scene.
     if (true) {
         Pathfinder::SvgScene svg_scene;
         svg_scene.load_from_memory(svg_input, *canvas);

@@ -336,6 +336,7 @@ std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr
                         cmd_buffer->submit(driver);
                     } else { // Render target
                         texture_location.rect = RectI({}, pattern.source.size);
+
                         auto render_target = get_render_target(pattern.source.render_target_id);
 
                         // Set the framebuffer texture as the color texture.
@@ -438,11 +439,18 @@ void Palette::calculate_texture_transforms(std::vector<PaintMetadata> &p_paint_m
                 } else {
                     auto texture_scale = Vec2F(1.f / texture_rect.width(), 1.f / texture_rect.height());
 
+#ifdef PATHFINDER_USE_D3D11
                     auto texture_origin_uv = rect_to_uv(texture_rect, texture_scale).lower_left();
 
                     transform = Transform2::from_translation(texture_origin_uv) *
                                 Transform2::from_scale(texture_scale * Vec2F(1.0, -1.0)) * pattern.transform.inverse();
-                };
+#else
+                    auto texture_origin_uv = rect_to_uv(texture_rect, texture_scale).origin();
+
+                    transform = Transform2::from_translation(texture_origin_uv) *
+                                Transform2::from_scale(texture_scale * Vec2F(1.0, 1.0)) * pattern.transform.inverse();
+#endif
+                }
 
                 color_texture_metadata->transform = transform;
             }

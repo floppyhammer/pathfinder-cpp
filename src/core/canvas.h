@@ -85,7 +85,11 @@ public:
     /// Clears the current canvas.
     void clear();
 
-    void set_new_render_target(const Vec2I &size);
+    void set_new_dst_texture(const Vec2I &size);
+
+    void set_dst_texture(const std::shared_ptr<Texture> &new_dst_texture);
+
+    std::shared_ptr<Texture> get_dst_texture();
 
     // Canvas state.
     // ------------------------------------------------
@@ -169,7 +173,9 @@ public:
 
     void draw_subimage(const Image &image, const RectF &src_rect, const RectF &dst_rect);
 
-    void draw_render_target(const RenderTarget &render_target, const RectF &dst_rect);
+    void draw_render_target(const RenderTargetId &render_target_id, const RectF &dst_rect);
+
+    void draw_sub_render_target(const RenderTargetId &render_target_id, const RectF &src_rect, const RectF &dst_rect);
 
     /// Set the inner scene's view box.
     /// Global control of path clipping.
@@ -182,16 +188,12 @@ public:
 
     void set_scene(const std::shared_ptr<Scene> &p_scene);
 
+    std::shared_ptr<Driver> get_driver() const;
+
     /// Returns the inner scene, replacing it with a blank scene.
     std::shared_ptr<Scene> take_scene();
 
     std::shared_ptr<Scene> replace_scene(const std::shared_ptr<Scene> &new_scene);
-
-    /// Sets the render target where the final drawing will go to.
-    void set_render_target(const RenderTarget &new_render_target);
-
-    /// Returns the default render target of the canvas, which can be used to create a pattern.
-    RenderTarget get_render_target();
 
     // Canvas state
 
@@ -203,20 +205,7 @@ public:
 
     // Extensions
 
-    Pattern create_pattern_from_canvas(Canvas &canvas, const Transform2 &transform) {
-        auto subscene_size = canvas.get_size();
-        auto subscene = canvas.get_scene();
-
-        auto render_target = RenderTarget(driver, subscene_size);
-        auto render_target_id = scene->push_render_target(render_target);
-
-        scene->append_scene(*subscene, transform);
-        scene->pop_render_target();
-
-        auto pattern = Pattern::from_render_target(render_target_id, subscene_size);
-        pattern.apply_transform(transform);
-        return pattern;
-    }
+    Pattern create_pattern_from_canvas(Canvas &canvas, const Transform2 &transform);
 
 private:
     /**
@@ -228,19 +217,17 @@ private:
     void push_path(Outline &outline, PathOp path_op, FillRule fill_rule);
 
 private:
-    std::shared_ptr<Scene> scene;
-
     // State management.
     State current_state;
     std::vector<State> saved_states;
 
-    RenderTarget default_render_target;
-
-    /// Scene renderer.
-    std::shared_ptr<Renderer> renderer;
+    std::shared_ptr<Scene> scene;
 
     /// Rendering API related.
     std::shared_ptr<Driver> driver;
+
+    /// Scene renderer.
+    std::shared_ptr<Renderer> renderer;
 };
 
 } // namespace Pathfinder

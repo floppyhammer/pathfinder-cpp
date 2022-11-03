@@ -135,10 +135,6 @@ Canvas::Canvas(const std::shared_ptr<Driver> &_driver) : driver(_driver) {
     scene = std::make_shared<Scene>(0, RectF(0, 0, 0, 0));
 }
 
-void Canvas::set_new_render_target(const Vec2I &size) {
-    set_render_target(RenderTarget(driver, size));
-}
-
 void Canvas::push_path(Outline &outline, PathOp path_op, FillRule fill_rule) {
     // Get paint and push it to the scene's palette.
     Paint paint = path_op == PathOp::Fill ? fill_paint() : stroke_paint();
@@ -386,10 +382,8 @@ void Canvas::clear_rect(const RectF &rect) {
 }
 
 void Canvas::draw_image(const Image &image, const RectF &dst_rect) {
-    auto pattern = Pattern::from_image(image);
-
     // Set the whole image as the src rect.
-    auto src_rect = RectF({}, pattern.get_size().to_f32());
+    auto src_rect = RectF({}, image.size.to_f32());
 
     draw_subimage(image, src_rect, dst_rect);
 }
@@ -413,10 +407,25 @@ void Canvas::draw_subimage(const Image &image, const RectF &src_rect, const Rect
     current_state.fill_paint = old_fill_paint;
 }
 
-void Canvas::draw_render_target(const RenderTarget &render_target, const RectF &dst_rect) {
-    auto render_target_id = scene->push_render_target(render_target);
+void Canvas::draw_render_target(const RenderTargetId &render_target_id, const RectF &dst_rect) {
+    auto render_target_size = scene->palette.get_render_target(render_target_id).size;
+    auto src_rect = RectF({}, render_target_size.to_f32());
 
-    auto pattern = Pattern::from_render_target(render_target_id, render_target.size);
+    draw_sub_render_target(render_target_id, src_rect, dst_rect);
+}
+
+void Canvas::draw_sub_render_target(const RenderTargetId &render_target_id,
+                                    const RectF &src_rect,
+                                    const RectF &dst_rect) {
+    auto dst_size = dst_rect.size();
+    auto scale = dst_size / src_rect.size();
+    auto offset = dst_rect.origin() - src_rect.origin() * scale;
+    auto transform = Transform2::from_scale(scale).translate(offset);
+
+    auto render_target_size = scene->palette.get_render_target(render_target_id).size;
+
+    auto pattern = Pattern::from_render_target(render_target_id, render_target_size);
+    pattern.apply_transform(transform);
 
     // Save the current fill paint.
     auto old_fill_paint = current_state.fill_paint;
@@ -436,13 +445,21 @@ std::shared_ptr<Scene> Canvas::get_scene() const {
     return scene;
 }
 
-void Canvas::set_render_target(const RenderTarget &new_render_target) {
-    default_render_target = new_render_target;
-    renderer->set_dest_texture(default_render_target.framebuffer->get_texture());
+std::shared_ptr<Driver> Canvas::get_driver() const {
+    return driver;
 }
 
-RenderTarget Canvas::get_render_target() {
-    return default_render_target;
+void Canvas::set_dst_texture(const std::shared_ptr<Texture> &new_dst_texture) {
+    set_size(new_dst_texture->get_size());
+    renderer->set_dest_texture(new_dst_texture);
+}
+
+std::shared_ptr<Texture> Canvas::get_dst_texture() {
+    return renderer->get_dest_texture();
+}
+
+void Canvas::set_new_dst_texture(const Vec2I &size) {
+    set_dst_texture(RenderTarget(driver, size).framebuffer->get_texture());
 }
 
 void Canvas::save_state() {
@@ -488,6 +505,21 @@ void Canvas::set_size(const Vec2I &new_size) {
 
 Vec2I Canvas::get_size() const {
     return scene->get_view_box().size().ceil();
+}
+
+Pattern Canvas::create_pattern_from_canvas(Canvas &canvas, const Transform2 &transform) {
+    auto subscene_size = canvas.get_size();
+    auto subscene = canvas.get_scene();
+
+    auto render_target = RenderTarget(driver, subscene_size);
+    auto render_target_id = scene->push_render_target(render_target);
+
+    scene->append_scene(*subscene, transform);
+    scene->pop_render_target();
+
+    auto pattern = Pattern::from_render_target(render_target_id, subscene_size);
+    pattern.apply_transform(transform);
+    return pattern;
 }
 
 // Path2d

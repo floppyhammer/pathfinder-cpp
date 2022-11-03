@@ -26,7 +26,7 @@ int main() {
     // Set viewport texture to a texture rect.
     auto texture_rect =
         std::make_shared<TextureRect>(driver, swap_chain->get_render_pass(), WINDOW_WIDTH, WINDOW_HEIGHT);
-    texture_rect->set_texture(app.canvas->get_render_target().framebuffer->get_texture());
+    texture_rect->set_texture(app.canvas->get_dst_texture());
 
     // Main loop.
     while (!glfwWindowShouldClose(platform->get_glfw_window())) {
