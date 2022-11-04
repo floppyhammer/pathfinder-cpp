@@ -3,6 +3,7 @@
 #include <set>
 #include <stdexcept>
 
+#include "debug_marker.h"
 #include "driver.h"
 #include "swap_chain.h"
 
@@ -210,12 +211,12 @@ void PlatformVk::create_surface() {
     }
 }
 
-bool PlatformVk::check_device_extension_support(VkPhysicalDevice p_physical_device) const {
+bool PlatformVk::check_device_extension_support(VkPhysicalDevice _physical_device) const {
     uint32_t extension_count;
-    vkEnumerateDeviceExtensionProperties(p_physical_device, nullptr, &extension_count, nullptr);
+    vkEnumerateDeviceExtensionProperties(_physical_device, nullptr, &extension_count, nullptr);
 
     std::vector<VkExtensionProperties> available_extensions(extension_count);
-    vkEnumerateDeviceExtensionProperties(p_physical_device, nullptr, &extension_count, available_extensions.data());
+    vkEnumerateDeviceExtensionProperties(_physical_device, nullptr, &extension_count, available_extensions.data());
 
     std::set<std::string> required_extensions(DEVICE_EXTENSIONS.begin(), DEVICE_EXTENSIONS.end());
 
@@ -226,25 +227,25 @@ bool PlatformVk::check_device_extension_support(VkPhysicalDevice p_physical_devi
     return required_extensions.empty();
 }
 
-SwapchainSupportDetails PlatformVk::query_swapchain_support(VkPhysicalDevice p_physical_device) const {
+SwapchainSupportDetails PlatformVk::query_swapchain_support(VkPhysicalDevice _physical_device) const {
     SwapchainSupportDetails details;
 
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(p_physical_device, surface, &details.capabilities);
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_physical_device, surface, &details.capabilities);
 
     uint32_t format_count;
-    vkGetPhysicalDeviceSurfaceFormatsKHR(p_physical_device, surface, &format_count, nullptr);
+    vkGetPhysicalDeviceSurfaceFormatsKHR(_physical_device, surface, &format_count, nullptr);
 
     if (format_count != 0) {
         details.formats.resize(format_count);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(p_physical_device, surface, &format_count, details.formats.data());
+        vkGetPhysicalDeviceSurfaceFormatsKHR(_physical_device, surface, &format_count, details.formats.data());
     }
 
     uint32_t present_mode_count;
-    vkGetPhysicalDeviceSurfacePresentModesKHR(p_physical_device, surface, &present_mode_count, nullptr);
+    vkGetPhysicalDeviceSurfacePresentModesKHR(_physical_device, surface, &present_mode_count, nullptr);
 
     if (present_mode_count != 0) {
         details.present_modes.resize(present_mode_count);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(p_physical_device,
+        vkGetPhysicalDeviceSurfacePresentModesKHR(_physical_device,
                                                   surface,
                                                   &present_mode_count,
                                                   details.present_modes.data());
@@ -253,19 +254,19 @@ SwapchainSupportDetails PlatformVk::query_swapchain_support(VkPhysicalDevice p_p
     return details;
 }
 
-bool PlatformVk::is_device_suitable(VkPhysicalDevice p_physical_device) const {
-    QueueFamilyIndices indices = find_queue_families(p_physical_device);
+bool PlatformVk::is_device_suitable(VkPhysicalDevice _physical_device) const {
+    QueueFamilyIndices indices = find_queue_families(_physical_device);
 
-    bool extensions_supported = check_device_extension_support(p_physical_device);
+    bool extensions_supported = check_device_extension_support(_physical_device);
 
     bool swapchain_adequate = false;
     if (extensions_supported) {
-        SwapchainSupportDetails swapChainSupport = query_swapchain_support(p_physical_device);
+        SwapchainSupportDetails swapChainSupport = query_swapchain_support(_physical_device);
         swapchain_adequate = !swapChainSupport.formats.empty() && !swapChainSupport.present_modes.empty();
     }
 
     VkPhysicalDeviceFeatures supported_features;
-    vkGetPhysicalDeviceFeatures(p_physical_device, &supported_features);
+    vkGetPhysicalDeviceFeatures(_physical_device, &supported_features);
 
     return indices.is_complete() && extensions_supported && swapchain_adequate && supported_features.samplerAnisotropy;
 }
@@ -317,16 +318,16 @@ VkPresentModeKHR PlatformVk::choose_swap_present_mode(const std::vector<VkPresen
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-QueueFamilyIndices PlatformVk::find_queue_families(VkPhysicalDevice p_physical_device) const {
+QueueFamilyIndices PlatformVk::find_queue_families(VkPhysicalDevice _physical_device) const {
     QueueFamilyIndices qf_indices;
 
     // Reports properties of the queues of the specified physical device.
     uint32_t queue_family_count = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(p_physical_device, &queue_family_count, nullptr);
+    vkGetPhysicalDeviceQueueFamilyProperties(_physical_device, &queue_family_count, nullptr);
 
     // Structure providing information about a queue family.
     std::vector<VkQueueFamilyProperties> queue_families(queue_family_count);
-    vkGetPhysicalDeviceQueueFamilyProperties(p_physical_device, &queue_family_count, queue_families.data());
+    vkGetPhysicalDeviceQueueFamilyProperties(_physical_device, &queue_family_count, queue_families.data());
 
     int i = 0;
     for (const auto &queue_family : queue_families) {
@@ -337,7 +338,7 @@ QueueFamilyIndices PlatformVk::find_queue_families(VkPhysicalDevice p_physical_d
 
         // Query if presentation is supported.
         VkBool32 present_support = false;
-        vkGetPhysicalDeviceSurfaceSupportKHR(p_physical_device, i, surface, &present_support);
+        vkGetPhysicalDeviceSurfaceSupportKHR(_physical_device, i, surface, &present_support);
 
         if (present_support) {
             qf_indices.present_family = std::make_shared<uint32_t>(i);

@@ -21,7 +21,8 @@ public:
 
     std::shared_ptr<RenderPass> create_render_pass(TextureFormat format,
                                                    AttachmentLoadOp load_op,
-                                                   bool is_swapchain_render_pass) override;
+                                                   bool is_swapchain_render_pass,
+                                                   const std::string &label) override;
 
     std::shared_ptr<Framebuffer> create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
                                                     const std::shared_ptr<Texture> &texture) override;

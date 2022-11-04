@@ -6,6 +6,7 @@
 #include "command_buffer.h"
 #include "compute_pipeline.h"
 #include "data.h"
+#include "debug_marker.h"
 #include "descriptor_set.h"
 #include "framebuffer.h"
 #include "render_pass.h"
@@ -17,12 +18,13 @@
 
 namespace Pathfinder {
 
-DriverVk::DriverVk(VkDevice p_device,
-                   VkPhysicalDevice p_physical_device,
-                   VkQueue p_graphics_queue,
-                   VkCommandPool p_command_pool)
-    : device(p_device), physical_device(p_physical_device), graphics_queue(p_graphics_queue),
-      command_pool(p_command_pool) {}
+DriverVk::DriverVk(VkDevice _device,
+                   VkPhysicalDevice _physical_device,
+                   VkQueue _graphics_queue,
+                   VkCommandPool _command_pool)
+    : device(_device), physical_device(_physical_device), graphics_queue(_graphics_queue), command_pool(_command_pool) {
+    DebugMarker::getSingleton()->setup(device, _physical_device);
+}
 
 VkDevice DriverVk::get_device() const {
     return device;
@@ -329,8 +331,9 @@ std::shared_ptr<ComputePipeline> DriverVk::create_compute_pipeline(
 
 std::shared_ptr<RenderPass> DriverVk::create_render_pass(TextureFormat format,
                                                          AttachmentLoadOp load_op,
-                                                         bool is_swapchain_render_pass) {
-    auto render_pass_vk = std::make_shared<RenderPassVk>(device, format, load_op, is_swapchain_render_pass);
+                                                         bool is_swapchain_render_pass,
+                                                         const std::string &label) {
+    auto render_pass_vk = std::make_shared<RenderPassVk>(device, format, load_op, is_swapchain_render_pass, label);
 
     return render_pass_vk;
 }

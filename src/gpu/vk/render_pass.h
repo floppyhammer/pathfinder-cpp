@@ -15,7 +15,8 @@ public:
     RenderPassVk(VkDevice _device,
                  TextureFormat texture_format,
                  AttachmentLoadOp load_op,
-                 bool is_swapchain_render_pass);
+                 bool is_swapchain_render_pass,
+                 const std::string &label);
 
     ~RenderPassVk();
 

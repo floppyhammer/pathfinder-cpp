@@ -61,7 +61,7 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &_driver,
     // TEST: Render target pattern.
     if (true) {
         auto sub_render_target_size = Pathfinder::Vec2F(400, 300);
-        auto sub_render_target = Pathfinder::RenderTarget(canvas->get_driver(), sub_render_target_size.to_i32());
+        auto sub_render_target = Pathfinder::RenderTarget(canvas->get_driver(), sub_render_target_size.to_i32(), "Render Target Pattern Render Pass");
 
         auto render_target_id = canvas->get_scene()->push_render_target(sub_render_target);
 

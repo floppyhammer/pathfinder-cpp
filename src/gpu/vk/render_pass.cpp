@@ -1,5 +1,7 @@
 #include "render_pass.h"
 
+#include "debug_marker.h"
+
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
@@ -7,8 +9,10 @@ namespace Pathfinder {
 Pathfinder::RenderPassVk::RenderPassVk(VkDevice _device,
                                        TextureFormat texture_format,
                                        AttachmentLoadOp load_op,
-                                       bool is_swapchain_render_pass) {
+                                       bool is_swapchain_render_pass,
+                                       const std::string &label) {
     device = _device;
+    name = label;
 
     // Color attachment.
     // ----------------------------------------
@@ -64,6 +68,11 @@ Pathfinder::RenderPassVk::RenderPassVk(VkDevice _device,
     if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &vk_render_pass) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create render pass!");
     }
+
+    DebugMarker::getSingleton()->setObjectName(device,
+                                               (uint64_t)vk_render_pass,
+                                               VK_DEBUG_REPORT_OBJECT_TYPE_RENDER_PASS_EXT,
+                                               name.c_str());
 }
 
 RenderPassVk::~RenderPassVk() {

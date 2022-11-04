@@ -7,6 +7,7 @@
 #include "../command_buffer.h"
 #include "buffer.h"
 #include "compute_pipeline.h"
+#include "debug_marker.h"
 #include "descriptor_set.h"
 #include "driver.h"
 #include "framebuffer.h"
@@ -214,6 +215,9 @@ VkCommandBuffer CommandBufferVk::get_vk_command_buffer() const {
 
 void CommandBufferVk::submit(const std::shared_ptr<Driver> &_driver) {
     auto driver = static_cast<DriverVk *>(_driver.get());
+
+    // Start a new debug marker region
+    DebugMarker::getSingleton()->beginRegion(vk_command_buffer, "Command Buffer", ColorF(1.0f, 0.78f, 0.05f, 1.0f));
 
     // Begin recording.
     VkCommandBufferBeginInfo beginInfo{};
@@ -588,6 +592,8 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &_driver) {
     }
 
     callbacks.clear();
+
+    DebugMarker::getSingleton()->endRegion(vk_command_buffer);
 }
 
 } // namespace Pathfinder

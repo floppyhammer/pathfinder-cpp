@@ -176,8 +176,10 @@ void SwapChainVk::create_image_views() {
 }
 
 void SwapChainVk::create_render_pass() {
-    render_pass =
-        driver->create_render_pass(vk_to_texture_format(swapchain_image_format), AttachmentLoadOp::Clear, true);
+    render_pass = driver->create_render_pass(vk_to_texture_format(swapchain_image_format),
+                                             AttachmentLoadOp::Clear,
+                                             true,
+                                             "Swapchain Render Pass");
 }
 
 void SwapChainVk::create_framebuffers() {

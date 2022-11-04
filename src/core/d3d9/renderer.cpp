@@ -53,13 +53,19 @@ std::shared_ptr<Texture> upload_z_buffer(const std::shared_ptr<Driver> &driver,
 }
 
 RendererD3D9::RendererD3D9(const std::shared_ptr<Driver> &p_driver) : Renderer(p_driver) {
-    mask_render_pass_clear = driver->create_render_pass(TextureFormat::Rgba16Float, AttachmentLoadOp::Clear, false);
+    mask_render_pass_clear = driver->create_render_pass(TextureFormat::Rgba16Float,
+                                                        AttachmentLoadOp::Clear,
+                                                        false,
+                                                        "Mask render pass clear");
 
-    mask_render_pass_load = driver->create_render_pass(TextureFormat::Rgba16Float, AttachmentLoadOp::Load, false);
+    mask_render_pass_load =
+        driver->create_render_pass(TextureFormat::Rgba16Float, AttachmentLoadOp::Load, false, "Mask render pass load");
 
-    dest_render_pass_clear = driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Clear, false);
+    dest_render_pass_clear =
+        driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Clear, false, "Dest render pass clear");
 
-    dest_render_pass_load = driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Load, false);
+    dest_render_pass_load =
+        driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Load, false, "Dest render pass load");
 
     auto mask_texture =
         driver->create_texture({MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT}, TextureFormat::Rgba16Float);

@@ -23,7 +23,10 @@ const int MAX_FRAMES_IN_FLIGHT = 2;
 const std::vector<const char *> VALIDATION_LAYERS = {"VK_LAYER_KHRONOS_validation"};
 
 /// List of required device extensions.
-const std::vector<const char *> DEVICE_EXTENSIONS = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+/// VK_EXT_DEBUG_MARKER_EXTENSION_NAME shouldn't go here as it's optional and is only used for debug reason.
+const std::vector<const char *> DEVICE_EXTENSIONS = {
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+};
 
 struct QueueFamilyIndices {
     std::shared_ptr<uint32_t> graphics_family;
@@ -107,9 +110,9 @@ public:
         return true;
     }
 
-    QueueFamilyIndices find_queue_families(VkPhysicalDevice p_physical_device) const;
+    QueueFamilyIndices find_queue_families(VkPhysicalDevice _physical_device) const;
 
-    SwapchainSupportDetails query_swapchain_support(VkPhysicalDevice p_physical_device) const;
+    SwapchainSupportDetails query_swapchain_support(VkPhysicalDevice _physical_device) const;
 
     [[nodiscard]] VkFormat find_depth_format() const;
 
@@ -154,14 +157,14 @@ private:
 
     void create_surface();
 
-    bool check_device_extension_support(VkPhysicalDevice p_physical_device) const;
+    bool check_device_extension_support(VkPhysicalDevice physical_device) const;
 
     /**
      * Check if a physical device is suitable.
      * @param pPhysicalDevice
      * @return
      */
-    bool is_device_suitable(VkPhysicalDevice p_physical_device) const;
+    bool is_device_suitable(VkPhysicalDevice _physical_device) const;
 
     void pick_physical_device();
 
