@@ -216,9 +216,6 @@ VkCommandBuffer CommandBufferVk::get_vk_command_buffer() const {
 void CommandBufferVk::submit(const std::shared_ptr<Driver> &_driver) {
     auto driver = static_cast<DriverVk *>(_driver.get());
 
-    // Start a new debug marker region
-    DebugMarker::getSingleton()->beginRegion(vk_command_buffer, "Command Buffer", ColorF(1.0f, 0.78f, 0.05f, 1.0f));
-
     // Begin recording.
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -228,6 +225,9 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &_driver) {
     if (vkBeginCommandBuffer(vk_command_buffer, &beginInfo) != VK_SUCCESS) {
         throw std::runtime_error("Failed to begin recording command buffer!");
     }
+
+    // Start a new debug marker region
+    DebugMarker::get_singleton()->begin_region(vk_command_buffer, name, ColorF(1.0f, 0.78f, 0.05f, 1.0f));
 
     while (!commands.empty()) {
         auto &cmd = commands.front();
@@ -561,6 +561,8 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &_driver) {
         commands.pop();
     }
 
+    DebugMarker::get_singleton()->end_region(vk_command_buffer);
+
     // End recording the command buffer.
     if (vkEndCommandBuffer(vk_command_buffer) != VK_SUCCESS) {
         throw std::runtime_error("Failed to record command buffer!");
@@ -592,8 +594,6 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &_driver) {
     }
 
     callbacks.clear();
-
-    DebugMarker::getSingleton()->endRegion(vk_command_buffer);
 }
 
 } // namespace Pathfinder

@@ -69,10 +69,7 @@ Pathfinder::RenderPassVk::RenderPassVk(VkDevice _device,
         throw std::runtime_error("Failed to create render pass!");
     }
 
-    DebugMarker::getSingleton()->setObjectName(device,
-                                               (uint64_t)vk_render_pass,
-                                               VK_DEBUG_REPORT_OBJECT_TYPE_RENDER_PASS_EXT,
-                                               name.c_str());
+    DebugMarker::get_singleton()->set_object_name(device, (uint64_t)vk_render_pass, VK_OBJECT_TYPE_RENDER_PASS, name);
 }
 
 RenderPassVk::~RenderPassVk() {

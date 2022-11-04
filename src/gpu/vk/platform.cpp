@@ -160,6 +160,8 @@ void PlatformVk::create_instance() {
     if (vkCreateInstance(&create_info, nullptr, &instance) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create a Vulkan instance!");
     }
+
+    DebugMarker::get_singleton()->setup(instance);
 }
 
 VkExtent2D PlatformVk::choose_swap_extent(const VkSurfaceCapabilitiesKHR &capabilities) const {

@@ -23,7 +23,7 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &_driver,
     }
 
     // TEST: Draw image.
-    if (true) {
+    if (false) {
         Pathfinder::Image image;
         auto image_buffer = Pathfinder::ImageBuffer::from_file("../assets/test.png", false);
         image.size = {image_buffer->width, image_buffer->height};

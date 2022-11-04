@@ -23,7 +23,6 @@ DriverVk::DriverVk(VkDevice _device,
                    VkQueue _graphics_queue,
                    VkCommandPool _command_pool)
     : device(_device), physical_device(_physical_device), graphics_queue(_graphics_queue), command_pool(_command_pool) {
-    DebugMarker::getSingleton()->setup(device, _physical_device);
 }
 
 VkDevice DriverVk::get_device() const {
