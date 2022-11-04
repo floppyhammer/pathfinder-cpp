@@ -169,8 +169,8 @@ void transition_image_layout(VkCommandBuffer command_buffer,
     vkCmdPipelineBarrier(command_buffer, src_stage, dst_stage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
-CommandBufferVk::CommandBufferVk(VkCommandBuffer p_command_buffer, VkDevice p_device)
-    : vk_command_buffer(p_command_buffer), device(p_device) {}
+CommandBufferVk::CommandBufferVk(VkCommandBuffer _command_buffer, VkDevice _device)
+    : vk_command_buffer(_command_buffer), device(_device) {}
 
 void CommandBufferVk::upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
                                        uint32_t offset,
@@ -206,6 +206,10 @@ void CommandBufferVk::upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
     args.data = data;
 
     commands.push(cmd);
+}
+
+VkCommandBuffer CommandBufferVk::get_vk_command_buffer() const {
+    return vk_command_buffer;
 }
 
 void CommandBufferVk::submit(const std::shared_ptr<Driver> &_driver) {

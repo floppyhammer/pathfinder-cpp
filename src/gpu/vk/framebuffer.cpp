@@ -7,9 +7,9 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-FramebufferVk::FramebufferVk(VkDevice p_device, VkRenderPass render_pass, const std::shared_ptr<Texture> &p_texture)
-    : Framebuffer(p_texture) {
-    device = p_device;
+FramebufferVk::FramebufferVk(VkDevice _device, VkRenderPass render_pass, const std::shared_ptr<Texture> &_texture)
+    : Framebuffer(_texture) {
+    device = _device;
 
     auto texture_vk = static_cast<TextureVk *>(texture.get());
 
@@ -20,8 +20,8 @@ FramebufferVk::FramebufferVk(VkDevice p_device, VkRenderPass render_pass, const 
     framebufferInfo.renderPass = render_pass;
     framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
     framebufferInfo.pAttachments = attachments.data();
-    framebufferInfo.width = width;
-    framebufferInfo.height = height;
+    framebufferInfo.width = size.x;
+    framebufferInfo.height = size.y;
     framebufferInfo.layers = 1;
 
     if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &vk_framebuffer) != VK_SUCCESS) {
@@ -29,13 +29,9 @@ FramebufferVk::FramebufferVk(VkDevice p_device, VkRenderPass render_pass, const 
     }
 }
 
-FramebufferVk::FramebufferVk(VkDevice p_device,
-                             VkRenderPass render_pass,
-                             uint32_t p_width,
-                             uint32_t p_height,
-                             VkImageView image_view)
-    : Framebuffer(p_width, p_height) {
-    device = p_device;
+FramebufferVk::FramebufferVk(VkDevice _device, VkRenderPass render_pass, Vec2I _size, VkImageView image_view)
+    : Framebuffer(_size) {
+    device = _device;
 
     std::array<VkImageView, 1> attachments = {image_view};
 
@@ -44,8 +40,8 @@ FramebufferVk::FramebufferVk(VkDevice p_device,
     framebufferInfo.renderPass = render_pass;
     framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
     framebufferInfo.pAttachments = attachments.data();
-    framebufferInfo.width = width;
-    framebufferInfo.height = height;
+    framebufferInfo.width = size.x;
+    framebufferInfo.height = size.y;
     framebufferInfo.layers = 1;
 
     if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &vk_framebuffer) != VK_SUCCESS) {

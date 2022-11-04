@@ -14,10 +14,10 @@ class RenderPipelineVk : public RenderPipeline {
     friend class DriverVk;
 
 public:
-    RenderPipelineVk(VkDevice p_device,
-                     std::vector<VertexInputAttributeDescription> p_attribute_descriptions,
-                     BlendState p_blend_state)
-        : RenderPipeline(std::move(p_attribute_descriptions), p_blend_state), device(p_device) {}
+    RenderPipelineVk(VkDevice _device,
+                     const std::vector<VertexInputAttributeDescription> &_attribute_descriptions,
+                     BlendState _blend_state)
+        : RenderPipeline(_attribute_descriptions, _blend_state), device(_device) {}
 
     ~RenderPipelineVk() {
         vkDestroyDescriptorSetLayout(device, descriptor_set_layout, nullptr);

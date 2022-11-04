@@ -7,6 +7,7 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+
 class RenderPassVk : public RenderPass {
     friend class DriverVk;
 
@@ -25,6 +26,7 @@ private:
 
     VkDevice device;
 };
+
 } // namespace Pathfinder
 
 #endif

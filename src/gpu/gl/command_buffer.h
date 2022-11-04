@@ -10,6 +10,7 @@
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+
 class CommandBufferGl : public CommandBuffer {
 public:
     void upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
@@ -17,8 +18,9 @@ public:
                           uint32_t data_size,
                           void *data) override;
 
-    void submit(const std::shared_ptr<Driver> &p_driver) override;
+    void submit(const std::shared_ptr<Driver> &_driver) override;
 };
+
 } // namespace Pathfinder
 
 #endif

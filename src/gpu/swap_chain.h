@@ -10,10 +10,10 @@ namespace Pathfinder {
 
 class SwapChain {
 public:
-    SwapChain(int32_t width, int32_t height) : extent({width, height}) {}
+    explicit SwapChain(Vec2I _size) : size(_size) {}
 
     /// Swap chain framebuffer size.
-    Vec2I extent;
+    Vec2I size;
 
     /// Currently available image in the chain.
     uint32_t current_image{};

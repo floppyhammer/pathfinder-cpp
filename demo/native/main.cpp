@@ -12,7 +12,7 @@ int main() {
 #endif
 
     // Create platform.
-    auto platform = Pathfinder::Platform::new_impl(device_type, WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto platform = Pathfinder::Platform::new_impl(device_type, {WINDOW_WIDTH, WINDOW_HEIGHT});
 
     // Create driver via platform.
     auto driver = platform->create_driver();

@@ -18,7 +18,7 @@ class SwapChainVk : public SwapChain {
     friend class DriverVk;
 
 public:
-    SwapChainVk(int32_t width, int32_t height, PlatformVk *_platform, DriverVk *_driver);
+    SwapChainVk(Vec2I _size, PlatformVk *_platform, DriverVk *_driver);
 
     std::shared_ptr<RenderPass> get_render_pass() override;
 
@@ -32,12 +32,12 @@ private:
     std::shared_ptr<RenderPass> render_pass;
     std::vector<std::shared_ptr<Framebuffer>> framebuffers;
 
-    PlatformVk *platform;
-    DriverVk *driver;
+    PlatformVk *platform{};
+    DriverVk *driver{};
 
     void init_swapchain();
 
-    VkSwapchainKHR swapchain;
+    VkSwapchainKHR swapchain{};
 
     /// Swap chain images are allocated differently than normal images.
     /// Number of images doesn't necessarily equal to MAX_FRAMES_IN_FLIGHT (One is expected, the other is what we
@@ -47,8 +47,9 @@ private:
     /// VkImageView defines which part of VkImage to use.
     std::vector<VkImageView> swapchain_image_views;
 
-    /// Store the format and extent we've chosen for the swap chain images.
-    VkFormat swapchain_image_format; // Default is VK_FORMAT_B8G8R8A8_SRGB.
+    /// The format for the swap chain images.
+    /// Default will be VK_FORMAT_B8G8R8A8_SRGB.
+    VkFormat swapchain_image_format{};
 
     std::vector<VkCommandBuffer> command_buffers;
 

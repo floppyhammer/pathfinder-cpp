@@ -10,15 +10,16 @@
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-std::shared_ptr<Platform> Platform::new_impl(DeviceType device_type, uint32_t window_width, uint32_t window_height) {
+
+std::shared_ptr<Platform> Platform::new_impl(DeviceType device_type, Vec2I _window_size) {
     if (device_type == DeviceType::OpenGl4) {
-        return std::make_shared<PlatformGl>(window_width, window_height);
+        return std::make_shared<PlatformGl>(_window_size);
     }
 
     abort();
 }
 
-PlatformGl::PlatformGl(uint32_t window_width, uint32_t window_height) : Platform(window_width, window_height) {
+PlatformGl::PlatformGl(Vec2I _window_size) : Platform(_window_size) {
     // Get a GLFW window.
     init_window();
 }
@@ -43,7 +44,7 @@ void PlatformGl::init_window() {
         #endif
 
     // GLFW: window creation.
-    window = glfwCreateWindow((int)width, (int)height, "Pathfinder (OpenGL)", nullptr, nullptr);
+    window = glfwCreateWindow(window_size.x, window_size.y, "Pathfinder (OpenGL)", nullptr, nullptr);
 
     if (window == nullptr) {
         throw std::runtime_error("Failed to create GLFW window!");
@@ -82,8 +83,9 @@ std::shared_ptr<Driver> PlatformGl::create_driver() {
 }
 
 std::shared_ptr<SwapChain> PlatformGl::create_swap_chain(const std::shared_ptr<Driver> &driver) {
-    return std::make_shared<SwapChainGl>(width, height, window);
+    return std::make_shared<SwapChainGl>(window_size, window);
 }
+
 } // namespace Pathfinder
 
 #endif

@@ -9,6 +9,7 @@
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+
 class ComputePipelineGl : public ComputePipeline {
 public:
     explicit ComputePipelineGl(const std::vector<char> &comp_source) {
@@ -22,6 +23,7 @@ public:
 private:
     std::shared_ptr<ComputeProgram> program;
 };
+
 } // namespace Pathfinder
 
 #endif

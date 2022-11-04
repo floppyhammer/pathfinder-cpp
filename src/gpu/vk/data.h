@@ -9,6 +9,7 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+
 inline VkFormat to_vk_texture_format(TextureFormat texture_format) {
     switch (texture_format) {
         case TextureFormat::Rgba8Unorm:
@@ -153,6 +154,7 @@ inline VkAttachmentLoadOp to_vk_attachment_load_op(AttachmentLoadOp load_op) {
             return VK_ATTACHMENT_LOAD_OP_LOAD;
     }
 }
+
 } // namespace Pathfinder
 
 #endif

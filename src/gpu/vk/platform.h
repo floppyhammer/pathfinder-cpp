@@ -15,6 +15,7 @@
     #ifndef __ANDROID__
 
 namespace Pathfinder {
+
 /// How many frames should be processed concurrently.
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -41,7 +42,7 @@ struct SwapchainSupportDetails {
 
 class PlatformVk : public Platform {
 public:
-    explicit PlatformVk(uint32_t window_width, uint32_t window_height);
+    explicit PlatformVk(Vec2I _window_size);
 
     std::shared_ptr<Driver> create_driver() override;
 
@@ -170,6 +171,7 @@ private:
 
     void create_command_pool();
 };
+
 } // namespace Pathfinder
 
     #endif

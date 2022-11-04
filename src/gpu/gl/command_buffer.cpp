@@ -12,6 +12,7 @@
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+
 void CommandBufferGl::upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
                                        uint32_t offset,
                                        uint32_t data_size,
@@ -59,7 +60,7 @@ void CommandBufferGl::upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
     // -------------------------------------------------------
 }
 
-void CommandBufferGl::submit(const std::shared_ptr<Driver> &p_driver) {
+void CommandBufferGl::submit(const std::shared_ptr<Driver> &_driver) {
     while (!commands.empty()) {
         auto &cmd = commands.front();
 
@@ -341,6 +342,7 @@ void CommandBufferGl::submit(const std::shared_ptr<Driver> &p_driver) {
 
     callbacks.clear();
 }
+
 } // namespace Pathfinder
 
 #endif

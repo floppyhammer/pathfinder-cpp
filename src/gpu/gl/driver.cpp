@@ -26,16 +26,14 @@ std::shared_ptr<Buffer> DriverGl::create_buffer(BufferType type, size_t size, Me
     return buffer;
 }
 
-std::shared_ptr<Texture> DriverGl::create_texture(uint32_t p_width, uint32_t p_height, TextureFormat p_format) {
-    auto texture_gl = std::make_shared<TextureGl>(p_width, p_height, p_format);
-
+std::shared_ptr<Texture> DriverGl::create_texture(Vec2I _size, TextureFormat p_format) {
+    auto texture_gl = std::make_shared<TextureGl>(_size, p_format);
     check_error("create_texture");
     return texture_gl;
 }
 
 std::shared_ptr<CommandBuffer> DriverGl::create_command_buffer(bool one_time) {
     auto command_buffer_gl = std::make_shared<CommandBufferGl>();
-
     check_error("create_command_buffer");
     return command_buffer_gl;
 }
@@ -57,7 +55,6 @@ std::shared_ptr<RenderPipeline> DriverGl::create_render_pipeline(
     const std::shared_ptr<RenderPass> &render_pass) {
     auto pipeline_gl =
         std::make_shared<RenderPipelineGl>(vert_source, frag_source, attribute_descriptions, blend_state);
-
     check_error("create_render_pipeline");
     return pipeline_gl;
 }
@@ -70,7 +67,6 @@ std::shared_ptr<ComputePipeline> DriverGl::create_compute_pipeline(
     const std::vector<char> &comp_source,
     const std::shared_ptr<DescriptorSet> &descriptor_set) {
     auto pipeline_gl = std::make_shared<ComputePipelineGl>(comp_source);
-
     check_error("create_compute_pipeline");
     return pipeline_gl;
 }

@@ -16,8 +16,8 @@ const uint32_t MAX_VERTEX_BUFFER_BINDINGS = 8;
 
 class Buffer {
 public:
-    Buffer(BufferType p_type, size_t p_size, MemoryProperty p_property)
-        : type(p_type), size(p_size), memory_property(p_property) {}
+    Buffer(BufferType _type, size_t _size, MemoryProperty _memory_property)
+        : type(_type), size(_size), memory_property(_memory_property) {}
 
     MemoryProperty get_memory_property() const {
         return memory_property;

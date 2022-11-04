@@ -17,10 +17,10 @@ class SwapChainGl : public SwapChain {
 public:
     #ifndef __ANDROID__
 
-    SwapChainGl(int32_t width, int32_t height, GLFWwindow *_window) : SwapChain(width, height) {
+    SwapChainGl(Vec2I _size, GLFWwindow *_window) : SwapChain(_size) {
         window = _window;
 
-        framebuffer = std::make_shared<FramebufferGl>(width, height);
+        framebuffer = std::make_shared<FramebufferGl>(size);
 
         command_buffer = std::make_shared<CommandBufferGl>();
 

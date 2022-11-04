@@ -225,8 +225,7 @@ std::vector<PaintMetadata> Palette::build_paint_info(const std::shared_ptr<Drive
 
     // We only allocate the metadata texture once.
     if (metadata_texture == nullptr) {
-        metadata_texture = driver->create_texture(TEXTURE_METADATA_TEXTURE_WIDTH,
-                                                  TEXTURE_METADATA_TEXTURE_HEIGHT,
+        metadata_texture = driver->create_texture({TEXTURE_METADATA_TEXTURE_WIDTH, TEXTURE_METADATA_TEXTURE_HEIGHT},
                                                   TextureFormat::Rgba16Float);
     }
 
@@ -271,7 +270,7 @@ std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr
     GradientTileBuilder gradient_tile_builder;
 
     auto gradient_tile_texture =
-        driver->create_texture(GRADIENT_TILE_LENGTH, GRADIENT_TILE_LENGTH, TextureFormat::Rgba8Unorm);
+        driver->create_texture({GRADIENT_TILE_LENGTH, GRADIENT_TILE_LENGTH}, TextureFormat::Rgba8Unorm);
 
     // Traverse paints.
     for (const auto &paint : paints) {
@@ -321,17 +320,15 @@ std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr
                         texture_location.rect = RectI({}, pattern.source.image.size);
 
                         // Set the newly created image texture as the color texture.
-                        color_texture_metadata->color_texture = driver->create_texture(pattern.source.image.size.x,
-                                                                                       pattern.source.image.size.y,
-                                                                                       TextureFormat::Rgba8Unorm);
+                        color_texture_metadata->color_texture =
+                            driver->create_texture(pattern.source.image.size, TextureFormat::Rgba8Unorm);
 
                         auto cmd_buffer = driver->create_command_buffer(true);
 
-                        cmd_buffer->upload_to_texture(
-                            color_texture_metadata->color_texture,
-                            RectI(0, 0, pattern.source.image.size.x, pattern.source.image.size.y),
-                            pattern.source.image.pixels.data(),
-                            TextureLayout::ShaderReadOnly);
+                        cmd_buffer->upload_to_texture(color_texture_metadata->color_texture,
+                                                      RectI({}, pattern.source.image.size),
+                                                      pattern.source.image.pixels.data(),
+                                                      TextureLayout::ShaderReadOnly);
 
                         cmd_buffer->submit(driver);
                     } else { // Render target

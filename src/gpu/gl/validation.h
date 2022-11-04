@@ -10,6 +10,7 @@
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+
 inline void check_error(const char *flag) {
     #ifdef PATHFINDER_DEBUG
     for (GLint error = glGetError(); error; error = glGetError()) {
@@ -30,6 +31,7 @@ inline void print_string(const char *name, GLenum s) {
     Logger::error(string_stream.str(), "OpenGL");
     #endif
 }
+
 } // namespace Pathfinder
 
 #endif

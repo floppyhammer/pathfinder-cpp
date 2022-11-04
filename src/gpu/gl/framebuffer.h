@@ -9,13 +9,14 @@
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+
 class FramebufferGl : public Framebuffer {
 public:
     /// Texture framebuffer.
-    FramebufferGl(const std::shared_ptr<Texture> &p_texture);
+    explicit FramebufferGl(const std::shared_ptr<Texture> &_texture);
 
     /// Swap chain framebuffer.
-    FramebufferGl(uint32_t p_width, uint32_t p_height);
+    FramebufferGl(Vec2I _size);
 
     ~FramebufferGl();
 
@@ -26,6 +27,7 @@ public:
 private:
     uint32_t gl_framebuffer;
 };
+
 } // namespace Pathfinder
 
 #endif

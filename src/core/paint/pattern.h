@@ -54,7 +54,7 @@ struct RenderTarget {
 
         render_pass = driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Clear, false);
 
-        auto target_texture = driver->create_texture(size.x, size.y, TextureFormat::Rgba8Unorm);
+        auto target_texture = driver->create_texture(size, TextureFormat::Rgba8Unorm);
 
         // Create a new framebuffer.
         framebuffer = driver->create_framebuffer(render_pass, target_texture);

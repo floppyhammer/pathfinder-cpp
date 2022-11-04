@@ -22,6 +22,7 @@ class Driver;
 
 enum class CommandType {
     // Render pass.
+
     BeginRenderPass = 0,
     BindRenderPipeline,
     BindVertexBuffers,
@@ -30,19 +31,22 @@ enum class CommandType {
     DrawInstanced,
     EndRenderPass,
 
-    SyncDescriptorSet, // Should be outside a render pass.
+    // This shouldn't happen during a render pass.
+    SyncDescriptorSet,
 
     // Compute pass.
+
     BeginComputePass,
     BindComputePipeline,
     Dispatch,
     EndComputePass,
 
     // Data transfer.
+
     UploadToBuffer,
     UploadToTexture,
     ReadBuffer,
-//    TransitionLayout,
+    //    TransitionLayout,
 
     Max,
 };
@@ -111,10 +115,10 @@ struct Command {
             uint32_t data_size;
             void *data;
         } read_buffer;
-//        struct {
-//            Texture *texture;
-//            TextureLayout dst_layout;
-//        } transition_layout;
+        //        struct {
+        //            Texture *texture;
+        //            TextureLayout dst_layout;
+        //        } transition_layout;
     } args;
 };
 
@@ -178,11 +182,9 @@ public:
 
     void read_buffer(const std::shared_ptr<Buffer> &buffer, uint32_t offset, uint32_t data_size, void *data);
 
-//    void transition_layout(const std::shared_ptr<Texture> &texture, TextureLayout new_layout);
-
     // SUBMIT
 
-    virtual void submit(const std::shared_ptr<Driver> &p_driver) = 0;
+    virtual void submit(const std::shared_ptr<Driver> &_driver) = 0;
 
     inline void add_callback(const std::function<void()> &callback) {
         callbacks.push_back(callback);

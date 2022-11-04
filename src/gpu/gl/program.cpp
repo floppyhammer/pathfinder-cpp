@@ -3,6 +3,7 @@
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+
 void Program::use() const {
     glUseProgram(id);
 }
@@ -109,6 +110,7 @@ void ComputeProgram::compile(const char *compute_code) {
     glDeleteShader(compute);
     #endif
 }
+
 } // namespace Pathfinder
 
 #endif

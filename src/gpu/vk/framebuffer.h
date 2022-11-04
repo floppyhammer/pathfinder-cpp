@@ -15,14 +15,10 @@ class FramebufferVk : public Framebuffer {
 
 public:
     /// Texture framebuffer.
-    FramebufferVk(VkDevice p_device, VkRenderPass render_pass, const std::shared_ptr<Texture> &p_texture);
+    FramebufferVk(VkDevice _device, VkRenderPass render_pass, const std::shared_ptr<Texture> &_texture);
 
     /// Swap chain framebuffer.
-    FramebufferVk(VkDevice p_device,
-                  VkRenderPass render_pass,
-                  uint32_t p_width,
-                  uint32_t p_height,
-                  VkImageView image_view);
+    FramebufferVk(VkDevice _device, VkRenderPass render_pass, Vec2I size, VkImageView image_view);
 
     ~FramebufferVk();
 

@@ -377,11 +377,11 @@ std::shared_ptr<Buffer> DriverVk::create_buffer(BufferType type, size_t size, Me
     return buffer_vk;
 }
 
-std::shared_ptr<Texture> DriverVk::create_texture(uint32_t width, uint32_t height, TextureFormat format) {
-    auto texture_vk = std::make_shared<TextureVk>(device, width, height, format);
+std::shared_ptr<Texture> DriverVk::create_texture(Vec2I size, TextureFormat format) {
+    auto texture_vk = std::make_shared<TextureVk>(device, size, format);
 
-    create_vk_image(width,
-                    height,
+    create_vk_image(size.x,
+                    size.y,
                     to_vk_texture_format(format),
                     VK_IMAGE_TILING_OPTIMAL,
                     VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |

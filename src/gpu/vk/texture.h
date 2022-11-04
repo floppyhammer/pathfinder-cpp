@@ -15,7 +15,7 @@ class TextureVk : public Texture {
 
 public:
     // Actual construction is done by DriverVk.
-    TextureVk(VkDevice p_device, uint32_t p_width, uint32_t p_height, TextureFormat p_format);
+    TextureVk(VkDevice _device, Vec2I _size, TextureFormat _format);
 
     // Actual deconstruction is done by itself.
     ~TextureVk();

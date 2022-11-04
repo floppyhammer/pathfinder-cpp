@@ -10,6 +10,7 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+
 class DescriptorSetVk : public DescriptorSet {
     friend class DriverVk;
 
@@ -18,7 +19,7 @@ public:
 
     ~DescriptorSetVk();
 
-    void update_vk_descriptor_set(VkDevice p_device, VkDescriptorSetLayout descriptor_set_layout);
+    void update_vk_descriptor_set(VkDevice _device, VkDescriptorSetLayout descriptor_set_layout);
 
     VkDescriptorSet &get_vk_descriptor_set();
 
@@ -30,6 +31,7 @@ private:
 
     VkDevice device{};
 };
+
 } // namespace Pathfinder
 
 #endif

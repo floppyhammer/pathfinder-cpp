@@ -9,9 +9,10 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-std::shared_ptr<Platform> Platform::new_impl(DeviceType device_type, uint32_t window_width, uint32_t window_height) {
+
+std::shared_ptr<Platform> Platform::new_impl(DeviceType device_type, Vec2I _window_size) {
     if (device_type == DeviceType::Vulkan) {
-        return std::make_shared<PlatformVk>(window_width, window_height);
+        return std::make_shared<PlatformVk>(_window_size);
     }
 
     abort();
@@ -37,7 +38,7 @@ void destroy_debug_utils_messenger_ext(VkInstance instance,
     }
 }
 
-PlatformVk::PlatformVk(uint32_t window_width, uint32_t window_height) : Platform(window_width, window_height) {
+PlatformVk::PlatformVk(Vec2I _window_size) : Platform(_window_size) {
     // Get a GLFW window.
     init_window();
 
@@ -99,12 +100,12 @@ void PlatformVk::init_window() {
     float dpi_scale_x, dpi_scale_y;
     glfwGetMonitorContentScale(monitors[0], &dpi_scale_x, &dpi_scale_y);
 
-    window = glfwCreateWindow(width, height, "Pathfinder (Vulkan)", nullptr, nullptr);
+    window = glfwCreateWindow(window_size.x, window_size.y, "Pathfinder (Vulkan)", nullptr, nullptr);
 
     // Center the window.
     glfwSetWindowPos(window,
-                     monitor_x + (video_mode->width - width) / 2,
-                     monitor_y + (video_mode->height - height) / 2);
+                     monitor_x + (video_mode->width - window_size.x) / 2,
+                     monitor_y + (video_mode->height - window_size.y) / 2);
 
     // Show the window.
     glfwShowWindow(window);
@@ -451,9 +452,10 @@ void PlatformVk::cleanup() {
 
 std::shared_ptr<SwapChain> PlatformVk::create_swap_chain(const std::shared_ptr<Driver> &driver) {
     auto driver_vk = static_cast<DriverVk *>(driver.get());
-    auto swap_chain_vk = std::make_shared<SwapChainVk>(width, height, this, driver_vk);
+    auto swap_chain_vk = std::make_shared<SwapChainVk>(window_size, this, driver_vk);
     return swap_chain_vk;
 }
+
 } // namespace Pathfinder
 
 #endif

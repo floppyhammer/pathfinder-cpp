@@ -8,8 +8,8 @@
 
 namespace Pathfinder {
 
-void DescriptorSetVk::update_vk_descriptor_set(VkDevice p_device, VkDescriptorSetLayout descriptor_set_layout) {
-    device = p_device;
+void DescriptorSetVk::update_vk_descriptor_set(VkDevice _device, VkDescriptorSetLayout descriptor_set_layout) {
+    device = _device;
 
     // Create descriptor pool and allocate descriptor sets.
     if (!descriptor_set_allocated) {

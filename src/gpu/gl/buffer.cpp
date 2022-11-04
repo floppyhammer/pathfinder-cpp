@@ -7,7 +7,8 @@
 
 namespace Pathfinder {
 
-BufferGl::BufferGl(BufferType p_type, size_t p_size, MemoryProperty p_property) : Buffer(p_type, p_size, p_property) {
+BufferGl::BufferGl(BufferType _type, size_t _size, MemoryProperty _memory_property)
+    : Buffer(_type, _size, _memory_property) {
     if (size == 0) {
         Logger::error("Tried to create a buffer with zero size!");
     }

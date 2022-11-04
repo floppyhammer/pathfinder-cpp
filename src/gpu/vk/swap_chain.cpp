@@ -9,8 +9,8 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-SwapChainVk::SwapChainVk(int32_t width, int32_t height, PlatformVk *_platform, DriverVk *_driver)
-    : SwapChain(width, height) {
+
+SwapChainVk::SwapChainVk(Vec2I _size, PlatformVk *_platform, DriverVk *_driver) : SwapChain(_size) {
     platform = _platform;
     driver = _driver;
 
@@ -163,7 +163,7 @@ void SwapChainVk::create_swapchain() {
     vkGetSwapchainImagesKHR(device, swapchain, &image_count, swapchain_images.data());
 
     swapchain_image_format = surface_format.format;
-    extent = {int32_t(vk_extent.width), int32_t(vk_extent.height)};
+    size = {int32_t(vk_extent.width), int32_t(vk_extent.height)};
 }
 
 void SwapChainVk::create_image_views() {
@@ -191,8 +191,7 @@ void SwapChainVk::create_framebuffers() {
         // No texture for swap chain framebuffer.
         auto framebuffer_vk = std::make_shared<FramebufferVk>(device,
                                                               render_pass_vk->get_vk_render_pass(),
-                                                              extent.x,
-                                                              extent.y,
+                                                              size,
                                                               swapchain_image_views[i]);
 
         framebuffers.push_back(framebuffer_vk);
@@ -338,6 +337,7 @@ void SwapChainVk::flush() {
     // Update frame tracker.
     current_frame = (current_frame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
+
 } // namespace Pathfinder
 
 #endif

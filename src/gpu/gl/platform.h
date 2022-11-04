@@ -11,9 +11,10 @@
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+
 class PlatformGl : public Platform {
 public:
-    explicit PlatformGl(uint32_t window_width, uint32_t window_height);
+    explicit PlatformGl(Vec2I _window_size);
 
     std::shared_ptr<Driver> create_driver() override;
 
@@ -24,6 +25,7 @@ public:
 private:
     void init_window();
 };
+
 } // namespace Pathfinder
 
 #endif

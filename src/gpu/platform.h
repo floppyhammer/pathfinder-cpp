@@ -7,9 +7,9 @@ namespace Pathfinder {
 
 class Platform {
 public:
-    Platform(uint32_t window_width, uint32_t window_height) : width(window_width), height(window_height) {}
+    explicit Platform(Vec2I _window_size) : window_size(_window_size) {}
 
-    static std::shared_ptr<Platform> new_impl(DeviceType device_type, uint32_t window_width, uint32_t window_height);
+    static std::shared_ptr<Platform> new_impl(DeviceType device_type, Vec2I _window_size);
 
     virtual std::shared_ptr<Driver> create_driver() = 0;
 
@@ -21,8 +21,7 @@ public:
     bool framebuffer_resized = false;
 
 protected:
-    uint32_t width;
-    uint32_t height;
+    Vec2I window_size;
 
 #ifndef __ANDROID__
 public:

@@ -11,7 +11,8 @@
 #include "swap_chain.h"
 
 namespace Pathfinder {
-/// We only need to provide a Driver to Canvas for Pathfinder rendering,
+
+/// We only need to provide a Driver to Canvas for rendering,
 /// which means Platform and SwapChain aren't needed for platforms like Android.
 class Driver {
 public:
@@ -20,7 +21,7 @@ public:
 
     virtual std::shared_ptr<Buffer> create_buffer(BufferType type, size_t size, MemoryProperty property) = 0;
 
-    virtual std::shared_ptr<Texture> create_texture(uint32_t _width, uint32_t _height, TextureFormat _format) = 0;
+    virtual std::shared_ptr<Texture> create_texture(Vec2I size, TextureFormat _format) = 0;
 
     virtual std::shared_ptr<CommandBuffer> create_command_buffer(bool one_time) = 0;
 
@@ -33,8 +34,8 @@ public:
     virtual std::shared_ptr<RenderPipeline> create_render_pipeline(
         const std::vector<char> &vert_source,
         const std::vector<char> &frag_source,
-        const std::vector<VertexInputAttributeDescription> &p_attribute_descriptions,
-        BlendState p_blend_state,
+        const std::vector<VertexInputAttributeDescription> &_attribute_descriptions,
+        BlendState _blend_state,
         const std::shared_ptr<DescriptorSet> &descriptor_set,
         const std::shared_ptr<RenderPass> &render_pass) = 0;
 
@@ -42,6 +43,7 @@ public:
         const std::vector<char> &comp_source,
         const std::shared_ptr<DescriptorSet> &descriptor_set) = 0;
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_GPU_DRIVER_H

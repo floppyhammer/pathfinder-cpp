@@ -10,10 +10,11 @@
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+
 /// Use Texture via smart pointers as its de-constructor will release its GL resources.
 class TextureGl : public Texture {
 public:
-    TextureGl(uint32_t p_width, uint32_t p_height, TextureFormat p_format);
+    TextureGl(Vec2I _size, TextureFormat _format);
 
     ~TextureGl();
 
@@ -22,6 +23,7 @@ public:
 private:
     uint32_t texture_id = 0;
 };
+
 } // namespace Pathfinder
 
 #endif

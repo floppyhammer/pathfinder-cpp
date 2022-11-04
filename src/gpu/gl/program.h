@@ -16,6 +16,7 @@
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+
 class Program {
 public:
     /// Activate the shader.
@@ -87,6 +88,7 @@ public:
 private:
     void compile(const char *compute_code);
 };
+
 } // namespace Pathfinder
 
 #endif

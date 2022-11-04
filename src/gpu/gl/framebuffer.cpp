@@ -7,11 +7,12 @@
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-FramebufferGl::FramebufferGl(uint32_t p_width, uint32_t p_height) : Framebuffer(p_width, p_height) {
+
+FramebufferGl::FramebufferGl(Vec2I _size) : Framebuffer(_size) {
     gl_framebuffer = 0;
 }
 
-FramebufferGl::FramebufferGl(const std::shared_ptr<Texture> &p_texture) : Framebuffer(p_texture) {
+FramebufferGl::FramebufferGl(const std::shared_ptr<Texture> &_texture) : Framebuffer(_texture) {
     auto texture_gl = static_cast<TextureGl *>(texture.get());
 
     // Set up framebuffer.
@@ -36,6 +37,7 @@ uint32_t FramebufferGl::get_gl_framebuffer() const {
 unsigned long long FramebufferGl::get_unique_id() {
     return gl_framebuffer;
 }
+
 } // namespace Pathfinder
 
 #endif

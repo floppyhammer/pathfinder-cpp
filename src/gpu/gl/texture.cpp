@@ -5,10 +5,10 @@
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-TextureGl::TextureGl(uint32_t p_width, uint32_t p_height, TextureFormat p_format)
-    : Texture(p_width, p_height, p_format) {
+
+TextureGl::TextureGl(Vec2I _size, TextureFormat _format) : Texture(_size, _format) {
     // We can deduce the pixel data type by the texture format.
-    DataType type = texture_format_to_data_type(p_format);
+    DataType type = texture_format_to_data_type(format);
 
     // Generate a texture.
     glGenTextures(1, &texture_id);
@@ -17,13 +17,13 @@ TextureGl::TextureGl(uint32_t p_width, uint32_t p_height, TextureFormat p_format
     // Allocate space.
     // We need to use glTexStorage2D() in order to access the texture via image2D in compute shaders.
     #ifdef PATHFINDER_USE_D3D11
-    glTexStorage2D(GL_TEXTURE_2D, 1, to_gl_texture_format(p_format), width, height);
+    glTexStorage2D(GL_TEXTURE_2D, 1, to_gl_texture_format(format), size.x, size.y);
     #else
     glTexImage2D(GL_TEXTURE_2D,
                  0,
-                 to_gl_texture_format(p_format),
-                 width,
-                 height,
+                 to_gl_texture_format(format),
+                 size.x,
+                 size.y,
                  0,
                  GL_RGBA,
                  to_gl_data_type(type),
@@ -50,6 +50,7 @@ TextureGl::~TextureGl() {
 uint32_t TextureGl::get_texture_id() const {
     return texture_id;
 }
+
 } // namespace Pathfinder
 
 #endif

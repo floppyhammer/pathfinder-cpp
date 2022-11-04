@@ -7,8 +7,8 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
-TextureVk::TextureVk(VkDevice p_device, uint32_t p_width, uint32_t p_height, TextureFormat p_format)
-    : Texture(p_width, p_height, p_format), device(p_device) {}
+
+TextureVk::TextureVk(VkDevice _device, Vec2I _size, TextureFormat _format) : Texture(_size, _format), device(_device) {}
 
 TextureVk::~TextureVk() {
     vkDestroySampler(device, sampler, nullptr);
@@ -34,6 +34,7 @@ VkImageView TextureVk::get_image_view() const {
 VkSampler TextureVk::get_sampler() const {
     return sampler;
 }
+
 } // namespace Pathfinder
 
 #endif

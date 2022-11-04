@@ -23,7 +23,7 @@ public:
 
     std::shared_ptr<Buffer> create_buffer(BufferType type, size_t size, MemoryProperty property) override;
 
-    std::shared_ptr<Texture> create_texture(uint32_t p_width, uint32_t p_height, TextureFormat p_format) override;
+    std::shared_ptr<Texture> create_texture(Vec2I _size, TextureFormat _format) override;
 
     std::shared_ptr<CommandBuffer> create_command_buffer(bool one_time) override;
 

@@ -45,8 +45,7 @@ const size_t MAX_FILLS_PER_BATCH = 0x10000;
 std::shared_ptr<Texture> upload_z_buffer(const std::shared_ptr<Driver> &driver,
                                          const DenseTileMap<uint32_t> &z_buffer_map,
                                          const std::shared_ptr<CommandBuffer> &cmd_buffer) {
-    auto z_buffer_texture =
-        driver->create_texture(z_buffer_map.rect.width(), z_buffer_map.rect.height(), TextureFormat::Rgba8Unorm);
+    auto z_buffer_texture = driver->create_texture(z_buffer_map.rect.size(), TextureFormat::Rgba8Unorm);
 
     cmd_buffer->upload_to_texture(z_buffer_texture, {}, z_buffer_map.data.data(), TextureLayout::ShaderReadOnly);
 
@@ -63,7 +62,7 @@ RendererD3D9::RendererD3D9(const std::shared_ptr<Driver> &p_driver) : Renderer(p
     dest_render_pass_load = driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Load, false);
 
     auto mask_texture =
-        driver->create_texture(MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT, TextureFormat::Rgba16Float);
+        driver->create_texture({MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT}, TextureFormat::Rgba16Float);
     mask_framebuffer = driver->create_framebuffer(mask_render_pass_clear, mask_texture);
 
     // Quad vertex buffer. Shared by fills and tiles drawing.
@@ -402,7 +401,7 @@ ClipBufferInfo RendererD3D9::upload_clip_tiles(const std::vector<Clip> &clips, c
 void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std::shared_ptr<Driver> &driver) {
     // Allocate temp mask framebuffer.
     auto mask_temp_texture =
-        driver->create_texture(MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT, TextureFormat::Rgba16Float);
+        driver->create_texture({MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT}, TextureFormat::Rgba16Float);
     auto mask_temp_framebuffer = driver->create_framebuffer(mask_render_pass_clear, mask_temp_texture);
 
     auto clip_vertex_buffer = clip_buffer_info.clip_buffer;

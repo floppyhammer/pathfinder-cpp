@@ -10,11 +10,12 @@
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+
 class BufferVk : public Buffer {
     friend class DriverVk;
 
 public:
-    BufferVk(VkDevice p_device, BufferType p_type, size_t p_size, MemoryProperty property);
+    BufferVk(VkDevice _device, BufferType _type, size_t _size, MemoryProperty _memory_property);
 
     ~BufferVk();
 
@@ -28,6 +29,7 @@ private:
 
     VkDevice device;
 };
+
 } // namespace Pathfinder
 
 #endif

@@ -9,14 +9,16 @@
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
+
 class BufferGl : public Buffer {
 public:
-    BufferGl(BufferType p_type, size_t p_size, MemoryProperty p_property);
+    BufferGl(BufferType _type, size_t _size, MemoryProperty _memory_property);
 
     ~BufferGl();
 
     uint32_t id;
 };
+
 } // namespace Pathfinder
 
 #endif
