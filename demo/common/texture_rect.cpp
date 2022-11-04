@@ -64,12 +64,11 @@ TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
 
         auto blend_state = Pathfinder::BlendState::from_over();
 
-        {
-            descriptor_set = driver->create_descriptor_set();
-
-            descriptor_set->add_or_update_uniform(Pathfinder::ShaderStage::Vertex, 0, "bUniform", uniform_buffer);
-            descriptor_set->add_or_update_sampler(Pathfinder::ShaderStage::Fragment, 1, "uTexture");
-        }
+        descriptor_set = driver->create_descriptor_set();
+        descriptor_set->add_or_update({
+            Pathfinder::Descriptor::uniform(0, Pathfinder::ShaderStage::Vertex, "bUniform", uniform_buffer),
+            Pathfinder::Descriptor::sampler(1, Pathfinder::ShaderStage::Fragment, "uTexture"),
+        });
 
         pipeline = driver->create_render_pipeline(vert_source,
                                                   frag_source,
@@ -80,10 +79,12 @@ TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
     }
 }
 
-void TextureRect::set_texture(std::shared_ptr<Pathfinder::Texture> p_texture) {
-    texture = std::move(p_texture);
+void TextureRect::set_texture(const std::shared_ptr<Pathfinder::Texture> &_texture) {
+    texture = _texture;
 
-    descriptor_set->add_or_update_sampler(Pathfinder::ShaderStage::Fragment, 1, "uTexture", texture);
+    descriptor_set->add_or_update({
+        Pathfinder::Descriptor::sampler(1, Pathfinder::ShaderStage::Fragment, "uTexture", texture),
+    });
 }
 
 void TextureRect::draw(const std::shared_ptr<Pathfinder::Driver> &driver,

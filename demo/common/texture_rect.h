@@ -20,7 +20,7 @@ public:
                 float width,
                 float height);
 
-    void set_texture(std::shared_ptr<Pathfinder::Texture> p_texture);
+    void set_texture(const std::shared_ptr<Pathfinder::Texture> &_texture);
 
     void draw(const std::shared_ptr<Pathfinder::Driver> &driver,
               const std::shared_ptr<Pathfinder::CommandBuffer> &cmd_buffer,

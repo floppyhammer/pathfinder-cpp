@@ -22,64 +22,63 @@ struct Descriptor {
     /// For compatibility with lower versions of OpenGL.
     std::string binding_name;
 
-    /// Only one is used.
+    /// Only one of these is used.
     std::shared_ptr<Buffer> buffer;
     std::shared_ptr<Texture> texture;
+
+    static Descriptor uniform(uint32_t binding,
+                              ShaderStage stage,
+                              const std::string& binding_name,
+                              const std::shared_ptr<Buffer>& buffer = nullptr) {
+        if (buffer && buffer->type != BufferType::Uniform) {
+            throw std::runtime_error(std::string("Mismatched buffer type when creating a descriptor!"));
+        }
+
+        return {DescriptorType::UniformBuffer, stage, binding, binding_name, buffer, nullptr};
+    }
+
+    static Descriptor sampler(uint32_t binding,
+                              ShaderStage stage,
+                              const std::string& binding_name,
+                              const std::shared_ptr<Texture>& texture = nullptr) {
+        return {DescriptorType::Sampler, stage, binding, binding_name, nullptr, texture};
+    }
+
+    static Descriptor storage(uint32_t binding, ShaderStage stage, const std::shared_ptr<Buffer>& buffer = nullptr) {
+        if (buffer && buffer->type != BufferType::Storage) {
+            throw std::runtime_error(std::string("Mismatched buffer type when creating a descriptor!"));
+        }
+
+        return {DescriptorType::StorageBuffer, stage, binding, "", buffer, nullptr};
+    }
+
+    static Descriptor image(uint32_t binding,
+                            ShaderStage stage,
+                            const std::string& binding_name,
+                            const std::shared_ptr<Texture>& texture = nullptr) {
+        return {DescriptorType::Image, stage, binding, binding_name, nullptr, texture};
+    }
 };
 
 /**
  * This acts as both `set layout` and `set`.
- * If any of the contained descriptors has null [buffer]s/[texture]s, we can only use it as a layout.
+ * If any of the contained descriptors has null `buffer`s/`texture`s, it is a `layout`.
  * Otherwise, it's a `set`.
  */
 class DescriptorSet {
 public:
-    inline void add_or_update_uniform(ShaderStage stage,
-                                      uint32_t binding,
-                                      std::string binding_name,
-                                      std::shared_ptr<Buffer> buffer = nullptr) {
-        if (buffer) {
-            if (buffer->type != BufferType::Uniform) {
-                throw std::runtime_error(std::string("Mismatched buffer type when adding a descriptor!"));
-            }
+    inline void add_or_update(const std::vector<Descriptor>& _descriptors) {
+        for (auto& d : _descriptors) {
+            descriptors[d.binding] = d;
         }
-
-        Descriptor descriptor{DescriptorType::UniformBuffer, stage, binding, binding_name, buffer, nullptr};
-        descriptors[descriptor.binding] = descriptor;
     }
 
-    inline void add_or_update_sampler(ShaderStage stage,
-                                      uint32_t binding,
-                                      std::string binding_name,
-                                      std::shared_ptr<Texture> texture = nullptr) {
-        Descriptor descriptor{DescriptorType::Sampler, stage, binding, binding_name, nullptr, texture};
-        descriptors[descriptor.binding] = descriptor;
-    }
-
-    inline void add_or_update_storage(ShaderStage stage, uint32_t binding, std::shared_ptr<Buffer> buffer = nullptr) {
-        if (buffer) {
-            if (buffer->type != BufferType::Storage) {
-                throw std::runtime_error(std::string("Mismatched buffer type when adding a descriptor!"));
-            }
-        }
-
-        Descriptor descriptor{DescriptorType::StorageBuffer, stage, binding, "", buffer, nullptr};
-        descriptors[descriptor.binding] = descriptor;
-    }
-
-    inline void add_or_update_image(ShaderStage stage,
-                                    uint32_t binding,
-                                    std::string binding_name,
-                                    std::shared_ptr<Texture> texture = nullptr) {
-        Descriptor descriptor{DescriptorType::Image, stage, binding, binding_name, nullptr, texture};
-        descriptors[descriptor.binding] = descriptor;
-    }
-
-    inline const std::unordered_map<uint32_t, Descriptor> &get_descriptors() const {
+    inline const std::unordered_map<uint32_t, Descriptor>& get_descriptors() const {
         return descriptors;
     }
 
 protected:
+    /// Binding point is used as the hashing key.
     std::unordered_map<uint32_t, Descriptor> descriptors;
 };
 
