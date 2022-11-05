@@ -14,15 +14,16 @@ class RenderPipelineVk : public RenderPipeline {
     friend class DriverVk;
 
 public:
-    RenderPipelineVk(VkDevice _device,
+    RenderPipelineVk(VkDevice _vk_device,
                      const std::vector<VertexInputAttributeDescription> &_attribute_descriptions,
-                     BlendState _blend_state)
-        : RenderPipeline(_attribute_descriptions, _blend_state), device(_device) {}
+                     BlendState _blend_state,
+                     std::string _label)
+        : RenderPipeline(_attribute_descriptions, _blend_state, std::move(_label)), vk_device(_vk_device) {}
 
     ~RenderPipelineVk() {
-        vkDestroyDescriptorSetLayout(device, descriptor_set_layout, nullptr);
-        vkDestroyPipeline(device, vk_pipeline, nullptr);
-        vkDestroyPipelineLayout(device, layout, nullptr);
+        vkDestroyDescriptorSetLayout(vk_device, vk_descriptor_set_layout, nullptr);
+        vkDestroyPipeline(vk_device, vk_pipeline, nullptr);
+        vkDestroyPipelineLayout(vk_device, vk_layout, nullptr);
     }
 
     inline VkPipeline get_pipeline() const {
@@ -30,21 +31,21 @@ public:
     }
 
     inline VkPipelineLayout get_layout() const {
-        return layout;
+        return vk_layout;
     }
 
     inline VkDescriptorSetLayout get_descriptor_set_layout() const {
-        return descriptor_set_layout;
+        return vk_descriptor_set_layout;
     }
 
 private:
     VkPipeline vk_pipeline{};
 
-    VkDescriptorSetLayout descriptor_set_layout{};
+    VkDescriptorSetLayout vk_descriptor_set_layout{};
 
-    VkPipelineLayout layout{};
+    VkPipelineLayout vk_layout{};
 
-    VkDevice device{};
+    VkDevice vk_device{};
 };
 
 } // namespace Pathfinder

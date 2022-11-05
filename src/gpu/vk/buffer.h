@@ -15,7 +15,7 @@ class BufferVk : public Buffer {
     friend class DriverVk;
 
 public:
-    BufferVk(VkDevice _device, BufferType _type, size_t _size, MemoryProperty _memory_property);
+    BufferVk(VkDevice _vk_device, BufferType _type, size_t _size, MemoryProperty _memory_property, std::string _label);
 
     ~BufferVk();
 
@@ -27,7 +27,7 @@ private:
     VkBuffer vk_buffer{};
     VkDeviceMemory vk_device_memory{};
 
-    VkDevice device;
+    VkDevice vk_device{};
 };
 
 } // namespace Pathfinder

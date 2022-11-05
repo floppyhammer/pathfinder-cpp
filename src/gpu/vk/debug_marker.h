@@ -13,6 +13,8 @@
 #include "../../common/logger.h"
 #include "data.h"
 
+#ifdef PATHFINDER_USE_VULKAN
+
 namespace Pathfinder {
 
 class DebugMarker {
@@ -52,7 +54,7 @@ public:
     /// along with the object type.
     void set_object_name(VkDevice device, uint64_t object, VkObjectType object_type, const std::string& name) {
         // Check for valid function pointer (may not be present if not running in a debugging application).
-        if (active) {
+        if (active && !name.empty()) {
             VkDebugUtilsObjectNameInfoEXT nameInfo = {
                 VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT, // sType
                 nullptr,                                            // pNext
@@ -69,7 +71,7 @@ public:
     /// NOTE: Must be called after the command buffer begins recording.
     void begin_region(VkCommandBuffer cmd_buffer, const std::string& label_name, ColorF color) {
         // Check for valid function pointer (may not be present if not running in a debugging application)
-        if (active) {
+        if (active && !label_name.empty()) {
             VkDebugUtilsLabelEXT label_info = {
                 VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT,
                 nullptr,
@@ -83,7 +85,7 @@ public:
     /// Insert a new debug marker into the command buffer.
     void insert(VkCommandBuffer cmd_buffer, const std::string& label_name, ColorF color) {
         // Check for valid function pointer (may not be present if not running in a debugging application)
-        if (active) {
+        if (active && !label_name.empty()) {
             VkDebugUtilsLabelEXT label_info = {
                 VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT,
                 nullptr,
@@ -130,4 +132,5 @@ public:
 
 } // namespace Pathfinder
 
+#endif
 #endif // PATHFINDER_GPU_VK_DEBUG_MARKER_H

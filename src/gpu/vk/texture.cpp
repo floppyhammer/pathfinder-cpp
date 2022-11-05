@@ -1,38 +1,41 @@
 #include "texture.h"
 
 #include <cassert>
+#include <utility>
 
 #include "../../common/global_macros.h"
+#include "debug_marker.h"
 
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
 
-TextureVk::TextureVk(VkDevice _device, Vec2I _size, TextureFormat _format) : Texture(_size, _format), device(_device) {}
+TextureVk::TextureVk(VkDevice _vk_device, Vec2I _size, TextureFormat _format, std::string _label)
+    : Texture(_size, _format, std::move(_label)), vk_device(_vk_device) {}
 
 TextureVk::~TextureVk() {
-    vkDestroySampler(device, sampler, nullptr);
+    vkDestroySampler(vk_device, vk_sampler, nullptr);
 
     // Should be right before destroying the image itself.
-    vkDestroyImageView(device, image_view, nullptr);
+    vkDestroyImageView(vk_device, vk_image_view, nullptr);
 
     // Destroy image handle.
-    vkDestroyImage(device, image, nullptr);
+    vkDestroyImage(vk_device, vk_image, nullptr);
 
     // Release device memory.
-    vkFreeMemory(device, image_memory, nullptr);
+    vkFreeMemory(vk_device, vk_image_memory, nullptr);
 }
 
 VkImage TextureVk::get_image() const {
-    return image;
+    return vk_image;
 }
 
 VkImageView TextureVk::get_image_view() const {
-    return image_view;
+    return vk_image_view;
 }
 
 VkSampler TextureVk::get_sampler() const {
-    return sampler;
+    return vk_sampler;
 }
 
 } // namespace Pathfinder

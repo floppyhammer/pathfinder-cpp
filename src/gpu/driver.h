@@ -17,13 +17,17 @@ namespace Pathfinder {
 class Driver {
 public:
     virtual std::shared_ptr<Framebuffer> create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
-                                                            const std::shared_ptr<Texture> &texture) = 0;
+                                                            const std::shared_ptr<Texture> &texture,
+                                                            const std::string &label) = 0;
 
-    virtual std::shared_ptr<Buffer> create_buffer(BufferType type, size_t size, MemoryProperty property) = 0;
+    virtual std::shared_ptr<Buffer> create_buffer(BufferType type,
+                                                  size_t size,
+                                                  MemoryProperty property,
+                                                  const std::string &label) = 0;
 
-    virtual std::shared_ptr<Texture> create_texture(Vec2I size, TextureFormat _format) = 0;
+    virtual std::shared_ptr<Texture> create_texture(Vec2I size, TextureFormat _format, const std::string &label) = 0;
 
-    virtual std::shared_ptr<CommandBuffer> create_command_buffer(bool one_time) = 0;
+    virtual std::shared_ptr<CommandBuffer> create_command_buffer(bool one_time, const std::string &label) = 0;
 
     virtual std::shared_ptr<DescriptorSet> create_descriptor_set() = 0;
 
@@ -38,11 +42,13 @@ public:
         const std::vector<VertexInputAttributeDescription> &_attribute_descriptions,
         BlendState _blend_state,
         const std::shared_ptr<DescriptorSet> &descriptor_set,
-        const std::shared_ptr<RenderPass> &render_pass) = 0;
+        const std::shared_ptr<RenderPass> &render_pass,
+        const std::string &label) = 0;
 
     virtual std::shared_ptr<ComputePipeline> create_compute_pipeline(
         const std::vector<char> &comp_source,
-        const std::shared_ptr<DescriptorSet> &descriptor_set) = 0;
+        const std::shared_ptr<DescriptorSet> &descriptor_set,
+        const std::string &label) = 0;
 };
 
 } // namespace Pathfinder

@@ -94,7 +94,7 @@ void DescriptorSetVk::update_vk_descriptor_set(VkDevice _device, VkDescriptorSet
 
             bufferInfo.buffer = buffer_vk->get_vk_buffer();
             bufferInfo.offset = 0;
-            bufferInfo.range = buffer_vk->size;
+            bufferInfo.range = buffer_vk->get_size();
 
             descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
             descriptor_write.pBufferInfo = &bufferInfo;
@@ -124,7 +124,7 @@ void DescriptorSetVk::update_vk_descriptor_set(VkDevice _device, VkDescriptorSet
 
             bufferInfo.buffer = buffer_vk->get_vk_buffer();
             bufferInfo.offset = 0;
-            bufferInfo.range = buffer_vk->size;
+            bufferInfo.range = buffer_vk->get_size();
 
             descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             descriptor_write.pBufferInfo = &bufferInfo;

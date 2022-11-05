@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "data.h"
@@ -11,8 +12,10 @@ namespace Pathfinder {
 
 class RenderPipeline {
 public:
-    RenderPipeline(const std::vector<VertexInputAttributeDescription>& _attribute_descriptions, BlendState _blend_state)
-        : attribute_descriptions(_attribute_descriptions), blend_state(_blend_state){};
+    RenderPipeline(const std::vector<VertexInputAttributeDescription>& _attribute_descriptions,
+                   BlendState _blend_state,
+                   std::string _label)
+        : attribute_descriptions(_attribute_descriptions), blend_state(_blend_state), label(std::move(_label)){};
 
     inline const std::vector<VertexInputAttributeDescription>& get_attribute_descriptions() const {
         return attribute_descriptions;
@@ -22,14 +25,13 @@ public:
         return blend_state;
     }
 
-public:
-    /// For debugging.
-    std::string name;
-
 protected:
     std::vector<VertexInputAttributeDescription> attribute_descriptions;
 
     BlendState blend_state{};
+
+    /// Debug label.
+    std::string label;
 };
 
 } // namespace Pathfinder

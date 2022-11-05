@@ -2,6 +2,7 @@
 #define PATHFINDER_GPU_RENDER_PIPELINE_GL_H
 
 #include <memory>
+#include <utility>
 
 #include "../render_pipeline.h"
 #include "program.h"
@@ -15,8 +16,9 @@ public:
     RenderPipelineGl(const std::vector<char> &vert_source,
                      const std::vector<char> &frag_source,
                      const std::vector<VertexInputAttributeDescription> &_attribute_descriptions,
-                     BlendState _blend_state)
-        : RenderPipeline(_attribute_descriptions, _blend_state) {
+                     BlendState _blend_state,
+                     std::string _label)
+        : RenderPipeline(_attribute_descriptions, _blend_state, std::move(_label)) {
         program = std::make_shared<RasterProgram>(vert_source, frag_source);
 
         glGenVertexArrays(1, &vao);

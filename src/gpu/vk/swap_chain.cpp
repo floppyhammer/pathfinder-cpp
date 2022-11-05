@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "command_buffer.h"
+#include "debug_marker.h"
 #include "platform.h"
 
 #ifdef PATHFINDER_USE_VULKAN
@@ -30,6 +31,7 @@ std::shared_ptr<Framebuffer> SwapChainVk::get_framebuffer() {
 
 std::shared_ptr<CommandBuffer> SwapChainVk::get_command_buffer() {
     auto command_buffer_vk = std::make_shared<CommandBufferVk>(command_buffers[current_image], driver->device);
+    command_buffer_vk->label = "Main";
     return command_buffer_vk;
 }
 

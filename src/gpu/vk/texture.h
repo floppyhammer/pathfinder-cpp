@@ -15,7 +15,7 @@ class TextureVk : public Texture {
 
 public:
     // Actual construction is done by DriverVk.
-    TextureVk(VkDevice _device, Vec2I _size, TextureFormat _format);
+    TextureVk(VkDevice _vk_device, Vec2I _size, TextureFormat _format, std::string _label);
 
     // Actual deconstruction is done by itself.
     ~TextureVk();
@@ -36,19 +36,19 @@ public:
 
 private:
     /// Handle.
-    VkImage image{};
+    VkImage vk_image{};
 
     /// Device memory.
-    VkDeviceMemory image_memory{};
+    VkDeviceMemory vk_image_memory{};
 
     /// Thin wrapper over image.
-    VkImageView image_view{};
+    VkImageView vk_image_view{};
 
     /// How image should be filtered.
-    VkSampler sampler{};
+    VkSampler vk_sampler{};
 
     /// For releasing resources in destructor.
-    VkDevice device{};
+    VkDevice vk_device{};
 
     /// The initial layout must be undefined.
     TextureLayout layout = TextureLayout::Undefined;

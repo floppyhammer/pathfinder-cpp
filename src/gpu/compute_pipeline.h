@@ -9,8 +9,8 @@
 namespace Pathfinder {
 
 class ComputePipeline {
-public:
-    std::string name;
+protected:
+    std::string label;
 };
 
 } // namespace Pathfinder

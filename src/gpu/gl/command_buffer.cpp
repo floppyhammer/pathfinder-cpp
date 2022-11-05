@@ -38,7 +38,7 @@ void CommandBufferGl::upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
 
     int gl_buffer_type;
 
-    switch (args.buffer->type) {
+    switch (args.buffer->get_type()) {
         case BufferType::Vertex: {
             gl_buffer_type = GL_ARRAY_BUFFER;
         } break;
@@ -286,7 +286,7 @@ void CommandBufferGl::submit(const std::shared_ptr<Driver> &_driver) {
                 auto &args = cmd.args.read_buffer;
 
                 // We can only read from general buffers.
-                if (args.buffer->type != BufferType::Storage) {
+                if (args.buffer->get_type() != BufferType::Storage) {
                     Logger::error("Tried to read from a non-general buffer!", "Command Buffer");
                     break;
                 }

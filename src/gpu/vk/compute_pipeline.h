@@ -14,12 +14,14 @@ class ComputePipelineVk : public ComputePipeline {
     friend class DriverVk;
 
 public:
-    ComputePipelineVk(VkDevice _device) : device(_device) {}
+    ComputePipelineVk(VkDevice _vk_device, std::string _label) : vk_device(_vk_device) {
+        label = std::move(_label);
+    }
 
     ~ComputePipelineVk() {
-        vkDestroyDescriptorSetLayout(device, descriptor_set_layout, nullptr);
-        vkDestroyPipeline(device, vk_pipeline, nullptr);
-        vkDestroyPipelineLayout(device, layout, nullptr);
+        vkDestroyDescriptorSetLayout(vk_device, vk_descriptor_set_layout, nullptr);
+        vkDestroyPipeline(vk_device, vk_pipeline, nullptr);
+        vkDestroyPipelineLayout(vk_device, vk_layout, nullptr);
     }
 
     inline VkPipeline get_pipeline() const {
@@ -27,21 +29,21 @@ public:
     }
 
     inline VkPipelineLayout get_layout() const {
-        return layout;
+        return vk_layout;
     }
 
     inline VkDescriptorSetLayout get_descriptor_set_layout() const {
-        return descriptor_set_layout;
+        return vk_descriptor_set_layout;
     }
 
 private:
     VkPipeline vk_pipeline{};
 
-    VkDescriptorSetLayout descriptor_set_layout{};
+    VkDescriptorSetLayout vk_descriptor_set_layout{};
 
-    VkPipelineLayout layout{};
+    VkPipelineLayout vk_layout{};
 
-    VkDevice device{};
+    VkDevice vk_device{};
 };
 
 } // namespace Pathfinder

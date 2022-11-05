@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <memory>
+#include <utility>
 
 #include "texture.h"
 
@@ -38,17 +39,18 @@ public:
         if (texture) {
             return texture->get_size();
         }
+
+        // Render to screen or swapchain.
         return size;
     }
-
-public:
-    /// For debugging.
-    std::string name;
 
 protected:
     Vec2I size;
 
     std::shared_ptr<Texture> texture;
+
+    /// Debug label.
+    std::string label;
 };
 
 } // namespace Pathfinder

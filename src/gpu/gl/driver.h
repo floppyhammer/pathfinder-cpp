@@ -19,17 +19,22 @@ namespace Pathfinder {
 class DriverGl : public Driver {
 public:
     std::shared_ptr<Framebuffer> create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
-                                                    const std::shared_ptr<Texture> &texture) override;
+                                                    const std::shared_ptr<Texture> &texture,
+                                                    const std::string &label) override;
 
-    std::shared_ptr<Buffer> create_buffer(BufferType type, size_t size, MemoryProperty property) override;
+    std::shared_ptr<Buffer> create_buffer(BufferType type,
+                                          size_t size,
+                                          MemoryProperty property,
+                                          const std::string &label) override;
 
-    std::shared_ptr<Texture> create_texture(Vec2I _size, TextureFormat _format) override;
+    std::shared_ptr<Texture> create_texture(Vec2I size, TextureFormat format, const std::string &label) override;
 
-    std::shared_ptr<CommandBuffer> create_command_buffer(bool one_time) override;
+    std::shared_ptr<CommandBuffer> create_command_buffer(bool one_time, const std::string &label) override;
 
     std::shared_ptr<RenderPass> create_render_pass(TextureFormat format,
                                                    AttachmentLoadOp load_op,
-                                                   bool is_swapchain_render_pass) override;
+                                                   bool is_swapchain_render_pass,
+                                                   const std::string &label) override;
 
     std::shared_ptr<DescriptorSet> create_descriptor_set() override;
 
@@ -39,11 +44,12 @@ public:
         const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
         BlendState blend_state,
         const std::shared_ptr<DescriptorSet> &descriptor_set,
-        const std::shared_ptr<RenderPass> &render_pass) override;
+        const std::shared_ptr<RenderPass> &render_pass,
+        const std::string &label) override;
 
-    std::shared_ptr<ComputePipeline> create_compute_pipeline(
-        const std::vector<char> &comp_source,
-        const std::shared_ptr<DescriptorSet> &descriptor_set) override;
+    std::shared_ptr<ComputePipeline> create_compute_pipeline(const std::vector<char> &comp_source,
+                                                             const std::shared_ptr<DescriptorSet> &descriptor_set,
+                                                             const std::string &label) override;
 };
 
 } // namespace Pathfinder

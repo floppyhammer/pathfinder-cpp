@@ -45,7 +45,8 @@ const size_t MAX_FILLS_PER_BATCH = 0x10000;
 std::shared_ptr<Texture> upload_z_buffer(const std::shared_ptr<Driver> &driver,
                                          const DenseTileMap<uint32_t> &z_buffer_map,
                                          const std::shared_ptr<CommandBuffer> &cmd_buffer) {
-    auto z_buffer_texture = driver->create_texture(z_buffer_map.rect.size(), TextureFormat::Rgba8Unorm);
+    auto z_buffer_texture =
+        driver->create_texture(z_buffer_map.rect.size(), TextureFormat::Rgba8Unorm, "Z buffer texture");
 
     cmd_buffer->upload_to_texture(z_buffer_texture, {}, z_buffer_map.data.data(), TextureLayout::ShaderReadOnly);
 
@@ -67,20 +68,24 @@ RendererD3D9::RendererD3D9(const std::shared_ptr<Driver> &p_driver) : Renderer(p
     dest_render_pass_load =
         driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Load, false, "Dest render pass load");
 
-    auto mask_texture =
-        driver->create_texture({MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT}, TextureFormat::Rgba16Float);
-    mask_framebuffer = driver->create_framebuffer(mask_render_pass_clear, mask_texture);
+    auto mask_texture = driver->create_texture({MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT},
+                                               TextureFormat::Rgba16Float,
+                                               "Mask texture");
+    mask_framebuffer = driver->create_framebuffer(mask_render_pass_clear, mask_texture, "Mask framebuffer");
 
     // Quad vertex buffer. Shared by fills and tiles drawing.
-    quad_vertex_buffer = driver->create_buffer(BufferType::Vertex, 12 * sizeof(uint16_t), MemoryProperty::DeviceLocal);
+    quad_vertex_buffer = driver->create_buffer(BufferType::Vertex,
+                                               12 * sizeof(uint16_t),
+                                               MemoryProperty::DeviceLocal,
+                                               "Quad vertex buffer");
 
-    auto cmd_buffer = driver->create_command_buffer(true);
+    auto cmd_buffer = driver->create_command_buffer(true, "Upload quad vertex data");
     cmd_buffer->upload_to_buffer(quad_vertex_buffer, 0, 12 * sizeof(uint16_t), QUAD_VERTEX_POSITIONS);
     cmd_buffer->submit(driver);
 }
 
 void RendererD3D9::set_dest_texture(const std::shared_ptr<Texture> &texture) {
-    dest_framebuffer = driver->create_framebuffer(dest_render_pass_clear, texture);
+    dest_framebuffer = driver->create_framebuffer(dest_render_pass_clear, texture, "Dest framebuffer");
 }
 
 void RendererD3D9::set_up_pipelines() {
@@ -123,7 +128,8 @@ void RendererD3D9::set_up_pipelines() {
                                                        attribute_descriptions,
                                                        BlendState::from_equal(),
                                                        fill_descriptor_set,
-                                                       mask_render_pass_clear);
+                                                       mask_render_pass_clear,
+                                                       "Fill pipeline");
     }
 
     // Tile pipeline.
@@ -160,10 +166,14 @@ void RendererD3D9::set_up_pipelines() {
         }
 
         // Create uniform buffers.
-        tile_transform_ub =
-            driver->create_buffer(BufferType::Uniform, 16 * sizeof(float), MemoryProperty::HostVisibleAndCoherent);
-        tile_varying_sizes_ub =
-            driver->create_buffer(BufferType::Uniform, 8 * sizeof(float), MemoryProperty::HostVisibleAndCoherent);
+        tile_transform_ub = driver->create_buffer(BufferType::Uniform,
+                                                  16 * sizeof(float),
+                                                  MemoryProperty::HostVisibleAndCoherent,
+                                                  "Tile transform uniform buffer");
+        tile_varying_sizes_ub = driver->create_buffer(BufferType::Uniform,
+                                                      8 * sizeof(float),
+                                                      MemoryProperty::HostVisibleAndCoherent,
+                                                      "Tile varying sizes uniform buffer");
 
         // Set descriptor set.
         tile_descriptor_set = driver->create_descriptor_set();
@@ -184,7 +194,8 @@ void RendererD3D9::set_up_pipelines() {
                                                        attribute_descriptions,
                                                        BlendState::from_over(),
                                                        tile_descriptor_set,
-                                                       dest_render_pass_clear);
+                                                       dest_render_pass_clear,
+                                                       "Tile pipeline");
     }
 
     create_tile_clip_copy_pipeline();
@@ -229,7 +240,8 @@ void RendererD3D9::create_tile_clip_copy_pipeline() {
                                                              attribute_descriptions,
                                                              {false},
                                                              tile_clip_copy_descriptor_set,
-                                                             mask_render_pass_clear);
+                                                             mask_render_pass_clear,
+                                                             "Tile clip copy pipeline");
 }
 
 void RendererD3D9::create_tile_clip_combine_pipeline() {
@@ -273,7 +285,8 @@ void RendererD3D9::create_tile_clip_combine_pipeline() {
                                                                 attribute_descriptions,
                                                                 {false},
                                                                 tile_clip_combine_descriptor_set,
-                                                                mask_render_pass_clear);
+                                                                mask_render_pass_clear,
+                                                                "Tile clip combine pipeline");
 }
 
 void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &_scene_builder) {
@@ -287,7 +300,7 @@ void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &_scene_builder) {
         if (scene_builder->pending_fills.empty()) {
             Logger::warn("No fills to draw!", "RendererD3D9");
         } else {
-            auto cmd_buffer = driver->create_command_buffer(true);
+            auto cmd_buffer = driver->create_command_buffer(true, "Upload & draw fills");
 
             // Upload fills to buffer.
             upload_fills(scene_builder->pending_fills, cmd_buffer);
@@ -307,8 +320,9 @@ void RendererD3D9::upload_fills(const std::vector<Fill> &fills, const std::share
     auto byte_size = sizeof(Fill) * fills.size();
 
     // If we need to allocate a new fill vertex buffer.
-    if (fill_vertex_buffer == nullptr || byte_size > fill_vertex_buffer->size) {
-        fill_vertex_buffer = driver->create_buffer(BufferType::Vertex, byte_size, MemoryProperty::DeviceLocal);
+    if (fill_vertex_buffer == nullptr || byte_size > fill_vertex_buffer->get_size()) {
+        fill_vertex_buffer =
+            driver->create_buffer(BufferType::Vertex, byte_size, MemoryProperty::DeviceLocal, "Fill vertex buffer");
     }
 
     cmd_buffer->upload_to_buffer(fill_vertex_buffer, 0, byte_size, (void *)fills.data());
@@ -319,8 +333,9 @@ void RendererD3D9::upload_tiles(const std::vector<TileObjectPrimitive> &tiles,
     auto byte_size = sizeof(TileObjectPrimitive) * tiles.size();
 
     // If we need to allocate a new tile vertex buffer.
-    if (tile_vertex_buffer == nullptr || byte_size > tile_vertex_buffer->size) {
-        tile_vertex_buffer = driver->create_buffer(BufferType::Vertex, byte_size, MemoryProperty::DeviceLocal);
+    if (tile_vertex_buffer == nullptr || byte_size > tile_vertex_buffer->get_size()) {
+        tile_vertex_buffer =
+            driver->create_buffer(BufferType::Vertex, byte_size, MemoryProperty::DeviceLocal, "Tile vertex buffer");
     }
 
     cmd_buffer->upload_to_buffer(tile_vertex_buffer, 0, byte_size, (void *)tiles.data());
@@ -347,7 +362,7 @@ void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &t
 
         // Different batches will use the same vertex buffer, so we need to make sure a batch is drawn
         // before processing the next batch.
-        auto cmd_buffer = driver->create_command_buffer(true);
+        auto cmd_buffer = driver->create_command_buffer(true, "Upload & draw tiles");
 
         upload_tiles(batch.tiles, cmd_buffer);
 
@@ -393,9 +408,9 @@ ClipBufferInfo RendererD3D9::upload_clip_tiles(const std::vector<Clip> &clips, c
 
     auto byte_size = sizeof(Clip) * clips.size();
 
-    info.clip_buffer = driver->create_buffer(BufferType::Vertex, byte_size, MemoryProperty::DeviceLocal);
+    info.clip_buffer = driver->create_buffer(BufferType::Vertex, byte_size, MemoryProperty::DeviceLocal, "Clip buffer");
 
-    auto cmd_buffer = driver->create_command_buffer(true);
+    auto cmd_buffer = driver->create_command_buffer(true, "Upload clip tiles");
 
     cmd_buffer->upload_to_buffer(info.clip_buffer, 0, byte_size, (void *)clips.data());
 
@@ -406,9 +421,12 @@ ClipBufferInfo RendererD3D9::upload_clip_tiles(const std::vector<Clip> &clips, c
 
 void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std::shared_ptr<Driver> &driver) {
     // Allocate temp mask framebuffer.
-    auto mask_temp_texture =
-        driver->create_texture({MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT}, TextureFormat::Rgba16Float);
-    auto mask_temp_framebuffer = driver->create_framebuffer(mask_render_pass_clear, mask_temp_texture);
+    // TODO: Cache this.
+    auto mask_temp_texture = driver->create_texture({MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT},
+                                                    TextureFormat::Rgba16Float,
+                                                    "Mask temp texture");
+    auto mask_temp_framebuffer =
+        driver->create_framebuffer(mask_render_pass_clear, mask_temp_texture, "Mask temp framebuffer");
 
     auto clip_vertex_buffer = clip_buffer_info.clip_buffer;
 
@@ -420,7 +438,7 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std:
     //
     // TODO(pcwalton): Don't do this on GL4.
     {
-        auto cmd_buffer = driver->create_command_buffer(true);
+        auto cmd_buffer = driver->create_command_buffer(true, "Copy out tiles");
 
         cmd_buffer->sync_descriptor_set(tile_clip_copy_descriptor_set);
 
@@ -446,7 +464,7 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std:
 
     // Combine clip tiles.
     {
-        auto cmd_buffer = driver->create_command_buffer(true);
+        auto cmd_buffer = driver->create_command_buffer(true, "Combine clip tiles");
 
         cmd_buffer->sync_descriptor_set(tile_clip_combine_descriptor_set);
 

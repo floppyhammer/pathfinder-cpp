@@ -30,7 +30,7 @@ struct Descriptor {
                               ShaderStage stage,
                               const std::string& binding_name,
                               const std::shared_ptr<Buffer>& buffer = nullptr) {
-        if (buffer && buffer->type != BufferType::Uniform) {
+        if (buffer && buffer->get_type() != BufferType::Uniform) {
             throw std::runtime_error(std::string("Mismatched buffer type when creating a descriptor!"));
         }
 
@@ -45,7 +45,7 @@ struct Descriptor {
     }
 
     static Descriptor storage(uint32_t binding, ShaderStage stage, const std::shared_ptr<Buffer>& buffer = nullptr) {
-        if (buffer && buffer->type != BufferType::Storage) {
+        if (buffer && buffer->get_type() != BufferType::Storage) {
             throw std::runtime_error(std::string("Mismatched buffer type when creating a descriptor!"));
         }
 

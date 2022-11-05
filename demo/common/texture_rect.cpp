@@ -30,12 +30,14 @@ TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
 
     vertex_buffer = driver->create_buffer(Pathfinder::BufferType::Vertex,
                                           sizeof(vertices),
-                                          Pathfinder::MemoryProperty::DeviceLocal);
+                                          Pathfinder::MemoryProperty::DeviceLocal,
+                                          "TextureRect vertex buffer");
     uniform_buffer = driver->create_buffer(Pathfinder::BufferType::Uniform,
                                            16 * sizeof(float),
-                                           Pathfinder::MemoryProperty::HostVisibleAndCoherent);
+                                           Pathfinder::MemoryProperty::HostVisibleAndCoherent,
+                                           "TextureRect uniform buffer");
 
-    auto cmd_buffer = driver->create_command_buffer(true);
+    auto cmd_buffer = driver->create_command_buffer(true, "Upload TextureRect vertex buffer");
     cmd_buffer->upload_to_buffer(vertex_buffer, 0, sizeof(vertices), (void *)vertices);
     cmd_buffer->submit(std::shared_ptr<Pathfinder::Driver>(driver));
 
@@ -75,7 +77,8 @@ TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
                                                   attribute_descriptions,
                                                   blend_state,
                                                   descriptor_set,
-                                                  render_pass);
+                                                  render_pass,
+                                                  "TextureRect pipeline");
     }
 }
 
@@ -104,7 +107,7 @@ void TextureRect::draw(const std::shared_ptr<Pathfinder::Driver> &driver,
     auto mvp_mat = model_mat;
     // -------------------------------------------------
 
-    auto one_time_cmd_buffer = driver->create_command_buffer(true);
+    auto one_time_cmd_buffer = driver->create_command_buffer(true, "Upload TextureRect uniform buffer");
     one_time_cmd_buffer->upload_to_buffer(uniform_buffer, 0, 16 * sizeof(float), &mvp_mat);
     one_time_cmd_buffer->sync_descriptor_set(descriptor_set);
     one_time_cmd_buffer->submit(driver);

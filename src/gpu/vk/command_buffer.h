@@ -18,7 +18,7 @@ class CommandBufferVk : public CommandBuffer {
 
 public:
     /// We have to provide these two to create a valid command buffer.
-    CommandBufferVk(VkCommandBuffer _command_buffer, VkDevice _device);
+    CommandBufferVk(VkCommandBuffer _vk_command_buffer, VkDevice _vk_device);
 
     void upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
                           uint32_t offset,
@@ -32,7 +32,7 @@ public:
 private:
     VkCommandBuffer vk_command_buffer;
 
-    VkDevice device;
+    VkDevice vk_device;
 };
 
 } // namespace Pathfinder

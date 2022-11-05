@@ -12,7 +12,7 @@ namespace Pathfinder {
 
 class BufferGl : public Buffer {
 public:
-    BufferGl(BufferType _type, size_t _size, MemoryProperty _memory_property);
+    BufferGl(BufferType _type, size_t _size, MemoryProperty _memory_property, std::string _label);
 
     ~BufferGl();
 

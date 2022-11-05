@@ -25,13 +25,17 @@ public:
                                                    const std::string &label) override;
 
     std::shared_ptr<Framebuffer> create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
-                                                    const std::shared_ptr<Texture> &texture) override;
+                                                    const std::shared_ptr<Texture> &texture,
+                                                    const std::string &_label) override;
 
-    std::shared_ptr<Buffer> create_buffer(BufferType type, size_t size, MemoryProperty property) override;
+    std::shared_ptr<Buffer> create_buffer(BufferType type,
+                                          size_t size,
+                                          MemoryProperty property,
+                                          const std::string &_label) override;
 
-    std::shared_ptr<Texture> create_texture(Vec2I size, TextureFormat format) override;
+    std::shared_ptr<Texture> create_texture(Vec2I size, TextureFormat format, const std::string &_label) override;
 
-    std::shared_ptr<CommandBuffer> create_command_buffer(bool one_time) override;
+    std::shared_ptr<CommandBuffer> create_command_buffer(bool one_time, const std::string &_label) override;
 
     std::shared_ptr<DescriptorSet> create_descriptor_set() override;
 
@@ -41,11 +45,12 @@ public:
         const std::vector<VertexInputAttributeDescription> &p_attribute_descriptions,
         BlendState blend_state,
         const std::shared_ptr<DescriptorSet> &descriptor_set,
-        const std::shared_ptr<RenderPass> &render_pass) override;
+        const std::shared_ptr<RenderPass> &render_pass,
+        const std::string &_label) override;
 
-    std::shared_ptr<ComputePipeline> create_compute_pipeline(
-        const std::vector<char> &comp_source,
-        const std::shared_ptr<DescriptorSet> &descriptor_set) override;
+    std::shared_ptr<ComputePipeline> create_compute_pipeline(const std::vector<char> &comp_source,
+                                                             const std::shared_ptr<DescriptorSet> &descriptor_set,
+                                                             const std::string &_label) override;
 
 public:
     VkDevice get_device() const;

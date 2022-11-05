@@ -170,7 +170,7 @@ void upload_texture_metadata(const std::shared_ptr<Texture> &metadata_texture,
     // Callback to clean up staging resources.
     auto callback = [raw_texels] { delete[] raw_texels; };
 
-    auto cmd_buffer = driver->create_command_buffer(true);
+    auto cmd_buffer = driver->create_command_buffer(true, "Upload to metadata texture");
     cmd_buffer->add_callback(callback);
     cmd_buffer->upload_to_texture(metadata_texture, region_rect, raw_texels, TextureLayout::ShaderReadOnly);
     cmd_buffer->submit(driver);
@@ -226,7 +226,8 @@ std::vector<PaintMetadata> Palette::build_paint_info(const std::shared_ptr<Drive
     // We only allocate the metadata texture once.
     if (metadata_texture == nullptr) {
         metadata_texture = driver->create_texture({TEXTURE_METADATA_TEXTURE_WIDTH, TEXTURE_METADATA_TEXTURE_HEIGHT},
-                                                  TextureFormat::Rgba16Float);
+                                                  TextureFormat::Rgba16Float,
+                                                  "Metadata texture");
     }
 
     // Upload texture metadata.
@@ -269,8 +270,9 @@ std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr
     // For gradient color texture.
     GradientTileBuilder gradient_tile_builder;
 
-    auto gradient_tile_texture =
-        driver->create_texture({GRADIENT_TILE_LENGTH, GRADIENT_TILE_LENGTH}, TextureFormat::Rgba8Unorm);
+    auto gradient_tile_texture = driver->create_texture({GRADIENT_TILE_LENGTH, GRADIENT_TILE_LENGTH},
+                                                        TextureFormat::Rgba8Unorm,
+                                                        "Gradient tile texture");
 
     // Traverse paints.
     for (const auto &paint : paints) {
@@ -320,10 +322,11 @@ std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr
                         texture_location.rect = RectI({}, pattern.source.image.size);
 
                         // Set the newly created image texture as the color texture.
-                        color_texture_metadata->color_texture =
-                            driver->create_texture(pattern.source.image.size, TextureFormat::Rgba8Unorm);
+                        color_texture_metadata->color_texture = driver->create_texture(pattern.source.image.size,
+                                                                                       TextureFormat::Rgba8Unorm,
+                                                                                       "Image pattern color texture");
 
-                        auto cmd_buffer = driver->create_command_buffer(true);
+                        auto cmd_buffer = driver->create_command_buffer(true, "Upload to color texture");
 
                         cmd_buffer->upload_to_texture(color_texture_metadata->color_texture,
                                                       RectI({}, pattern.source.image.size),

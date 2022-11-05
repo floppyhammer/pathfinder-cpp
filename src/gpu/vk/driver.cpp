@@ -44,13 +44,14 @@ std::shared_ptr<DescriptorSet> DriverVk::create_descriptor_set() {
 std::shared_ptr<RenderPipeline> DriverVk::create_render_pipeline(
     const std::vector<char> &vert_source,
     const std::vector<char> &frag_source,
-    const std::vector<VertexInputAttributeDescription> &p_attribute_descriptions,
+    const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
     BlendState blend_state,
     const std::shared_ptr<DescriptorSet> &descriptor_set,
-    const std::shared_ptr<RenderPass> &render_pass) {
+    const std::shared_ptr<RenderPass> &render_pass,
+    const std::string &_label) {
     auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
 
-    auto render_pipeline_vk = std::make_shared<RenderPipelineVk>(device, p_attribute_descriptions, blend_state);
+    auto render_pipeline_vk = std::make_shared<RenderPipelineVk>(device, attribute_descriptions, blend_state, _label);
 
     // Create descriptor set layout.
     {
@@ -74,7 +75,7 @@ std::shared_ptr<RenderPipeline> DriverVk::create_render_pipeline(
         layout_info.bindingCount = bindings.size();
         layout_info.pBindings = bindings.data();
 
-        if (vkCreateDescriptorSetLayout(device, &layout_info, nullptr, &render_pipeline_vk->descriptor_set_layout) !=
+        if (vkCreateDescriptorSetLayout(device, &layout_info, nullptr, &render_pipeline_vk->vk_descriptor_set_layout) !=
             VK_SUCCESS) {
             throw std::runtime_error("Failed to create descriptor set layout!");
         }
@@ -85,11 +86,12 @@ std::shared_ptr<RenderPipeline> DriverVk::create_render_pipeline(
         VkPipelineLayoutCreateInfo pipeline_layout_info{};
         pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipeline_layout_info.setLayoutCount = 1;
-        pipeline_layout_info.pSetLayouts = &render_pipeline_vk->descriptor_set_layout;
+        pipeline_layout_info.pSetLayouts = &render_pipeline_vk->vk_descriptor_set_layout;
         pipeline_layout_info.pushConstantRangeCount = 0;
 
         // Create pipeline layout.
-        if (vkCreatePipelineLayout(device, &pipeline_layout_info, nullptr, &render_pipeline_vk->layout) != VK_SUCCESS) {
+        if (vkCreatePipelineLayout(device, &pipeline_layout_info, nullptr, &render_pipeline_vk->vk_layout) !=
+            VK_SUCCESS) {
             throw std::runtime_error("Failed to create pipeline layout!");
         }
     }
@@ -119,7 +121,7 @@ std::shared_ptr<RenderPipeline> DriverVk::create_render_pipeline(
 
     int32_t lastBinding = -1;
     std::vector<VkVertexInputBindingDescription> binding_descriptions;
-    for (auto &d : p_attribute_descriptions) {
+    for (auto &d : attribute_descriptions) {
         if (d.binding == lastBinding) continue;
         lastBinding = d.binding;
 
@@ -132,22 +134,22 @@ std::shared_ptr<RenderPipeline> DriverVk::create_render_pipeline(
         binding_descriptions.push_back(binding_description);
     }
 
-    std::vector<VkVertexInputAttributeDescription> attribute_descriptions;
+    std::vector<VkVertexInputAttributeDescription> vk_attribute_descriptions;
     uint32_t location = 0;
-    for (auto &d : p_attribute_descriptions) {
+    for (auto &d : attribute_descriptions) {
         VkVertexInputAttributeDescription attribute_description{};
         attribute_description.binding = d.binding;
         attribute_description.location = location++;
         attribute_description.format = to_vk_format(d.type, d.size);
         attribute_description.offset = d.offset;
 
-        attribute_descriptions.push_back(attribute_description);
+        vk_attribute_descriptions.push_back(attribute_description);
     }
 
     vertex_input_info.vertexBindingDescriptionCount = binding_descriptions.size();
-    vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attribute_descriptions.size());
+    vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(vk_attribute_descriptions.size());
     vertex_input_info.pVertexBindingDescriptions = binding_descriptions.data();
-    vertex_input_info.pVertexAttributeDescriptions = attribute_descriptions.data();
+    vertex_input_info.pVertexAttributeDescriptions = vk_attribute_descriptions.data();
     // -----------------------------------------------------
 
     VkPipelineInputAssemblyStateCreateInfo input_assembly{};
@@ -223,7 +225,7 @@ std::shared_ptr<RenderPipeline> DriverVk::create_render_pipeline(
     pipelineInfo.pRasterizationState = &rasterizer;
     pipelineInfo.pMultisampleState = &multisampling;
     pipelineInfo.pColorBlendState = &color_blending;
-    pipelineInfo.layout = render_pipeline_vk->layout;
+    pipelineInfo.layout = render_pipeline_vk->vk_layout;
     pipelineInfo.renderPass = render_pass_vk->vk_render_pass;
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
@@ -243,13 +245,18 @@ std::shared_ptr<RenderPipeline> DriverVk::create_render_pipeline(
     vkDestroyShaderModule(device, vert_shader_module, nullptr);
     vkDestroyShaderModule(device, frag_shader_module, nullptr);
 
+    DebugMarker::get_singleton()->set_object_name(device,
+                                                  (uint64_t)render_pipeline_vk->vk_pipeline,
+                                                  VK_OBJECT_TYPE_PIPELINE,
+                                                  _label);
+
     return render_pipeline_vk;
 }
 
-std::shared_ptr<ComputePipeline> DriverVk::create_compute_pipeline(
-    const std::vector<char> &comp_source,
-    const std::shared_ptr<DescriptorSet> &descriptor_set) {
-    auto compute_pipeline_vk = std::make_shared<ComputePipelineVk>(device);
+std::shared_ptr<ComputePipeline> DriverVk::create_compute_pipeline(const std::vector<char> &comp_source,
+                                                                   const std::shared_ptr<DescriptorSet> &descriptor_set,
+                                                                   const std::string &_label) {
+    auto compute_pipeline_vk = std::make_shared<ComputePipelineVk>(device, _label);
 
     // Create descriptor set layout.
     {
@@ -273,8 +280,10 @@ std::shared_ptr<ComputePipeline> DriverVk::create_compute_pipeline(
         layout_info.bindingCount = bindings.size();
         layout_info.pBindings = bindings.data();
 
-        if (vkCreateDescriptorSetLayout(device, &layout_info, nullptr, &compute_pipeline_vk->descriptor_set_layout) !=
-            VK_SUCCESS) {
+        if (vkCreateDescriptorSetLayout(device,
+                                        &layout_info,
+                                        nullptr,
+                                        &compute_pipeline_vk->vk_descriptor_set_layout) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create descriptor set layout!");
         }
     }
@@ -284,11 +293,11 @@ std::shared_ptr<ComputePipeline> DriverVk::create_compute_pipeline(
         VkPipelineLayoutCreateInfo pipeline_layout_info{};
         pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipeline_layout_info.setLayoutCount = 1;
-        pipeline_layout_info.pSetLayouts = &compute_pipeline_vk->descriptor_set_layout;
+        pipeline_layout_info.pSetLayouts = &compute_pipeline_vk->vk_descriptor_set_layout;
         pipeline_layout_info.pushConstantRangeCount = 0;
 
         // Create pipeline layout.
-        if (vkCreatePipelineLayout(device, &pipeline_layout_info, nullptr, &compute_pipeline_vk->layout) !=
+        if (vkCreatePipelineLayout(device, &pipeline_layout_info, nullptr, &compute_pipeline_vk->vk_layout) !=
             VK_SUCCESS) {
             throw std::runtime_error("Failed to create compute pipeline layout!");
         }
@@ -308,7 +317,7 @@ std::shared_ptr<ComputePipeline> DriverVk::create_compute_pipeline(
     pipeline_create_info.pNext = nullptr;
     pipeline_create_info.flags = 0;
     pipeline_create_info.stage = comp_shader_stage_info;
-    pipeline_create_info.layout = compute_pipeline_vk->layout;
+    pipeline_create_info.layout = compute_pipeline_vk->vk_layout;
     pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
     pipeline_create_info.basePipelineIndex = 0;
 
@@ -325,6 +334,11 @@ std::shared_ptr<ComputePipeline> DriverVk::create_compute_pipeline(
     // Clean up shader module.
     vkDestroyShaderModule(device, comp_shader_module, nullptr);
 
+    DebugMarker::get_singleton()->set_object_name(device,
+                                                  (uint64_t)compute_pipeline_vk->vk_pipeline,
+                                                  VK_OBJECT_TYPE_PIPELINE,
+                                                  _label);
+
     return compute_pipeline_vk;
 }
 
@@ -338,16 +352,26 @@ std::shared_ptr<RenderPass> DriverVk::create_render_pass(TextureFormat format,
 }
 
 std::shared_ptr<Framebuffer> DriverVk::create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
-                                                          const std::shared_ptr<Texture> &texture) {
+                                                          const std::shared_ptr<Texture> &texture,
+                                                          const std::string &_label) {
     auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
 
     auto framebuffer_vk = std::make_shared<FramebufferVk>(device, render_pass_vk->vk_render_pass, texture);
+    framebuffer_vk->label = _label;
+
+    DebugMarker::get_singleton()->set_object_name(device,
+                                                  (uint64_t)framebuffer_vk->vk_framebuffer,
+                                                  VK_OBJECT_TYPE_FRAMEBUFFER,
+                                                  _label);
 
     return framebuffer_vk;
 }
 
-std::shared_ptr<Buffer> DriverVk::create_buffer(BufferType type, size_t size, MemoryProperty property) {
-    auto buffer_vk = std::make_shared<BufferVk>(device, type, size, property);
+std::shared_ptr<Buffer> DriverVk::create_buffer(BufferType type,
+                                                size_t size,
+                                                MemoryProperty property,
+                                                const std::string &_label) {
+    auto buffer_vk = std::make_shared<BufferVk>(device, type, size, property, _label);
 
     auto vk_memory_property = to_vk_memory_property(property);
 
@@ -376,11 +400,16 @@ std::shared_ptr<Buffer> DriverVk::create_buffer(BufferType type, size_t size, Me
         } break;
     }
 
+    DebugMarker::get_singleton()->set_object_name(device,
+                                                  (uint64_t)buffer_vk->vk_buffer,
+                                                  VK_OBJECT_TYPE_BUFFER,
+                                                  _label);
+
     return buffer_vk;
 }
 
-std::shared_ptr<Texture> DriverVk::create_texture(Vec2I size, TextureFormat format) {
-    auto texture_vk = std::make_shared<TextureVk>(device, size, format);
+std::shared_ptr<Texture> DriverVk::create_texture(Vec2I size, TextureFormat format, const std::string &_label) {
+    auto texture_vk = std::make_shared<TextureVk>(device, size, format, _label);
 
     create_vk_image(size.x,
                     size.y,
@@ -389,20 +418,22 @@ std::shared_ptr<Texture> DriverVk::create_texture(Vec2I size, TextureFormat form
                     VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
                         VK_IMAGE_USAGE_STORAGE_BIT,
                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                    texture_vk->image,
-                    texture_vk->image_memory);
+                    texture_vk->vk_image,
+                    texture_vk->vk_image_memory);
 
     // Create image view.
-    texture_vk->image_view =
-        create_vk_image_view(texture_vk->image, to_vk_texture_format(format), VK_IMAGE_ASPECT_COLOR_BIT);
+    texture_vk->vk_image_view =
+        create_vk_image_view(texture_vk->vk_image, to_vk_texture_format(format), VK_IMAGE_ASPECT_COLOR_BIT);
 
     // Create sampler.
-    texture_vk->sampler = create_vk_sampler();
+    texture_vk->vk_sampler = create_vk_sampler();
+
+    DebugMarker::get_singleton()->set_object_name(device, (uint64_t)texture_vk->vk_image, VK_OBJECT_TYPE_IMAGE, _label);
 
     return texture_vk;
 }
 
-std::shared_ptr<CommandBuffer> DriverVk::create_command_buffer(bool one_time) {
+std::shared_ptr<CommandBuffer> DriverVk::create_command_buffer(bool one_time, const std::string &_label) {
     // Allocate a command buffer.
     // ----------------------------------------
     VkCommandBufferAllocateInfo alloc_info{};
@@ -417,6 +448,7 @@ std::shared_ptr<CommandBuffer> DriverVk::create_command_buffer(bool one_time) {
 
     auto command_buffer_vk = std::make_shared<CommandBufferVk>(command_buffer, device);
     command_buffer_vk->one_time = one_time;
+    command_buffer_vk->label = _label;
 
     return command_buffer_vk;
 }

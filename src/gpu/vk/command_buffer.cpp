@@ -170,8 +170,8 @@ void transition_image_layout(VkCommandBuffer command_buffer,
     vkCmdPipelineBarrier(command_buffer, src_stage, dst_stage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
-CommandBufferVk::CommandBufferVk(VkCommandBuffer _command_buffer, VkDevice _device)
-    : vk_command_buffer(_command_buffer), device(_device) {}
+CommandBufferVk::CommandBufferVk(VkCommandBuffer _vk_command_buffer, VkDevice _vk_device)
+    : vk_command_buffer(_vk_command_buffer), vk_device(_vk_device) {}
 
 void CommandBufferVk::upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
                                        uint32_t offset,
@@ -186,9 +186,9 @@ void CommandBufferVk::upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
         auto buffer_vk = static_cast<BufferVk *>(buffer.get());
 
         void *mapped_data;
-        auto res = vkMapMemory(device, buffer_vk->get_vk_device_memory(), offset, data_size, 0, &mapped_data);
+        auto res = vkMapMemory(vk_device, buffer_vk->get_vk_device_memory(), offset, data_size, 0, &mapped_data);
         memcpy(mapped_data, data, data_size);
-        vkUnmapMemory(device, buffer_vk->get_vk_device_memory());
+        vkUnmapMemory(vk_device, buffer_vk->get_vk_device_memory());
 
         if (res != VK_SUCCESS) {
             Logger::error("Failed to map memory!", "CommandBufferVk");
@@ -227,7 +227,7 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &_driver) {
     }
 
     // Start a new debug marker region
-    DebugMarker::get_singleton()->begin_region(vk_command_buffer, name, ColorF(1.0f, 0.78f, 0.05f, 1.0f));
+    DebugMarker::get_singleton()->begin_region(vk_command_buffer, label, ColorF(1.0f, 0.78f, 0.05f, 1.0f));
 
     while (!commands.empty()) {
         auto &cmd = commands.front();

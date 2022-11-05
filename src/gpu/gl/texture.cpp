@@ -1,12 +1,15 @@
 #include "texture.h"
 
+#include <utility>
+
 #include "../../common/global_macros.h"
 
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
 
-TextureGl::TextureGl(Vec2I _size, TextureFormat _format) : Texture(_size, _format) {
+TextureGl::TextureGl(Vec2I _size, TextureFormat _format, std::string _label)
+    : Texture(_size, _format, std::move(_label)) {
     // We can deduce the pixel data type by the texture format.
     DataType type = texture_format_to_data_type(format);
 

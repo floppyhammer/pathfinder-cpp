@@ -7,9 +7,9 @@
 namespace Pathfinder {
 
 class RenderPass {
-public:
-    /// For debugging.
-    std::string name;
+protected:
+    /// Debug label.
+    std::string label;
 };
 
 } // namespace Pathfinder

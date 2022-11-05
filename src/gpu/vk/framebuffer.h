@@ -15,10 +15,10 @@ class FramebufferVk : public Framebuffer {
 
 public:
     /// Texture framebuffer.
-    FramebufferVk(VkDevice _device, VkRenderPass render_pass, const std::shared_ptr<Texture> &_texture);
+    FramebufferVk(VkDevice _vk_device, VkRenderPass _vk_render_pass, const std::shared_ptr<Texture> &_texture);
 
     /// Swap chain framebuffer.
-    FramebufferVk(VkDevice _device, VkRenderPass render_pass, Vec2I size, VkImageView image_view);
+    FramebufferVk(VkDevice _vk_device, VkRenderPass _vk_render_pass, Vec2I size, VkImageView vk_image_view);
 
     ~FramebufferVk();
 
@@ -27,9 +27,9 @@ public:
     VkFramebuffer get_vk_framebuffer() const;
 
 private:
-    VkFramebuffer vk_framebuffer;
+    VkFramebuffer vk_framebuffer{};
 
-    VkDevice device;
+    VkDevice vk_device{};
 };
 
 } // namespace Pathfinder

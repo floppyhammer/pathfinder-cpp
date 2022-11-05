@@ -109,7 +109,7 @@ TextureLocation GradientTileBuilder::allocate(const Gradient &gradient) {
 }
 
 void GradientTileBuilder::upload(const std::shared_ptr<Driver> &driver, const std::shared_ptr<Texture> &texture) {
-    auto cmd_buffer = driver->create_command_buffer(true);
+    auto cmd_buffer = driver->create_command_buffer(true, "Upload to gradient tile texture");
 
     // FIXME: We only have one texture for now.
     for (auto &tile : tiles) {

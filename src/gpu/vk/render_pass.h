@@ -23,9 +23,9 @@ public:
     VkRenderPass get_vk_render_pass();
 
 private:
-    VkRenderPass vk_render_pass;
+    VkRenderPass vk_render_pass{};
 
-    VkDevice device;
+    VkDevice vk_device{};
 };
 
 } // namespace Pathfinder

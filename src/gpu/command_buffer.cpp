@@ -173,7 +173,7 @@ void CommandBuffer::read_buffer(const std::shared_ptr<Buffer> &buffer,
                                 uint32_t offset,
                                 uint32_t data_size,
                                 void *data) {
-    switch (buffer->type) {
+    switch (buffer->get_type()) {
         case BufferType::Storage: {
             Command cmd;
             cmd.type = CommandType::ReadBuffer;

@@ -127,9 +127,6 @@ struct Command {
 /// Or maybe a later generated command buffer will be executed first.
 class CommandBuffer {
 public:
-    // For debug reason.
-    std::string name = "Unnamed command buffer";
-
     // RENDER PASS
 
     void begin_render_pass(const std::shared_ptr<RenderPass> &render_pass,
@@ -194,6 +191,9 @@ public:
     }
 
 protected:
+    /// Debug label.
+    std::string label;
+
     std::queue<Command> commands;
 
     bool one_time = false;
