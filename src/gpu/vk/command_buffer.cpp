@@ -214,6 +214,10 @@ VkCommandBuffer CommandBufferVk::get_vk_command_buffer() const {
 }
 
 void CommandBufferVk::submit(const std::shared_ptr<Driver> &_driver) {
+    if (check_multiple_submissions()) {
+        return;
+    }
+
     auto driver = static_cast<DriverVk *>(_driver.get());
 
     // Begin recording.
@@ -365,87 +369,87 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &_driver) {
 
                 // Make all image layouts ready.
                 for (auto &d : descriptor_set_vk->get_descriptors()) {
-                    if (d.second.type == DescriptorType::Sampler) {
-                        auto texture = d.second.texture.get();
-                        auto texture_vk = static_cast<TextureVk *>(texture);
+                    if (d.second.texture) {
+                        if (d.second.type == DescriptorType::Sampler) {
+                            auto texture = d.second.texture.get();
+                            auto texture_vk = static_cast<TextureVk *>(texture);
 
-                        transition_image_layout(vk_command_buffer,
-                                                texture_vk->get_image(),
-                                                to_vk_layout(texture_vk->get_layout()),
-                                                to_vk_layout(TextureLayout::ShaderReadOnly));
+                            transition_image_layout(vk_command_buffer,
+                                                    texture_vk->get_image(),
+                                                    to_vk_layout(texture_vk->get_layout()),
+                                                    to_vk_layout(TextureLayout::ShaderReadOnly));
 
-                        texture_vk->set_layout(TextureLayout::ShaderReadOnly);
-                    } else if (d.second.type == DescriptorType::Image) {
-                        auto texture = d.second.texture.get();
-                        auto texture_vk = static_cast<TextureVk *>(texture);
+                            texture_vk->set_layout(TextureLayout::ShaderReadOnly);
+                        } else if (d.second.type == DescriptorType::Image) {
+                            auto texture = d.second.texture.get();
+                            auto texture_vk = static_cast<TextureVk *>(texture);
 
-                        transition_image_layout(vk_command_buffer,
-                                                texture_vk->get_image(),
-                                                to_vk_layout(texture_vk->get_layout()),
-                                                to_vk_layout(TextureLayout::General));
+                            transition_image_layout(vk_command_buffer,
+                                                    texture_vk->get_image(),
+                                                    to_vk_layout(texture_vk->get_layout()),
+                                                    to_vk_layout(TextureLayout::General));
 
-                        texture_vk->set_layout(TextureLayout::General);
+                            texture_vk->set_layout(TextureLayout::General);
+                        }
                     }
 
-                    //                    if (d.second.buffer) {
-                    //                        auto buffer_vk = static_cast<BufferVk *>(d.second.buffer.get());
-                    //
-                    //                        int32_t dst_access_mask;
-                    //                        switch (buffer_vk->get_type()) {
-                    //                            case BufferType::Vertex: {
-                    //                                dst_access_mask = VK_ACCESS_SHADER_READ_BIT;
-                    //                            } break;
-                    //                            case BufferType::Uniform: {
-                    //                                dst_access_mask = VK_ACCESS_SHADER_READ_BIT;
-                    //                            } break;
-                    //                            case BufferType::Storage: {
-                    //                                dst_access_mask = VK_ACCESS_SHADER_READ_BIT |
-                    //                                VK_ACCESS_SHADER_WRITE_BIT;
-                    //                            } break;
-                    //                        }
-                    //
-                    //                        int32_t dst_stage_mask;
-                    //                        switch (d.second.stage) {
-                    //                            case ShaderStage::Vertex: {
-                    //                                dst_stage_mask = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
-                    //                            } break;
-                    //                            case ShaderStage::Fragment: {
-                    //                                dst_stage_mask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-                    //                            } break;
-                    //                            case ShaderStage::VertexAndFragment: {
-                    //                                dst_stage_mask =
-                    //                                    VK_PIPELINE_STAGE_VERTEX_SHADER_BIT |
-                    //                                    VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-                    //                            } break;
-                    //                            case ShaderStage::Compute: {
-                    //                                dst_stage_mask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-                    //                            } break;
-                    //                            case ShaderStage::Max:
-                    //                                break;
-                    //                        }
-                    //
-                    //                        VkBufferMemoryBarrier memory_barrier = {};
-                    //                        memory_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-                    //                        memory_barrier.pNext = nullptr;
-                    //                        memory_barrier.size = buffer_vk->get_size();
-                    //                        memory_barrier.buffer = buffer_vk->get_vk_buffer();
-                    //                        memory_barrier.offset = 0;
-                    //                        memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                    //                        memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                    //                        memory_barrier.srcAccessMask = VK_ACCESS_NONE;
-                    //                        memory_barrier.dstAccessMask = dst_access_mask;
-                    //
-                    //                        vkCmdPipelineBarrier(vk_command_buffer,
-                    //                                             VK_PIPELINE_STAGE_NONE,
-                    //                                             dst_stage_mask,
-                    //                                             0,
-                    //                                             0,
-                    //                                             nullptr,
-                    //                                             1,
-                    //                                             &memory_barrier,
-                    //                                             0,
-                    //                                             nullptr);
-                    //                    }
+                    if (d.second.buffer) {
+                        auto buffer_vk = static_cast<BufferVk *>(d.second.buffer.get());
+
+                        int32_t dst_access_mask{};
+                        switch (buffer_vk->get_type()) {
+                            case BufferType::Vertex: {
+                                Logger::error("Why do we have a vertex buffer in a descriptor set?", "Command Buffer");
+                            } break;
+                            case BufferType::Uniform: {
+                                dst_access_mask = VK_ACCESS_SHADER_READ_BIT;
+                            } break;
+                            case BufferType::Storage: {
+                                dst_access_mask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                            } break;
+                        }
+
+                        int32_t dst_stage_mask{};
+                        switch (d.second.stage) {
+                            case ShaderStage::Vertex: {
+                                dst_stage_mask = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
+                            } break;
+                            case ShaderStage::Fragment: {
+                                dst_stage_mask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+                            } break;
+                            case ShaderStage::VertexAndFragment: {
+                                dst_stage_mask =
+                                    VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+                            } break;
+                            case ShaderStage::Compute: {
+                                dst_stage_mask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+                            } break;
+                            case ShaderStage::Max:
+                                break;
+                        }
+
+                        VkBufferMemoryBarrier memory_barrier = {};
+                        memory_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+                        memory_barrier.pNext = nullptr;
+                        memory_barrier.size = buffer_vk->get_size();
+                        memory_barrier.buffer = buffer_vk->get_vk_buffer();
+                        memory_barrier.offset = 0;
+                        memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                        memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                        memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                        memory_barrier.dstAccessMask = dst_access_mask;
+
+                        vkCmdPipelineBarrier(vk_command_buffer,
+                                             VK_PIPELINE_STAGE_TRANSFER_BIT,
+                                             dst_stage_mask,
+                                             0,
+                                             0,
+                                             nullptr,
+                                             1,
+                                             &memory_barrier,
+                                             0,
+                                             nullptr);
+                    }
                 }
             } break;
             case CommandType::BeginComputePass: {
@@ -492,47 +496,6 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &_driver) {
                                        args.data_size,
                                        0,
                                        args.offset);
-
-                //                int32_t dst_access_mask;
-                //                int32_t dst_stage_mask;
-                //                switch (buffer_vk->get_type()) {
-                //                    case BufferType::Vertex: {
-                //                        dst_access_mask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-                //                        dst_stage_mask = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
-                //                    } break;
-                //                    case BufferType::Uniform: {
-                //                        dst_access_mask = VK_ACCESS_SHADER_READ_BIT;
-                //                        dst_stage_mask = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT |
-                //                        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
-                //                                         VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-                //                    } break;
-                //                    case BufferType::Storage: {
-                //                        dst_access_mask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                //                        dst_stage_mask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-                //                    } break;
-                //                }
-
-                //                VkBufferMemoryBarrier memory_barrier = {};
-                //                memory_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-                //                memory_barrier.pNext = nullptr;
-                //                memory_barrier.size = args.data_size;
-                //                memory_barrier.buffer = buffer_vk->get_vk_buffer();
-                //                memory_barrier.offset = args.offset;
-                //                memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                //                memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                //                memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                //                memory_barrier.dstAccessMask = dst_access_mask;
-                //
-                //                vkCmdPipelineBarrier(vk_command_buffer,
-                //                                     VK_PIPELINE_STAGE_TRANSFER_BIT,
-                //                                     dst_stage_mask,
-                //                                     0,
-                //                                     0,
-                //                                     nullptr,
-                //                                     1,
-                //                                     &memory_barrier,
-                //                                     0,
-                //                                     nullptr);
 
                 // Callback to clean up staging resources.
                 auto callback = [driver, staging_buffer, staging_buffer_memory] {

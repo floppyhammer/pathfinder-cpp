@@ -8,6 +8,7 @@
 #include <queue>
 
 #include "../common/color.h"
+#include "../common/logger.h"
 #include "../common/math/rect.h"
 #include "buffer.h"
 #include "compute_pipeline.h"
@@ -186,6 +187,17 @@ public:
 
     virtual void submit(const std::shared_ptr<Driver> &_driver) = 0;
 
+    /// Check if a one-time command buffer has been submitted before.
+    inline bool check_multiple_submissions() {
+        if (one_time && submitted) {
+            Logger::error("One-Time command buffer has been submitted twice!", "Command Buffer");
+            return true;
+        } else {
+            submitted = true;
+            return false;
+        }
+    }
+
     inline void add_callback(const std::function<void()> &callback) {
         callbacks.push_back(callback);
     }
@@ -197,6 +209,8 @@ protected:
     std::queue<Command> commands;
 
     bool one_time = false;
+
+    bool submitted = false;
 
     /// Callbacks to call when the commands are flushed.
     std::vector<std::function<void()>> callbacks;

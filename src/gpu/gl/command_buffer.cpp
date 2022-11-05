@@ -61,6 +61,10 @@ void CommandBufferGl::upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
 }
 
 void CommandBufferGl::submit(const std::shared_ptr<Driver> &_driver) {
+    if (check_multiple_submissions()) {
+        return;
+    }
+
     while (!commands.empty()) {
         auto &cmd = commands.front();
 

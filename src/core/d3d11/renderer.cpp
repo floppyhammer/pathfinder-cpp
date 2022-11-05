@@ -347,28 +347,26 @@ void RendererD3D11::draw_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer
         clear_op = LOAD_ACTION_CLEAR;
     }
 
+    auto cmd_buffer = driver->create_command_buffer(true, "Draw tiles");
+
     // Update uniform buffers.
-    {
-        std::array<float, 8> ubo_data0 = {0,
-                                          0,
-                                          0,
-                                          0, // uClearColor
-                                          color_texture ? (float)color_texture->get_width() : 0,
-                                          color_texture ? (float)color_texture->get_height() : 0, // uColorTextureSize0
-                                          (float)target_size.x,
-                                          (float)target_size.y}; // uFramebufferSize
+    std::array<float, 8> ubo_data0 = {0,
+                                      0,
+                                      0,
+                                      0, // uClearColor
+                                      color_texture ? (float)color_texture->get_width() : 0,
+                                      color_texture ? (float)color_texture->get_height() : 0, // uColorTextureSize0
+                                      (float)target_size.x,
+                                      (float)target_size.y}; // uFramebufferSize
 
-        std::array<int32_t, 5> ubo_data1 = {0,
-                                            0, // uZBufferSize
-                                            (int32_t)framebuffer_tile_size0.x,
-                                            (int32_t)framebuffer_tile_size0.y, // uFramebufferTileSize
-                                            clear_op};                         // uLoadAction
+    std::array<int32_t, 5> ubo_data1 = {0,
+                                        0, // uZBufferSize
+                                        (int32_t)framebuffer_tile_size0.x,
+                                        (int32_t)framebuffer_tile_size0.y, // uFramebufferTileSize
+                                        clear_op};                         // uLoadAction
 
-        auto cmd_buffer = driver->create_command_buffer(true, "Upload tile uniform buffers");
-        cmd_buffer->upload_to_buffer(tile_ub0, 0, 8 * sizeof(float), ubo_data0.data());
-        cmd_buffer->upload_to_buffer(tile_ub1, 0, 5 * sizeof(int32_t), ubo_data1.data());
-        cmd_buffer->submit(driver);
-    }
+    cmd_buffer->upload_to_buffer(tile_ub0, 0, 8 * sizeof(float), ubo_data0.data());
+    cmd_buffer->upload_to_buffer(tile_ub1, 0, 5 * sizeof(int32_t), ubo_data1.data());
 
     // Update descriptor set.
     tile_descriptor_set->add_or_update({
@@ -385,8 +383,6 @@ void RendererD3D11::draw_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer
         Descriptor::sampler(6, ShaderStage::Compute, "uGammaLUT", metadata_texture),
         Descriptor::image(7, ShaderStage::Compute, "uDestImage", target_texture),
     });
-
-    auto cmd_buffer = driver->create_command_buffer(true, "Draw tiles");
 
     cmd_buffer->sync_descriptor_set(tile_descriptor_set);
 
@@ -601,10 +597,11 @@ MicrolineBufferIDsD3D11 RendererD3D11::dice_segments(std::vector<DiceMetadataD3D
     auto point_indices_buffer_id = scene_source_buffers.point_indices_buffer;
     auto point_indices_count = scene_source_buffers.point_indices_count;
 
-    // Upload dice indirect draw params, which are also used for output.
     uint32_t indirect_compute_params[8] = {0, 0, 0, 0, point_indices_count, 0, 0, 0};
 
-    auto cmd_buffer = driver->create_command_buffer(true, "Upload dice metadata");
+    auto cmd_buffer = driver->create_command_buffer(true, "Dice segments");
+
+    // Upload dice indirect draw params, which will be read later.
     cmd_buffer->upload_to_buffer(indirect_draw_params_buffer_id,
                                  0,
                                  FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
@@ -617,27 +614,23 @@ MicrolineBufferIDsD3D11 RendererD3D11::dice_segments(std::vector<DiceMetadataD3D
                                  dice_metadata.data());
 
     // Update uniform buffers.
-    {
-        // Note that a row of mat2 occupies 4 floats just like a mat4.
-        std::array<float, 10> ubo_data0 = {transform.m11(),
-                                           transform.m21(),
-                                           0,
-                                           0,
-                                           transform.m12(),
-                                           transform.m22(),
-                                           0,
-                                           0,
-                                           transform.get_position().x,
-                                           transform.get_position().y};
-        cmd_buffer->upload_to_buffer(dice_ub0, 0, 10 * sizeof(float), ubo_data0.data());
+    // Note that a row of mat2 occupies 4 floats just like a mat4.
+    std::array<float, 10> ubo_data0 = {transform.m11(),
+                                       transform.m21(),
+                                       0,
+                                       0,
+                                       transform.m12(),
+                                       transform.m22(),
+                                       0,
+                                       0,
+                                       transform.get_position().x,
+                                       transform.get_position().y};
+    cmd_buffer->upload_to_buffer(dice_ub0, 0, 10 * sizeof(float), ubo_data0.data());
 
-        std::array<int32_t, 3> ubo_data1 = {static_cast<int32_t>(dice_metadata.size()),
-                                            static_cast<int32_t>(batch_segment_count),
-                                            static_cast<int32_t>(allocated_microline_count)};
-        cmd_buffer->upload_to_buffer(dice_ub1, 0, 3 * sizeof(int32_t), ubo_data1.data());
-    }
-
-    cmd_buffer->submit(driver);
+    std::array<int32_t, 3> ubo_data1 = {static_cast<int32_t>(dice_metadata.size()),
+                                        static_cast<int32_t>(batch_segment_count),
+                                        static_cast<int32_t>(allocated_microline_count)};
+    cmd_buffer->upload_to_buffer(dice_ub1, 0, 3 * sizeof(int32_t), ubo_data1.data());
 
     // Bind storage buffers.
     dice_descriptor_set->add_or_update({
@@ -653,8 +646,6 @@ MicrolineBufferIDsD3D11 RendererD3D11::dice_segments(std::vector<DiceMetadataD3D
         Descriptor::storage(4, ShaderStage::Compute, microline_buffer_id),
     });
 
-    cmd_buffer = driver->create_command_buffer(true, "Dice segments");
-
     cmd_buffer->sync_descriptor_set(dice_descriptor_set);
 
     cmd_buffer->begin_compute_pass();
@@ -667,14 +658,12 @@ MicrolineBufferIDsD3D11 RendererD3D11::dice_segments(std::vector<DiceMetadataD3D
 
     cmd_buffer->end_compute_pass();
 
-    cmd_buffer->submit(driver);
-
     // Read indirect draw params back to CPU memory.
-    cmd_buffer = driver->create_command_buffer(true, "Read indirect draw params back to CPU memory");
     cmd_buffer->read_buffer(indirect_draw_params_buffer_id,
                             0,
                             FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
                             indirect_compute_params);
+
     cmd_buffer->submit(driver);
 
     // Fetch microline count from indirect draw params.
@@ -683,7 +672,6 @@ MicrolineBufferIDsD3D11 RendererD3D11::dice_segments(std::vector<DiceMetadataD3D
     // Allocate more space if not allocated enough.
     if (microline_count > allocated_microline_count) {
         allocated_microline_count = upper_power_of_two(microline_count);
-
         return {{}, 0};
     }
 
@@ -699,22 +687,17 @@ void RendererD3D11::bound(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
                                                      MemoryProperty::DeviceLocal,
                                                      "Path info buffer");
 
+    auto cmd_buffer = driver->create_command_buffer(true, "Bound");
+
     // Upload buffer data.
-    {
-        auto cmd_buffer = driver->create_command_buffer(true, "Upload path info buffer");
+    cmd_buffer->upload_to_buffer(path_info_buffer_id,
+                                 0,
+                                 tile_path_info.size() * sizeof(TilePathInfoD3D11),
+                                 tile_path_info.data());
 
-        cmd_buffer->upload_to_buffer(path_info_buffer_id,
-                                     0,
-                                     tile_path_info.size() * sizeof(TilePathInfoD3D11),
-                                     tile_path_info.data());
-
-        // Update uniform buffers.
-        std::array<int32_t, 2> ubo_data = {static_cast<int32_t>(tile_path_info.size()),
-                                           static_cast<int32_t>(tile_count)};
-        cmd_buffer->upload_to_buffer(bound_ub, 0, 2 * sizeof(int32_t), ubo_data.data());
-
-        cmd_buffer->submit(driver);
-    }
+    // Update uniform buffers.
+    std::array<int32_t, 2> ubo_data = {static_cast<int32_t>(tile_path_info.size()), static_cast<int32_t>(tile_count)};
+    cmd_buffer->upload_to_buffer(bound_ub, 0, 2 * sizeof(int32_t), ubo_data.data());
 
     // Update the descriptor set.
     bound_descriptor_set->add_or_update({
@@ -723,8 +706,6 @@ void RendererD3D11::bound(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
         // Write only.
         Descriptor::storage(1, ShaderStage::Compute, tiles_d3d11_buffer_id),
     });
-
-    auto cmd_buffer = driver->create_command_buffer(true, "Bound");
 
     cmd_buffer->sync_descriptor_set(bound_descriptor_set);
 
@@ -809,7 +790,6 @@ FillBufferInfoD3D11 RendererD3D11::bin_segments(MicrolineBufferIDsD3D11 &microli
     // If we didn't allocate enough space for the needed fills, we need to call this function again.
     if (needed_fill_count > allocated_fill_count) {
         allocated_fill_count = upper_power_of_two(needed_fill_count);
-
         return {};
     }
 
@@ -932,15 +912,13 @@ void RendererD3D11::draw_fills(FillBufferInfoD3D11 &fill_storage_info,
     // This setup is a workaround for the annoying 64K limit of compute invocation in OpenGL.
     uint32_t _alpha_tile_count = alpha_tile_range.end - alpha_tile_range.start;
 
-    auto cmd_buffer = driver->create_command_buffer(true, "Update uniform buffers");
+    auto cmd_buffer = driver->create_command_buffer(true, "Draw fills");
 
-    // Update uniform buffers.
+    // Update uniform buffer.
     auto framebuffer_tile_size0 = framebuffer_tile_size();
     std::array<int32_t, 2> ubo_data = {static_cast<int32_t>(alpha_tile_range.start),
                                        static_cast<int32_t>(alpha_tile_range.end)};
     cmd_buffer->upload_to_buffer(fill_ub, 0, 2 * sizeof(int32_t), ubo_data.data());
-
-    cmd_buffer->submit(driver);
 
     // Update descriptor set.
     fill_descriptor_set->add_or_update({
@@ -951,8 +929,6 @@ void RendererD3D11::draw_fills(FillBufferInfoD3D11 &fill_storage_info,
         // Read only.
         Descriptor::storage(2, ShaderStage::Compute, alpha_tiles_buffer_id),
     });
-
-    cmd_buffer = driver->create_command_buffer(true, "Draw fills");
 
     cmd_buffer->sync_descriptor_set(fill_descriptor_set);
 
@@ -974,12 +950,10 @@ void RendererD3D11::sort_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer
                                const std::shared_ptr<Buffer> &z_buffer_id) {
     auto tile_count = framebuffer_tile_size().area();
 
-    auto cmd_buffer = driver->create_command_buffer(true, "Update uniform buffers");
+    auto cmd_buffer = driver->create_command_buffer(true, "Sort tiles");
 
-    // Update uniform buffers.
+    // Update uniform buffer.
     cmd_buffer->upload_to_buffer(sort_ub, 0, sizeof(int32_t), &tile_count);
-
-    cmd_buffer->submit(driver);
 
     // Update the descriptor set.
     sort_descriptor_set->add_or_update({
@@ -990,8 +964,6 @@ void RendererD3D11::sort_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer
         // Read only.
         Descriptor::storage(2, ShaderStage::Compute, z_buffer_id),
     });
-
-    cmd_buffer = driver->create_command_buffer(true, "Sort tiles");
 
     cmd_buffer->sync_descriptor_set(sort_descriptor_set);
 
