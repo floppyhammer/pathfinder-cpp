@@ -108,9 +108,8 @@ TextureLocation GradientTileBuilder::allocate(const Gradient &gradient) {
     return location;
 }
 
-void GradientTileBuilder::upload(const std::shared_ptr<Driver> &driver, const std::shared_ptr<Texture> &texture) {
-    auto cmd_buffer = driver->create_command_buffer(true, "Upload to gradient tile texture");
-
+void GradientTileBuilder::upload(const std::shared_ptr<CommandBuffer> &cmd_buffer,
+                                 const std::shared_ptr<Texture> &texture) {
     // FIXME: We only have one texture for now.
     for (auto &tile : tiles) {
         cmd_buffer->upload_to_texture(texture,
@@ -118,8 +117,6 @@ void GradientTileBuilder::upload(const std::shared_ptr<Driver> &driver, const st
                                       tile.texels.data(),
                                       TextureLayout::ShaderReadOnly);
     }
-
-    cmd_buffer->submit(driver);
 }
 
 } // namespace Pathfinder

@@ -274,6 +274,8 @@ std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr
                                                         TextureFormat::Rgba8Unorm,
                                                         "Gradient tile texture");
 
+    auto cmd_buffer = driver->create_command_buffer(true, "Upload to color textures (for gradient & image patterns)");
+
     // Traverse paints.
     for (const auto &paint : paints) {
         std::shared_ptr<PaintColorTextureMetadata> color_texture_metadata;
@@ -326,14 +328,10 @@ std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr
                                                                                        TextureFormat::Rgba8Unorm,
                                                                                        "Image pattern color texture");
 
-                        auto cmd_buffer = driver->create_command_buffer(true, "Upload to color texture");
-
                         cmd_buffer->upload_to_texture(color_texture_metadata->color_texture,
                                                       RectI({}, pattern.source.image.size),
                                                       pattern.source.image.pixels.data(),
                                                       TextureLayout::ShaderReadOnly);
-
-                        cmd_buffer->submit(driver);
                     } else { // Render target
                         texture_location.rect = RectI({}, pattern.source.size);
 
@@ -382,7 +380,9 @@ std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr
             {color_texture_metadata, paint.get_base_color(), BlendMode::SrcOver, paint.is_opaque()});
     }
 
-    gradient_tile_builder.upload(driver, gradient_tile_texture);
+    gradient_tile_builder.upload(cmd_buffer, gradient_tile_texture);
+
+    cmd_buffer->submit(driver);
 
     return paint_metadata;
 }

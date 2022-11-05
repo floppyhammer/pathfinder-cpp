@@ -328,6 +328,8 @@ void CommandBufferGl::submit(const std::shared_ptr<Driver> &_driver) {
 
                 check_error("UploadToTexture");
             } break;
+            // Unnecessary for OpenGL.
+            case CommandType::SyncDescriptorSet:
             case CommandType::Max:
                 break;
         }

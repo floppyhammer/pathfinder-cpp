@@ -142,7 +142,7 @@ struct GradientTileBuilder {
 
     TextureLocation allocate(const Gradient &gradient);
 
-    void upload(const std::shared_ptr<Driver> &driver, const std::shared_ptr<Texture> &texture);
+    void upload(const std::shared_ptr<CommandBuffer> &cmd_buffer, const std::shared_ptr<Texture> &texture);
 };
 
 } // namespace Pathfinder

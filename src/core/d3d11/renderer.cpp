@@ -699,9 +699,9 @@ void RendererD3D11::bound(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
                                                      MemoryProperty::DeviceLocal,
                                                      "Path info buffer");
 
-    // Upload uniform buffer data.
+    // Upload buffer data.
     {
-        auto cmd_buffer = driver->create_command_buffer(true, "Upload uniform buffer data");
+        auto cmd_buffer = driver->create_command_buffer(true, "Upload path info buffer");
 
         cmd_buffer->upload_to_buffer(path_info_buffer_id,
                                      0,
@@ -753,10 +753,10 @@ FillBufferInfoD3D11 RendererD3D11::bin_segments(MicrolineBufferIDsD3D11 &microli
 
     uint32_t indirect_draw_params[FILL_INDIRECT_DRAW_PARAMS_SIZE] = {6, 0, 0, 0, 0, microline_storage.count, 0, 0};
 
-    // Upload buffer data.
-    {
-        auto cmd_buffer = driver->create_command_buffer(true, "Upload buffer data");
+    auto cmd_buffer = driver->create_command_buffer(true, "Bin segments");
 
+    // Upload Z buffer data.
+    {
         // Upload fill indirect draw params to header of the Z-buffer.
         // This is in the Z-buffer, not its own buffer, to work around the 8 SSBO limitation on
         // some drivers (#373).
@@ -768,8 +768,6 @@ FillBufferInfoD3D11 RendererD3D11::bin_segments(MicrolineBufferIDsD3D11 &microli
         // Update uniform buffers.
         std::array<int32_t, 2> ubo_data = {(int32_t)microline_storage.count, (int32_t)allocated_fill_count};
         cmd_buffer->upload_to_buffer(bin_ub, 0, 2 * sizeof(int32_t), ubo_data.data());
-
-        cmd_buffer->submit(driver);
     }
 
     // Update the descriptor set.
@@ -788,8 +786,6 @@ FillBufferInfoD3D11 RendererD3D11::bin_segments(MicrolineBufferIDsD3D11 &microli
         Descriptor::storage(5, ShaderStage::Compute, propagate_metadata_buffer_ids.backdrops),
     });
 
-    auto cmd_buffer = driver->create_command_buffer(true, "Bin segments");
-
     cmd_buffer->sync_descriptor_set(bin_descriptor_set);
 
     cmd_buffer->begin_compute_pass();
@@ -802,19 +798,12 @@ FillBufferInfoD3D11 RendererD3D11::bin_segments(MicrolineBufferIDsD3D11 &microli
 
     cmd_buffer->end_compute_pass();
 
+    // Read buffer.
+    cmd_buffer->read_buffer(z_buffer_id, 0, FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t), indirect_draw_params);
+
     cmd_buffer->submit(driver);
 
-    // Read buffer.
-    {
-        cmd_buffer = driver->create_command_buffer(true, "Read buffer");
-        cmd_buffer->read_buffer(z_buffer_id,
-                                0,
-                                FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
-                                indirect_draw_params);
-        cmd_buffer->submit(driver);
-    }
-
-    // Get the actual fill count.
+    // Get the actual fill count. Do this after the command buffer is submitted.
     auto needed_fill_count = indirect_draw_params[FILL_INDIRECT_DRAW_PARAMS_INSTANCE_COUNT_INDEX];
 
     // If we didn't allocate enough space for the needed fills, we need to call this function again.
@@ -834,38 +823,34 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
                                                        const std::shared_ptr<Buffer> &alpha_tiles_buffer_id,
                                                        PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids,
                                                        const shared_ptr<ClipBufferIDs> &clip_buffer_ids) {
+    auto cmd_buffer = driver->create_command_buffer(true, "Propagate tiles");
+
     // Upload data to buffers.
-    {
-        auto cmd_buffer = driver->create_command_buffer(true, "Upload data to buffers");
+    // TODO(pcwalton): Zero out the Z-buffer on GPU?
+    auto z_buffer_size = tile_size();
+    auto tile_area = z_buffer_size.area();
+    auto z_buffer_data = std::vector<int32_t>(tile_area, 0);
 
-        // TODO(pcwalton): Zero out the Z-buffer on GPU?
-        auto z_buffer_size = tile_size();
-        auto tile_area = z_buffer_size.area();
-        auto z_buffer_data = std::vector<int32_t>(tile_area, 0);
+    // Fill zeros in the Z buffer. Note the offset for the fill indirect params.
+    cmd_buffer->upload_to_buffer(z_buffer_id,
+                                 FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
+                                 tile_area * sizeof(int32_t),
+                                 z_buffer_data.data());
 
-        // Note the offset for the fill indirect params.
-        cmd_buffer->upload_to_buffer(z_buffer_id,
-                                     FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
-                                     tile_area * sizeof(int32_t),
-                                     z_buffer_data.data());
+    // TODO(pcwalton): Initialize the first tiles buffer on GPU?
+    auto first_tile_map = std::vector<FirstTileD3D11>(tile_area, FirstTileD3D11());
+    cmd_buffer->upload_to_buffer(first_tile_map_buffer_id,
+                                 0,
+                                 tile_area * sizeof(FirstTileD3D11),
+                                 first_tile_map.data());
 
-        // TODO(pcwalton): Initialize the first tiles buffer on GPU?
-        auto first_tile_map = std::vector<FirstTileD3D11>(tile_area, FirstTileD3D11());
-        cmd_buffer->upload_to_buffer(first_tile_map_buffer_id,
-                                     0,
-                                     tile_area * sizeof(FirstTileD3D11),
-                                     first_tile_map.data());
-
-        // Update uniform buffers.
-        auto framebuffer_tile_size0 = framebuffer_tile_size();
-        std::array<int32_t, 4> ubo_data = {(int32_t)framebuffer_tile_size0.x,
-                                           (int32_t)framebuffer_tile_size0.y,
-                                           (int32_t)column_count,
-                                           (int32_t)alpha_tile_count};
-        cmd_buffer->upload_to_buffer(propagate_ub, 0, 4 * sizeof(int32_t), ubo_data.data());
-
-        cmd_buffer->submit(driver);
-    }
+    // Update uniform buffers.
+    auto framebuffer_tile_size0 = framebuffer_tile_size();
+    std::array<int32_t, 4> ubo_data = {(int32_t)framebuffer_tile_size0.x,
+                                       (int32_t)framebuffer_tile_size0.y,
+                                       (int32_t)column_count,
+                                       (int32_t)alpha_tile_count};
+    cmd_buffer->upload_to_buffer(propagate_ub, 0, 4 * sizeof(int32_t), ubo_data.data());
 
     // Update the descriptor set.
     {
@@ -902,8 +887,6 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
         }
     }
 
-    auto cmd_buffer = driver->create_command_buffer(true, "Propagate tiles");
-
     cmd_buffer->sync_descriptor_set(propagate_descriptor_set);
 
     cmd_buffer->begin_compute_pass();
@@ -916,22 +899,17 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
 
     cmd_buffer->end_compute_pass();
 
-    cmd_buffer->submit(driver);
-
     uint32_t fill_indirect_draw_params[FILL_INDIRECT_DRAW_PARAMS_SIZE];
 
     // Read buffer.
-    {
-        cmd_buffer = driver->create_command_buffer(true, "Read buffer");
+    cmd_buffer->read_buffer(z_buffer_id,
+                            0,
+                            FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
+                            fill_indirect_draw_params);
 
-        cmd_buffer->read_buffer(z_buffer_id,
-                                0,
-                                FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
-                                fill_indirect_draw_params);
+    cmd_buffer->submit(driver);
 
-        cmd_buffer->submit(driver);
-    }
-
+    // Do this after the command buffer is submitted.
     auto batch_alpha_tile_count = fill_indirect_draw_params[FILL_INDIRECT_DRAW_PARAMS_ALPHA_TILE_COUNT_INDEX];
 
     auto alpha_tile_start = alpha_tile_count;
