@@ -170,8 +170,11 @@ void transition_image_layout(VkCommandBuffer command_buffer,
     vkCmdPipelineBarrier(command_buffer, src_stage, dst_stage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
-CommandBufferVk::CommandBufferVk(VkCommandBuffer _vk_command_buffer, VkDevice _vk_device)
-    : vk_command_buffer(_vk_command_buffer), vk_device(_vk_device) {}
+CommandBufferVk::CommandBufferVk(VkCommandBuffer _vk_command_buffer, VkDevice _vk_device, DriverVk *_driver)
+    : vk_command_buffer(_vk_command_buffer), vk_device(_vk_device), driver(_driver) {}
+
+CommandBufferVk::~CommandBufferVk() {
+}
 
 void CommandBufferVk::upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
                                        uint32_t offset,
@@ -213,19 +216,12 @@ VkCommandBuffer CommandBufferVk::get_vk_command_buffer() const {
     return vk_command_buffer;
 }
 
-void CommandBufferVk::submit(const std::shared_ptr<Driver> &_driver) {
-    if (check_multiple_submissions()) {
-        return;
-    }
-
-    auto driver = static_cast<DriverVk *>(_driver.get());
-
+void CommandBufferVk::submit() {
     // Begin recording.
     VkCommandBufferBeginInfo begin_info{};
     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    if (one_time) {
-        begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-    }
+    begin_info.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+
     if (vkBeginCommandBuffer(vk_command_buffer, &begin_info) != VK_SUCCESS) {
         throw std::runtime_error("Failed to begin recording command buffer!");
     }
@@ -498,9 +494,9 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &_driver) {
                                        args.offset);
 
                 // Callback to clean up staging resources.
-                auto callback = [driver, staging_buffer, staging_buffer_memory] {
-                    vkDestroyBuffer(driver->get_device(), staging_buffer, nullptr);
-                    vkFreeMemory(driver->get_device(), staging_buffer_memory, nullptr);
+                auto callback = [this, staging_buffer, staging_buffer_memory] {
+                    vkDestroyBuffer(vk_device, staging_buffer, nullptr);
+                    vkFreeMemory(vk_device, staging_buffer_memory, nullptr);
                 };
                 add_callback(callback);
             } break;
@@ -547,12 +543,12 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &_driver) {
                 driver->copy_vk_buffer(vk_command_buffer, buffer_vk->get_vk_buffer(), staging_buffer, args.data_size);
 
                 // Callback to clean up staging resources.
-                auto callback = [driver, staging_buffer, staging_buffer_memory, args] {
+                auto callback = [this, staging_buffer, staging_buffer_memory, args] {
                     // Wait for the data transfer to complete before memory mapping.
                     driver->copy_data_from_memory(args.data, staging_buffer_memory, args.data_size);
 
-                    vkDestroyBuffer(driver->get_device(), staging_buffer, nullptr);
-                    vkFreeMemory(driver->get_device(), staging_buffer_memory, nullptr);
+                    vkDestroyBuffer(vk_device, staging_buffer, nullptr);
+                    vkFreeMemory(vk_device, staging_buffer_memory, nullptr);
                 };
                 add_callback(callback);
             } break;
@@ -624,9 +620,9 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &_driver) {
                 }
 
                 // Callback to clean up staging resources.
-                auto callback = [driver, staging_buffer, staging_buffer_memory, texture_vk] {
-                    vkDestroyBuffer(driver->get_device(), staging_buffer, nullptr);
-                    vkFreeMemory(driver->get_device(), staging_buffer_memory, nullptr);
+                auto callback = [this, staging_buffer, staging_buffer_memory, texture_vk] {
+                    vkDestroyBuffer(vk_device, staging_buffer, nullptr);
+                    vkFreeMemory(vk_device, staging_buffer_memory, nullptr);
                 };
                 add_callback(callback);
             } break;
@@ -656,32 +652,28 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &_driver) {
         throw std::runtime_error("Failed to record command buffer!");
     }
 
-    if (one_time) {
-        // Submit the command buffer to the graphics queue.
-        // ----------------------------------------
-        VkSubmitInfo submit_info{};
-        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submit_info.commandBufferCount = 1;
-        submit_info.pCommandBuffers = &vk_command_buffer;
+    // Submit the command buffer to the graphics queue.
+    VkSubmitInfo submit_info{};
+    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_info.commandBufferCount = 1;
+    submit_info.pCommandBuffers = &vk_command_buffer;
 
-        vkQueueSubmit(driver->get_graphics_queue(), 1, &submit_info, VK_NULL_HANDLE);
-        vkQueueWaitIdle(driver->get_graphics_queue());
-        // ----------------------------------------
+    vkQueueSubmit(driver->get_graphics_queue(), 1, &submit_info, VK_NULL_HANDLE);
+}
 
-        // Free the command buffer.
-        vkFreeCommandBuffers(driver->get_device(), driver->get_command_pool(), 1, &vk_command_buffer);
-    }
+void CommandBufferVk::submit_and_wait() {
+    submit();
 
-    // Sync image layout changes.
-    //    for (auto &p : image_layout_tracker) {
-    //        p.first->set_layout(p.second);
-    //    }
+    // Wait for the queue to finish commands.
+    vkQueueWaitIdle(driver->get_graphics_queue());
 
     for (auto &callback : callbacks) {
         callback();
     }
 
     callbacks.clear();
+
+    vkFreeCommandBuffers(vk_device, driver->get_command_pool(), 1, &vk_command_buffer);
 }
 
 } // namespace Pathfinder

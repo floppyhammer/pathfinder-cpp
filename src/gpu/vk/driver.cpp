@@ -433,7 +433,7 @@ std::shared_ptr<Texture> DriverVk::create_texture(Vec2I size, TextureFormat form
     return texture_vk;
 }
 
-std::shared_ptr<CommandBuffer> DriverVk::create_command_buffer(bool one_time, const std::string &_label) {
+std::shared_ptr<CommandBuffer> DriverVk::create_command_buffer(const std::string &_label) {
     // Allocate a command buffer.
     // ----------------------------------------
     VkCommandBufferAllocateInfo alloc_info{};
@@ -446,8 +446,7 @@ std::shared_ptr<CommandBuffer> DriverVk::create_command_buffer(bool one_time, co
     vkAllocateCommandBuffers(device, &alloc_info, &command_buffer);
     // ----------------------------------------
 
-    auto command_buffer_vk = std::make_shared<CommandBufferVk>(command_buffer, device);
-    command_buffer_vk->one_time = one_time;
+    auto command_buffer_vk = std::make_shared<CommandBufferVk>(command_buffer, device, this);
     command_buffer_vk->label = _label;
 
     return command_buffer_vk;

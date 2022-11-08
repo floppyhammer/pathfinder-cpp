@@ -18,7 +18,9 @@ public:
                           uint32_t data_size,
                           void *data) override;
 
-    void submit(const std::shared_ptr<Driver> &_driver) override;
+    void submit() override;
+
+    void submit_and_wait() override;
 };
 
 } // namespace Pathfinder

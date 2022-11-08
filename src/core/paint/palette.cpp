@@ -170,10 +170,10 @@ void upload_texture_metadata(const std::shared_ptr<Texture> &metadata_texture,
     // Callback to clean up staging resources.
     auto callback = [raw_texels] { delete[] raw_texels; };
 
-    auto cmd_buffer = driver->create_command_buffer(true, "Upload to metadata texture");
+    auto cmd_buffer = driver->create_command_buffer("Upload to metadata texture");
     cmd_buffer->add_callback(callback);
     cmd_buffer->upload_to_texture(metadata_texture, region_rect, raw_texels, TextureLayout::ShaderReadOnly);
-    cmd_buffer->submit(driver);
+    cmd_buffer->submit_and_wait();
 }
 
 Palette::Palette(uint32_t p_scene_id) : scene_id(p_scene_id) {}
@@ -274,7 +274,7 @@ std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr
                                                         TextureFormat::Rgba8Unorm,
                                                         "Gradient tile texture");
 
-    auto cmd_buffer = driver->create_command_buffer(true, "Upload to color textures (for gradient & image patterns)");
+    auto cmd_buffer = driver->create_command_buffer("Upload to color textures (for gradient & image patterns)");
 
     // Traverse paints.
     for (const auto &paint : paints) {
@@ -382,7 +382,7 @@ std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr
 
     gradient_tile_builder.upload(cmd_buffer, gradient_tile_texture);
 
-    cmd_buffer->submit(driver);
+    cmd_buffer->submit_and_wait();
 
     return paint_metadata;
 }

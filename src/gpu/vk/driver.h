@@ -35,7 +35,7 @@ public:
 
     std::shared_ptr<Texture> create_texture(Vec2I size, TextureFormat format, const std::string &_label) override;
 
-    std::shared_ptr<CommandBuffer> create_command_buffer(bool one_time, const std::string &_label) override;
+    std::shared_ptr<CommandBuffer> create_command_buffer(const std::string &_label) override;
 
     std::shared_ptr<DescriptorSet> create_descriptor_set() override;
 

@@ -53,7 +53,7 @@ std::shared_ptr<Texture> upload_z_buffer(const std::shared_ptr<Driver> &driver,
     return z_buffer_texture;
 }
 
-RendererD3D9::RendererD3D9(const std::shared_ptr<Driver> &p_driver) : Renderer(p_driver) {
+RendererD3D9::RendererD3D9(const std::shared_ptr<Driver> &_driver) : Renderer(_driver) {
     mask_render_pass_clear = driver->create_render_pass(TextureFormat::Rgba16Float,
                                                         AttachmentLoadOp::Clear,
                                                         false,
@@ -79,9 +79,9 @@ RendererD3D9::RendererD3D9(const std::shared_ptr<Driver> &p_driver) : Renderer(p
                                                MemoryProperty::DeviceLocal,
                                                "Quad vertex buffer");
 
-    auto cmd_buffer = driver->create_command_buffer(true, "Upload quad vertex data");
+    auto cmd_buffer = driver->create_command_buffer("Upload quad vertex data");
     cmd_buffer->upload_to_buffer(quad_vertex_buffer, 0, 12 * sizeof(uint16_t), QUAD_VERTEX_POSITIONS);
-    cmd_buffer->submit(driver);
+    cmd_buffer->submit_and_wait();
 }
 
 void RendererD3D9::set_dest_texture(const std::shared_ptr<Texture> &texture) {
@@ -300,7 +300,7 @@ void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &_scene_builder) {
         if (scene_builder->pending_fills.empty()) {
             Logger::warn("No fills to draw!", "RendererD3D9");
         } else {
-            auto cmd_buffer = driver->create_command_buffer(true, "Upload & draw fills");
+            auto cmd_buffer = driver->create_command_buffer("Upload & draw fills");
 
             // Upload fills to buffer.
             upload_fills(scene_builder->pending_fills, cmd_buffer);
@@ -308,7 +308,7 @@ void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &_scene_builder) {
             // We can do fill drawing as soon as the fill vertex buffer is ready.
             draw_fills(scene_builder->pending_fills.size(), cmd_buffer);
 
-            cmd_buffer->submit(driver);
+            cmd_buffer->submit_and_wait();
         }
     }
 
@@ -362,7 +362,7 @@ void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &t
 
         // Different batches will use the same vertex buffer, so we need to make sure a batch is drawn
         // before processing the next batch.
-        auto cmd_buffer = driver->create_command_buffer(true, "Upload & draw tiles");
+        auto cmd_buffer = driver->create_command_buffer("Upload & draw tiles");
 
         upload_tiles(batch.tiles, cmd_buffer);
 
@@ -375,7 +375,7 @@ void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &t
                    z_buffer_texture,
                    cmd_buffer);
 
-        cmd_buffer->submit(driver);
+        cmd_buffer->submit_and_wait();
     }
 }
 
@@ -410,11 +410,11 @@ ClipBufferInfo RendererD3D9::upload_clip_tiles(const std::vector<Clip> &clips, c
 
     info.clip_buffer = driver->create_buffer(BufferType::Vertex, byte_size, MemoryProperty::DeviceLocal, "Clip buffer");
 
-    auto cmd_buffer = driver->create_command_buffer(true, "Upload clip tiles");
+    auto cmd_buffer = driver->create_command_buffer("Upload clip tiles");
 
     cmd_buffer->upload_to_buffer(info.clip_buffer, 0, byte_size, (void *)clips.data());
 
-    cmd_buffer->submit(driver);
+    cmd_buffer->submit_and_wait();
 
     return info;
 }
@@ -438,7 +438,7 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std:
     //
     // TODO(pcwalton): Don't do this on GL4.
     {
-        auto cmd_buffer = driver->create_command_buffer(true, "Copy out tiles");
+        auto cmd_buffer = driver->create_command_buffer("Copy out tiles");
 
         cmd_buffer->sync_descriptor_set(tile_clip_copy_descriptor_set);
 
@@ -455,7 +455,7 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std:
 
         cmd_buffer->end_render_pass();
 
-        cmd_buffer->submit(driver);
+        cmd_buffer->submit_and_wait();
     }
 
     tile_clip_combine_descriptor_set->add_or_update({
@@ -464,7 +464,7 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std:
 
     // Combine clip tiles.
     {
-        auto cmd_buffer = driver->create_command_buffer(true, "Combine clip tiles");
+        auto cmd_buffer = driver->create_command_buffer("Combine clip tiles");
 
         cmd_buffer->sync_descriptor_set(tile_clip_combine_descriptor_set);
 
@@ -480,7 +480,7 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std:
 
         cmd_buffer->end_render_pass();
 
-        cmd_buffer->submit(driver);
+        cmd_buffer->submit_and_wait();
     }
 }
 

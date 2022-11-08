@@ -87,7 +87,7 @@ void SceneSourceBuffers::upload(const std::shared_ptr<Pathfinder::Driver> &drive
 
     // Upload data.
     if (needed_points_capacity != 0 && needed_point_indices_capacity != 0) {
-        auto cmd_buffer = driver->create_command_buffer(true, "Upload points & point indices");
+        auto cmd_buffer = driver->create_command_buffer("Upload points & point indices");
 
         cmd_buffer->upload_to_buffer(points_buffer, 0, segments.points.size() * sizeof(Vec2F), segments.points.data());
 
@@ -96,7 +96,7 @@ void SceneSourceBuffers::upload(const std::shared_ptr<Pathfinder::Driver> &drive
                                      segments.indices.size() * sizeof(SegmentIndicesD3D11),
                                      segments.indices.data());
 
-        cmd_buffer->submit(driver);
+        cmd_buffer->submit_and_wait();
     }
 }
 
@@ -347,7 +347,7 @@ void RendererD3D11::draw_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer
         clear_op = LOAD_ACTION_CLEAR;
     }
 
-    auto cmd_buffer = driver->create_command_buffer(true, "Draw tiles");
+    auto cmd_buffer = driver->create_command_buffer("Draw tiles");
 
     // Update uniform buffers.
     std::array<float, 8> ubo_data0 = {0,
@@ -396,7 +396,7 @@ void RendererD3D11::draw_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer
 
     cmd_buffer->end_compute_pass();
 
-    cmd_buffer->submit(driver);
+    cmd_buffer->submit_and_wait();
 }
 
 Vec2I RendererD3D11::tile_size() const {
@@ -443,12 +443,12 @@ PropagateMetadataBufferIDsD3D11 RendererD3D11::upload_propagate_metadata(
                               MemoryProperty::DeviceLocal,
                               "Propagate metadata buffer");
 
-    auto cmd_buffer = driver->create_command_buffer(true, "Upload to propagate metadata buffer");
+    auto cmd_buffer = driver->create_command_buffer("Upload to propagate metadata buffer");
     cmd_buffer->upload_to_buffer(propagate_metadata_storage_id,
                                  0,
                                  propagate_metadata.size() * sizeof(PropagateMetadataD3D11),
                                  propagate_metadata.data());
-    cmd_buffer->submit(driver);
+    cmd_buffer->submit_and_wait();
 
     auto backdrops_storage_id = driver->create_buffer(BufferType::Storage,
                                                       backdrops.size() * sizeof(BackdropInfoD3D11),
@@ -460,12 +460,12 @@ PropagateMetadataBufferIDsD3D11 RendererD3D11::upload_propagate_metadata(
 
 void RendererD3D11::upload_initial_backdrops(const std::shared_ptr<Buffer> &backdrops_buffer_id,
                                              std::vector<BackdropInfoD3D11> &backdrops) {
-    auto cmd_buffer = driver->create_command_buffer(true, "Upload initial backdrops");
+    auto cmd_buffer = driver->create_command_buffer("Upload initial backdrops");
     cmd_buffer->upload_to_buffer(backdrops_buffer_id,
                                  0,
                                  backdrops.size() * sizeof(BackdropInfoD3D11),
                                  backdrops.data());
-    cmd_buffer->submit(driver);
+    cmd_buffer->submit_and_wait();
 }
 
 void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
@@ -599,7 +599,7 @@ MicrolineBufferIDsD3D11 RendererD3D11::dice_segments(std::vector<DiceMetadataD3D
 
     uint32_t indirect_compute_params[8] = {0, 0, 0, 0, point_indices_count, 0, 0, 0};
 
-    auto cmd_buffer = driver->create_command_buffer(true, "Dice segments");
+    auto cmd_buffer = driver->create_command_buffer("Dice segments");
 
     // Upload dice indirect draw params, which will be read later.
     cmd_buffer->upload_to_buffer(indirect_draw_params_buffer_id,
@@ -664,7 +664,7 @@ MicrolineBufferIDsD3D11 RendererD3D11::dice_segments(std::vector<DiceMetadataD3D
                             FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
                             indirect_compute_params);
 
-    cmd_buffer->submit(driver);
+    cmd_buffer->submit_and_wait();
 
     // Fetch microline count from indirect draw params.
     auto microline_count = indirect_compute_params[BIN_INDIRECT_DRAW_PARAMS_MICROLINE_COUNT_INDEX];
@@ -687,7 +687,7 @@ void RendererD3D11::bound(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
                                                      MemoryProperty::DeviceLocal,
                                                      "Path info buffer");
 
-    auto cmd_buffer = driver->create_command_buffer(true, "Bound");
+    auto cmd_buffer = driver->create_command_buffer("Bound");
 
     // Upload buffer data.
     cmd_buffer->upload_to_buffer(path_info_buffer_id,
@@ -719,7 +719,7 @@ void RendererD3D11::bound(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
 
     cmd_buffer->end_compute_pass();
 
-    cmd_buffer->submit(driver);
+    cmd_buffer->submit_and_wait();
 }
 
 FillBufferInfoD3D11 RendererD3D11::bin_segments(MicrolineBufferIDsD3D11 &microline_storage,
@@ -734,7 +734,7 @@ FillBufferInfoD3D11 RendererD3D11::bin_segments(MicrolineBufferIDsD3D11 &microli
 
     uint32_t indirect_draw_params[FILL_INDIRECT_DRAW_PARAMS_SIZE] = {6, 0, 0, 0, 0, microline_storage.count, 0, 0};
 
-    auto cmd_buffer = driver->create_command_buffer(true, "Bin segments");
+    auto cmd_buffer = driver->create_command_buffer("Bin segments");
 
     // Upload Z buffer data.
     {
@@ -782,7 +782,7 @@ FillBufferInfoD3D11 RendererD3D11::bin_segments(MicrolineBufferIDsD3D11 &microli
     // Read buffer.
     cmd_buffer->read_buffer(z_buffer_id, 0, FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t), indirect_draw_params);
 
-    cmd_buffer->submit(driver);
+    cmd_buffer->submit_and_wait();
 
     // Get the actual fill count. Do this after the command buffer is submitted.
     auto needed_fill_count = indirect_draw_params[FILL_INDIRECT_DRAW_PARAMS_INSTANCE_COUNT_INDEX];
@@ -803,7 +803,7 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
                                                        const std::shared_ptr<Buffer> &alpha_tiles_buffer_id,
                                                        PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids,
                                                        const shared_ptr<ClipBufferIDs> &clip_buffer_ids) {
-    auto cmd_buffer = driver->create_command_buffer(true, "Propagate tiles");
+    auto cmd_buffer = driver->create_command_buffer("Propagate tiles");
 
     // Upload data to buffers.
     // TODO(pcwalton): Zero out the Z-buffer on GPU?
@@ -887,7 +887,7 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
                             FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
                             fill_indirect_draw_params);
 
-    cmd_buffer->submit(driver);
+    cmd_buffer->submit_and_wait();
 
     // Do this after the command buffer is submitted.
     auto batch_alpha_tile_count = fill_indirect_draw_params[FILL_INDIRECT_DRAW_PARAMS_ALPHA_TILE_COUNT_INDEX];
@@ -912,7 +912,7 @@ void RendererD3D11::draw_fills(FillBufferInfoD3D11 &fill_storage_info,
     // This setup is a workaround for the annoying 64K limit of compute invocation in OpenGL.
     uint32_t _alpha_tile_count = alpha_tile_range.end - alpha_tile_range.start;
 
-    auto cmd_buffer = driver->create_command_buffer(true, "Draw fills");
+    auto cmd_buffer = driver->create_command_buffer("Draw fills");
 
     // Update uniform buffer.
     auto framebuffer_tile_size0 = framebuffer_tile_size();
@@ -942,7 +942,7 @@ void RendererD3D11::draw_fills(FillBufferInfoD3D11 &fill_storage_info,
 
     cmd_buffer->end_compute_pass();
 
-    cmd_buffer->submit(driver);
+    cmd_buffer->submit_and_wait();
 }
 
 void RendererD3D11::sort_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
@@ -950,7 +950,7 @@ void RendererD3D11::sort_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer
                                const std::shared_ptr<Buffer> &z_buffer_id) {
     auto tile_count = framebuffer_tile_size().area();
 
-    auto cmd_buffer = driver->create_command_buffer(true, "Sort tiles");
+    auto cmd_buffer = driver->create_command_buffer("Sort tiles");
 
     // Update uniform buffer.
     cmd_buffer->upload_to_buffer(sort_ub, 0, sizeof(int32_t), &tile_count);
@@ -977,7 +977,7 @@ void RendererD3D11::sort_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer
 
     cmd_buffer->end_compute_pass();
 
-    cmd_buffer->submit(driver);
+    cmd_buffer->submit_and_wait();
 }
 
 } // namespace Pathfinder

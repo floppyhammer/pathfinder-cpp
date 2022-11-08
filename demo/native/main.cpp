@@ -55,7 +55,7 @@ int main() {
             cmd_buffer->end_render_pass();
         }
 
-        cmd_buffer->submit(driver);
+        cmd_buffer->submit();
 
         swap_chain->flush();
     }

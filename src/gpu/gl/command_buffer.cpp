@@ -60,11 +60,7 @@ void CommandBufferGl::upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
     // -------------------------------------------------------
 }
 
-void CommandBufferGl::submit(const std::shared_ptr<Driver> &_driver) {
-    if (check_multiple_submissions()) {
-        return;
-    }
-
+void CommandBufferGl::submit() {
     while (!commands.empty()) {
         auto &cmd = commands.front();
 
@@ -340,6 +336,10 @@ void CommandBufferGl::submit(const std::shared_ptr<Driver> &_driver) {
 
         commands.pop();
     }
+}
+
+void CommandBufferGl::submit_and_wait() {
+    submit();
 
     // Release allocated memory if there's any.
     for (auto &callback : callbacks) {

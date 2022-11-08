@@ -27,7 +27,7 @@ public:
 
     virtual std::shared_ptr<Texture> create_texture(Vec2I size, TextureFormat _format, const std::string &label) = 0;
 
-    virtual std::shared_ptr<CommandBuffer> create_command_buffer(bool one_time, const std::string &label) = 0;
+    virtual std::shared_ptr<CommandBuffer> create_command_buffer(const std::string &label) = 0;
 
     virtual std::shared_ptr<DescriptorSet> create_descriptor_set() = 0;
 

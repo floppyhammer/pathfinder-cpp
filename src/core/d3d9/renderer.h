@@ -29,7 +29,7 @@ public:
     /// Tiles to draw.
     std::vector<DrawTileBatchD3D9> pending_tile_batches;
 
-    explicit RendererD3D9(const std::shared_ptr<Driver> &p_driver);
+    explicit RendererD3D9(const std::shared_ptr<Driver> &_driver);
 
     void set_up_pipelines() override;
 

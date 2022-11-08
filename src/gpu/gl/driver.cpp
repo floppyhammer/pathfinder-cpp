@@ -35,7 +35,7 @@ std::shared_ptr<Texture> DriverGl::create_texture(Vec2I size, TextureFormat form
     return texture_gl;
 }
 
-std::shared_ptr<CommandBuffer> DriverGl::create_command_buffer(bool one_time, const std::string &label) {
+std::shared_ptr<CommandBuffer> DriverGl::create_command_buffer(const std::string &label) {
     auto command_buffer_gl = std::make_shared<CommandBufferGl>();
     check_error("create_command_buffer");
     return command_buffer_gl;

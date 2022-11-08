@@ -16,7 +16,7 @@ namespace Pathfinder {
 Renderer::Renderer(const std::shared_ptr<Driver> &_driver) {
     driver = _driver;
 
-    auto cmd_buffer = driver->create_command_buffer(true, "Upload constant data");
+    auto cmd_buffer = driver->create_command_buffer("Upload constant data");
 
     // Uniform buffer for some constants.
     constants_ub = driver->create_buffer(BufferType::Uniform,
@@ -40,7 +40,7 @@ Renderer::Renderer(const std::shared_ptr<Driver> &_driver) {
 
     cmd_buffer->upload_to_texture(area_lut_texture, {}, image_buffer->get_data(), TextureLayout::ShaderReadOnly);
 
-    cmd_buffer->submit(driver);
+    cmd_buffer->submit_and_wait();
 }
 
 } // namespace Pathfinder

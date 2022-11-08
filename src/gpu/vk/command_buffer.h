@@ -18,21 +18,27 @@ class CommandBufferVk : public CommandBuffer {
 
 public:
     /// We have to provide these two to create a valid command buffer.
-    CommandBufferVk(VkCommandBuffer _vk_command_buffer, VkDevice _vk_device);
+    CommandBufferVk(VkCommandBuffer _vk_command_buffer, VkDevice _vk_device, DriverVk *_driver);
+
+    ~CommandBufferVk();
 
     void upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
                           uint32_t offset,
                           uint32_t data_size,
                           void *data) override;
 
-    void submit(const std::shared_ptr<Driver> &_driver) override;
+    void submit() override;
+
+    void submit_and_wait() override;
 
     VkCommandBuffer get_vk_command_buffer() const;
 
 private:
-    VkCommandBuffer vk_command_buffer;
+    VkCommandBuffer vk_command_buffer{};
 
-    VkDevice vk_device;
+    VkDevice vk_device{};
+
+    DriverVk *driver;
 };
 
 } // namespace Pathfinder

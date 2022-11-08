@@ -185,18 +185,9 @@ public:
 
     // SUBMIT
 
-    virtual void submit(const std::shared_ptr<Driver> &_driver) = 0;
+    virtual void submit() = 0;
 
-    /// Check if a one-time command buffer has been submitted before.
-    inline bool check_multiple_submissions() {
-        if (one_time && submitted) {
-            Logger::error("One-Time command buffer has been submitted twice!", "Command Buffer");
-            return true;
-        } else {
-            submitted = true;
-            return false;
-        }
-    }
+    virtual void submit_and_wait() = 0;
 
     inline void add_callback(const std::function<void()> &callback) {
         callbacks.push_back(callback);
@@ -212,7 +203,7 @@ protected:
 
     bool submitted = false;
 
-    /// Callbacks to call when the commands are flushed.
+    /// Callbacks after the commands are submitted and waited for finish.
     std::vector<std::function<void()>> callbacks;
 
     /// Currently bind pipeline.

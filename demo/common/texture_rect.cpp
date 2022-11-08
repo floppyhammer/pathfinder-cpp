@@ -37,9 +37,9 @@ TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
                                            Pathfinder::MemoryProperty::HostVisibleAndCoherent,
                                            "TextureRect uniform buffer");
 
-    auto cmd_buffer = driver->create_command_buffer(true, "Upload TextureRect vertex buffer");
+    auto cmd_buffer = driver->create_command_buffer("Upload TextureRect vertex buffer");
     cmd_buffer->upload_to_buffer(vertex_buffer, 0, sizeof(vertices), (void *)vertices);
-    cmd_buffer->submit(std::shared_ptr<Pathfinder::Driver>(driver));
+    cmd_buffer->submit_and_wait();
 
     // Pipeline.
     {
@@ -107,10 +107,10 @@ void TextureRect::draw(const std::shared_ptr<Pathfinder::Driver> &driver,
     auto mvp_mat = model_mat;
     // -------------------------------------------------
 
-    auto one_time_cmd_buffer = driver->create_command_buffer(true, "Upload TextureRect uniform buffer");
+    auto one_time_cmd_buffer = driver->create_command_buffer("Upload TextureRect uniform buffer");
     one_time_cmd_buffer->upload_to_buffer(uniform_buffer, 0, 16 * sizeof(float), &mvp_mat);
     one_time_cmd_buffer->sync_descriptor_set(descriptor_set);
-    one_time_cmd_buffer->submit(driver);
+    one_time_cmd_buffer->submit_and_wait();
 
     cmd_buffer->bind_render_pipeline(pipeline);
 
