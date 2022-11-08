@@ -360,8 +360,8 @@ void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &t
             clip_tiles(clip_buffer_info, driver);
         }
 
-        // Different batches will use the same vertex buffer, so we need to make sure a batch is drawn
-        // before processing the next batch.
+        // Different batches will use the same tile vertex buffer, so we need to make sure
+        // that a batch is drawn before processing the next batch.
         auto cmd_buffer = driver->create_command_buffer("Upload & draw tiles");
 
         upload_tiles(batch.tiles, cmd_buffer);

@@ -59,6 +59,11 @@ void PlatformGl::init_window() {
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         throw std::runtime_error("Failed to initialize GLAD!");
     }
+
+    if (GLAD_GL_EXT_debug_label) {
+        Logger::debug("EXT_debug_label enabled.", "PlatformGl");
+    }
+
     #endif
 
     // Print GL version.

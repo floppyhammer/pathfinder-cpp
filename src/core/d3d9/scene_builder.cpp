@@ -44,6 +44,9 @@ vector<DrawTileBatchD3D9> build_tile_batches_for_draw_path_display_item(const Sc
         if (draw_tile_batch == nullptr) {
             draw_tile_batch = std::make_shared<DrawTileBatchD3D9>();
 
+            // TODO(floppyhammer): Currently, Z buffers of different batches have got
+            //  the same size (the scene's view box).
+            //  Maybe we should have Z buffer's size depend on its batch?
             auto tile_bounds = round_rect_out_to_tile_bounds(scene.get_view_box());
 
             draw_tile_batch->z_buffer_data = DenseTileMap<uint32_t>::z_builder(tile_bounds);
