@@ -651,6 +651,10 @@ void CommandBufferVk::submit() {
     if (vkEndCommandBuffer(vk_command_buffer) != VK_SUCCESS) {
         throw std::runtime_error("Failed to record command buffer!");
     }
+}
+
+void CommandBufferVk::submit_and_wait() {
+    submit();
 
     // Submit the command buffer to the graphics queue.
     VkSubmitInfo submit_info{};
@@ -659,10 +663,6 @@ void CommandBufferVk::submit() {
     submit_info.pCommandBuffers = &vk_command_buffer;
 
     vkQueueSubmit(driver->get_graphics_queue(), 1, &submit_info, VK_NULL_HANDLE);
-}
-
-void CommandBufferVk::submit_and_wait() {
-    submit();
 
     // Wait for the queue to finish commands.
     vkQueueWaitIdle(driver->get_graphics_queue());
