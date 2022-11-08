@@ -23,10 +23,10 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &_driver,
     }
 
     // TEST: Draw image.
-    if (false) {
+    if (true) {
         Pathfinder::Image image;
-        auto image_buffer = Pathfinder::ImageBuffer::from_file("../assets/test.png", false);
-        image.size = {image_buffer->width, image_buffer->height};
+        auto image_buffer = Pathfinder::ImageBuffer::from_file("../assets/sea.png", false);
+        image.size = image_buffer->get_size();
         image.pixels = image_buffer->to_rgba_pixels();
         Pathfinder::Vec2F pos = {100, 200};
         canvas->draw_image(image, Pathfinder::RectF(pos, pos + image.size.to_f32()));
@@ -61,7 +61,9 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &_driver,
     // TEST: Render target pattern.
     if (true) {
         auto sub_render_target_size = Pathfinder::Vec2F(400, 300);
-        auto sub_render_target = Pathfinder::RenderTarget(canvas->get_driver(), sub_render_target_size.to_i32(), "Render Target Pattern Render Pass");
+        auto sub_render_target = Pathfinder::RenderTarget(canvas->get_driver(),
+                                                          sub_render_target_size.to_i32(),
+                                                          "Render Target Pattern Render Pass");
 
         auto render_target_id = canvas->get_scene()->push_render_target(sub_render_target);
 

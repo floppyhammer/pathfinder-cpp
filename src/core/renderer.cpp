@@ -36,11 +36,9 @@ Renderer::Renderer(const std::shared_ptr<Driver> &_driver) {
     // Area-Lut texture.
     auto image_buffer = ImageBuffer::from_memory({std::begin(area_lut_png), std::end(area_lut_png)}, false);
 
-    area_lut_texture = driver->create_texture({image_buffer->width, image_buffer->height},
-                                              TextureFormat::Rgba8Unorm,
-                                              "Area-Lut texture");
+    area_lut_texture = driver->create_texture(image_buffer->get_size(), TextureFormat::Rgba8Unorm, "Area-Lut texture");
 
-    cmd_buffer->upload_to_texture(area_lut_texture, {}, image_buffer->data, TextureLayout::ShaderReadOnly);
+    cmd_buffer->upload_to_texture(area_lut_texture, {}, image_buffer->get_data(), TextureLayout::ShaderReadOnly);
 
     cmd_buffer->submit(driver);
 }

@@ -49,27 +49,31 @@ std::vector<char> load_file_as_bytes(const std::string &file_path) {
 std::shared_ptr<ImageBuffer> ImageBuffer::from_memory(const std::vector<char> &bytes, bool flip_y) {
     stbi_set_flip_vertically_on_load(flip_y);
 
-    int32_t img_width, img_height, img_channels;
+    // Always load images as RGBA pixels.
+    int32_t width, height, channels;
     unsigned char *img_data = stbi_load_from_memory(reinterpret_cast<const stbi_uc *>(bytes.data()),
                                                     bytes.size() * sizeof(char),
-                                                    &img_width,
-                                                    &img_height,
-                                                    &img_channels,
-                                                    0);
+                                                    &width,
+                                                    &height,
+                                                    &channels,
+                                                    STBI_rgb_alpha);
+
+    if (channels != 4) {
+        Logger::info("Converted non-RGBA pixels to RGBA ones.", "Image Buffer");
+    }
 
     // Generate a texture using the previously loaded image data.
     if (!img_data) {
-        Logger::error("Failed to load image from memory!", "ImageData");
-        throw std::runtime_error(std::string("Failed to load image from memory!"));
+        Logger::error("Failed to load image from memory!", "Image Buffer");
+        return nullptr;
     }
 
-    auto image_data = std::make_shared<ImageBuffer>();
-    image_data->width = img_width;
-    image_data->height = img_height;
-    image_data->channel_count = img_channels;
-    image_data->data = img_data;
+    auto image_buffer = std::make_shared<ImageBuffer>();
+    image_buffer->size = {width, height};
+    image_buffer->channel_count = 4;
+    image_buffer->data = img_data;
 
-    return image_data;
+    return image_buffer;
 }
 
 std::shared_ptr<ImageBuffer> ImageBuffer::from_file(const std::string &file_path, bool flip_y) {
@@ -83,16 +87,22 @@ ImageBuffer::~ImageBuffer() {
 }
 
 std::vector<ColorU> ImageBuffer::to_rgba_pixels() const {
-    if (channel_count != 4) {
-        Logger::error("Cannot convert ImageData to RGBA pixels due to mismatched channel count!");
-        return {};
-    }
+    std::vector<ColorU> pixels(size.area());
 
-    std::vector<ColorU> pixels(width * height);
-
-    memcpy(pixels.data(), data, width * height * channel_count);
+    memcpy(pixels.data(), data, size.area() * channel_count);
 
     return pixels;
+}
+
+Vec2I ImageBuffer::get_size() const {
+    return size;
+}
+
+unsigned char *ImageBuffer::get_data() const {
+    if (data == nullptr) {
+        Logger::error("Try to get data from an invalid image buffer!", "Image Buffer");
+    }
+    return data;
 }
 
 } // namespace Pathfinder

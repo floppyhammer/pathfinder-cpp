@@ -221,12 +221,12 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &_driver) {
     auto driver = static_cast<DriverVk *>(_driver.get());
 
     // Begin recording.
-    VkCommandBufferBeginInfo beginInfo{};
-    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    VkCommandBufferBeginInfo begin_info{};
+    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     if (one_time) {
-        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+        begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     }
-    if (vkBeginCommandBuffer(vk_command_buffer, &beginInfo) != VK_SUCCESS) {
+    if (vkBeginCommandBuffer(vk_command_buffer, &begin_info) != VK_SUCCESS) {
         throw std::runtime_error("Failed to begin recording command buffer!");
     }
 
@@ -659,12 +659,12 @@ void CommandBufferVk::submit(const std::shared_ptr<Driver> &_driver) {
     if (one_time) {
         // Submit the command buffer to the graphics queue.
         // ----------------------------------------
-        VkSubmitInfo submitInfo{};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &vk_command_buffer;
+        VkSubmitInfo submit_info{};
+        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submit_info.commandBufferCount = 1;
+        submit_info.pCommandBuffers = &vk_command_buffer;
 
-        vkQueueSubmit(driver->get_graphics_queue(), 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueSubmit(driver->get_graphics_queue(), 1, &submit_info, VK_NULL_HANDLE);
         vkQueueWaitIdle(driver->get_graphics_queue());
         // ----------------------------------------
 

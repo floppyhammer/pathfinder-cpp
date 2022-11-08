@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "color.h"
+#include "math/vec2.h"
 
 namespace Pathfinder {
 
@@ -24,7 +25,14 @@ struct ImageBuffer {
 
     std::vector<ColorU> to_rgba_pixels() const;
 
-    int32_t width, height, channel_count;
+    Vec2I get_size() const;
+
+    unsigned char *get_data() const;
+
+private:
+    Vec2I size;
+
+    int32_t channel_count;
 
     unsigned char *data;
 };
