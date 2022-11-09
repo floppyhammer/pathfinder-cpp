@@ -9,6 +9,7 @@
 #include "../../common/color.h"
 #include "../../common/math/transform2.h"
 #include "../../gpu/driver.h"
+#include "../../render/allocator.h"
 #include "../data/line_segment.h"
 #include "effects.h"
 

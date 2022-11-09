@@ -289,13 +289,6 @@ inline bool is_blend_mode_destructive(BlendMode blend_mode) {
     }
 }
 
-struct TextureLocation {
-    /// Which texture.
-    uint32_t page{};
-    /// Region in the texture.
-    RectI rect{};
-};
-
 struct TextureSamplingFlags {
     uint8_t value = 0;
 

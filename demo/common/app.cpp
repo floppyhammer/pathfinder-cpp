@@ -1,5 +1,7 @@
 #include "app.h"
 
+#include "../../src/render/allocator.h"
+
 App::App(const std::shared_ptr<Pathfinder::Driver> &_driver,
          int window_width,
          int window_height,
@@ -61,9 +63,8 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &_driver,
     // TEST: Render target pattern.
     if (true) {
         auto sub_render_target_size = Pathfinder::Vec2F(400, 300);
-        auto sub_render_target = Pathfinder::RenderTarget(canvas->get_driver(),
-                                                          sub_render_target_size.to_i32(),
-                                                          "Sub render target");
+        auto sub_render_target =
+            Pathfinder::RenderTarget(canvas->get_driver(), sub_render_target_size.to_i32(), "Sub render target");
 
         auto render_target_id = canvas->get_scene()->push_render_target(sub_render_target);
 
