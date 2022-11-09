@@ -6,6 +6,7 @@
 
 #include "../render_pipeline.h"
 #include "program.h"
+#include "validation.h"
 
 #ifndef PATHFINDER_USE_VULKAN
 
@@ -22,6 +23,9 @@ public:
         program = std::make_shared<RasterProgram>(vert_source, frag_source);
 
         glGenVertexArrays(1, &vao);
+
+        DebugMarker::label_program(program->get_id(), label + " program");
+        DebugMarker::label_vao(vao, label + " VAO");
     };
 
     ~RenderPipelineGl() {

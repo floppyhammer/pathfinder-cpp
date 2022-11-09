@@ -459,7 +459,7 @@ std::shared_ptr<Texture> Canvas::get_dst_texture() {
 }
 
 void Canvas::set_new_dst_texture(const Vec2I &size) {
-    set_dst_texture(RenderTarget(driver, size, "Dest Render Pass").framebuffer->get_texture());
+    set_dst_texture(RenderTarget(driver, size, "Dest render target").framebuffer->get_texture());
 }
 
 void Canvas::save_state() {

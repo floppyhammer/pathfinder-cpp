@@ -356,8 +356,7 @@ std::shared_ptr<Framebuffer> DriverVk::create_framebuffer(const std::shared_ptr<
                                                           const std::string &_label) {
     auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
 
-    auto framebuffer_vk = std::make_shared<FramebufferVk>(device, render_pass_vk->vk_render_pass, texture);
-    framebuffer_vk->label = _label;
+    auto framebuffer_vk = std::make_shared<FramebufferVk>(device, render_pass_vk->vk_render_pass, texture, _label);
 
     DebugMarker::get_singleton()->set_object_name(device,
                                                   (uint64_t)framebuffer_vk->vk_framebuffer,

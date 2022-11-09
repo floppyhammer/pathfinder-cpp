@@ -2,6 +2,7 @@
 
 #include "../../common/logger.h"
 #include "../../common/math/basic.h"
+#include "validation.h"
 
 #ifndef PATHFINDER_USE_VULKAN
 
@@ -38,6 +39,8 @@ BufferGl::BufferGl(BufferType _type, size_t _size, MemoryProperty _memory_proper
     #endif
         } break;
     }
+
+    DebugMarker::label_buffer(id, label);
 }
 
 BufferGl::~BufferGl() {

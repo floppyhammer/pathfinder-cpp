@@ -1,8 +1,10 @@
 #include "framebuffer.h"
 
 #include <cassert>
+#include <utility>
 
 #include "../framebuffer.h"
+#include "validation.h"
 
 #ifndef PATHFINDER_USE_VULKAN
 
@@ -10,9 +12,11 @@ namespace Pathfinder {
 
 FramebufferGl::FramebufferGl(Vec2I _size) : Framebuffer(_size) {
     gl_framebuffer = 0;
+    label = "Screen framebuffer";
 }
 
-FramebufferGl::FramebufferGl(const std::shared_ptr<Texture> &_texture) : Framebuffer(_texture) {
+FramebufferGl::FramebufferGl(const std::shared_ptr<Texture> &_texture, std::string _label)
+    : Framebuffer(_texture, std::move(_label)) {
     auto texture_gl = static_cast<TextureGl *>(texture.get());
 
     // Set up framebuffer.
@@ -22,8 +26,12 @@ FramebufferGl::FramebufferGl(const std::shared_ptr<Texture> &_texture) : Framebu
 
     // Always check whether our framebuffer is OK.
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        Logger::error("GL_FRAMEBUFFER is not OK!");
+        Logger::error(
+            "Framebuffer is not OK!"
+            "FramebufferGl");
     }
+
+    DebugMarker::label_framebuffer(gl_framebuffer, label);
 }
 
 FramebufferGl::~FramebufferGl() {

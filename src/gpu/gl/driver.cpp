@@ -14,8 +14,7 @@ namespace Pathfinder {
 std::shared_ptr<Framebuffer> DriverGl::create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
                                                           const std::shared_ptr<Texture> &texture,
                                                           const std::string &label) {
-    auto framebuffer_gl = std::make_shared<FramebufferGl>(texture);
-
+    auto framebuffer_gl = std::make_shared<FramebufferGl>(texture, label);
     check_error("create_framebuffer");
     return framebuffer_gl;
 }

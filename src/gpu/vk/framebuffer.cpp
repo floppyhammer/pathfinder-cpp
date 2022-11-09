@@ -10,8 +10,9 @@ namespace Pathfinder {
 
 FramebufferVk::FramebufferVk(VkDevice _vk_device,
                              VkRenderPass _vk_render_pass,
-                             const std::shared_ptr<Texture> &_texture)
-    : Framebuffer(_texture) {
+                             const std::shared_ptr<Texture> &_texture,
+                             std::string _label)
+    : Framebuffer(_texture, std::move(_label)) {
     vk_device = _vk_device;
 
     auto texture_vk = static_cast<TextureVk *>(texture.get());
@@ -35,6 +36,7 @@ FramebufferVk::FramebufferVk(VkDevice _vk_device,
 FramebufferVk::FramebufferVk(VkDevice _vk_device, VkRenderPass _vk_render_pass, Vec2I _size, VkImageView vk_image_view)
     : Framebuffer(_size) {
     vk_device = _vk_device;
+    label = "Swapchain framebuffer";
 
     std::array<VkImageView, 1> attachments = {vk_image_view};
 

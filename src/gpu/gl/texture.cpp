@@ -3,6 +3,7 @@
 #include <utility>
 
 #include "../../common/global_macros.h"
+#include "validation.h"
 
 #ifndef PATHFINDER_USE_VULKAN
 
@@ -44,6 +45,8 @@ TextureGl::TextureGl(Vec2I _size, TextureFormat _format, std::string _label)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    DebugMarker::label_texture(texture_id, label);
 }
 
 TextureGl::~TextureGl() {
