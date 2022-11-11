@@ -7,8 +7,7 @@ add_executable(pathfinder-demo ${SOURCE_FILES}
         ../common/app.h
         ../common/app.cpp
         ../common/texture_rect.h
-        ../common/texture_rect.cpp
-        ../../external/glad/glad.c)
+        ../common/texture_rect.cpp)
 
 # Link libraries.
 if (WIN32) # Windows

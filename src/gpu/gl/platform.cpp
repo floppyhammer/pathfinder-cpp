@@ -9,6 +9,9 @@
 
 #ifndef PATHFINDER_USE_VULKAN
 
+    #define GLAD_GL_IMPLEMENTATION
+    #include <glad/gl.h>
+
 namespace Pathfinder {
 
 std::shared_ptr<Platform> Platform::new_impl(DeviceType device_type, Vec2I _window_size) {
@@ -56,12 +59,14 @@ void PlatformGl::init_window() {
     glfwSetFramebufferSizeCallback(window, framebuffer_resize_callback);
 
     // GLAD: load all OpenGL function pointers.
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    if (!gladLoadGL(glfwGetProcAddress)) {
         throw std::runtime_error("Failed to initialize GLAD!");
     }
 
     if (GLAD_GL_EXT_debug_label) {
-        Logger::debug("EXT_debug_label enabled.", "PlatformGl");
+        Logger::info("EXT_debug_label enabled.", "PlatformGl");
+    } else {
+        Logger::info("EXT_debug_label disabled. Try to run from RenderDoc!", "PlatformGl");
     }
 
     #endif

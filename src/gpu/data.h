@@ -10,7 +10,7 @@
         #include <GLFW/glfw3.h>
     #else
         // Include OpenGL header via GLAD.
-        #include <glad/glad.h>
+        #include <glad/gl.h>
         // Prevent the GLFW header from including the OpenGL header.
         #define GLFW_INCLUDE_NONE
         #include <GLFW/glfw3.h>
