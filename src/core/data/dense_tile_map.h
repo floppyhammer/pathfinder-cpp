@@ -18,10 +18,10 @@ struct DenseTileMap {
 
     DenseTileMap() = default;
 
-    DenseTileMap(const std::vector<T> &p_data, const RectI &p_rect) : data(p_data), rect(p_rect) {}
+    DenseTileMap(const std::vector<T> &_data, const RectI &_rect) : data(_data), rect(_rect) {}
 
     /// Constructor for TileObjectPrimitive.
-    DenseTileMap(const RectI &p_rect, uint32_t p_path_id, uint32_t p_paint_id, uint8_t p_ctrl_byte) : rect(p_rect) {
+    DenseTileMap(const RectI &_rect, uint32_t _path_id, uint32_t _paint_id, uint8_t _ctrl_byte) : rect(_rect) {
         data = std::vector<T>(rect.width() * rect.height(), T());
 
         for (int y = rect.min_y(); y < rect.max_y(); y++) {
@@ -30,20 +30,20 @@ struct DenseTileMap {
                 int index = offset + (x - rect.min_x());
                 data[index].tile_x = x;
                 data[index].tile_y = y;
-                data[index].ctrl = p_ctrl_byte;
-                data[index].path_id = p_path_id;
-                data[index].metadata_id = p_paint_id;
+                data[index].ctrl = _ctrl_byte;
+                data[index].path_id = _path_id;
+                data[index].metadata_id = _paint_id;
             }
         }
     }
 
     /// Constructor for Clip.
-    DenseTileMap(const RectI &p_rect,
+    DenseTileMap(const RectI &_rect,
                  AlphaTileId dest_tile_id,
                  int32_t dest_backdrop,
                  AlphaTileId src_tile_id,
                  int32_t src_backdrop)
-        : rect(p_rect) {
+        : rect(_rect) {
         data = std::vector<T>(rect.width() * rect.height(), T());
 
         for (int y = rect.min_y(); y < rect.max_y(); y++) {
@@ -59,8 +59,8 @@ struct DenseTileMap {
     }
 
     /// A quick way to build z buffer.
-    static inline DenseTileMap z_builder(const RectI &p_rect) {
-        return {std::vector<T>(p_rect.width() * p_rect.height(), 0), p_rect};
+    static inline DenseTileMap z_builder(const RectI &_rect) {
+        return {std::vector<T>(_rect.width() * _rect.height(), 0), _rect};
     }
 
     inline T *get(const Vec2I &coords) {

@@ -19,13 +19,13 @@ private:
 public:
     Timestamp();
 
-    void record(const std::string &p_label);
+    void record(const std::string &_label);
 
     void reset();
 
     void print();
 
-    void set_enabled(bool p_enabled);
+    void enable(bool _enabled);
 };
 
 } // namespace Pathfinder

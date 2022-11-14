@@ -12,9 +12,9 @@ namespace Pathfinder {
 /// One tiler for one outline.
 struct Tiler {
 public:
-    Tiler(SceneBuilderD3D9& p_scene_builder,
+    Tiler(SceneBuilderD3D9& _scene_builder,
           uint32_t path_id,
-          const Outline& p_outline,
+          const Outline& _outline,
           FillRule fill_rule,
           const RectF& view_box,
           const std::shared_ptr<uint32_t>& clip_path_id,

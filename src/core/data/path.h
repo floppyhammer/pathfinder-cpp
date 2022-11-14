@@ -23,7 +23,7 @@ public:
     void transform(const Transform2 &transform);
 
     /// Add a new contour to this shape.
-    void push_contour(const Contour &p_contour);
+    void push_contour(const Contour &_contour);
 };
 
 /// A thin wrapper over Outline, which describes a path that can be drawn.

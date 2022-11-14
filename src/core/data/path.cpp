@@ -21,19 +21,19 @@ void Outline::transform(const Transform2 &transform) {
     bounds = new_bounds;
 }
 
-void Outline::push_contour(const Contour &p_contour) {
-    if (p_contour.is_empty()) {
+void Outline::push_contour(const Contour &_contour) {
+    if (_contour.is_empty()) {
         return;
     }
 
     // Push contour.
-    contours.push_back(p_contour);
+    contours.push_back(_contour);
 
     // Update bounds.
     if (contours.empty()) {
-        bounds = p_contour.bounds;
+        bounds = _contour.bounds;
     } else {
-        bounds = bounds.union_rect(p_contour.bounds);
+        bounds = bounds.union_rect(_contour.bounds);
     }
 }
 

@@ -38,7 +38,7 @@ struct BuiltPath {
     BuiltPath(uint32_t path_id,
               RectF path_bounds,
               RectF view_box_bounds,
-              FillRule p_fill_rule,
+              FillRule _fill_rule,
               const std::shared_ptr<uint32_t> &clip_path_id,
               const TilingPathInfo &tiling_path_info);
 };

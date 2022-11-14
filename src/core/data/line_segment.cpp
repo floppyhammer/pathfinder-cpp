@@ -7,12 +7,13 @@
 #include "../../common/math/mat2x2.h"
 
 namespace Pathfinder {
-LineSegmentF::LineSegmentF(const F32x4 &p_value) : value(p_value) {}
 
-LineSegmentF::LineSegmentF(const Vec2F &p_from, const Vec2F &p_to) : value(F32x4(p_from.x, p_from.y, p_to.x, p_to.y)) {}
+LineSegmentF::LineSegmentF(const F32x4 &_value) : value(_value) {}
 
-LineSegmentF::LineSegmentF(float p_from_x, float p_from_y, float p_to_x, float p_to_y)
-    : value(F32x4(p_from_x, p_from_y, p_to_x, p_to_y)) {}
+LineSegmentF::LineSegmentF(const Vec2F &from, const Vec2F &to) : value(F32x4(from.x, from.y, to.x, to.y)) {}
+
+LineSegmentF::LineSegmentF(float from_x, float from_y, float to_x, float to_y)
+    : value(F32x4(from_x, from_y, to_x, to_y)) {}
 
 LineSegmentF LineSegmentF::clamp(float min, float max) const {
     F32x4 result = value.clamp(F32x4::splat(min), F32x4::splat(max));
@@ -94,4 +95,5 @@ LineSegmentF LineSegmentF::offset(float distance) const {
         return *this + vector().yx().normalize() * Vec2F(-distance, distance);
     }
 }
+
 } // namespace Pathfinder

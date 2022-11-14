@@ -186,7 +186,7 @@ public:
     /// Returns the inner scene.
     std::shared_ptr<Scene> get_scene() const;
 
-    void set_scene(const std::shared_ptr<Scene> &p_scene);
+    void set_scene(const std::shared_ptr<Scene> &new_scene);
 
     std::shared_ptr<Driver> get_driver() const;
 

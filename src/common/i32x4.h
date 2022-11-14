@@ -22,7 +22,7 @@ struct I32x4 {
 
     I32x4() = default;
 
-    explicit I32x4(__m128i p_v) : v(p_v) {}
+    explicit I32x4(__m128i _v) : v(_v) {}
 
     I32x4(int32_t x, int32_t y, int32_t z, int32_t w) {
         v = _mm_setr_epi32(x, y, z, w);

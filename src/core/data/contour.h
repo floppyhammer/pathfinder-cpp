@@ -54,13 +54,13 @@ public:
     void push_point(const Vec2F &point, PointFlag flag, bool update_bounds);
 
     /// Push a segment as points and flags.
-    void push_segment(const Segment &segment, PushSegmentFlags p_flags);
+    void push_segment(const Segment &segment, PushSegmentFlags _flags);
 
     void push_arc_from_unit_chord(Transform2 &transform, LineSegmentF chord, ArcDirection direction);
 
     /// Use this function to keep bounds up to date when mutating contours.
     /// See `Outline::transform()` for an example of use.
-    void update_bounds(RectF &p_bounds) const;
+    void update_bounds(RectF &_bounds) const;
 
     /**
      * Convert points in a contour to segments.
@@ -79,7 +79,7 @@ public:
 /// An iterator used to traverse segments efficiently in a contour.
 class SegmentsIter {
 public:
-    SegmentsIter(const std::vector<Vec2F> &p_points, const std::vector<PointFlag> &p_flags, bool p_closed);
+    SegmentsIter(const std::vector<Vec2F> &_points, const std::vector<PointFlag> &_flags, bool _closed);
 
     /// Get next segment in the contour.
     Segment get_next(bool force_closed = false);

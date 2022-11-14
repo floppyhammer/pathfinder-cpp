@@ -8,10 +8,10 @@ namespace Pathfinder {
 BuiltPath::BuiltPath(uint32_t path_id,
                      RectF path_bounds,
                      RectF view_box_bounds,
-                     FillRule p_fill_rule,
+                     FillRule _fill_rule,
                      const std::shared_ptr<uint32_t> &clip_path_id,
                      const TilingPathInfo &tiling_path_info)
-    : fill_rule(p_fill_rule) {
+    : fill_rule(_fill_rule) {
     if (tiling_path_info.type == TilingPathInfo::Type::Draw) {
         paint_id = tiling_path_info.info.paint_id;
     }
@@ -33,7 +33,9 @@ BuiltPath::BuiltPath(uint32_t path_id,
     }
 }
 
-BuiltDrawPath::BuiltDrawPath(const BuiltPath &built_path, const DrawPath &path_object, const PaintMetadata &paint_metadata) {
+BuiltDrawPath::BuiltDrawPath(const BuiltPath &built_path,
+                             const DrawPath &path_object,
+                             const PaintMetadata &paint_metadata) {
     blend_mode = path_object.blend_mode;
     occludes = paint_metadata.is_opaque && blend_mode_occludes_backdrop(blend_mode);
 

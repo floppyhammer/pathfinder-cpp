@@ -15,7 +15,7 @@ struct ColorF {
 
     ColorF() = default;
 
-    ColorF(float p_r, float p_g, float p_b, float p_a);
+    ColorF(float _r, float _g, float _b, float _a);
 
     ColorF lerp(const ColorF& other, float t) const;
 
@@ -53,13 +53,13 @@ struct ColorU {
 
     ColorU() = default;
 
-    explicit ColorU(uint32_t p_color);
+    explicit ColorU(uint32_t _color);
 
-    explicit ColorU(ColorF p_color);
+    explicit ColorU(ColorF _color);
 
-    ColorU(uint8_t p_r, uint8_t p_g, uint8_t p_b, uint8_t p_a);
+    ColorU(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t _a);
 
-    ColorU(uint8_t p_r, uint8_t p_g, uint8_t p_b);
+    ColorU(uint8_t _r, uint8_t _g, uint8_t _b);
 
     uint32_t to_u32() const;
 

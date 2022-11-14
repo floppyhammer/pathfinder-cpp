@@ -110,7 +110,7 @@ struct Gradient {
     }
 
     /// Adds a new color stop by order of offset to the gradient.
-    void add(const ColorStop &p_stop);
+    void add(const ColorStop &_stop);
 
     /// A convenience method equivalent to
     /// `gradient.add(ColorStop::new(color, offset))`.

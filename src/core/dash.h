@@ -4,13 +4,14 @@
 #include "data/path.h"
 
 namespace Pathfinder {
+
 struct DashState {
     Contour output;
     std::vector<float> dashes;
     size_t current_dash_index;
     float distance_left;
 
-    DashState(const std::vector<float> &p_dashes, float p_offset);
+    DashState(const std::vector<float> &_dashes, float _offset);
 
     bool is_on() const;
 };
@@ -21,7 +22,7 @@ struct OutlineDash {
     Outline output;
     DashState state;
 
-    OutlineDash(Outline &p_input, const std::vector<float> &p_dashes, float p_offset);
+    OutlineDash(Outline &_input, const std::vector<float> &dashes, float offset);
 
     void dash();
 
@@ -33,10 +34,11 @@ struct ContourDash {
     Outline &output;
     DashState &state;
 
-    ContourDash(Contour &p_input, Outline &p_output, DashState &p_state);
+    ContourDash(Contour &_input, Outline &_output, DashState &_state);
 
     void dash();
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_DASH_H

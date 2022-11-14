@@ -25,7 +25,7 @@ struct F32x4 {
 
     F32x4() = default;
 
-    explicit F32x4(__m128 p_v) : v(p_v) {}
+    explicit F32x4(__m128 _v) : v(_v) {}
 
     F32x4(Vec2F a, Vec2F b) {
         v = _mm_setr_ps(a.x, a.y, b.x, b.y);
@@ -47,8 +47,8 @@ struct F32x4 {
         return F32x4(_mm_max_ps(v, other.v));
     }
 
-    inline F32x4 clamp(const F32x4 &p_min, const F32x4 &p_max) const {
-        return max(p_min).min(p_max);
+    inline F32x4 clamp(const F32x4 &_min, const F32x4 &_max) const {
+        return max(_min).min(_max);
     }
 
     inline F32x4 minus() const {
@@ -205,8 +205,8 @@ struct F32x4 {
                 std::max(v[3], other.v[3])};
     }
 
-    inline F32x4 clamp(const F32x4 &p_min, const F32x4 &p_max) const {
-        return max(p_min).min(p_max);
+    inline F32x4 clamp(const F32x4 &_min, const F32x4 &_max) const {
+        return max(_min).min(_max);
     }
 
     inline F32x4 minus() const {

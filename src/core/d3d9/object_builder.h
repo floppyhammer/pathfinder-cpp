@@ -25,7 +25,7 @@ public:
                   const TilingPathInfo &path_info);
 
     /// Alpha tile id is set at this stage.
-    void add_fill(SceneBuilderD3D9 &scene_builder, LineSegmentF p_segment, Vec2I tile_coords);
+    void add_fill(SceneBuilderD3D9 &scene_builder, LineSegmentF _segment, Vec2I tile_coords);
 
     void adjust_alpha_tile_backdrop(const Vec2I &tile_coords, int8_t delta);
 

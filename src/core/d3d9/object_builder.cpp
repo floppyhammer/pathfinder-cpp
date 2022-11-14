@@ -17,7 +17,7 @@ ObjectBuilder::ObjectBuilder(uint32_t path_id,
     built_path = BuiltPath(path_id, path_bounds, view_box_bounds, fill_rule, clip_path_id, path_info);
 }
 
-void ObjectBuilder::add_fill(SceneBuilderD3D9 &scene_builder, LineSegmentF p_segment, Vec2I tile_coords) {
+void ObjectBuilder::add_fill(SceneBuilderD3D9 &scene_builder, LineSegmentF _segment, Vec2I tile_coords) {
     // Ensure this fill is in bounds. If not, cull it.
     if (!built_path.tile_bounds.contains_point(tile_coords)) {
         return;
@@ -28,7 +28,7 @@ void ObjectBuilder::add_fill(SceneBuilderD3D9 &scene_builder, LineSegmentF p_seg
     auto tile_upper_left = F32x4(tile_coords.to_f32(), Vec2F()).xyxy() * tile_size;
 
     // To tile's local coordinates.
-    F32x4 segment = (p_segment.value - tile_upper_left) * F32x4::splat(256.0);
+    F32x4 segment = (_segment.value - tile_upper_left) * F32x4::splat(256.0);
 
     // Clamp the segment within the tile.
     F32x4 min = F32x4::splat(0.0);
@@ -70,8 +70,7 @@ int ObjectBuilder::tile_coords_to_local_index_unchecked(const Vec2I &coords) con
     return offset.x + tile_rect.width() * offset.y;
 }
 
-AlphaTileId ObjectBuilder::get_or_allocate_alpha_tile_index(SceneBuilderD3D9 &scene_builder,
-                                                            const Vec2I &tile_coords) {
+AlphaTileId ObjectBuilder::get_or_allocate_alpha_tile_index(SceneBuilderD3D9 &scene_builder, const Vec2I &tile_coords) {
     // Tile index in the tile bounds.
     auto local_tile_index = tile_coords_to_local_index_unchecked(tile_coords);
 

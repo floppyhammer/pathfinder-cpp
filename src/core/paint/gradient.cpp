@@ -4,16 +4,16 @@
 
 namespace Pathfinder {
 
-void Gradient::add(const ColorStop &p_stop) {
+void Gradient::add(const ColorStop &_stop) {
     auto end = stops.end();
     auto begin = stops.begin();
 
     // Find a place to insert the new stop.
-    while ((begin != end) && (begin->offset < p_stop.offset)) {
+    while ((begin != end) && (begin->offset < _stop.offset)) {
         ++begin;
     }
 
-    stops.insert(begin, p_stop);
+    stops.insert(begin, _stop);
 }
 
 void Gradient::add_color_stop(const ColorU &color, float offset) {

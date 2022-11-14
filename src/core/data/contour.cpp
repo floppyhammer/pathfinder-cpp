@@ -1,17 +1,18 @@
 #include "contour.h"
 
 namespace Pathfinder {
+
 Vec2F Contour::position_of_last(int index) {
     return points[points.size() - index];
 }
 
-void Contour::push_segment(const Segment &segment, PushSegmentFlags p_flags) {
+void Contour::push_segment(const Segment &segment, PushSegmentFlags _flags) {
     // Not a valid segment.
     if (segment.kind == SegmentKind::None) {
         return;
     }
 
-    auto update_bounds = (p_flags.value & PushSegmentFlags::UPDATE_BOUNDS) > 0x00;
+    auto update_bounds = (_flags.value & PushSegmentFlags::UPDATE_BOUNDS) > 0x00;
 
     // Push the first on-curve point.
     push_point(segment.baseline.from(), PointFlag::ON_CURVE_POINT, update_bounds);
@@ -32,13 +33,13 @@ void Contour::push_segment(const Segment &segment, PushSegmentFlags p_flags) {
     push_point(segment.baseline.to(), PointFlag::ON_CURVE_POINT, update_bounds);
 }
 
-void Contour::update_bounds(RectF &p_bounds) const {
+void Contour::update_bounds(RectF &_bounds) const {
     // The bounds to union is not valid.
-    if (!p_bounds.is_valid()) {
-        p_bounds = bounds;
+    if (!_bounds.is_valid()) {
+        _bounds = bounds;
     }
 
-    p_bounds = p_bounds.union_rect(bounds);
+    _bounds = _bounds.union_rect(bounds);
 }
 
 std::vector<Segment> Contour::get_segments(bool force_closed) const {
@@ -94,8 +95,8 @@ void Contour::transform(const Transform2 &transform) {
     }
 }
 
-SegmentsIter::SegmentsIter(const std::vector<Vec2F> &p_points, const std::vector<PointFlag> &p_flags, bool p_closed)
-    : points(p_points), flags(p_flags), closed(p_closed) {}
+SegmentsIter::SegmentsIter(const std::vector<Vec2F> &_points, const std::vector<PointFlag> &_flags, bool _closed)
+    : points(_points), flags(_flags), closed(_closed) {}
 
 Segment SegmentsIter::get_next(bool force_closed) {
     Segment segment;
@@ -163,4 +164,5 @@ bool SegmentsIter::is_at_start() const {
 bool SegmentsIter::is_at_end() const {
     return !has_next;
 }
+
 } // namespace Pathfinder

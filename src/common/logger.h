@@ -55,8 +55,8 @@ public:
         ERROR,
     } level = Level::INFO;
 
-    static void set_level(Level p_level) {
-        get_singleton()->level = p_level;
+    static void set_level(Level _level) {
+        get_singleton()->level = _level;
     }
 
     static void verbose(const std::string &label, const std::string &module = "") {

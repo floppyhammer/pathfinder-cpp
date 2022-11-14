@@ -32,8 +32,8 @@ struct Outcode {
         return flag == 0x00;
     }
 
-    bool contains(uint8_t p_side) const {
-        return (flag & p_side) != 0x00;
+    bool contains(uint8_t side) const {
+        return (flag & side) != 0x00;
     }
 
     Outcode operator&(const Outcode &b) const {
@@ -79,7 +79,7 @@ bool clip_line_segment_to_rect(LineSegmentF &line_segment, RectF rect) {
 
         // The line segment crosses the boundaries of the bounding rect.
 
-        // If we should clip the from point.
+        // If we should clip the FROM point.
         auto clip_from = outcode_from.flag > outcode_to.flag;
         Vec2F point{};
         Outcode outcode;
@@ -128,19 +128,17 @@ bool clip_line_segment_to_rect(LineSegmentF &line_segment, RectF rect) {
 /// Nehab and Hoppe, "Random-Access Rendering of General Vector Graphics" 2006.
 /// The algorithm to step through tiles is Amanatides and Woo, "A Fast Voxel Traversal Algorithm for
 /// Ray Tracing" 1987: http://www.cse.yorku.ca/~amana/research/grid.pdf
-void process_line_segment(LineSegmentF p_line_segment,
-                          SceneBuilderD3D9 &p_scene_builder,
-                          ObjectBuilder &p_object_builder) {
+void process_line_segment(LineSegmentF line_segment, SceneBuilderD3D9 &scene_builder, ObjectBuilder &object_builder) {
     // Clip the line segment if it intersects the view box bounds.
     {
         // Clip by the view box.
-        auto clip_box = p_scene_builder.get_scene()->get_view_box();
+        auto clip_box = scene_builder.get_scene()->get_view_box();
 
         // Clipping doesn't happen to the top bound as the ray goes from that direction.
         clip_box.top = -std::numeric_limits<float>::infinity();
 
         // Clip the line segment.
-        const bool inside_view = clip_line_segment_to_rect(p_line_segment, clip_box);
+        const bool inside_view = clip_line_segment_to_rect(line_segment, clip_box);
 
         // If the line segment falls outside the clip box, no need to process it.
         if (!inside_view) {
@@ -151,14 +149,14 @@ void process_line_segment(LineSegmentF p_line_segment,
     // Tile size.
     const auto tile_size = Vec2F(TILE_WIDTH, TILE_HEIGHT);
 
-    F32x4 tile_line_segment = p_line_segment.value * F32x4::splat(1.0f / TILE_WIDTH);
+    F32x4 tile_line_segment = line_segment.value * F32x4::splat(1.0f / TILE_WIDTH);
 
     // Tile the line segment, get the tile coords (index) of the FROM and TO points.
     const auto from_tile_coords = tile_line_segment.xy().floor();
     const auto to_tile_coords = tile_line_segment.zw().floor();
 
     // Line segment vector.
-    const auto vector = p_line_segment.vector();
+    const auto vector = line_segment.vector();
 
     // Step is the direction to advance the tile.
     const auto step = Vec2I(vector.x < 0 ? -1 : 1, vector.y < 0 ? -1 : 1);
@@ -170,14 +168,14 @@ void process_line_segment(LineSegmentF p_line_segment,
         (from_tile_coords.to_f32() + Vec2F(vector.x >= 0 ? 1 : 0, vector.y >= 0 ? 1 : 0)) * tile_size;
 
     // Value of t at which the ray crosses the first vertical/horizontal tile boundary.
-    auto t_max = (first_tile_crossing - p_line_segment.from()) / vector;
+    auto t_max = (first_tile_crossing - line_segment.from()) / vector;
 
     // This indicates how far along the ray we must move
     // (in units of t) for the horizontal/vertical component of such a
     // movement to equal the width/height of a tile.
     const auto t_delta = (tile_size / vector).abs();
 
-    auto current_position = p_line_segment.from();
+    auto current_position = line_segment.from();
     auto tile_coords = from_tile_coords;
 
     // Decide the direction of the next step to take.
@@ -227,32 +225,32 @@ void process_line_segment(LineSegmentF p_line_segment,
         }
 
         // Get next position on segment.
-        const auto next_position = p_line_segment.sample(next_t);
+        const auto next_position = line_segment.sample(next_t);
 
         const auto clipped_line_segment = LineSegmentF(current_position, next_position);
 
         // Core step. Add fill.
-        p_object_builder.add_fill(p_scene_builder, clipped_line_segment, tile_coords);
+        object_builder.add_fill(scene_builder, clipped_line_segment, tile_coords);
 
         // Add extra fills if necessary.
         // This happens when the segment crosses boundaries vertically, in which we need two quad fills to describe it.
         if (step.y < 0 && next_step_direction == StepDirection::Y) {
             // Leave the current tile through its top boundary.
             const auto auxiliary_segment = LineSegmentF(clipped_line_segment.to(), tile_coords.to_f32() * tile_size);
-            p_object_builder.add_fill(p_scene_builder, auxiliary_segment, tile_coords);
+            object_builder.add_fill(scene_builder, auxiliary_segment, tile_coords);
         } else if (step.y > 0 && last_step_direction == StepDirection::Y) {
             // Enter a new tile through its top boundary.
             const auto auxiliary_segment = LineSegmentF(tile_coords.to_f32() * tile_size, clipped_line_segment.from());
-            p_object_builder.add_fill(p_scene_builder, auxiliary_segment, tile_coords);
+            object_builder.add_fill(scene_builder, auxiliary_segment, tile_coords);
         }
 
         // Adjust backdrop (i.e. winding) if necessary.
         if (step.x < 0 && last_step_direction == StepDirection::X) {
             // Enter a new tile through its right boundary.
-            p_object_builder.adjust_alpha_tile_backdrop(tile_coords, 1);
+            object_builder.adjust_alpha_tile_backdrop(tile_coords, 1);
         } else if (step.x > 0 && next_step_direction == StepDirection::X) {
             // Leave the current tile through its right boundary.
-            p_object_builder.adjust_alpha_tile_backdrop(tile_coords, -1);
+            object_builder.adjust_alpha_tile_backdrop(tile_coords, -1);
         }
 
         // Take a step.
@@ -275,22 +273,22 @@ void process_line_segment(LineSegmentF p_line_segment,
 }
 
 /// Recursive call.
-void process_segment(Segment &p_segment, SceneBuilderD3D9 &p_scene_builder, ObjectBuilder &p_object_builder) {
+void process_segment(Segment &segment, SceneBuilderD3D9 &scene_builder, ObjectBuilder &object_builder) {
     // TODO(pcwalton): Stop degree elevating.
     // If the segment is a quadratic curve.
-    if (p_segment.is_quadratic()) {
+    if (segment.is_quadratic()) {
         // Convert to a cubic one.
-        auto cubic = p_segment.to_cubic();
-        process_segment(cubic, p_scene_builder, p_object_builder);
+        auto cubic = segment.to_cubic();
+        process_segment(cubic, scene_builder, object_builder);
 
         // Remember to return to avoid running code below.
         return;
     }
 
     // If the segment is a line or a cubic curve that is flat enough, go to next step.
-    if (p_segment.is_line() || (p_segment.is_cubic() && p_segment.is_flat(FLATTENING_TOLERANCE))) {
+    if (segment.is_line() || (segment.is_cubic() && segment.is_flat(FLATTENING_TOLERANCE))) {
         // (Next step) Process the segment as a line segment.
-        process_line_segment(p_segment.baseline, p_scene_builder, p_object_builder);
+        process_line_segment(segment.baseline, scene_builder, object_builder);
 
         // Remember to return to avoid running code below.
         return;
@@ -298,21 +296,21 @@ void process_segment(Segment &p_segment, SceneBuilderD3D9 &p_scene_builder, Obje
 
     // If the segment is a cubic curve.
     Segment prev, next;
-    p_segment.split(0.5f, prev, next);
+    segment.split(0.5f, prev, next);
 
-    process_segment(prev, p_scene_builder, p_object_builder);
-    process_segment(next, p_scene_builder, p_object_builder);
+    process_segment(prev, scene_builder, object_builder);
+    process_segment(next, scene_builder, object_builder);
 }
 
-Tiler::Tiler(SceneBuilderD3D9 &p_scene_builder,
+Tiler::Tiler(SceneBuilderD3D9 &_scene_builder,
              uint32_t path_id,
-             const Outline &p_outline,
+             const Outline &_outline,
              FillRule fill_rule,
              const RectF &view_box,
              const std::shared_ptr<uint32_t> &clip_path_id,
              const std::vector<BuiltPath> &built_clip_paths,
              TilingPathInfo path_info)
-    : outline(std::move(p_outline)), scene_builder(p_scene_builder) {
+    : outline(std::move(_outline)), scene_builder(_scene_builder) {
     // The intersection rect of the path bounds and the view box.
     auto bounds = outline.bounds.intersection(view_box);
 

@@ -176,7 +176,7 @@ void upload_texture_metadata(const std::shared_ptr<Texture> &metadata_texture,
     cmd_buffer->submit_and_wait();
 }
 
-Palette::Palette(uint32_t p_scene_id) : scene_id(p_scene_id) {}
+Palette::Palette(uint32_t _scene_id) : scene_id(_scene_id) {}
 
 uint32_t Palette::push_paint(const Paint &paint) {
     // Check if already has this paint.
@@ -236,11 +236,11 @@ std::vector<PaintMetadata> Palette::build_paint_info(const std::shared_ptr<Drive
     return paint_metadata;
 }
 
-std::vector<TextureMetadataEntry> Palette::create_texture_metadata(const std::vector<PaintMetadata> &p_paint_metadata) {
+std::vector<TextureMetadataEntry> Palette::create_texture_metadata(const std::vector<PaintMetadata> &_paint_metadata) {
     std::vector<TextureMetadataEntry> texture_metadata;
-    texture_metadata.reserve(p_paint_metadata.size());
+    texture_metadata.reserve(_paint_metadata.size());
 
-    for (const auto &paint_metadata : p_paint_metadata) {
+    for (const auto &paint_metadata : _paint_metadata) {
         TextureMetadataEntry entry;
 
         if (paint_metadata.color_texture_metadata) {
@@ -387,10 +387,10 @@ std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr
     return paint_metadata;
 }
 
-void Palette::calculate_texture_transforms(std::vector<PaintMetadata> &p_paint_metadata) {
+void Palette::calculate_texture_transforms(std::vector<PaintMetadata> &paint_metadata) {
     for (int i = 0; i < paints.size(); i++) {
         auto &paint = paints[i];
-        auto &metadata = p_paint_metadata[i];
+        auto &metadata = paint_metadata[i];
         auto color_texture_metadata = metadata.color_texture_metadata;
 
         if (!color_texture_metadata) {

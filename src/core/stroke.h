@@ -1,14 +1,14 @@
 #ifndef PATHFINDER_STROKE_H
 #define PATHFINDER_STROKE_H
 
+//! Utilities for converting contour strokes to fills.
+
 #include <vector>
 
 #include "../common/math/transform2.h"
 #include "data/contour.h"
 #include "data/path.h"
 #include "data/segment.h"
-
-//! Utilities for converting contour strokes to fills.
 
 namespace Pathfinder {
 
@@ -35,7 +35,7 @@ struct ContourStrokeToFill {
     LineJoin join;
     float join_miter_limit = 10; // Only used when line join is miter.
 
-    ContourStrokeToFill(Contour p_input, float p_radius, LineJoin p_join, float p_join_miter_limit);
+    ContourStrokeToFill(Contour _input, float _radius, LineJoin _join, float _join_miter_limit);
 
     /// Scale the input contour up, forming an outer contour.
     void offset_forward();
@@ -50,7 +50,7 @@ struct OutlineStrokeToFill {
     Outline output{};
     StrokeStyle style;
 
-    OutlineStrokeToFill(const Outline &p_input, StrokeStyle p_style);
+    OutlineStrokeToFill(const Outline &_input, StrokeStyle _style);
 
     /// Performs the stroke operation.
     void offset();

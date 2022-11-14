@@ -5,6 +5,7 @@
 #include "../../common/math/vec2.h"
 
 namespace Pathfinder {
+
 /// Various flags that specify the relation of this segment to other segments in a contour.
 enum class SegmentFlags {
     NONE = 0x00,
@@ -33,11 +34,11 @@ struct LineSegmentF {
 
     LineSegmentF() = default;
 
-    explicit LineSegmentF(const F32x4 &p_value);
+    explicit LineSegmentF(const F32x4 &_value);
 
-    LineSegmentF(const Vec2F &p_from, const Vec2F &p_to);
+    LineSegmentF(const Vec2F &from, const Vec2F &to);
 
-    LineSegmentF(float p_from_x, float p_from_y, float p_to_x, float p_to_y);
+    LineSegmentF(float from_x, float from_y, float to_x, float to_y);
 
     inline Vec2F from() const {
         return value.xy();
@@ -92,6 +93,7 @@ struct LineSegmentF {
         return {from() * v, to() * v};
     }
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_LINE_SEGMENT_H

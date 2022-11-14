@@ -252,16 +252,16 @@ Paint Canvas::fill_paint() const {
     return current_state.fill_paint;
 }
 
-void Canvas::set_fill_paint(const Paint &p_fill_paint) {
-    current_state.fill_paint = p_fill_paint;
+void Canvas::set_fill_paint(const Paint &new_fill_paint) {
+    current_state.fill_paint = new_fill_paint;
 }
 
 Paint Canvas::stroke_paint() const {
     return current_state.stroke_paint;
 }
 
-void Canvas::set_stroke_paint(const Paint &p_stroke_paint) {
-    current_state.stroke_paint = p_stroke_paint;
+void Canvas::set_stroke_paint(const Paint &new_stroke_paint) {
+    current_state.stroke_paint = new_stroke_paint;
 }
 
 float Canvas::line_width() const {
@@ -477,8 +477,8 @@ void Canvas::draw() {
     scene->build_and_render(renderer);
 }
 
-void Canvas::set_scene(const std::shared_ptr<Scene> &p_scene) {
-    scene = p_scene;
+void Canvas::set_scene(const std::shared_ptr<Scene> &new_scene) {
+    scene = new_scene;
 }
 
 std::shared_ptr<Scene> Canvas::take_scene() {

@@ -12,8 +12,8 @@ const uint32_t SAMPLE_COUNT = 16;
 
 const float EPSILON = 0.001;
 
-ContourStrokeToFill::ContourStrokeToFill(Contour p_input, float p_radius, LineJoin p_join, float p_join_miter_limit)
-    : input(std::move(p_input)), radius(p_radius), join(p_join), join_miter_limit(p_join_miter_limit) {}
+ContourStrokeToFill::ContourStrokeToFill(Contour _input, float _radius, LineJoin _join, float _join_miter_limit)
+    : input(std::move(_input)), radius(_radius), join(_join), join_miter_limit(_join_miter_limit) {}
 
 void ContourStrokeToFill::offset_forward() {
     auto segments_iter = SegmentsIter(input.points, input.flags, input.closed);
@@ -50,8 +50,7 @@ void ContourStrokeToFill::offset_backward() {
     }
 }
 
-OutlineStrokeToFill::OutlineStrokeToFill(const Outline &p_input, StrokeStyle p_style)
-    : input(p_input), style(p_style) {}
+OutlineStrokeToFill::OutlineStrokeToFill(const Outline &_input, StrokeStyle _style) : input(_input), style(_style) {}
 
 void OutlineStrokeToFill::offset() {
     // Resulting contours.

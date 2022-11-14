@@ -14,7 +14,7 @@ Timestamp::Timestamp() {
     start_time = std::chrono::steady_clock::now();
 }
 
-void Timestamp::record(const std::string &p_label) {
+void Timestamp::record(const std::string &_label) {
     if (!enabled) {
         return;
     }
@@ -26,7 +26,7 @@ void Timestamp::record(const std::string &p_label) {
     auto elapsed_time_in_ms = round(elapsed_time.count() * 100000.0f) * 0.01f;
 
     records.push_back(elapsed_time_in_ms);
-    labels.push_back(p_label);
+    labels.push_back(_label);
 
     start_time = std::chrono::steady_clock::now();
 }
@@ -49,8 +49,8 @@ void Timestamp::print() {
     }
 }
 
-void Timestamp::set_enabled(bool p_enabled) {
-    enabled = p_enabled;
+void Timestamp::enable(bool _enabled) {
+    enabled = _enabled;
 }
 
 } // namespace Pathfinder

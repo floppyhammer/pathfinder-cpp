@@ -3,24 +3,27 @@
 #include <cmath>
 
 namespace Pathfinder {
+
 const float EPSILON = 0.0001;
 
-DashState::DashState(const std::vector<float> &p_dashes, float p_offset) : dashes(p_dashes) {
+DashState::DashState(const std::vector<float> &_dashes, float _offset) : dashes(_dashes) {
     float total = 0;
-    for (auto &n : p_dashes) total += n;
-    p_offset = fmod(p_offset, total);
+    for (auto &n : _dashes) {
+        total += n;
+    }
+    _offset = fmod(_offset, total);
 
     current_dash_index = 0;
     while (current_dash_index < dashes.size()) {
         auto dash = dashes[current_dash_index];
-        if (p_offset < dash) break;
+        if (_offset < dash) break;
 
-        p_offset -= dash;
+        _offset -= dash;
         current_dash_index += 1;
     }
 
     output = Contour();
-    distance_left = p_offset;
+    distance_left = _offset;
 }
 
 bool DashState::is_on() const {
@@ -40,8 +43,8 @@ bool DashState::is_on() const {
 ///
 /// * `offset`: The line dash offset, or "phase". See
 ///   https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineDashOffset.
-OutlineDash::OutlineDash(Outline &p_input, const std::vector<float> &p_dashes, float p_offset)
-    : input(p_input), output(Outline()), state(DashState(p_dashes, p_offset)) {}
+OutlineDash::OutlineDash(Outline &_input, const std::vector<float> &dashes, float offset)
+    : input(_input), output(Outline()), state(DashState(dashes, offset)) {}
 
 void OutlineDash::dash() {
     for (auto &contour : input.contours) {
@@ -57,8 +60,8 @@ Outline OutlineDash::into_outline() {
     return output;
 }
 
-ContourDash::ContourDash(Contour &p_input, Outline &p_output, DashState &p_state)
-    : input(p_input), output(p_output), state(p_state) {}
+ContourDash::ContourDash(Contour &_input, Outline &_output, DashState &_state)
+    : input(_input), output(_output), state(_state) {}
 
 void ContourDash::dash() {
     auto segments_iter = SegmentsIter(input.points, input.flags, input.closed);
@@ -115,4 +118,5 @@ void ContourDash::dash() {
         }
     }
 }
+
 } // namespace Pathfinder

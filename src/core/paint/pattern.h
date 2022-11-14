@@ -113,8 +113,8 @@ struct Pattern {
     std::shared_ptr<PatternFilter> filter;
     PatternFlags flags;
 
-    static inline Pattern from_source(const PatternSource &p_source) {
-        return {p_source, Transform2()};
+    static inline Pattern from_source(const PatternSource &source) {
+        return {source, Transform2()};
     }
 
     /// Creates a new pattern from the given image.
@@ -163,8 +163,8 @@ struct Pattern {
     }
 
     /// Applies a filter to this pattern, replacing any previous filter if any.
-    inline void set_filter(const PatternFilter &p_filter) {
-        filter = std::make_shared<PatternFilter>(p_filter);
+    inline void set_filter(const PatternFilter &_filter) {
+        filter = std::make_shared<PatternFilter>(_filter);
     }
 
     /// Returns true if this pattern repeats in the X direction or false if the base color will be

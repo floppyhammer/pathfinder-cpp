@@ -98,7 +98,7 @@ struct TextureAllocator {
     friend struct TexturePageIter;
 
 public:
-    TextureAllocator(std::shared_ptr<Driver> _driver) : driver(std::move(_driver)){};
+    explicit TextureAllocator(std::shared_ptr<Driver> _driver) : driver(std::move(_driver)){};
 
 private:
     std::shared_ptr<Driver> driver;
@@ -125,7 +125,7 @@ private:
 };
 
 struct TexturePageIter {
-    TextureAllocator* allocator;
+    TextureAllocator* allocator{};
     size_t next_index;
 
     std::shared_ptr<uint32_t> next();

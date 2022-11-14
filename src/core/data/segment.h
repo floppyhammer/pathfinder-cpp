@@ -6,6 +6,7 @@
 #include "line_segment.h"
 
 namespace Pathfinder {
+
 struct Contour;
 
 /// A single line or Bézier curve segment, with explicit start and end points.
@@ -28,20 +29,20 @@ struct Segment {
 
     Segment() = default;
 
-    Segment(const LineSegmentF &p_baseline, const LineSegmentF &p_ctrl);
+    Segment(const LineSegmentF &_baseline, const LineSegmentF &_ctrl);
 
-    Segment(const LineSegmentF &p_baseline, const LineSegmentF &p_ctrl, SegmentKind p_kind, SegmentFlags p_flags);
+    Segment(const LineSegmentF &_baseline, const LineSegmentF &_ctrl, SegmentKind _kind, SegmentFlags _flags);
 
-    inline static Segment line(const LineSegmentF &p_baseline) {
-        return {p_baseline, LineSegmentF(), SegmentKind::Line, SegmentFlags::NONE};
+    inline static Segment line(const LineSegmentF &baseline) {
+        return {baseline, LineSegmentF(), SegmentKind::Line, SegmentFlags::NONE};
     }
 
-    inline static Segment quadratic(const LineSegmentF &p_baseline, const Vec2F &p_ctrl) {
-        return {p_baseline, LineSegmentF(p_ctrl, p_ctrl), SegmentKind::Quadratic, SegmentFlags::NONE};
+    inline static Segment quadratic(const LineSegmentF &baseline, const Vec2F &ctrl) {
+        return {baseline, LineSegmentF(ctrl, ctrl), SegmentKind::Quadratic, SegmentFlags::NONE};
     }
 
-    inline static Segment cubic(const LineSegmentF &p_baseline, const LineSegmentF &p_ctrl) {
-        return {p_baseline, p_ctrl, SegmentKind::Cubic, SegmentFlags::NONE};
+    inline static Segment cubic(const LineSegmentF &baseline, const LineSegmentF &ctrl) {
+        return {baseline, ctrl, SegmentKind::Cubic, SegmentFlags::NONE};
     }
 
     /**
@@ -151,6 +152,7 @@ struct Segment {
     /// FIXME: Make this more accurate for curves.
     float arc_length() const;
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_SEGMENT_H

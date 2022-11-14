@@ -22,12 +22,11 @@ struct PathBuildParams {
 
 /// For draw path only.
 struct DrawPathBuildParams {
-    // We have to make an explicit constructor because of the reference memebers.
-    DrawPathBuildParams(PathBuildParams p_path_build_params,
-                        std::vector<PaintMetadata> &p_paint_metadata,
-                        std::vector<BuiltPath> &p_built_clip_paths)
-        : path_build_params(p_path_build_params), paint_metadata(p_paint_metadata),
-          built_clip_paths(p_built_clip_paths) {}
+    // We have to make an explicit constructor because of the reference members.
+    DrawPathBuildParams(PathBuildParams _path_build_params,
+                        std::vector<PaintMetadata> &_paint_metadata,
+                        std::vector<BuiltPath> &_built_clip_paths)
+        : path_build_params(_path_build_params), paint_metadata(_paint_metadata), built_clip_paths(_built_clip_paths) {}
 
     PathBuildParams path_build_params;
     std::vector<PaintMetadata> &paint_metadata;
