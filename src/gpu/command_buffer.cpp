@@ -136,8 +136,7 @@ void CommandBuffer::end_compute_pass() {
 
 void CommandBuffer::upload_to_texture(const std::shared_ptr<Texture> &texture,
                                       RectI _region,
-                                      const void *data,
-                                      TextureLayout dst_layout) {
+                                      const void *data) {
     auto whole_region = RectI(0, 0, texture->get_width(), texture->get_height());
 
     // Invalid region represents the whole texture.
@@ -164,7 +163,6 @@ void CommandBuffer::upload_to_texture(const std::shared_ptr<Texture> &texture,
     args.width = region.width();
     args.height = region.height();
     args.data = data;
-    args.dst_layout = dst_layout;
 
     commands.push(cmd);
 }
@@ -191,16 +189,5 @@ void CommandBuffer::read_buffer(const std::shared_ptr<Buffer> &buffer,
         } break;
     }
 }
-
-// void CommandBuffer::transition_layout(const std::shared_ptr<Texture> &texture, TextureLayout new_layout) {
-//     Command cmd;
-//     cmd.type = CommandType::TransitionLayout;
-//
-//     auto &args = cmd.args.transition_layout;
-//     args.texture = texture.get();
-//     args.dst_layout = new_layout;
-//
-//     commands.push(cmd);
-// }
 
 } // namespace Pathfinder

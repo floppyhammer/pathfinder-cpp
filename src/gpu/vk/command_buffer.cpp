@@ -173,8 +173,7 @@ void transition_image_layout(VkCommandBuffer command_buffer,
 CommandBufferVk::CommandBufferVk(VkCommandBuffer _vk_command_buffer, VkDevice _vk_device, DriverVk *_driver)
     : vk_command_buffer(_vk_command_buffer), vk_device(_vk_device), driver(_driver) {}
 
-CommandBufferVk::~CommandBufferVk() {
-}
+CommandBufferVk::~CommandBufferVk() {}
 
 void CommandBufferVk::upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
                                        uint32_t offset,
@@ -626,18 +625,6 @@ void CommandBufferVk::submit() {
                 };
                 add_callback(callback);
             } break;
-                // TODO: Should we expose image layout?
-                //            case CommandType::TransitionLayout: {
-                //                auto &args = cmd.args.transition_layout;
-                //
-                //                auto texture_vk = static_cast<TextureVk *>(args.texture);
-                //
-                //                transition_image_layout(vk_command_buffer,
-                //                                        texture_vk->get_image(),
-                //                                        to_vk_layout(texture_vk->get_layout()),
-                //                                        to_vk_layout(args.dst_layout));
-                //                texture_vk->set_layout(args.dst_layout);
-                //            } break;
             case CommandType::Max:
                 break;
         }

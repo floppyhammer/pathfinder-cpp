@@ -114,8 +114,7 @@ void GradientTileBuilder::upload(const std::shared_ptr<CommandBuffer> &cmd_buffe
     for (auto &tile : tiles) {
         cmd_buffer->upload_to_texture(texture,
                                       RectI(0, 0, GRADIENT_TILE_LENGTH, GRADIENT_TILE_LENGTH),
-                                      tile.texels.data(),
-                                      TextureLayout::ShaderReadOnly);
+                                      tile.texels.data());
     }
 }
 

@@ -47,7 +47,6 @@ enum class CommandType {
     UploadToBuffer,
     UploadToTexture,
     ReadBuffer,
-    //    TransitionLayout,
 
     Max,
 };
@@ -108,7 +107,6 @@ struct Command {
             uint32_t height;
             uint32_t data_size;
             const void *data;
-            TextureLayout dst_layout; // Final layout to put this texture in after the data copy.
         } upload_to_texture;
         struct {
             Buffer *buffer;
@@ -116,10 +114,6 @@ struct Command {
             uint32_t data_size;
             void *data;
         } read_buffer;
-        //        struct {
-        //            Texture *texture;
-        //            TextureLayout dst_layout;
-        //        } transition_layout;
     } args;
 };
 
@@ -176,10 +170,7 @@ public:
                                   uint32_t data_size,
                                   void *data) = 0;
 
-    void upload_to_texture(const std::shared_ptr<Texture> &texture,
-                           RectI region,
-                           const void *data,
-                           TextureLayout dst_layout);
+    void upload_to_texture(const std::shared_ptr<Texture> &texture, RectI region, const void *data);
 
     void read_buffer(const std::shared_ptr<Buffer> &buffer, uint32_t offset, uint32_t data_size, void *data);
 

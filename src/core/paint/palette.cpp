@@ -172,7 +172,7 @@ void upload_texture_metadata(const std::shared_ptr<Texture> &metadata_texture,
 
     auto cmd_buffer = driver->create_command_buffer("Upload to metadata texture");
     cmd_buffer->add_callback(callback);
-    cmd_buffer->upload_to_texture(metadata_texture, region_rect, raw_texels, TextureLayout::ShaderReadOnly);
+    cmd_buffer->upload_to_texture(metadata_texture, region_rect, raw_texels);
     cmd_buffer->submit_and_wait();
 }
 
@@ -330,8 +330,7 @@ std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr
 
                         cmd_buffer->upload_to_texture(color_texture_metadata->color_texture,
                                                       RectI({}, pattern.source.image.size),
-                                                      pattern.source.image.pixels.data(),
-                                                      TextureLayout::ShaderReadOnly);
+                                                      pattern.source.image.pixels.data());
                     } else { // Render target
                         texture_location.rect = RectI({}, pattern.source.size);
 

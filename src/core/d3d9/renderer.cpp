@@ -48,7 +48,7 @@ std::shared_ptr<Texture> upload_z_buffer(const std::shared_ptr<Driver> &driver,
     auto z_buffer_texture =
         driver->create_texture(z_buffer_map.rect.size(), TextureFormat::Rgba8Unorm, "Z buffer texture");
 
-    cmd_buffer->upload_to_texture(z_buffer_texture, {}, z_buffer_map.data.data(), TextureLayout::ShaderReadOnly);
+    cmd_buffer->upload_to_texture(z_buffer_texture, {}, z_buffer_map.data.data());
 
     return z_buffer_texture;
 }
