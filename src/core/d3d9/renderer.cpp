@@ -521,7 +521,7 @@ void RendererD3D9::draw_tiles(uint32_t tiles_count,
         std::array<float, 6> ubo_data = {(float)z_buffer_texture->get_width(),
                                          (float)z_buffer_texture->get_height(),
                                          color_texture ? (float)color_texture->get_width() : 0,
-                                         color_texture ? (float)color_texture->get_width() : 0,
+                                         color_texture ? (float)color_texture->get_height() : 0,
                                          target_framebuffer_size.x,
                                          target_framebuffer_size.y};
 
