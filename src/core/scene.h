@@ -5,7 +5,6 @@
 #include <map>
 #include <vector>
 
-#include "../gpu/framebuffer.h"
 #include "data/data.h"
 #include "data/path.h"
 #include "paint/palette.h"

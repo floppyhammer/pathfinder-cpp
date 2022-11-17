@@ -4,7 +4,6 @@
 #include <cstdint>
 #include <vector>
 
-#include "../../../gpu/framebuffer.h"
 #include "../../../gpu/texture.h"
 #include "../../data/data.h"
 #include "../../data/dense_tile_map.h"

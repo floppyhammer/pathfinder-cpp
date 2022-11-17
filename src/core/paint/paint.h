@@ -5,13 +5,10 @@
 #include <memory>
 #include <utility>
 
-#include "../../common/color.h"
 #include "../../common/math/rect.h"
 #include "../../common/math/transform2.h"
 #include "../../common/math/vec2.h"
-#include "../../gpu/driver.h"
 #include "../data/data.h"
-#include "../data/line_segment.h"
 #include "gradient.h"
 #include "pattern.h"
 

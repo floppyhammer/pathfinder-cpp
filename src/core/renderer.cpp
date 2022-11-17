@@ -5,9 +5,6 @@
 #include <array>
 
 #include "../common/io.h"
-#include "../common/math/basic.h"
-#include "../gpu/command_buffer.h"
-#include "../gpu/platform.h"
 #include "../shaders/generated/area_lut_png.h"
 #include "paint/palette.h"
 
