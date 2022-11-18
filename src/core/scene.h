@@ -26,7 +26,7 @@ struct DisplayItem {
         PopRenderTarget,
     } type = Type::DrawPaths;
 
-    RenderTargetId render_target_id; // For PushRenderTarget.
+    RenderTargetId render_target_id{}; // For PushRenderTarget.
 
     Range range; // For DrawPaths.
 };

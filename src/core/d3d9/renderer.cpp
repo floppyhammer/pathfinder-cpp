@@ -88,6 +88,10 @@ void RendererD3D9::set_dest_texture(const std::shared_ptr<Texture> &texture) {
     dest_framebuffer = driver->create_framebuffer(dest_render_pass_clear, texture, "Dest framebuffer");
 }
 
+std::shared_ptr<Texture> RendererD3D9::get_dest_texture() {
+    return dest_framebuffer->get_texture();
+}
+
 void RendererD3D9::set_up_pipelines() {
     // Fill pipeline.
     {
@@ -554,10 +558,6 @@ void RendererD3D9::draw_tiles(uint32_t tiles_count,
     cmd_buffer->draw_instanced(6, tiles_count);
 
     cmd_buffer->end_render_pass();
-}
-
-std::shared_ptr<Texture> RendererD3D9::get_dest_texture() {
-    return dest_framebuffer->get_texture();
 }
 
 } // namespace Pathfinder

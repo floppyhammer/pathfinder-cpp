@@ -10,9 +10,7 @@
 
 namespace Pathfinder {
 
-Renderer::Renderer(const std::shared_ptr<Driver> &_driver) {
-    driver = _driver;
-
+Renderer::Renderer(const std::shared_ptr<Driver> &_driver) : driver(_driver) {
     auto cmd_buffer = driver->create_command_buffer("Upload constant data");
 
     // Uniform buffer for some constants.
