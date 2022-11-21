@@ -45,6 +45,9 @@ protected:
     /// Pre-Defined texture used to draw the mask texture. Shared by D3D9 and D3D10.
     std::shared_ptr<Texture> area_lut_texture;
 
+    /// For unused texture binding point.
+    std::shared_ptr<Texture> dummy_texture;
+
     /// Uniform buffer containing some constants. Shared by D3D9 and D3D10.
     std::shared_ptr<Buffer> constants_ub{};
 };

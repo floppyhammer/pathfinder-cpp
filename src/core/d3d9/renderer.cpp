@@ -189,8 +189,10 @@ void RendererD3D9::set_up_pipelines() {
             Descriptor::uniform(4, ShaderStage::VertexAndFragment, "bConstantSizes", constants_ub),
             Descriptor::sampler(5, ShaderStage::Fragment, "uColorTexture0"),
             Descriptor::sampler(6, ShaderStage::Fragment, "uMaskTexture0", mask_framebuffer->get_texture()),
-            Descriptor::sampler(7, ShaderStage::Fragment, "uDestTexture"),
-            Descriptor::sampler(8, ShaderStage::Fragment, "uGammaLUT"),
+            // Unused binding.
+            Descriptor::sampler(7, ShaderStage::Fragment, "uDestTexture", dummy_texture),
+            // Unused binding.
+            Descriptor::sampler(8, ShaderStage::Fragment, "uGammaLUT", dummy_texture),
         });
 
         tile_pipeline = driver->create_render_pipeline(tile_vert_source,
@@ -524,10 +526,15 @@ void RendererD3D9::draw_tiles(uint32_t tiles_count,
 
         std::array<float, 6> ubo_data = {(float)z_buffer_texture->get_width(),
                                          (float)z_buffer_texture->get_height(),
-                                         color_texture ? (float)color_texture->get_width() : 0,
-                                         color_texture ? (float)color_texture->get_height() : 0,
+                                         1, // Meaningless dummy size.
+                                         1,
                                          target_framebuffer_size.x,
                                          target_framebuffer_size.y};
+
+        if (color_texture) {
+            ubo_data[2] = (float)color_texture->get_width();
+            ubo_data[3] = (float)color_texture->get_height();
+        }
 
         // We don't need to preserve the data until the upload commands are implemented because
         // these uniform buffers are host-visible/coherent.
@@ -539,14 +546,7 @@ void RendererD3D9::draw_tiles(uint32_t tiles_count,
     tile_descriptor_set->add_or_update({
         Descriptor::sampler(0, ShaderStage::Vertex, "uTextureMetadata", metadata_texture),
         Descriptor::sampler(1, ShaderStage::Vertex, "uZBuffer", z_buffer_texture),
-        Descriptor::sampler(5,
-                            ShaderStage::Fragment,
-                            "uColorTexture0",
-                            color_texture ? color_texture : z_buffer_texture),
-        // Unused.
-        Descriptor::sampler(7, ShaderStage::Fragment, "uDestTexture", z_buffer_texture),
-        // Unused.
-        Descriptor::sampler(8, ShaderStage::Fragment, "uGammaLUT", z_buffer_texture),
+        Descriptor::sampler(5, ShaderStage::Fragment, "uColorTexture0", color_texture ? color_texture : dummy_texture),
     });
 
     cmd_buffer->bind_render_pipeline(tile_pipeline);

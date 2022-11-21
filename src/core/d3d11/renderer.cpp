@@ -242,7 +242,7 @@ void RendererD3D11::set_up_pipelines() {
         Descriptor::sampler(3, ShaderStage::Compute, "uZBuffer"),
         Descriptor::sampler(4, ShaderStage::Compute, "uColorTexture0"),
         Descriptor::sampler(5, ShaderStage::Compute, "uMaskTexture0", mask_texture),
-        Descriptor::sampler(6, ShaderStage::Compute, "uGammaLUT"),
+        Descriptor::sampler(6, ShaderStage::Compute, "uGammaLUT", dummy_texture), // Unused binding.
         Descriptor::image(7, ShaderStage::Compute, "uDestImage"),
         Descriptor::uniform(8, ShaderStage::Compute, "bConstantsUniform", constants_ub),
         Descriptor::uniform(9, ShaderStage::Compute, "bUniform0", tile_ub0),
@@ -376,11 +376,7 @@ void RendererD3D11::draw_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer
         Descriptor::storage(1, ShaderStage::Compute, first_tile_map_buffer_id),
         Descriptor::sampler(2, ShaderStage::Compute, "uTextureMetadata", metadata_texture),
         Descriptor::sampler(3, ShaderStage::Compute, "uZBuffer", mask_texture),
-        Descriptor::sampler(4,
-                            ShaderStage::Compute,
-                            "uColorTexture0",
-                            color_texture ? color_texture : metadata_texture),
-        Descriptor::sampler(6, ShaderStage::Compute, "uGammaLUT", metadata_texture),
+        Descriptor::sampler(4, ShaderStage::Compute, "uColorTexture0", color_texture ? color_texture : dummy_texture),
         Descriptor::image(7, ShaderStage::Compute, "uDestImage", target_texture),
     });
 

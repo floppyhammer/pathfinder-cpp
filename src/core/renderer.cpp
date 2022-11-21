@@ -11,8 +11,6 @@
 namespace Pathfinder {
 
 Renderer::Renderer(const std::shared_ptr<Driver> &_driver) : driver(_driver) {
-    auto cmd_buffer = driver->create_command_buffer("Upload constant data");
-
     // Uniform buffer for some constants.
     constants_ub = driver->create_buffer(BufferType::Uniform,
                                          8 * sizeof(float),
@@ -26,12 +24,17 @@ Renderer::Renderer(const std::shared_ptr<Driver> &_driver) : driver(_driver) {
                                       TEXTURE_METADATA_TEXTURE_WIDTH,
                                       TEXTURE_METADATA_TEXTURE_HEIGHT};
 
-    cmd_buffer->upload_to_buffer(constants_ub, 0, 6 * sizeof(float), constants.data());
-
     // Area-Lut texture.
     auto image_buffer = ImageBuffer::from_memory({std::begin(area_lut_png), std::end(area_lut_png)}, false);
 
     area_lut_texture = driver->create_texture(image_buffer->get_size(), TextureFormat::Rgba8Unorm, "Area-Lut texture");
+
+    // Dummy texture.
+    dummy_texture = driver->create_texture({1, 1}, TextureFormat::Rgba8Unorm, "Dummy texture");
+
+    auto cmd_buffer = driver->create_command_buffer("Upload constant data");
+
+    cmd_buffer->upload_to_buffer(constants_ub, 0, 6 * sizeof(float), constants.data());
 
     cmd_buffer->upload_to_texture(area_lut_texture, {}, image_buffer->get_data());
 
