@@ -145,7 +145,7 @@ RendererD3D11::RendererD3D11(const std::shared_ptr<Pathfinder::Driver> &driver) 
                                      MemoryProperty::HostVisibleAndCoherent,
                                      "tile uniform buffer 0");
     tile_ub1 = driver->create_buffer(BufferType::Uniform,
-                                     8 * sizeof(float),
+                                     8 * sizeof(int32_t),
                                      MemoryProperty::HostVisibleAndCoherent,
                                      "tile uniform buffer 1");
 
