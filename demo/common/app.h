@@ -8,7 +8,7 @@
 
 class App {
 public:
-    App(const std::shared_ptr<Pathfinder::Driver> &p_driver,
+    App(const std::shared_ptr<Pathfinder::Driver> &_driver,
         int window_width,
         int window_height,
         const std::vector<char> &svg_input);

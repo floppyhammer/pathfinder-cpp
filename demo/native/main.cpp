@@ -1,8 +1,8 @@
 #include "../common/app.h"
 #include "../src/gpu/platform.h"
 
-int32_t WINDOW_WIDTH = 1280;
-int32_t WINDOW_HEIGHT = 720;
+const int32_t WINDOW_WIDTH = 1280;
+const int32_t WINDOW_HEIGHT = 720;
 
 int main() {
 #ifdef PATHFINDER_USE_VULKAN

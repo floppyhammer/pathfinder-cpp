@@ -134,9 +134,7 @@ void CommandBuffer::end_compute_pass() {
     commands.push(cmd);
 }
 
-void CommandBuffer::upload_to_texture(const std::shared_ptr<Texture> &texture,
-                                      RectI _region,
-                                      const void *data) {
+void CommandBuffer::upload_to_texture(const std::shared_ptr<Texture> &texture, RectI _region, const void *data) {
     auto whole_region = RectI(0, 0, texture->get_width(), texture->get_height());
 
     // Invalid region represents the whole texture.

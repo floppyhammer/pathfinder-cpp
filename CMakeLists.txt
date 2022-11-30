@@ -8,7 +8,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
 # Reset CMake cache for these to take effect.
 option(VULKAN_SUPPORT "Vulkan over OpenGL" ON)
-option(BUILD_DEMO "Build demo" ON)
+option(BUILD_DEMO "Build demo" OFF)
 
 if (VULKAN_SUPPORT)
     message("Will use Vulkan")
