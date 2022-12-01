@@ -1,6 +1,6 @@
 New-Item -Path "generated" -ItemType Directory
 
-New-Variable -Name "GLSLC" -Visibility Public -Value $env:VULKAN_SDK"/Bin/glslc.exe"
+New-Variable -Name "GLSLC" -Visibility Public -Value "$env:VULKAN_SDK/Bin/glslc.exe"
 
 & $GLSLC blit.vert -o generated/blit_vert.spv
 & $GLSLC blit.frag -o generated/blit_frag.spv

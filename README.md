@@ -12,7 +12,7 @@ This is a C++ port of [Pathfinder 3](https://github.com/servo/pathfinder) with a
 
 ### Shader generation
 
-* Run `src/shaders/compile_and_convert.ps1` to generate shader headers.
+* Run `src/shaders/compile_and_convert.ps1` to generate shader headers. You should have Vulkan SDK installed first.
 
 ### Native
 
