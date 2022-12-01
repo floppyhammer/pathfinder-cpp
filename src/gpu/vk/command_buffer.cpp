@@ -237,6 +237,7 @@ void CommandBufferVk::submit() {
                 auto render_pass_vk = static_cast<RenderPassVk *>(args.render_pass);
                 auto framebuffer_vk = static_cast<FramebufferVk *>(args.framebuffer);
 
+                // Transition non-swapchain-framebuffer image.
                 if (framebuffer_vk->get_texture()) {
                     auto texture_vk = static_cast<TextureVk *>(framebuffer_vk->get_texture().get());
 
@@ -248,37 +249,39 @@ void CommandBufferVk::submit() {
                     texture_vk->set_layout(TextureLayout::ColorAttachment);
                 }
 
-                VkRenderPassBeginInfo renderPassInfo{};
-                renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-                renderPassInfo.renderPass = render_pass_vk->get_vk_render_pass();
-                renderPassInfo.framebuffer = framebuffer_vk->get_vk_framebuffer(); // Set target framebuffer.
-                renderPassInfo.renderArea.offset = {0, 0};
+                VkRenderPassBeginInfo render_pass_info{};
+                render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+                render_pass_info.renderPass = render_pass_vk->get_vk_render_pass();
+                render_pass_info.framebuffer = framebuffer_vk->get_vk_framebuffer(); // Set target framebuffer.
+                render_pass_info.renderArea.offset = {0, 0};
                 // Has to be larger than the area we're going to draw.
-                renderPassInfo.renderArea.extent = VkExtent2D{uint32_t(args.extent.x), uint32_t(args.extent.y)};
+                render_pass_info.renderArea.extent = VkExtent2D{uint32_t(args.extent.x), uint32_t(args.extent.y)};
 
                 // Clear color.
                 std::array<VkClearValue, 1> clearValues{};
                 clearValues[0].color = {
                     {args.clear_color.r, args.clear_color.g, args.clear_color.b, args.clear_color.a}};
 
-                renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-                renderPassInfo.pClearValues = clearValues.data();
+                render_pass_info.clearValueCount = static_cast<uint32_t>(clearValues.size());
+                render_pass_info.pClearValues = clearValues.data();
 
-                vkCmdBeginRenderPass(vk_command_buffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+                vkCmdBeginRenderPass(vk_command_buffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+
+                Vec2I framebuffer_size = framebuffer_vk->get_size();
 
                 // Set viewport and scissor dynamically.
                 VkViewport viewport{};
                 viewport.x = 0.0f;
                 viewport.y = 0.0f;
-                viewport.width = (float)framebuffer_vk->get_width();
-                viewport.height = (float)framebuffer_vk->get_height();
+                viewport.width = framebuffer_size.x;
+                viewport.height = framebuffer_size.y;
                 viewport.minDepth = 0.0f;
                 viewport.maxDepth = 1.0f;
                 vkCmdSetViewport(vk_command_buffer, 0, 1, &viewport);
 
                 VkRect2D scissor{};
-                scissor.extent.width = framebuffer_vk->get_width();
-                scissor.extent.height = framebuffer_vk->get_height();
+                scissor.extent.width = framebuffer_size.x;
+                scissor.extent.height = framebuffer_size.y;
                 vkCmdSetScissor(vk_command_buffer, 0, 1, &scissor);
             } break;
             case CommandType::BindRenderPipeline: {
@@ -402,6 +405,8 @@ void CommandBufferVk::submit() {
                             case BufferType::Storage: {
                                 dst_access_mask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
                             } break;
+                            case BufferType::Index:
+                                abort();
                         }
 
                         int32_t dst_stage_mask{};

@@ -515,7 +515,7 @@ void RendererD3D9::draw_tiles(uint32_t tiles_count,
         target_framebuffer = render_target.framebuffer;
     }
 
-    Vec2F target_framebuffer_size = {(float)target_framebuffer->get_width(), (float)target_framebuffer->get_height()};
+    Vec2F target_framebuffer_size = target_framebuffer->get_size().to_f32();
 
     // Update uniform buffers.
     {
@@ -524,16 +524,18 @@ void RendererD3D9::draw_tiles(uint32_t tiles_count,
         model_mat = model_mat.translate(Vec3F(-1.f, -1.f, 0.f)); // Move to top-left.
         model_mat = model_mat.scale(Vec3F(2.f / target_framebuffer_size.x, 2.f / target_framebuffer_size.y, 1.f));
 
-        std::array<float, 6> ubo_data = {(float)z_buffer_texture->get_width(),
-                                         (float)z_buffer_texture->get_height(),
+        Vec2F z_buffer_tex_size = z_buffer_texture->get_size().to_f32();
+        std::array<float, 6> ubo_data = {z_buffer_tex_size.x,
+                                         z_buffer_tex_size.y,
                                          1, // Meaningless dummy size.
                                          1,
                                          target_framebuffer_size.x,
                                          target_framebuffer_size.y};
 
         if (color_texture) {
-            ubo_data[2] = (float)color_texture->get_width();
-            ubo_data[3] = (float)color_texture->get_height();
+            Vec2F color_tex_size = color_texture->get_size().to_f32();
+            ubo_data[2] = color_tex_size.x;
+            ubo_data[3] = color_tex_size.y;
         }
 
         // We don't need to preserve the data until the upload commands are implemented because

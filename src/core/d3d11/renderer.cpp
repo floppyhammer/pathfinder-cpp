@@ -349,13 +349,15 @@ void RendererD3D11::draw_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer
 
     auto cmd_buffer = driver->create_command_buffer("Draw tiles");
 
+    Vec2F color_tex_size = color_texture ? color_texture->get_size().to_f32() : Vec2F(0);
+
     // Update uniform buffers.
     std::array<float, 8> ubo_data0 = {0,
                                       0,
                                       0,
                                       0, // uClearColor
-                                      color_texture ? (float)color_texture->get_width() : 0,
-                                      color_texture ? (float)color_texture->get_height() : 0, // uColorTextureSize0
+                                      color_tex_size.x,
+                                      color_tex_size.y, // uColorTextureSize0
                                       (float)target_size.x,
                                       (float)target_size.y}; // uFramebufferSize
 

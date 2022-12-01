@@ -28,14 +28,6 @@ public:
     /// Get the unique resource ID for the framebuffer, which is only used for hashing.
     virtual unsigned long long get_unique_id() = 0;
 
-    inline int32_t get_width() const {
-        return get_size().x;
-    }
-
-    inline int32_t get_height() const {
-        return get_size().y;
-    }
-
     inline Vec2I get_size() const {
         if (texture) {
             return texture->get_size();

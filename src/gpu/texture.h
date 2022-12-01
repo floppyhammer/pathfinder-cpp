@@ -14,14 +14,6 @@ public:
     Texture(Vec2I _size, TextureFormat _format, std::string _label)
         : size(_size), format(_format), label(std::move(_label)) {}
 
-    inline int32_t get_width() const {
-        return size.x;
-    }
-
-    inline int32_t get_height() const {
-        return size.y;
-    }
-
     inline Vec2I get_size() const {
         return size;
     }
