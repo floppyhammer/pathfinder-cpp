@@ -6,6 +6,7 @@
 #include <queue>
 
 #include "../command_buffer.h"
+#include "driver.h"
 
 #ifdef PATHFINDER_USE_VULKAN
 

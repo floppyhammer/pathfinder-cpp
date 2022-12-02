@@ -13,39 +13,51 @@ namespace Pathfinder {
 
 struct DebugMarker {
     inline static void label_buffer(GLuint object, const std::string &label) {
+    #ifndef __ANDROID__
         if (GLAD_GL_EXT_debug_label) {
             glLabelObjectEXT(GL_BUFFER_OBJECT_EXT, object, 0, label.c_str());
         }
+    #endif
     }
 
     inline static void label_shader(GLuint object, const std::string &label) {
+    #ifndef __ANDROID__
         if (GLAD_GL_EXT_debug_label) {
             glLabelObjectEXT(GL_SHADER_OBJECT_EXT, object, 0, label.c_str());
         }
+    #endif
     }
 
     inline static void label_program(GLuint object, const std::string &label) {
+    #ifndef __ANDROID__
         if (GLAD_GL_EXT_debug_label) {
             glLabelObjectEXT(GL_PROGRAM_OBJECT_EXT, object, 0, label.c_str());
         }
+    #endif
     }
 
     inline static void label_vao(GLuint object, const std::string &label) {
+    #ifndef __ANDROID__
         if (GLAD_GL_EXT_debug_label) {
             glLabelObjectEXT(GL_VERTEX_ARRAY_OBJECT_EXT, object, 0, label.c_str());
         }
+    #endif
     }
 
     inline static void label_texture(GLuint object, const std::string &label) {
+    #ifndef __ANDROID__
         if (GLAD_GL_EXT_debug_label) {
             glLabelObjectEXT(GL_TEXTURE, object, 0, label.c_str());
         }
+    #endif
     }
 
     inline static void label_framebuffer(GLuint object, const std::string &label) {
+    #ifndef __ANDROID__
         if (GLAD_GL_EXT_debug_label) {
             glLabelObjectEXT(GL_FRAMEBUFFER, object, 0, label.c_str());
         }
+    #endif
     }
 };
 

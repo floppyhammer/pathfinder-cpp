@@ -4,7 +4,6 @@
 #include "../data/data.h"
 #include "../data/path.h"
 #include "object_builder.h"
-#include "segment.h"
 
 namespace Pathfinder {
 

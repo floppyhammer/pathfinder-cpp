@@ -26,6 +26,7 @@ SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/gpu/gl/*.cpp)
 endif
 
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/core/*.cpp)
+SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/core/paint/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/core/data/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/core/d3d9/*.cpp)
 SRC_LIST += $(wildcard $(LOCAL_PATH)/../../src/core/d3d9/data/*.cpp)

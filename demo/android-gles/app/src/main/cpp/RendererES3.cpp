@@ -102,18 +102,19 @@ RendererES3::RendererES3(AAssetManager *p_asset_manager)
 void RendererES3::init(int width, int height) {
     ALOGV("Using OpenGL ES 3.0 renderer");
 
-    auto svg_input = get_asset_file(asset_manager, "tiger.svg");
+    auto svg_input = get_asset_file(asset_manager, "features.svg");
+    auto img_input = get_asset_file(asset_manager, "sea.png");
 
     driver = std::make_shared<Pathfinder::DriverGl>();
 
-    app = std::make_shared<App>(driver, width, height, svg_input);
+    app = std::make_shared<App>(driver, width, height, svg_input, img_input);
 
     // Set viewport texture to a texture rect.
     texture_rect = std::make_shared<TextureRect>(driver,
                                                  nullptr,
                                                  width,
                                                  height);
-    texture_rect->set_texture(app->canvas->get_dest_texture());
+    texture_rect->set_texture(app->canvas->get_dst_texture());
 }
 
 RendererES3::~RendererES3() {
@@ -134,11 +135,9 @@ void RendererES3::render() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, (int32_t) texture_rect->size.x, (int32_t) texture_rect->size.y);
 
-    auto cmd_buffer = driver->create_command_buffer(true);
+    auto cmd_buffer = driver->create_command_buffer("");
 
-    texture_rect->draw(driver, cmd_buffer,
-                       {(uint32_t) texture_rect->size.x,
-                        (uint32_t) texture_rect->size.y});
+    texture_rect->draw(driver, cmd_buffer, texture_rect->size.to_i32());
 
-    cmd_buffer->submit(driver);
+    cmd_buffer->submit();
 }

@@ -685,6 +685,21 @@ void DeleteGraphicsPipeline(void) {
     vkDestroyPipelineLayout(device.device_, gfxPipeline.layout_, nullptr);
 }
 
+std::vector<char> load_asset(const std::string &filename) {
+    assert(androidAppCtx);
+    AAsset *file = AAssetManager_open(androidAppCtx->activity->assetManager,
+                                      filename.c_str(),
+                                      AASSET_MODE_BUFFER);
+    size_t fileLength = AAsset_getLength(file);
+
+    std::vector<char> fileContent(fileLength);
+
+    AAsset_read(file, fileContent.data(), fileLength);
+    AAsset_close(file);
+
+    return fileContent;
+}
+
 // InitVulkan:
 //   Initialize Vulkan Context when android application window is created
 //   upon return, vulkan is ready to draw frames
@@ -789,17 +804,6 @@ bool InitVulkan(android_app *app) {
 
     // Pathfinder initialization.
     // -----------------------------
-    assert(androidAppCtx);
-    AAsset *file = AAssetManager_open(androidAppCtx->activity->assetManager,
-                                      "tiger.svg",
-                                      AASSET_MODE_BUFFER);
-    size_t fileLength = AAsset_getLength(file);
-
-    std::vector<char> fileContent(fileLength);
-
-    AAsset_read(file, fileContent.data(), fileLength);
-    AAsset_close(file);
-
     driver = std::make_shared<Pathfinder::DriverVk>(device.device_,
                                                     device.gpuDevice_,
                                                     device.queue_,
@@ -808,9 +812,10 @@ bool InitVulkan(android_app *app) {
     pathfinder_app = std::make_shared<App>(driver,
                                            swapchain.displaySize_.width,
                                            swapchain.displaySize_.height,
-                                           fileContent);
+                                           load_asset("features.svg"),
+                                           load_asset("sea.png"));
 
-    Pathfinder::TextureVk *texture_vk = static_cast<Pathfinder::TextureVk *>(pathfinder_app->canvas->get_dest_texture().get());
+    Pathfinder::TextureVk *texture_vk = static_cast<Pathfinder::TextureVk *>(pathfinder_app->canvas->get_dst_texture().get());
 
     // Create descriptor set.
     {

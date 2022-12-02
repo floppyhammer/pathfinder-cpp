@@ -21,7 +21,11 @@ int main() {
     auto swap_chain = platform->create_swap_chain(driver);
 
     // Create app.
-    App app(driver, WINDOW_WIDTH, WINDOW_HEIGHT, Pathfinder::load_file_as_bytes("../assets/features.svg"));
+    App app(driver,
+            WINDOW_WIDTH,
+            WINDOW_HEIGHT,
+            Pathfinder::load_file_as_bytes("../assets/features.svg"),
+            Pathfinder::load_file_as_bytes("../assets/sea.png"));
 
     // Set viewport texture to a texture rect.
     auto texture_rect =

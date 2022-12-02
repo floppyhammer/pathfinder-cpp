@@ -5,7 +5,8 @@
 App::App(const std::shared_ptr<Pathfinder::Driver> &_driver,
          int window_width,
          int window_height,
-         const std::vector<char> &svg_input) {
+         const std::vector<char> &svg_input,
+         const std::vector<char> &img_input) {
     // Set logger level.
     Pathfinder::Logger::set_level(Pathfinder::Logger::Level::INFO);
 
@@ -27,7 +28,7 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &_driver,
     // TEST: Draw image.
     if (true) {
         Pathfinder::Image image;
-        auto image_buffer = Pathfinder::ImageBuffer::from_file("../assets/sea.png", false);
+        auto image_buffer = Pathfinder::ImageBuffer::from_memory(img_input, false);
         image.size = image_buffer->get_size();
         image.pixels = image_buffer->to_rgba_pixels();
         Pathfinder::Vec2F pos = {100, 200};
