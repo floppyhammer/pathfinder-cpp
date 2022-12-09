@@ -487,7 +487,7 @@ void CommandBufferVk::submit() {
                                          staging_buffer,
                                          staging_buffer_memory);
 
-                driver->copy_data_to_memory(args.data, staging_buffer_memory, args.data_size);
+                driver->copy_data_to_mappable_memory(args.data, staging_buffer_memory, args.data_size);
                 // ---------------------------------
 
                 driver->copy_vk_buffer(vk_command_buffer,
@@ -549,7 +549,7 @@ void CommandBufferVk::submit() {
                 // Callback to clean up staging resources.
                 auto callback = [this, staging_buffer, staging_buffer_memory, args] {
                     // Wait for the data transfer to complete before memory mapping.
-                    driver->copy_data_from_memory(args.data, staging_buffer_memory, args.data_size);
+                    driver->copy_data_from_mappable_memory(args.data, staging_buffer_memory, args.data_size);
 
                     vkDestroyBuffer(vk_device, staging_buffer, nullptr);
                     vkFreeMemory(vk_device, staging_buffer_memory, nullptr);
@@ -576,7 +576,7 @@ void CommandBufferVk::submit() {
                                          staging_buffer_memory);
 
                 // Copy the pixel data to the staging buffer.
-                driver->copy_data_to_memory(args.data, staging_buffer_memory, data_size);
+                driver->copy_data_to_mappable_memory(args.data, staging_buffer_memory, data_size);
 
                 // Transition the image layout to transfer dst.
                 transition_image_layout(vk_command_buffer,

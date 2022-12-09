@@ -473,6 +473,8 @@ void DriverVk::create_vk_image(uint32_t width,
                                VkMemoryPropertyFlags properties,
                                VkImage &image,
                                VkDeviceMemory &image_memory) const {
+    // Create image.
+    // -------------------------------------
     VkImageCreateInfo image_info{};
     image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     image_info.imageType = VK_IMAGE_TYPE_2D;
@@ -491,11 +493,12 @@ void DriverVk::create_vk_image(uint32_t width,
     if (vkCreateImage(device, &image_info, nullptr, &image) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create image!");
     }
-
-    // Allocating memory for an image.
     // -------------------------------------
+
+    // Create image memory.
+    // -------------------------------------
+    // Get the memory requirements for the image.
     VkMemoryRequirements mem_requirements;
-    // Returns the memory requirements for specified Vulkan object.
     vkGetImageMemoryRequirements(device, image, &mem_requirements);
 
     VkMemoryAllocateInfo alloc_info{};
@@ -506,9 +509,10 @@ void DriverVk::create_vk_image(uint32_t width,
     if (vkAllocateMemory(device, &alloc_info, nullptr, &image_memory) != VK_SUCCESS) {
         throw std::runtime_error("Failed to allocate image memory!");
     }
-
-    vkBindImageMemory(device, image, image_memory, 0);
     // -------------------------------------
+
+    // Bind the image and memory.
+    vkBindImageMemory(device, image, image_memory, 0);
 }
 
 VkImageView DriverVk::create_vk_image_view(VkImage image, VkFormat format, VkImageAspectFlags aspect_flags) const {
@@ -581,25 +585,26 @@ void DriverVk::create_vk_buffer(VkDeviceSize size,
     buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // Specifying the sharing mode of the buffer when it will be
                                                          // accessed by multiple queue families.
 
-    // Allocate GPU buffer.
+    // Create buffer.
     if (vkCreateBuffer(device, &buffer_info, nullptr, &buffer) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create buffer!");
     }
 
+    // Allocate buffer memory.
+    // -------------------------------------
     VkMemoryRequirements mem_requirements;
     vkGetBufferMemoryRequirements(device, buffer, &mem_requirements);
 
-    // Structure containing parameters of a memory allocation.
     VkMemoryAllocateInfo alloc_info{};
     alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     alloc_info.allocationSize = mem_requirements.size;
     alloc_info.memoryTypeIndex = find_memory_type(mem_requirements.memoryTypeBits,
                                                   properties); // Index identifying a memory type.
 
-    // Allocate device memory.
     if (vkAllocateMemory(device, &alloc_info, nullptr, &buffer_memory) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to allocate device memory!");
+        throw std::runtime_error("Failed to allocate buffer memory!");
     }
+    // -------------------------------------
 
     // Bind the buffer and memory.
     vkBindBufferMemory(device, buffer, buffer_memory, 0);
@@ -643,7 +648,7 @@ VkFormat DriverVk::find_depth_format() const {
                                  VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 }
 
-void DriverVk::copy_vk_buffer(VkCommandBuffer command_buffer,
+void DriverVk::copy_vk_buffer(VkCommandBuffer cmd_buffer,
                               VkBuffer src_buffer,
                               VkBuffer dst_buffer,
                               VkDeviceSize size,
@@ -655,10 +660,10 @@ void DriverVk::copy_vk_buffer(VkCommandBuffer command_buffer,
     copy_region.dstOffset = dst_offset;
     copy_region.size = size;
 
-    vkCmdCopyBuffer(command_buffer, src_buffer, dst_buffer, 1, &copy_region);
+    vkCmdCopyBuffer(cmd_buffer, src_buffer, dst_buffer, 1, &copy_region);
 }
 
-void DriverVk::copy_buffer_to_image(VkCommandBuffer command_buffer,
+void DriverVk::copy_buffer_to_image(VkCommandBuffer cmd_buffer,
                                     VkBuffer buffer,
                                     VkImage image,
                                     uint32_t width,
@@ -684,17 +689,17 @@ void DriverVk::copy_buffer_to_image(VkCommandBuffer command_buffer,
     region.imageExtent = {width, height, 1};
 
     // Copy data from a buffer into an image.
-    vkCmdCopyBufferToImage(command_buffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+    vkCmdCopyBufferToImage(cmd_buffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 }
 
-void DriverVk::copy_data_to_memory(const void *src, VkDeviceMemory buffer_memory, size_t data_size) const {
+void DriverVk::copy_data_to_mappable_memory(const void *src, VkDeviceMemory buffer_memory, size_t data_size) const {
     void *data;
     vkMapMemory(device, buffer_memory, 0, data_size, 0, &data);
     memcpy(data, src, data_size);
     vkUnmapMemory(device, buffer_memory);
 }
 
-void DriverVk::copy_data_from_memory(void *dst, VkDeviceMemory buffer_memory, size_t data_size) const {
+void DriverVk::copy_data_from_mappable_memory(void *dst, VkDeviceMemory buffer_memory, size_t data_size) const {
     void *data;
     vkMapMemory(device, buffer_memory, 0, data_size, 0, &data);
     memcpy(dst, data, data_size);

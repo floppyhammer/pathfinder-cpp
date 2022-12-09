@@ -67,9 +67,9 @@ public:
                           VkBuffer &buffer,
                           VkDeviceMemory &buffer_memory);
 
-    void copy_data_to_memory(const void *src, VkDeviceMemory buffer_memory, size_t data_size) const;
+    void copy_data_to_mappable_memory(const void *src, VkDeviceMemory buffer_memory, size_t data_size) const;
 
-    void copy_data_from_memory(void *dst, VkDeviceMemory buffer_memory, size_t data_size) const;
+    void copy_data_from_mappable_memory(void *dst, VkDeviceMemory buffer_memory, size_t data_size) const;
 
     void copy_vk_buffer(VkCommandBuffer command_buffer,
                         VkBuffer src_buffer,
