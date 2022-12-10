@@ -38,6 +38,10 @@ std::shared_ptr<CommandBuffer> SwapChainVk::get_command_buffer() {
 bool SwapChainVk::acquire_image() {
     auto device = driver->get_device();
 
+    if (platform->get_window_minimized()) {
+        return false;
+    }
+
     // Wait for the frame to be finished.
     vkWaitForFences(device, 1, &in_flight_fences[current_frame], VK_TRUE, UINT64_MAX);
 

@@ -148,7 +148,7 @@ struct Vec2 {
 
     inline std::string to_string() const {
         std::ostringstream string_stream;
-        string_stream << this;
+        string_stream << *this;
         return string_stream.str();
     }
 };
