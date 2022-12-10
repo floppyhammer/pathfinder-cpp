@@ -65,7 +65,7 @@ private:
     /// we need to keep track of the current frame.
     size_t current_frame = 0;
 
-    uint32_t current_image = 0;
+    uint32_t image_index = 0;
 
     void recreate_swapchain();
 
@@ -103,8 +103,6 @@ private:
     void create_framebuffers();
 
     void create_sync_objects();
-
-    bool acquire_swapchain_image(uint32_t &image_index);
 
     /**
      * Allocate command buffers in the pool.

@@ -26,17 +26,38 @@ std::shared_ptr<RenderPass> SwapChainVk::get_render_pass() {
 }
 
 std::shared_ptr<Framebuffer> SwapChainVk::get_framebuffer() {
-    return framebuffers[current_image];
+    return framebuffers[image_index];
 }
 
 std::shared_ptr<CommandBuffer> SwapChainVk::get_command_buffer() {
-    auto command_buffer_vk = std::make_shared<CommandBufferVk>(command_buffers[current_image], driver->device, driver);
+    auto command_buffer_vk = std::make_shared<CommandBufferVk>(command_buffers[image_index], driver->device, driver);
     command_buffer_vk->label = "Main";
     return command_buffer_vk;
 }
 
 bool SwapChainVk::acquire_image() {
-    return acquire_swapchain_image(current_image);
+    auto device = driver->get_device();
+
+    // Wait for the frame to be finished.
+    vkWaitForFences(device, 1, &in_flight_fences[current_frame], VK_TRUE, UINT64_MAX);
+
+    // Retrieve the index of the next available presentable image.
+    VkResult result = vkAcquireNextImageKHR(device,
+                                            swapchain,
+                                            UINT64_MAX,
+                                            image_available_semaphores[current_frame],
+                                            VK_NULL_HANDLE,
+                                            &image_index);
+
+    // Recreate swap chains if necessary.
+    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+        recreate_swapchain();
+        return false;
+    } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+        throw std::runtime_error("Failed to acquire swap chain image!");
+    }
+
+    return true;
 }
 
 void SwapChainVk::init_swapchain() {
@@ -226,33 +247,6 @@ void SwapChainVk::create_sync_objects() {
     }
 }
 
-bool SwapChainVk::acquire_swapchain_image(uint32_t &image_index) {
-    auto device = driver->get_device();
-
-    // Wait for the frame to be finished.
-    vkWaitForFences(device, 1, &in_flight_fences[current_frame], VK_TRUE, UINT64_MAX);
-
-    // Retrieve the index of the next available presentable image.
-    VkResult result = vkAcquireNextImageKHR(device,
-                                            swapchain,
-                                            UINT64_MAX,
-                                            image_available_semaphores[current_frame],
-                                            VK_NULL_HANDLE,
-                                            &image_index);
-
-    current_image = image_index;
-
-    // Recreate swap chains if necessary.
-    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-        recreate_swapchain();
-        return false;
-    } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-        throw std::runtime_error("Failed to acquire swap chain image!");
-    }
-
-    return true;
-}
-
 void SwapChainVk::create_command_buffers() {
     auto device = driver->get_device();
     auto command_pool = driver->get_command_pool();
@@ -275,8 +269,6 @@ void SwapChainVk::flush() {
     auto device = driver->get_device();
     auto graphics_queue = driver->get_graphics_queue();
     auto present_queue = platform->get_present_queue();
-
-    auto image_index = current_image;
 
     if (images_in_flight[image_index] != VK_NULL_HANDLE) {
         vkWaitForFences(device, 1, &images_in_flight[image_index], VK_TRUE, UINT64_MAX);

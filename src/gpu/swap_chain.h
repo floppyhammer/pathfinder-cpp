@@ -15,9 +15,6 @@ public:
     /// Swap chain framebuffer size.
     Vec2I size;
 
-    /// Currently available image in the chain.
-    uint32_t current_image{};
-
     /**
      * Get a swap chain render pass.
      * @return Render pass
