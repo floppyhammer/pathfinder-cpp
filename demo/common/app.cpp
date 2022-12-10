@@ -116,7 +116,7 @@ void App::update() {
 
         // Show frame time.
         std::ostringstream string_stream;
-        string_stream << "Frame time: " << round(delta * 10.f) * 0.1f << " s\n";
+        string_stream << "Frame time: " << round(delta * 10.f) * 0.1f << " ms\n";
         Pathfinder::Logger::info(string_stream.str(), "Benchmark");
     }
 

@@ -56,6 +56,7 @@ void PlatformGl::init_window() {
     glfwMakeContextCurrent(window);
 
     // Set window resize callback.
+    glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, framebuffer_resize_callback);
 
     // GLAD: load all OpenGL function pointers.
