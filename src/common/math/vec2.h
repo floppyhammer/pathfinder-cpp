@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <sstream>
 
 #undef min
 #undef max
@@ -143,6 +144,12 @@ struct Vec2 {
     friend std::ostream &operator<<(std::ostream &os, const Vec2 &v) {
         os << "Vec2(" << v.x << ", " << v.y << ')';
         return os;
+    }
+
+    inline std::string to_string() const {
+        std::ostringstream string_stream;
+        string_stream << this;
+        return string_stream.str();
     }
 };
 

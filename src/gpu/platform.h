@@ -17,11 +17,23 @@ public:
 
     virtual void cleanup() = 0;
 
-public:
-    bool framebuffer_resized = false;
+    Vec2I get_window_size() const {
+        return window_size;
+    }
+
+    bool get_window_resize_flag() const {
+        return window_just_resized;
+    }
+
+    bool get_window_minimized() const {
+        return window_minimized;
+    }
 
 protected:
+    GLFWwindow *window{};
     Vec2I window_size;
+    bool window_just_resized = false;
+    bool window_minimized = false;
 
 #ifndef __ANDROID__
 public:
@@ -32,8 +44,15 @@ public:
     /// GLFW: whenever the window size changed (by OS or user) this callback function executes.
     static void framebuffer_resize_callback(GLFWwindow *window, int width, int height) {
         auto platform = reinterpret_cast<Platform *>(glfwGetWindowUserPointer(window));
+
         if (platform) {
-            platform->framebuffer_resized = true;
+            platform->window_just_resized = true;
+
+            platform->window_size = {width, height};
+
+            platform->window_minimized = platform->window_size.area() == 0;
+
+            Logger::info("Window resized to " + platform->window_size.to_string() + ".");
         } else {
             Logger::error("glfwGetWindowUserPointer is NULL!");
         }
@@ -41,15 +60,14 @@ public:
 
     /// Process input events: query GLFW whether relevant keys are pressed/released this frame and react accordingly.
     inline void poll_events() {
+        window_just_resized = false;
+
         glfwPollEvents();
 
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
             glfwSetWindowShouldClose(window, true);
         }
     }
-
-protected:
-    GLFWwindow *window{};
 #endif
 };
 

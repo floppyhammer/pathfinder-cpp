@@ -16,9 +16,6 @@
 
 namespace Pathfinder {
 
-/// How many frames should be processed concurrently.
-const int MAX_FRAMES_IN_FLIGHT = 2;
-
 /// List of required validation layers.
 const std::vector<const char *> VALIDATION_LAYERS = {"VK_LAYER_KHRONOS_validation"};
 
@@ -50,11 +47,6 @@ public:
     std::shared_ptr<Driver> create_driver() override;
 
     std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Driver> &driver) override;
-
-    static void framebuffer_resize_callback(GLFWwindow *window, int width, int height) {
-        auto platform = reinterpret_cast<PlatformVk *>(glfwGetWindowUserPointer(window));
-        platform->framebuffer_resized = true;
-    }
 
     VkExtent2D choose_swap_extent(const VkSurfaceCapabilitiesKHR &capabilities) const;
 
@@ -134,8 +126,6 @@ public:
 
     /// Logical device.
     VkDevice device{};
-
-    bool framebuffer_resized = false;
 
 private:
     VkInstance instance{};

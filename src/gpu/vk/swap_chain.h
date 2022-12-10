@@ -14,6 +14,11 @@
 
 namespace Pathfinder {
 
+/// How many frames should be processed concurrently.
+/// NOTE: Swapchain image count doesn't necessarily equal to this (One is expected, the other is what we
+/// actually get considering device capacity).
+const int MAX_FRAMES_IN_FLIGHT = 2;
+
 class SwapChainVk : public SwapChain {
     friend class DriverVk;
 
@@ -34,8 +39,6 @@ private:
 
     PlatformVk *platform{};
     DriverVk *driver{};
-
-    void init_swapchain();
 
     VkSwapchainKHR swapchain{};
 
@@ -66,6 +69,9 @@ private:
     size_t current_frame = 0;
 
     uint32_t image_index = 0;
+
+private:
+    void init_swapchain();
 
     void recreate_swapchain();
 
