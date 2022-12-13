@@ -1,7 +1,5 @@
 #include "app.h"
 
-#include "../../src/render/allocator.h"
-
 App::App(const std::shared_ptr<Pathfinder::Driver> &_driver,
          int window_width,
          int window_height,

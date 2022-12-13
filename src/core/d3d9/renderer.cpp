@@ -41,18 +41,6 @@ const size_t CLIP_TILE_INSTANCE_SIZE = 16;
 // 65536
 const size_t MAX_FILLS_PER_BATCH = 0x10000;
 
-/// It might not be worth it to cache z buffer textures as they're generally small.
-std::shared_ptr<Texture> upload_z_buffer(const std::shared_ptr<Driver> &driver,
-                                         const DenseTileMap<uint32_t> &z_buffer_map,
-                                         const std::shared_ptr<CommandBuffer> &cmd_buffer) {
-    auto z_buffer_texture =
-        driver->create_texture(z_buffer_map.rect.size(), TextureFormat::Rgba8Unorm, "Z buffer texture");
-
-    cmd_buffer->upload_to_texture(z_buffer_texture, {}, z_buffer_map.data.data());
-
-    return z_buffer_texture;
-}
-
 RendererD3D9::RendererD3D9(const std::shared_ptr<Driver> &_driver) : Renderer(_driver) {
     mask_render_pass_clear = driver->create_render_pass(TextureFormat::Rgba16Float,
                                                         AttachmentLoadOp::Clear,
@@ -338,6 +326,19 @@ void RendererD3D9::upload_fills(const std::vector<Fill> &fills, const std::share
     cmd_buffer->upload_to_buffer(fill_vertex_buffer, 0, byte_size, (void *)fills.data());
 }
 
+void RendererD3D9::upload_z_buffer(const DenseTileMap<uint32_t> &z_buffer_map,
+                                   const std::shared_ptr<CommandBuffer> &cmd_buffer) {
+    // Prepare the Z buffer texture.
+    // Its size is always the same as the dst framebuffer size.
+    // Its size should depend on the batch's dst framebuffer, but it's easier to cache it this way.
+    if (z_buffer_texture == nullptr) {
+        z_buffer_texture =
+            driver->create_texture(z_buffer_map.rect.size(), TextureFormat::Rgba8Unorm, "Z buffer texture");
+    }
+
+    cmd_buffer->upload_to_texture(z_buffer_texture, {}, z_buffer_map.data.data());
+}
+
 void RendererD3D9::upload_tiles(const std::vector<TileObjectPrimitive> &tiles,
                                 const std::shared_ptr<CommandBuffer> &cmd_buffer) {
     auto byte_size = sizeof(TileObjectPrimitive) * tiles.size();
@@ -377,7 +378,7 @@ void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &t
 
         upload_tiles(batch.tiles, cmd_buffer);
 
-        auto z_buffer_texture = upload_z_buffer(driver, batch.z_buffer_data, cmd_buffer);
+        upload_z_buffer(batch.z_buffer_data, cmd_buffer);
 
         draw_tiles(tile_count,
                    batch.render_target,

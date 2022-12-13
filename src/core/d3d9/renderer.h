@@ -60,6 +60,9 @@ private:
     /// Where the final rendering output goes.
     std::shared_ptr<Framebuffer> dest_framebuffer;
 
+    // Z buffer texture cache. So we don't have to recreate the texture for every batch and frame.
+    std::shared_ptr<Texture> z_buffer_texture;
+
     /// Where to draw the mask texture.
     std::shared_ptr<Framebuffer> mask_framebuffer, temp_mask_framebuffer;
 
@@ -80,6 +83,8 @@ private:
 
     /// Apply clip paths.
     void clip_tiles(const ClipBufferInfo &clip_buffer_info, const std::shared_ptr<CommandBuffer> &cmd_buffer);
+
+    void upload_z_buffer(const DenseTileMap<uint32_t> &z_buffer_map, const std::shared_ptr<CommandBuffer> &cmd_buffer);
 
     /// Upload tiles data to GPU.
     void upload_tiles(const std::vector<TileObjectPrimitive> &tiles, const std::shared_ptr<CommandBuffer> &cmd_buffer);
