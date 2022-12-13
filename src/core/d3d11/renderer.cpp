@@ -57,7 +57,9 @@ Vec2I pixel_size_to_tile_size(Vec2I pixel_size) {
     return {size.x / TILE_WIDTH, size.y / TILE_HEIGHT};
 }
 
-void SceneSourceBuffers::upload(const std::shared_ptr<Pathfinder::Driver> &driver, SegmentsD3D11 &segments) {
+void SceneSourceBuffers::upload(SegmentsD3D11 &segments,
+                                const std::shared_ptr<Driver> &driver,
+                                const std::shared_ptr<CommandBuffer> &cmd_buffer) {
     auto needed_points_capacity = upper_power_of_two(segments.points.size());
     auto needed_point_indices_capacity = upper_power_of_two(segments.indices.size());
 
@@ -87,24 +89,21 @@ void SceneSourceBuffers::upload(const std::shared_ptr<Pathfinder::Driver> &drive
 
     // Upload data.
     if (needed_points_capacity != 0 && needed_point_indices_capacity != 0) {
-        auto cmd_buffer = driver->create_command_buffer("Upload points & point indices");
-
         cmd_buffer->upload_to_buffer(points_buffer, 0, segments.points.size() * sizeof(Vec2F), segments.points.data());
 
         cmd_buffer->upload_to_buffer(point_indices_buffer,
                                      0,
                                      segments.indices.size() * sizeof(SegmentIndicesD3D11),
                                      segments.indices.data());
-
-        cmd_buffer->submit_and_wait();
     }
 }
 
-void SceneBuffers::upload(const std::shared_ptr<Pathfinder::Driver> &driver,
-                          SegmentsD3D11 &draw_segments,
-                          SegmentsD3D11 &clip_segments) {
-    draw.upload(driver, draw_segments);
-    clip.upload(driver, clip_segments);
+void SceneBuffers::upload(SegmentsD3D11 &draw_segments,
+                          SegmentsD3D11 &clip_segments,
+                          const std::shared_ptr<Pathfinder::Driver> &driver,
+                          const std::shared_ptr<CommandBuffer> &cmd_buffer) {
+    draw.upload(draw_segments, driver, cmd_buffer);
+    clip.upload(clip_segments, driver, cmd_buffer);
 }
 
 RendererD3D11::RendererD3D11(const std::shared_ptr<Pathfinder::Driver> &driver) : Renderer(driver) {
@@ -302,7 +301,9 @@ void RendererD3D11::set_dest_texture(const std::shared_ptr<Texture> &new_texture
 }
 
 void RendererD3D11::upload_scene(SegmentsD3D11 &draw_segments, SegmentsD3D11 &clip_segments) {
-    scene_buffers.upload(driver, draw_segments, clip_segments);
+    auto cmd_buffer = driver->create_command_buffer("Upload scene");
+    scene_buffers.upload(draw_segments, clip_segments, driver, cmd_buffer);
+    cmd_buffer->submit_and_wait();
 }
 
 void RendererD3D11::prepare_and_draw_tiles(DrawTileBatchD3D11 &batch) {
@@ -505,7 +506,9 @@ void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
                                           batch.prepare_info.transform);
 
         // If the microline buffer has been allocated successfully.
-        if (microline_storage.buffer_id != nullptr) break;
+        if (microline_storage.buffer_id != nullptr) {
+            break;
+        }
     }
     if (microline_storage.buffer_id == nullptr) {
         Logger::error("Ran out of space for microlines when dicing!", "D3D11");

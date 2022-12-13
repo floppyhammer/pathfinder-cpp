@@ -131,7 +131,11 @@ private:
     VkInstance instance{};
     VkDebugUtilsMessengerEXT debug_messenger{};
 
+        #ifdef PATHFINDER_DEBUG
     static const bool enable_validation_layers = true;
+        #else
+    static const bool enable_validation_layers = false;
+        #endif
 
     VkQueue graphics_queue{};
     VkQueue present_queue{};

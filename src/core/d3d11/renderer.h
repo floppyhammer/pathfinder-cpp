@@ -44,7 +44,9 @@ struct SceneSourceBuffers {
     uint32_t point_indices_capacity = 0;
 
     /// Upload segments to buffers.
-    void upload(const std::shared_ptr<Pathfinder::Driver> &driver, SegmentsD3D11 &segments);
+    void upload(SegmentsD3D11 &segments,
+                const std::shared_ptr<Driver> &driver,
+                const std::shared_ptr<CommandBuffer> &cmd_buffer);
 };
 
 struct SceneBuffers {
@@ -52,9 +54,10 @@ struct SceneBuffers {
     SceneSourceBuffers clip;
 
     /// Upload draw and clip segments to buffers.
-    void upload(const std::shared_ptr<Pathfinder::Driver> &driver,
-                SegmentsD3D11 &draw_segments,
-                SegmentsD3D11 &clip_segments);
+    void upload(SegmentsD3D11 &draw_segments,
+                SegmentsD3D11 &clip_segments,
+                const std::shared_ptr<Pathfinder::Driver> &driver,
+                const std::shared_ptr<CommandBuffer> &cmd_buffer);
 };
 
 struct PropagateTilesInfoD3D11 {
