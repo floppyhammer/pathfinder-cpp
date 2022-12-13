@@ -479,12 +479,18 @@ void Canvas::draw() {
 
 void Canvas::set_scene(const std::shared_ptr<Scene> &new_scene) {
     scene = new_scene;
+
+    // Clear all states.
+    // Otherwise, if a clip path is set for a state, loading and appending a scene will cause crash.
+    // Because the clip path doesn't exist in the new scene but only in the previous scene.
+    current_state = {};
+    saved_states.clear();
 }
 
 std::shared_ptr<Scene> Canvas::take_scene() {
     auto taken_scene = scene;
 
-    scene = std::make_shared<Scene>(0, scene->get_view_box());
+    set_scene(std::make_shared<Scene>(0, scene->get_view_box()));
 
     return taken_scene;
 }
@@ -492,7 +498,7 @@ std::shared_ptr<Scene> Canvas::take_scene() {
 std::shared_ptr<Scene> Canvas::replace_scene(const std::shared_ptr<Scene> &new_scene) {
     auto taken_scene = scene;
 
-    scene = new_scene;
+    set_scene(new_scene);
 
     return taken_scene;
 }

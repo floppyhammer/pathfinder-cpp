@@ -191,9 +191,7 @@ void SvgScene::load_from_memory(std::vector<char> bytes, Canvas &canvas) {
         canvas.restore_state();
     }
 
-    scene = canvas.get_scene();
-
-    canvas.set_scene(old_scene);
+    scene = canvas.replace_scene(old_scene);
 
     // Clean up NanoSVG image.
     nsvgDelete(image);
