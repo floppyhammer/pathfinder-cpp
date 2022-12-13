@@ -175,42 +175,6 @@ CommandBufferVk::CommandBufferVk(VkCommandBuffer _vk_command_buffer, VkDevice _v
 
 CommandBufferVk::~CommandBufferVk() {}
 
-void CommandBufferVk::upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
-                                       uint32_t offset,
-                                       uint32_t data_size,
-                                       void *data) {
-    if (data_size == 0 || data == nullptr) {
-        Logger::error("Tried to upload invalid data to buffer!");
-    }
-
-    // Update buffer by memory mapping.
-    if (buffer->get_memory_property() == MemoryProperty::HostVisibleAndCoherent) {
-        auto buffer_vk = static_cast<BufferVk *>(buffer.get());
-
-        void *mapped_data;
-        auto res = vkMapMemory(vk_device, buffer_vk->get_vk_device_memory(), offset, data_size, 0, &mapped_data);
-        memcpy(mapped_data, data, data_size);
-        vkUnmapMemory(vk_device, buffer_vk->get_vk_device_memory());
-
-        if (res != VK_SUCCESS) {
-            Logger::error("Failed to map memory!", "CommandBufferVk");
-        }
-
-        return;
-    }
-
-    Command cmd;
-    cmd.type = CommandType::UploadToBuffer;
-
-    auto &args = cmd.args.upload_to_buffer;
-    args.buffer = buffer.get();
-    args.offset = offset;
-    args.data_size = data_size;
-    args.data = data;
-
-    commands.push(cmd);
-}
-
 VkCommandBuffer CommandBufferVk::get_vk_command_buffer() const {
     return vk_command_buffer;
 }

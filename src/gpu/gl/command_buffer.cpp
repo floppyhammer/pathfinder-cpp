@@ -13,53 +13,6 @@
 
 namespace Pathfinder {
 
-void CommandBufferGl::upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
-                                       uint32_t offset,
-                                       uint32_t data_size,
-                                       void *data) {
-    if (data_size == 0 || data == nullptr) {
-        Logger::error("Tried to upload invalid data to buffer!");
-    }
-
-    Command cmd;
-    cmd.type = CommandType::UploadToBuffer;
-
-    auto &args = cmd.args.upload_to_buffer;
-    args.buffer = buffer.get();
-    args.offset = offset;
-    args.data_size = data_size;
-    args.data = data;
-
-    commands.push(cmd);
-
-    // Moved from submit() to here in order to handle host-visible/coherent buffers properly.
-    // -------------------------------------------------------
-    auto buffer_gl = static_cast<BufferGl *>(args.buffer);
-
-    int gl_buffer_type;
-
-    switch (args.buffer->get_type()) {
-        case BufferType::Vertex: {
-            gl_buffer_type = GL_ARRAY_BUFFER;
-        } break;
-        case BufferType::Uniform: {
-            gl_buffer_type = GL_UNIFORM_BUFFER;
-        } break;
-    #ifdef PATHFINDER_USE_D3D11
-        case BufferType::Storage: {
-            gl_buffer_type = GL_SHADER_STORAGE_BUFFER;
-        } break;
-    #endif
-    }
-
-    glBindBuffer(gl_buffer_type, buffer_gl->id);
-    glBufferSubData(gl_buffer_type, args.offset, args.data_size, args.data);
-    glBindBuffer(gl_buffer_type, 0); // Unbind.
-
-    check_error("UploadToBuffer");
-    // -------------------------------------------------------
-}
-
 void CommandBufferGl::submit() {
     while (!commands.empty()) {
         auto &cmd = commands.front();
@@ -281,33 +234,14 @@ void CommandBufferGl::submit() {
             case CommandType::EndComputePass: {
             } break;
             case CommandType::UploadToBuffer: {
+                auto &args = cmd.args.upload_to_buffer;
+
+                args.buffer->upload_via_mapping(args.data_size, args.offset, args.data);
             } break;
             case CommandType::ReadBuffer: {
                 auto &args = cmd.args.read_buffer;
 
-                // We can only read from general buffers.
-                if (args.buffer->get_type() != BufferType::Storage) {
-                    Logger::error("Tried to read from a non-general buffer!", "Command Buffer");
-                    break;
-                }
-
-    #ifdef PATHFINDER_USE_D3D11
-                auto buffer_gl = static_cast<BufferGl *>(args.buffer);
-
-                glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer_gl->id);
-
-        #ifdef __ANDROID__
-                void *ptr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, args.offset, args.data_size, GL_MAP_READ_BIT);
-                if (ptr) memcpy(args.data, ptr, args.data_size);
-                glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-        #else
-                glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, args.offset, args.data_size, args.data);
-        #endif
-
-                glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // Unbind.
-    #endif
-
-                check_error("ReadBuffer");
+                args.buffer->download_via_mapping(args.data_size, args.offset, args.data);
             } break;
             case CommandType::UploadToTexture: {
                 auto &args = cmd.args.upload_to_texture;

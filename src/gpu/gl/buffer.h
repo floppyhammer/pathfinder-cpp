@@ -16,6 +16,10 @@ public:
 
     ~BufferGl();
 
+    void upload_via_mapping(size_t data_size, size_t offset, void* data) override;
+
+    void download_via_mapping(size_t data_size, size_t offset, void* data) override;
+
     uint32_t id;
 };
 

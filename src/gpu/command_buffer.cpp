@@ -134,6 +134,32 @@ void CommandBuffer::end_compute_pass() {
     commands.push(cmd);
 }
 
+void CommandBuffer::upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
+                                     uint32_t offset,
+                                     uint32_t data_size,
+                                     void *data) {
+    if (data_size == 0 || data == nullptr) {
+        Logger::error("Tried to upload invalid data to buffer!");
+    }
+
+    // Write buffer by memory mapping.
+    if (buffer->get_memory_property() == MemoryProperty::HostVisibleAndCoherent) {
+        buffer->upload_via_mapping(data_size, offset, data);
+        return;
+    }
+
+    Command cmd;
+    cmd.type = CommandType::UploadToBuffer;
+
+    auto &args = cmd.args.upload_to_buffer;
+    args.buffer = buffer.get();
+    args.offset = offset;
+    args.data_size = data_size;
+    args.data = data;
+
+    commands.push(cmd);
+}
+
 void CommandBuffer::upload_to_texture(const std::shared_ptr<Texture> &texture, RectI _region, const void *data) {
     auto whole_region = RectI({0, 0}, {texture->get_size()});
 
@@ -171,6 +197,17 @@ void CommandBuffer::read_buffer(const std::shared_ptr<Buffer> &buffer,
                                 void *data) {
     switch (buffer->get_type()) {
         case BufferType::Storage: {
+            if (data_size == 0 || data == nullptr) {
+                Logger::error("Tried to download invalid data from buffer!");
+            }
+
+            // Read buffer by memory mapping.
+            if (buffer->get_memory_property() == MemoryProperty::HostVisibleAndCoherent) {
+                Logger::error("You're trying to read a mappable buffer through a command. It may indicate some bug.");
+                buffer->download_via_mapping(data_size, offset, data);
+                return;
+            }
+
             Command cmd;
             cmd.type = CommandType::ReadBuffer;
 

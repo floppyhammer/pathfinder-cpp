@@ -47,6 +47,52 @@ BufferGl::~BufferGl() {
     glDeleteBuffers(1, &id);
 }
 
+void BufferGl::upload_via_mapping(size_t data_size, size_t offset, void *data) {
+    int gl_buffer_type;
+
+    switch (type) {
+        case BufferType::Vertex: {
+            gl_buffer_type = GL_ARRAY_BUFFER;
+        } break;
+        case BufferType::Uniform: {
+            gl_buffer_type = GL_UNIFORM_BUFFER;
+        } break;
+    #ifdef PATHFINDER_USE_D3D11
+        case BufferType::Storage: {
+            gl_buffer_type = GL_SHADER_STORAGE_BUFFER;
+        } break;
+    #endif
+    }
+
+    glBindBuffer(gl_buffer_type, id);
+    glBufferSubData(gl_buffer_type, offset, data_size, data);
+    glBindBuffer(gl_buffer_type, 0); // Unbind.
+
+    check_error("UploadToBuffer");
+}
+
+void BufferGl::download_via_mapping(size_t data_size, size_t offset, void *data) {
+    // We can only read from general buffers.
+    if (type != BufferType::Storage) {
+        Logger::error("Tried to read from a non-storage buffer!", "BufferGl");
+        return;
+    }
+
+    #ifdef PATHFINDER_USE_D3D11
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, id);
+        #ifdef __ANDROID__
+    void *ptr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, args.offset, args.data_size, GL_MAP_READ_BIT);
+    if (ptr) memcpy(args.data, ptr, args.data_size);
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+        #else
+    glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, data_size, data);
+        #endif
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // Unbind.
+    #endif
+
+    check_error("ReadBuffer");
+}
+
 } // namespace Pathfinder
 
 #endif

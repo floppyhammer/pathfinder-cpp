@@ -168,7 +168,7 @@ public:
     virtual void upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
                                   uint32_t offset,
                                   uint32_t data_size,
-                                  void *data) = 0;
+                                  void *data);
 
     void upload_to_texture(const std::shared_ptr<Texture> &texture, RectI region, const void *data);
 

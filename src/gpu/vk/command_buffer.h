@@ -23,11 +23,6 @@ public:
 
     ~CommandBufferVk();
 
-    void upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
-                          uint32_t offset,
-                          uint32_t data_size,
-                          void *data) override;
-
     void submit() override;
 
     void submit_and_wait() override;
