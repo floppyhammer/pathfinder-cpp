@@ -160,6 +160,8 @@ enum class MemoryProperty {
     /// Coherent: host cache management commands are not needed.
     HostVisibleAndCoherent,
     /// Most efficient for device access.
+    /// Don't use this if we need to upload/download the data regularly.
+    /// Since a staging buffer will be created every time data transfer happens.
     DeviceLocal,
 };
 

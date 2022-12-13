@@ -319,8 +319,10 @@ void RendererD3D9::upload_fills(const std::vector<Fill> &fills, const std::share
 
     // If we need to allocate a new fill vertex buffer.
     if (fill_vertex_buffer == nullptr || byte_size > fill_vertex_buffer->get_size()) {
-        fill_vertex_buffer =
-            driver->create_buffer(BufferType::Vertex, byte_size, MemoryProperty::DeviceLocal, "Fill vertex buffer");
+        fill_vertex_buffer = driver->create_buffer(BufferType::Vertex,
+                                                   byte_size,
+                                                   MemoryProperty::HostVisibleAndCoherent,
+                                                   "Fill vertex buffer");
     }
 
     cmd_buffer->upload_to_buffer(fill_vertex_buffer, 0, byte_size, (void *)fills.data());
@@ -345,8 +347,10 @@ void RendererD3D9::upload_tiles(const std::vector<TileObjectPrimitive> &tiles,
 
     // If we need to allocate a new tile vertex buffer.
     if (tile_vertex_buffer == nullptr || byte_size > tile_vertex_buffer->get_size()) {
-        tile_vertex_buffer =
-            driver->create_buffer(BufferType::Vertex, byte_size, MemoryProperty::DeviceLocal, "Tile vertex buffer");
+        tile_vertex_buffer = driver->create_buffer(BufferType::Vertex,
+                                                   byte_size,
+                                                   MemoryProperty::HostVisibleAndCoherent,
+                                                   "Tile vertex buffer");
     }
 
     cmd_buffer->upload_to_buffer(tile_vertex_buffer, 0, byte_size, (void *)tiles.data());
@@ -421,7 +425,8 @@ ClipBufferInfo RendererD3D9::upload_clip_tiles(const std::vector<Clip> &clips,
 
     auto byte_size = sizeof(Clip) * clips.size();
 
-    info.clip_buffer = driver->create_buffer(BufferType::Vertex, byte_size, MemoryProperty::DeviceLocal, "Clip buffer");
+    info.clip_buffer =
+        driver->create_buffer(BufferType::Vertex, byte_size, MemoryProperty::HostVisibleAndCoherent, "Clip buffer");
 
     cmd_buffer->upload_to_buffer(info.clip_buffer, 0, byte_size, (void *)clips.data());
 
