@@ -133,4 +133,5 @@ public:
 } // namespace Pathfinder
 
 #endif
+
 #endif // PATHFINDER_GPU_VK_DEBUG_MARKER_H

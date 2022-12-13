@@ -61,7 +61,7 @@ private:
     std::shared_ptr<Framebuffer> dest_framebuffer;
 
     /// Where to draw the mask texture.
-    std::shared_ptr<Framebuffer> mask_framebuffer;
+    std::shared_ptr<Framebuffer> mask_framebuffer, temp_mask_framebuffer;
 
     std::shared_ptr<RenderPass> mask_render_pass_clear, mask_render_pass_load, dest_render_pass_clear,
         dest_render_pass_load;
@@ -76,10 +76,10 @@ private:
     /// Upload fills data to GPU.
     void upload_fills(const std::vector<Fill> &fills, const std::shared_ptr<CommandBuffer> &cmd_buffer);
 
-    ClipBufferInfo upload_clip_tiles(const std::vector<Clip> &clips, const std::shared_ptr<Driver> &driver);
+    ClipBufferInfo upload_clip_tiles(const std::vector<Clip> &clips, const std::shared_ptr<CommandBuffer> &cmd_buffer);
 
     /// Apply clip paths.
-    void clip_tiles(const ClipBufferInfo &clip_buffer_info, const std::shared_ptr<Driver> &driver);
+    void clip_tiles(const ClipBufferInfo &clip_buffer_info, const std::shared_ptr<CommandBuffer> &cmd_buffer);
 
     /// Upload tiles data to GPU.
     void upload_tiles(const std::vector<TileObjectPrimitive> &tiles, const std::shared_ptr<CommandBuffer> &cmd_buffer);

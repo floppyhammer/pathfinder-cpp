@@ -89,7 +89,7 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &_driver,
         svg_scene.load_from_memory(svg_input, *canvas);
 
         // TEST: Replace scene.
-        //        canvas->set_scene(svg_scene.get_scene());
+        // canvas->set_scene(svg_scene.get_scene());
 
         // TEST: Append scene.
         canvas->get_scene()->append_scene(*svg_scene.get_scene(), Pathfinder::Transform2());

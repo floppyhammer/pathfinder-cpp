@@ -73,6 +73,13 @@ RendererD3D9::RendererD3D9(const std::shared_ptr<Driver> &_driver) : Renderer(_d
                                                "Mask texture");
     mask_framebuffer = driver->create_framebuffer(mask_render_pass_clear, mask_texture, "Mask framebuffer");
 
+    // Temp mask framebuffer for clipping.
+    auto temp_mask_texture = driver->create_texture({MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT},
+                                                    TextureFormat::Rgba16Float,
+                                                    "Temp mask texture");
+    temp_mask_framebuffer =
+        driver->create_framebuffer(mask_render_pass_clear, temp_mask_texture, "Temp mask framebuffer");
+
     // Quad vertex buffer. Shared by fills and tiles drawing.
     quad_vertex_buffer = driver->create_buffer(BufferType::Vertex,
                                                12 * sizeof(uint16_t),
@@ -237,7 +244,7 @@ void RendererD3D9::create_tile_clip_copy_pipeline() {
     tile_clip_copy_descriptor_set = driver->create_descriptor_set();
     tile_clip_copy_descriptor_set->add_or_update({
         Descriptor::uniform(0, ShaderStage::Vertex, "bConstantSizes", constants_ub),
-        Descriptor::sampler(1, ShaderStage::Fragment, "uSrc"),
+        Descriptor::sampler(1, ShaderStage::Fragment, "uSrc", mask_framebuffer->get_texture()),
     });
 
     // We have to disable blend for tile clip copy.
@@ -282,7 +289,7 @@ void RendererD3D9::create_tile_clip_combine_pipeline() {
     tile_clip_combine_descriptor_set = driver->create_descriptor_set();
     tile_clip_combine_descriptor_set->add_or_update({
         Descriptor::uniform(0, ShaderStage::Vertex, "bConstantSizes", constants_ub),
-        Descriptor::sampler(1, ShaderStage::Fragment, "uSrc"),
+        Descriptor::sampler(1, ShaderStage::Fragment, "uSrc", temp_mask_framebuffer->get_texture()),
     });
 
     // We have to disable blend for tile clip combine.
@@ -298,24 +305,21 @@ void RendererD3D9::create_tile_clip_combine_pipeline() {
 void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &_scene_builder) {
     auto *scene_builder = static_cast<SceneBuilderD3D9 *>(_scene_builder.get());
 
-    // We are supposed to do this before the builder finishes building.
+    // We are supposed to draw fills before the builder finishes building.
     // However, it seems not providing much performance boost.
     // So, we just leave it as it is for the sake of simplicity.
-    {
-        // No fills to draw.
-        if (scene_builder->pending_fills.empty()) {
-            Logger::warn("No fills to draw!", "RendererD3D9");
-        } else {
-            auto cmd_buffer = driver->create_command_buffer("Upload & draw fills");
 
-            // Upload fills to buffer.
-            upload_fills(scene_builder->pending_fills, cmd_buffer);
+    // No fills to draw.
+    if (!scene_builder->pending_fills.empty()) {
+        auto cmd_buffer = driver->create_command_buffer("Upload & draw fills");
 
-            // We can do fill drawing as soon as the fill vertex buffer is ready.
-            draw_fills(scene_builder->pending_fills.size(), cmd_buffer);
+        // Upload fills to buffer.
+        upload_fills(scene_builder->pending_fills, cmd_buffer);
 
-            cmd_buffer->submit_and_wait();
-        }
+        // We can do fill drawing as soon as the fill vertex buffer is ready.
+        draw_fills(scene_builder->pending_fills.size(), cmd_buffer);
+
+        cmd_buffer->submit_and_wait();
     }
 
     // Tiles need to be drawn after fill drawing and after tile batches are prepared.
@@ -360,15 +364,16 @@ void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &t
             continue;
         }
 
-        // Apply clip paths.
-        if (!batch.clips.empty()) {
-            auto clip_buffer_info = upload_clip_tiles(batch.clips, driver);
-            clip_tiles(clip_buffer_info, driver);
-        }
-
         // Different batches will use the same tile vertex buffer, so we need to make sure
-        // that a batch is drawn before processing the next batch.
+        // that a batch is down drawing before processing the next batch.
         auto cmd_buffer = driver->create_command_buffer("Upload & draw tiles");
+
+        // Apply clip paths.
+        ClipBufferInfo clip_buffer_info;
+        if (!batch.clips.empty()) {
+            clip_buffer_info = upload_clip_tiles(batch.clips, cmd_buffer);
+            clip_tiles(clip_buffer_info, cmd_buffer);
+        }
 
         upload_tiles(batch.tiles, cmd_buffer);
 
@@ -408,7 +413,8 @@ void RendererD3D9::draw_fills(uint32_t fills_count, const std::shared_ptr<Comman
 }
 
 // Uploads clip tiles from CPU to GPU.
-ClipBufferInfo RendererD3D9::upload_clip_tiles(const std::vector<Clip> &clips, const std::shared_ptr<Driver> &driver) {
+ClipBufferInfo RendererD3D9::upload_clip_tiles(const std::vector<Clip> &clips,
+                                               const std::shared_ptr<CommandBuffer> &cmd_buffer) {
     ClipBufferInfo info;
     info.clip_count = clips.size();
 
@@ -416,39 +422,21 @@ ClipBufferInfo RendererD3D9::upload_clip_tiles(const std::vector<Clip> &clips, c
 
     info.clip_buffer = driver->create_buffer(BufferType::Vertex, byte_size, MemoryProperty::DeviceLocal, "Clip buffer");
 
-    auto cmd_buffer = driver->create_command_buffer("Upload clip tiles");
-
     cmd_buffer->upload_to_buffer(info.clip_buffer, 0, byte_size, (void *)clips.data());
-
-    cmd_buffer->submit_and_wait();
 
     return info;
 }
 
-void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std::shared_ptr<Driver> &driver) {
-    // Allocate temp mask framebuffer.
-    // TODO: Cache this.
-    auto mask_temp_texture = driver->create_texture({MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT},
-                                                    TextureFormat::Rgba16Float,
-                                                    "Mask temp texture");
-    auto mask_temp_framebuffer =
-        driver->create_framebuffer(mask_render_pass_clear, mask_temp_texture, "Mask temp framebuffer");
-
+void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info,
+                              const std::shared_ptr<CommandBuffer> &cmd_buffer) {
     auto clip_vertex_buffer = clip_buffer_info.clip_buffer;
 
-    tile_clip_copy_descriptor_set->add_or_update({
-        Descriptor::sampler(1, ShaderStage::Fragment, "uSrc", mask_framebuffer->get_texture()),
-    });
-
     // Copy out tiles.
-    //
     // TODO(pcwalton): Don't do this on GL4.
     {
-        auto cmd_buffer = driver->create_command_buffer("Copy out tiles");
-
         cmd_buffer->sync_descriptor_set(tile_clip_copy_descriptor_set);
 
-        cmd_buffer->begin_render_pass(mask_render_pass_clear, mask_temp_framebuffer, ColorF());
+        cmd_buffer->begin_render_pass(mask_render_pass_clear, temp_mask_framebuffer, ColorF());
 
         cmd_buffer->bind_render_pipeline(tile_clip_copy_pipeline);
 
@@ -456,22 +444,14 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std:
 
         cmd_buffer->bind_descriptor_set(tile_clip_copy_descriptor_set);
 
-        // Each Clip introduces two instances.
+        // Each clip introduces two instances.
         cmd_buffer->draw_instanced(6, clip_buffer_info.clip_count * 2);
 
         cmd_buffer->end_render_pass();
-
-        cmd_buffer->submit_and_wait();
     }
-
-    tile_clip_combine_descriptor_set->add_or_update({
-        Descriptor::sampler(1, ShaderStage::Fragment, "uSrc", mask_temp_framebuffer->get_texture()),
-    });
 
     // Combine clip tiles.
     {
-        auto cmd_buffer = driver->create_command_buffer("Combine clip tiles");
-
         cmd_buffer->sync_descriptor_set(tile_clip_combine_descriptor_set);
 
         cmd_buffer->begin_render_pass(mask_render_pass_load, mask_framebuffer, ColorF());
@@ -485,8 +465,6 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std:
         cmd_buffer->draw_instanced(6, clip_buffer_info.clip_count);
 
         cmd_buffer->end_render_pass();
-
-        cmd_buffer->submit_and_wait();
     }
 }
 
