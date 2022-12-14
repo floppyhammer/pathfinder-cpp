@@ -10,34 +10,35 @@
 #include "../../src/gpu/texture.h"
 #include "../../src/pathfinder.h"
 
+using namespace Pathfinder;
+
 /**
  * Simple class to blit a texture onto the screen.
  */
 class TextureRect {
 public:
-    TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
-                const std::shared_ptr<Pathfinder::RenderPass> &render_pass,
-                float width,
-                float height);
+    TextureRect(const std::shared_ptr<Driver> &driver,
+                const std::shared_ptr<RenderPass> &render_pass,
+                const Vec2F &_size);
 
-    void set_texture(const std::shared_ptr<Pathfinder::Texture> &_texture);
+    void set_texture(const std::shared_ptr<Texture> &_texture);
 
-    void draw(const std::shared_ptr<Pathfinder::Driver> &driver,
-              const std::shared_ptr<Pathfinder::CommandBuffer> &cmd_buffer,
-              const Pathfinder::Vec2I &framebuffer_size);
+    void draw(const std::shared_ptr<Driver> &driver,
+              const std::shared_ptr<CommandBuffer> &cmd_buffer,
+              const Vec2I &framebuffer_size);
 
-    Pathfinder::Vec2F position;
-    Pathfinder::Vec2F size;
-    Pathfinder::Vec2F scale{1};
+    Vec2F position;
+    Vec2F size;
+    Vec2F scale{1};
 
 private:
-    std::shared_ptr<Pathfinder::Texture> texture;
+    std::shared_ptr<Texture> texture;
 
-    std::shared_ptr<Pathfinder::RenderPipeline> pipeline;
+    std::shared_ptr<RenderPipeline> pipeline;
 
-    std::shared_ptr<Pathfinder::Buffer> vertex_buffer, uniform_buffer;
+    std::shared_ptr<Buffer> vertex_buffer, uniform_buffer;
 
-    std::shared_ptr<Pathfinder::DescriptorSet> descriptor_set;
+    std::shared_ptr<DescriptorSet> descriptor_set;
 };
 
 #endif // PATHFINDER_DEMO_TEXTURE_RECT_H

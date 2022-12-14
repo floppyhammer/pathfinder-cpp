@@ -6,11 +6,12 @@
 #include "../../src/pathfinder.h"
 #include "texture_rect.h"
 
+using namespace Pathfinder;
+
 class App {
 public:
     App(const std::shared_ptr<Pathfinder::Driver> &_driver,
-        int window_width,
-        int window_height,
+        const Vec2I &window_size,
         const std::vector<char> &svg_input,
         const std::vector<char> &img_input);
 
@@ -18,10 +19,10 @@ public:
 
     void cleanup();
 
-    std::shared_ptr<Pathfinder::Canvas> canvas;
+    std::shared_ptr<Canvas> canvas;
 
 private:
-    std::shared_ptr<Pathfinder::Driver> driver;
+    std::shared_ptr<Driver> driver;
 
     std::chrono::time_point<std::chrono::steady_clock> last_time;
     uint32_t frame_count = 0;

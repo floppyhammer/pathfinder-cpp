@@ -5,6 +5,8 @@ const int32_t WINDOW_WIDTH = 1280;
 const int32_t WINDOW_HEIGHT = 720;
 
 int main() {
+    Vec2I window_size = {WINDOW_WIDTH, WINDOW_HEIGHT};
+
 #ifdef PATHFINDER_USE_VULKAN
     auto device_type = Pathfinder::DeviceType::Vulkan;
 #else
@@ -12,7 +14,7 @@ int main() {
 #endif
 
     // Create platform.
-    auto platform = Pathfinder::Platform::new_impl(device_type, {WINDOW_WIDTH, WINDOW_HEIGHT});
+    auto platform = Pathfinder::Platform::new_impl(device_type, window_size);
 
     // Create driver via platform.
     auto driver = platform->create_driver();
@@ -22,14 +24,12 @@ int main() {
 
     // Create app.
     App app(driver,
-            WINDOW_WIDTH,
-            WINDOW_HEIGHT,
+            window_size,
             Pathfinder::load_file_as_bytes("../assets/features.svg"),
             Pathfinder::load_file_as_bytes("../assets/sea.png"));
 
     // Set viewport texture to a texture rect.
-    auto texture_rect =
-        std::make_shared<TextureRect>(driver, swap_chain->get_render_pass(), WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto texture_rect = std::make_shared<TextureRect>(driver, swap_chain->get_render_pass(), window_size.to_f32());
     texture_rect->set_texture(app.canvas->get_dst_texture());
 
     // Main loop.

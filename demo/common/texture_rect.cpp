@@ -15,12 +15,10 @@
     #include "../../src/shaders/generated/blit_vert.h"
 #endif
 
-TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
-                         const std::shared_ptr<Pathfinder::RenderPass> &render_pass,
-                         float width,
-                         float height) {
-    size.x = width;
-    size.y = height;
+TextureRect::TextureRect(const std::shared_ptr<Driver> &driver,
+                         const std::shared_ptr<RenderPass> &render_pass,
+                         const Vec2F &_size) {
+    size = _size;
 
     // Set up vertex data (and buffer(s)) and configure vertex attributes.
     float vertices[] = {// Positions, UVs.
@@ -28,13 +26,13 @@ TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
 
                         0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0};
 
-    vertex_buffer = driver->create_buffer(Pathfinder::BufferType::Vertex,
+    vertex_buffer = driver->create_buffer(BufferType::Vertex,
                                           sizeof(vertices),
-                                          Pathfinder::MemoryProperty::DeviceLocal,
+                                          MemoryProperty::DeviceLocal,
                                           "TextureRect vertex buffer");
-    uniform_buffer = driver->create_buffer(Pathfinder::BufferType::Uniform,
+    uniform_buffer = driver->create_buffer(BufferType::Uniform,
                                            16 * sizeof(float),
-                                           Pathfinder::MemoryProperty::HostVisibleAndCoherent,
+                                           MemoryProperty::HostVisibleAndCoherent,
                                            "TextureRect uniform buffer");
 
     auto cmd_buffer = driver->create_command_buffer("Upload TextureRect vertex buffer");
@@ -44,32 +42,28 @@ TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
     // Pipeline.
     {
 #ifdef PATHFINDER_USE_VULKAN
-        const auto vert_source =
-            std::vector<char>(std::begin(Pathfinder::blit_vert_spv), std::end(Pathfinder::blit_vert_spv));
-        const auto frag_source =
-            std::vector<char>(std::begin(Pathfinder::blit_frag_spv), std::end(Pathfinder::blit_frag_spv));
+        const auto vert_source = std::vector<char>(std::begin(blit_vert_spv), std::end(blit_vert_spv));
+        const auto frag_source = std::vector<char>(std::begin(blit_frag_spv), std::end(blit_frag_spv));
 #else
-        const auto vert_source = std::vector<char>(std::begin(Pathfinder::blit_vert), std::end(Pathfinder::blit_vert));
-        const auto frag_source = std::vector<char>(std::begin(Pathfinder::blit_frag), std::end(Pathfinder::blit_frag));
+        const auto vert_source = std::vector<char>(std::begin(blit_vert), std::end(blit_vert));
+        const auto frag_source = std::vector<char>(std::begin(blit_frag), std::end(blit_frag));
 #endif
 
-        std::vector<Pathfinder::VertexInputAttributeDescription> attribute_descriptions;
+        std::vector<VertexInputAttributeDescription> attribute_descriptions;
         attribute_descriptions.reserve(3);
 
         uint32_t stride = 4 * sizeof(float);
 
-        attribute_descriptions.push_back(
-            {0, 2, Pathfinder::DataType::f32, stride, 0, Pathfinder::VertexInputRate::Vertex});
+        attribute_descriptions.push_back({0, 2, DataType::f32, stride, 0, VertexInputRate::Vertex});
 
-        attribute_descriptions.push_back(
-            {0, 2, Pathfinder::DataType::f32, stride, 2 * sizeof(float), Pathfinder::VertexInputRate::Vertex});
+        attribute_descriptions.push_back({0, 2, DataType::f32, stride, 2 * sizeof(float), VertexInputRate::Vertex});
 
-        auto blend_state = Pathfinder::BlendState::from_over();
+        auto blend_state = BlendState::from_over();
 
         descriptor_set = driver->create_descriptor_set();
         descriptor_set->add_or_update({
-            Pathfinder::Descriptor::uniform(0, Pathfinder::ShaderStage::Vertex, "bUniform", uniform_buffer),
-            Pathfinder::Descriptor::sampler(1, Pathfinder::ShaderStage::Fragment, "uTexture"),
+            Descriptor::uniform(0, ShaderStage::Vertex, "bUniform", uniform_buffer),
+            Descriptor::sampler(1, ShaderStage::Fragment, "uTexture"),
         });
 
         pipeline = driver->create_render_pipeline(vert_source,
@@ -82,27 +76,26 @@ TextureRect::TextureRect(const std::shared_ptr<Pathfinder::Driver> &driver,
     }
 }
 
-void TextureRect::set_texture(const std::shared_ptr<Pathfinder::Texture> &_texture) {
+void TextureRect::set_texture(const std::shared_ptr<Texture> &_texture) {
     texture = _texture;
 
     descriptor_set->add_or_update({
-        Pathfinder::Descriptor::sampler(1, Pathfinder::ShaderStage::Fragment, "uTexture", texture),
+        Descriptor::sampler(1, ShaderStage::Fragment, "uTexture", texture),
     });
 }
 
-void TextureRect::draw(const std::shared_ptr<Pathfinder::Driver> &driver,
-                       const std::shared_ptr<Pathfinder::CommandBuffer> &cmd_buffer,
-                       const Pathfinder::Vec2I &viewport_size) {
+void TextureRect::draw(const std::shared_ptr<Driver> &driver,
+                       const std::shared_ptr<CommandBuffer> &cmd_buffer,
+                       const Vec2I &viewport_size) {
     // Get MVP matrix.
     // -------------------------------------------------
     // The actual application order of these matrices is reverse.
-    auto model_mat = Pathfinder::Mat4x4<float>(1.0f);
-    model_mat = model_mat.translate(
-        Pathfinder::Vec3F(position.x / viewport_size.x * 2.0f, position.y / viewport_size.y * 2.0f, 0.0f));
-    model_mat = model_mat.translate(Pathfinder::Vec3F(-1.0, -1.0, 0.0f));
-    model_mat = model_mat.scale(Pathfinder::Vec3F(scale.x, scale.y, 1.0f));
+    auto model_mat = Mat4x4<float>(1.0f);
     model_mat =
-        model_mat.scale(Pathfinder::Vec3F(size.x / viewport_size.x * 2.0f, size.y / viewport_size.y * 2.0f, 1.0f));
+        model_mat.translate(Vec3F(position.x / viewport_size.x * 2.0f, position.y / viewport_size.y * 2.0f, 0.0f));
+    model_mat = model_mat.translate(Vec3F(-1.0, -1.0, 0.0f));
+    model_mat = model_mat.scale(Vec3F(scale.x, scale.y, 1.0f));
+    model_mat = model_mat.scale(Vec3F(size.x / viewport_size.x * 2.0f, size.y / viewport_size.y * 2.0f, 1.0f));
 
     auto mvp_mat = model_mat;
     // -------------------------------------------------
