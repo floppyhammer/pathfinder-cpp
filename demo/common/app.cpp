@@ -1,5 +1,8 @@
 #include "app.h"
 
+/// Period to calculate average frame time, in seconds.
+const float FRAME_TIME_PERIOD = 5;
+
 App::App(const std::shared_ptr<Pathfinder::Driver> &_driver,
          int window_width,
          int window_height,
@@ -93,32 +96,32 @@ App::App(const std::shared_ptr<Pathfinder::Driver> &_driver,
         canvas->get_scene()->append_scene(*svg_scene.get_scene(), Pathfinder::Transform2());
     }
 
-    // Timers.
+    // Timer.
     last_time = std::chrono::steady_clock::now();
-    last_time_printed_fps = last_time;
 }
 
 void App::update() {
     // Timing.
     // ----------------------------------------
+    frame_count++;
+
     const auto current_time = std::chrono::steady_clock::now();
 
-    std::chrono::duration<double> duration = current_time - last_time_printed_fps;
+    std::chrono::duration<double> duration = current_time - last_time;
+    float elapsed_time = duration.count();
 
-    if (duration.count() > 1) {
-        last_time_printed_fps = current_time;
-
-        // Time between frames in ms.
-        duration = current_time - last_time;
-        float delta = (float)duration.count() * 1000.f;
+    if (elapsed_time > FRAME_TIME_PERIOD) {
+        // Average frame time in ms.
+        float average_frame_time = elapsed_time * 1000.f / (float)frame_count;
 
         // Show frame time.
         std::ostringstream string_stream;
-        string_stream << "Frame time: " << round(delta * 10.f) * 0.1f << " ms\n";
+        string_stream << "Frame time: " << round(average_frame_time * 100.f) * 0.01f << " ms\n";
         Pathfinder::Logger::info(string_stream.str(), "Benchmark");
-    }
 
-    last_time = current_time;
+        frame_count = 0;
+        last_time = current_time;
+    }
     // ----------------------------------------
 
     canvas->draw();
