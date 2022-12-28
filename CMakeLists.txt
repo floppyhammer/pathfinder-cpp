@@ -9,7 +9,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 # Reset CMake cache for these to take effect.
 option(VULKAN_SUPPORT "Vulkan over OpenGL" OFF)
 
-option(BUILD_DEMO "Build demo" OFF)
+option(BUILD_DEMO "Build demo" ON)
 option(ENABLE_WEB "Enable web" ON)
 
 if (ENABLE_WEB)
@@ -40,8 +40,10 @@ endif ()
 # Include external and third_party headers.
 include_directories(external third_party)
 
-# GLFW library.
-include_directories(external/glfw/include)
+if (!ENABLE_WEB)
+    # GLFW library.
+    include_directories(external/glfw/include)
+endif ()
 
 # Core library.
 add_subdirectory(src)
@@ -49,15 +51,19 @@ add_subdirectory(src)
 if (BUILD_DEMO)
     message("Will build demo")
 
-    # Link GLFW.
-    add_subdirectory(external/glfw)
+    if (ENABLE_WEB)
+        message("Will build demo for web")
 
-    # Demo executable.
-    add_subdirectory(demo/native)
-elseif (ENABLE_WEB)
-    message("Will build for web")
+        string(APPEND CMAKE_CXX_FLAGS " -s USE_GLFW=3 -s USE_WEBGL2=1 -s FULL_ES3=1")
+        string(APPEND CMAKE_CXX_FLAGS " -g4 -s ASSERTIONS=2 -s SAFE_HEAP=1 -s STACK_OVERFLOW_CHECK=1 --source-map-base http://127.0.0.1:8000/")
+        string(APPEND CMAKE_CXX_FLAGS " -s WASM_BIGINT")
 
-    string(APPEND CMAKE_CXX_FLAGS " -s USE_GLFW=3")
+        add_subdirectory(demo/web)
+    else ()
+        # Link GLFW.
+        add_subdirectory(external/glfw)
 
-    add_subdirectory(demo/web)
+        # Demo executable.
+        add_subdirectory(demo/native)
+    endif ()
 endif ()

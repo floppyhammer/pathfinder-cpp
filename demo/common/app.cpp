@@ -61,7 +61,7 @@ App::App(const std::shared_ptr<Driver> &_driver,
     }
 
     // TEST: Render target pattern.
-    if (true) {
+    if (false) {
         auto sub_render_target_size = Vec2F(400, 300);
         auto sub_render_target =
             RenderTarget(canvas->get_driver(), sub_render_target_size.to_i32(), "Sub render target");

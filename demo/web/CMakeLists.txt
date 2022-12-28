@@ -2,7 +2,7 @@
 include_directories(../../include)
 
 # Build executable.
-add_executable(pathfinder-demo-web ${SOURCE_FILES}
+add_executable(web-demo ${SOURCE_FILES}
         main.cpp
         ../common/app.h
         ../common/app.cpp
@@ -10,4 +10,4 @@ add_executable(pathfinder-demo-web ${SOURCE_FILES}
         ../common/texture_rect.cpp)
 
 # Link libraries.
-target_link_libraries(pathfinder-demo-web glfw pathfinder)
+target_link_libraries(web-demo glfw pathfinder)
