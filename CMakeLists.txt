@@ -10,7 +10,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 option(VULKAN_SUPPORT "Vulkan over OpenGL" OFF)
 
 option(BUILD_DEMO "Build demo" OFF)
-option(BUILD_WASM "Build wasm" ON)
+option(ENABLE_WEB "Enable web" ON)
+
+if (ENABLE_WEB)
+    add_compile_definitions(PATHFINDER_USE_WASM)
+endif ()
 
 if (VULKAN_SUPPORT)
     message("Will use Vulkan")
@@ -50,8 +54,10 @@ if (BUILD_DEMO)
 
     # Demo executable.
     add_subdirectory(demo/native)
-elseif (BUILD_WASM)
-    message("Will build wasm")
-    add_subdirectory(external/glfw)
+elseif (ENABLE_WEB)
+    message("Will build for web")
+
+    string(APPEND CMAKE_CXX_FLAGS " -s USE_GLFW=3")
+
     add_subdirectory(demo/web)
 endif ()

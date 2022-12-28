@@ -14,6 +14,7 @@
 
 namespace Pathfinder {
 
+    #ifndef PATHFINDER_USE_WASM
 std::shared_ptr<Platform> Platform::new_impl(DeviceType device_type, Vec2I _window_size) {
     if (device_type == DeviceType::OpenGl4) {
         return std::make_shared<PlatformGl>(_window_size);
@@ -21,6 +22,7 @@ std::shared_ptr<Platform> Platform::new_impl(DeviceType device_type, Vec2I _wind
 
     abort();
 }
+    #endif
 
 PlatformGl::PlatformGl(Vec2I _window_size) : Platform(_window_size) {
     // Get a GLFW window.

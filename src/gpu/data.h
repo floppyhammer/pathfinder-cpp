@@ -3,7 +3,19 @@
 
 #include <cstdint>
 
-#ifndef __ANDROID__
+#ifdef __ANDROID__
+    #ifdef PATHFINDER_USE_VULKAN
+        #include "vulkan_wrapper.h"
+    #else
+        #ifdef PATHFINDER_USE_D3D11
+            #include <GLES3/gl31.h>
+        #else
+            #include <GLES3/gl3.h>
+        #endif
+    #endif
+#elif defined(__WASM__)
+    #include <GLFW/glfw3.h>
+#else
     #ifdef PATHFINDER_USE_VULKAN
         // Vulkan headers.
         #define GLFW_INCLUDE_VULKAN
@@ -14,16 +26,6 @@
         // Prevent the GLFW header from including the OpenGL header.
         #define GLFW_INCLUDE_NONE
         #include <GLFW/glfw3.h>
-    #endif
-#else
-    #ifdef PATHFINDER_USE_VULKAN
-        #include "vulkan_wrapper.h"
-    #else
-        #ifdef PATHFINDER_USE_D3D11
-            #include <GLES3/gl31.h>
-        #else
-            #include <GLES3/gl3.h>
-        #endif
     #endif
 #endif
 
@@ -76,6 +78,7 @@ enum class DeviceType {
     OpenGl3, // Or ES 3.0
     OpenGl4, // Or ES 3.1
     Vulkan,
+    WebGl2,
 };
 
 enum class BlendFactor {

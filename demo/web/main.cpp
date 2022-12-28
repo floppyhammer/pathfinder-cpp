@@ -7,7 +7,7 @@ const int32_t WINDOW_HEIGHT = 720;
 int main() {
     Vec2I window_size = {WINDOW_WIDTH, WINDOW_HEIGHT};
 
-    auto device_type = Pathfinder::DeviceType::OpenGl4;
+    auto device_type = Pathfinder::DeviceType::WebGl2;
 
     // Create platform.
     auto platform = Pathfinder::Platform::new_impl(device_type, window_size);
