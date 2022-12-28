@@ -10,9 +10,9 @@
 #define PATHFINDER_DEBUG
 
 // Enable building scene in parallel.
-#define PATHFINDER_THREADS 4
+#define PATHFINDER_THREADS 1
 
 // Enable SIMD.
-#define PATHFINDER_ENABLE_SIMD
+//#define PATHFINDER_ENABLE_SIMD
 
 #endif // PATHFINDER_GLOBAL_MACROS_H

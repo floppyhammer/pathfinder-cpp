@@ -25,7 +25,7 @@ App::App(const std::shared_ptr<Driver> &_driver,
     }
 
     // TEST: Draw image.
-    if (true) {
+    if (false) {
         Image image;
         auto image_buffer = ImageBuffer::from_memory(img_input, false);
         image.size = image_buffer->get_size();
@@ -83,7 +83,7 @@ App::App(const std::shared_ptr<Driver> &_driver,
     }
 
     // TEST: Append SVG scene.
-    if (true) {
+    if (false) {
         SvgScene svg_scene;
         svg_scene.load_from_memory(svg_input, *canvas);
 
