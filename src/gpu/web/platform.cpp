@@ -61,36 +61,13 @@ void PlatformWebGl::init_window() {
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_CLIENT_API, CLIENT_API);
 
-        window = glfwCreateWindow(640, 480, "glfw3.c", NULL, NULL);
+        window = glfwCreateWindow(window_size.x, window_size.y, "pathfinder", NULL, NULL);
         assert(window != NULL);
 
-        assert(glfwWindowShouldClose(window) == 0);
-        glfwSetWindowShouldClose(window, 1);
-        assert(glfwWindowShouldClose(window) == 1);
+        glfwGetWindowPos(window, &x, &y);
 
-        glfwSetWindowTitle(window, "test");
-        glfwSetWindowTitle(window, "glfw3.c");
-
-        glfwGetWindowPos(window, &x, &y); // stub
         glfwGetWindowSize(window, &w, &h);
-        assert(w == 640 && h == 480);
-
-        glfwSetWindowSize(window, 1, 1);
-        glfwGetWindowSize(window, &w, &h);
-        assert(w == 1 && h == 1);
-
-        glfwSetWindowSize(window, 640, 480);
-
-        assert(glfwGetWindowMonitor(window) == NULL);
-        glfwDestroyWindow(window);
-
-        window = glfwCreateWindow(640, 480, "glfw3.c", glfwGetPrimaryMonitor(), NULL);
-        assert(window != NULL);
-        assert(glfwGetWindowMonitor(window) == glfwGetPrimaryMonitor());
-        glfwDestroyWindow(window);
-
-        window = glfwCreateWindow(640, 480, "glfw3.c", NULL, NULL);
-        assert(window != NULL);
+        assert(w == window_size.x && h == window_size.y);
 
         assert(glfwGetWindowAttrib(window, GLFW_CLIENT_API) == CLIENT_API);
     }

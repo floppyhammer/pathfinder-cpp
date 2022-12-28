@@ -1,8 +1,8 @@
 #include "../common/app.h"
 #include "../src/gpu/platform.h"
 
-const int32_t WINDOW_WIDTH = 1280;
-const int32_t WINDOW_HEIGHT = 720;
+const int32_t WINDOW_WIDTH = 640;
+const int32_t WINDOW_HEIGHT = 480;
 
 int main() {
     Vec2I window_size = {WINDOW_WIDTH, WINDOW_HEIGHT};
