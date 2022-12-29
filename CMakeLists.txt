@@ -15,6 +15,9 @@ option(ENABLE_WEB "Enable web" ON)
 if (VULKAN_SUPPORT)
     message("Will use Vulkan")
 
+    # No web for Vulkan.
+    set(ENABLE_WEB OFF)
+
     add_compile_definitions(PATHFINDER_USE_VULKAN)
 
     # In case Vulkan is found but Vulkan_LIBRARY is not.
@@ -36,8 +39,9 @@ endif ()
 # Include external and third_party headers.
 include_directories(external third_party)
 
+# Emscripten has its own version of GLFW.
 if (NOT ENABLE_WEB)
-    # GLFW library.
+    # GLFW headers.
     include_directories(external/glfw/include)
 endif ()
 
@@ -51,8 +55,10 @@ if (BUILD_DEMO)
         message("Will build demo for web")
 
         string(APPEND CMAKE_CXX_FLAGS " -s USE_GLFW=3 -s USE_WEBGL2=1 -s FULL_ES3=1")
-        string(APPEND CMAKE_CXX_FLAGS " -gsource-map -s ASSERTIONS=2 -s SAFE_HEAP=1 -s STACK_OVERFLOW_CHECK=1 --source-map-base http://127.0.0.1:8000/")
         string(APPEND CMAKE_CXX_FLAGS " -s WASM_BIGINT")
+
+        # For debugging.
+        string(APPEND CMAKE_CXX_FLAGS " -gsource-map -s ASSERTIONS=2 -s SAFE_HEAP=1 -s STACK_OVERFLOW_CHECK=1 --source-map-base http://127.0.0.1:8000/")
 
         add_subdirectory(demo/web)
     else ()
