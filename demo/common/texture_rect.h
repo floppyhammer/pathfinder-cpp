@@ -17,21 +17,21 @@ using namespace Pathfinder;
  */
 class TextureRect {
 public:
-    TextureRect(const std::shared_ptr<Driver> &driver,
+    TextureRect(const std::shared_ptr<Driver> &_driver,
                 const std::shared_ptr<RenderPass> &render_pass,
                 const Vec2F &_size);
 
     void set_texture(const std::shared_ptr<Texture> &_texture);
 
-    void draw(const std::shared_ptr<Driver> &driver,
-              const std::shared_ptr<CommandBuffer> &cmd_buffer,
-              const Vec2I &framebuffer_size);
+    void draw(const std::shared_ptr<CommandBuffer> &cmd_buffer, const Vec2I &framebuffer_size);
 
     Vec2F position;
     Vec2F size;
     Vec2F scale{1};
 
 private:
+    std::shared_ptr<Driver> driver;
+
     std::shared_ptr<Texture> texture;
 
     std::shared_ptr<RenderPipeline> pipeline;

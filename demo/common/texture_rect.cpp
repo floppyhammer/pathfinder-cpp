@@ -15,9 +15,10 @@
     #include "../../src/shaders/generated/blit_vert.h"
 #endif
 
-TextureRect::TextureRect(const std::shared_ptr<Driver> &driver,
+TextureRect::TextureRect(const std::shared_ptr<Driver> &_driver,
                          const std::shared_ptr<RenderPass> &render_pass,
                          const Vec2F &_size) {
+    driver = _driver;
     size = _size;
 
     // Set up vertex data (and buffer(s)) and configure vertex attributes.
@@ -84,9 +85,7 @@ void TextureRect::set_texture(const std::shared_ptr<Texture> &_texture) {
     });
 }
 
-void TextureRect::draw(const std::shared_ptr<Driver> &driver,
-                       const std::shared_ptr<CommandBuffer> &cmd_buffer,
-                       const Vec2I &viewport_size) {
+void TextureRect::draw(const std::shared_ptr<CommandBuffer> &cmd_buffer, const Vec2I &viewport_size) {
     // Get MVP matrix.
     // -------------------------------------------------
     // The actual application order of these matrices is reverse.

@@ -30,7 +30,7 @@ void render(void* _swap_chain) {
                                       Pathfinder::ColorF(0.2, 0.2, 0.2, 1.0));
 
         // Draw canvas to screen.
-        //        texture_rect->draw(driver, cmd_buffer, framebuffer->get_size());
+        texture_rect->draw(cmd_buffer, framebuffer->get_size());
 
         cmd_buffer->end_render_pass();
     }
