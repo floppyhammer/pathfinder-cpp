@@ -13,7 +13,8 @@
             #include <GLES3/gl3.h>
         #endif
     #endif
-#elif defined(__WASM__)
+#elif defined(__EMSCRIPTEN__)
+    #define GLFW_INCLUDE_ES3
     #include <GLFW/glfw3.h>
 #else
     #ifdef PATHFINDER_USE_VULKAN

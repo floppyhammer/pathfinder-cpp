@@ -9,12 +9,12 @@
 
 #ifndef PATHFINDER_USE_VULKAN
 
-    #define GLAD_GL_IMPLEMENTATION
-    #include <glad/gl.h>
+    #ifndef __EMSCRIPTEN__
+        #define GLAD_GL_IMPLEMENTATION
+        #include <glad/gl.h>
 
 namespace Pathfinder {
 
-    #ifndef PATHFINDER_USE_WASM
 std::shared_ptr<Platform> Platform::new_impl(DeviceType device_type, Vec2I _window_size) {
     if (device_type == DeviceType::OpenGl4) {
         return std::make_shared<PlatformGl>(_window_size);
@@ -22,7 +22,6 @@ std::shared_ptr<Platform> Platform::new_impl(DeviceType device_type, Vec2I _wind
 
     abort();
 }
-    #endif
 
 PlatformGl::PlatformGl(Vec2I _window_size) : Platform(_window_size) {
     // Get a GLFW window.
@@ -30,23 +29,23 @@ PlatformGl::PlatformGl(Vec2I _window_size) : Platform(_window_size) {
 }
 
 void PlatformGl::init_window() {
-    #ifndef __ANDROID__
+        #ifndef __ANDROID__
     // GLFW: initialize and configure.
     glfwInit();
 
-        #ifdef PATHFINDER_USE_D3D11
+            #ifdef PATHFINDER_USE_D3D11
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        #else
+            #else
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        #endif
+            #endif
 
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        #ifdef __APPLE__
+            #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-        #endif
+            #endif
 
     // GLFW: window creation.
     window = glfwCreateWindow(window_size.x, window_size.y, "Pathfinder (OpenGL)", nullptr, nullptr);
@@ -72,7 +71,7 @@ void PlatformGl::init_window() {
         Logger::info("EXT_debug_label disabled. Try to run from RenderDoc!", "PlatformGl");
     }
 
-    #endif
+        #endif
 
     // Print GL version.
     int gl_major_version, gl_minor_version;
@@ -85,10 +84,10 @@ void PlatformGl::init_window() {
 }
 
 void PlatformGl::cleanup() {
-    #ifndef __ANDROID__
+        #ifndef __ANDROID__
     // GLFW: terminate, clearing all previously allocated resources (including windows).
     glfwTerminate();
-    #endif
+        #endif
 }
 
 std::shared_ptr<Driver> PlatformGl::create_driver() {
@@ -100,5 +99,7 @@ std::shared_ptr<SwapChain> PlatformGl::create_swap_chain(const std::shared_ptr<D
 }
 
 } // namespace Pathfinder
+
+    #endif
 
 #endif

@@ -8,7 +8,7 @@
 #include "../../common/global_macros.h"
 #include "../platform.h"
 
-#ifndef PATHFINDER_USE_VULKAN
+#ifdef __EMSCRIPTEN__
 
 namespace Pathfinder {
 

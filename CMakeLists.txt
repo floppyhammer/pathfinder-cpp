@@ -12,10 +12,6 @@ option(VULKAN_SUPPORT "Vulkan over OpenGL" OFF)
 option(BUILD_DEMO "Build demo" ON)
 option(ENABLE_WEB "Enable web" ON)
 
-if (ENABLE_WEB)
-    add_compile_definitions(PATHFINDER_USE_WASM)
-endif ()
-
 if (VULKAN_SUPPORT)
     message("Will use Vulkan")
 
@@ -55,15 +51,13 @@ if (BUILD_DEMO)
         message("Will build demo for web")
 
         string(APPEND CMAKE_CXX_FLAGS " -s USE_GLFW=3 -s USE_WEBGL2=1 -s FULL_ES3=1")
-        string(APPEND CMAKE_CXX_FLAGS " -g4 -s ASSERTIONS=2 -s SAFE_HEAP=1 -s STACK_OVERFLOW_CHECK=1 --source-map-base http://127.0.0.1:8000/")
+        string(APPEND CMAKE_CXX_FLAGS " -gsource-map -s ASSERTIONS=2 -s SAFE_HEAP=1 -s STACK_OVERFLOW_CHECK=1 --source-map-base http://127.0.0.1:8000/")
         string(APPEND CMAKE_CXX_FLAGS " -s WASM_BIGINT")
 
         add_subdirectory(demo/web)
     else ()
-        # Link GLFW.
         add_subdirectory(external/glfw)
 
-        # Demo executable.
         add_subdirectory(demo/native)
     endif ()
 endif ()
