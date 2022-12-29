@@ -61,7 +61,7 @@ struct DebugMarker {
     }
 };
 
-inline void check_error(const char *flag) {
+inline void gl_check_error(const char *flag) {
     #ifdef PATHFINDER_DEBUG
     for (GLint error = glGetError(); error; error = glGetError()) {
         std::ostringstream string_stream;
@@ -71,7 +71,7 @@ inline void check_error(const char *flag) {
     #endif
 }
 
-inline void print_string(const char *name, GLenum s) {
+inline void gl_print_string(const char *name, GLenum s) {
     #ifdef PATHFINDER_DEBUG
     const char *v = (const char *)glGetString(s);
 

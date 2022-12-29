@@ -26,10 +26,10 @@ FramebufferGl::FramebufferGl(const std::shared_ptr<Texture> &_texture, std::stri
 
     // Always check whether our framebuffer is OK.
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        Logger::error(
-            "Framebuffer is not OK!"
-            "FramebufferGl");
+        Logger::error("Framebuffer is not OK!", "FramebufferGl");
     }
+
+    gl_check_error("create_framebuffer");
 
     DebugMarker::label_framebuffer(gl_framebuffer, label);
 }

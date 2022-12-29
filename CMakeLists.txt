@@ -40,7 +40,7 @@ endif ()
 # Include external and third_party headers.
 include_directories(external third_party)
 
-if (!ENABLE_WEB)
+if (NOT ENABLE_WEB)
     # GLFW library.
     include_directories(external/glfw/include)
 endif ()

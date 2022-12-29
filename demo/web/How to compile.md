@@ -15,8 +15,8 @@ D:/Env/wasm/emsdk/upstream/emscripten/emmake make
 
 # Method 2
 
-Use CMake to create makefile
+Use CMake to create makefile.
 
-Go to the folder containing the makefile
+Go to the folder containing the makefile and activate emsdk as above.
 
 D:/Env/wasm/emsdk/upstream/emscripten/emmake make

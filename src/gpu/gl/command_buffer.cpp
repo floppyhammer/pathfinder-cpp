@@ -32,7 +32,7 @@ void CommandBufferGl::submit() {
 
                 glViewport(0, 0, args.extent.x, args.extent.y);
 
-                check_error("BeginRenderPass");
+                gl_check_error("BeginRenderPass");
             } break;
             case CommandType::BindRenderPipeline: {
                 auto &args = cmd.args.bind_render_pipeline;
@@ -55,7 +55,7 @@ void CommandBufferGl::submit() {
                 render_pipeline = args.pipeline;
                 compute_pipeline = nullptr;
 
-                check_error("BindRenderPipeline");
+                gl_check_error("BindRenderPipeline");
             } break;
             case CommandType::BindVertexBuffers: {
                 auto pipeline_gl = static_cast<RenderPipelineGl *>(render_pipeline);
@@ -79,7 +79,7 @@ void CommandBufferGl::submit() {
                     }
 
                     auto buffer = static_cast<BufferGl *>(vertex_buffers[attrib.binding]);
-                    auto vbo = buffer->id;
+                    auto vbo = buffer->get_handle();
 
                     if (location == 0) {
                         glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -125,7 +125,7 @@ void CommandBufferGl::submit() {
                     }
                 }
 
-                check_error("BindVertexBuffers");
+                gl_check_error("BindVertexBuffers");
             } break;
             case CommandType::BindDescriptorSet: {
                 auto &args = cmd.args.bind_descriptor_set;
@@ -152,7 +152,7 @@ void CommandBufferGl::submit() {
 
                             unsigned int ubo_index = glGetUniformBlockIndex(program_id, binding_name.c_str());
                             glUniformBlockBinding(program_id, ubo_index, binding_point);
-                            glBindBufferBase(GL_UNIFORM_BUFFER, binding_point, buffer_gl->id);
+                            glBindBufferBase(GL_UNIFORM_BUFFER, binding_point, buffer_gl->get_handle());
                         } break;
                         case DescriptorType::Sampler: {
                             auto texture_gl = static_cast<TextureGl *>(descriptor.texture.get());
@@ -167,7 +167,7 @@ void CommandBufferGl::submit() {
                         case DescriptorType::StorageBuffer: {
                             auto buffer_gl = static_cast<BufferGl *>(descriptor.buffer.get());
 
-                            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding_point, buffer_gl->id);
+                            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding_point, buffer_gl->get_handle());
                         } break;
                         case DescriptorType::Image: {
                             auto texture_gl = static_cast<TextureGl *>(descriptor.texture.get());
@@ -186,21 +186,21 @@ void CommandBufferGl::submit() {
                     }
                 }
 
-                check_error("BindDescriptorSet");
+                gl_check_error("BindDescriptorSet");
             } break;
             case CommandType::Draw: {
                 auto &args = cmd.args.draw;
 
                 glDrawArrays(GL_TRIANGLES, (GLsizei)args.first_vertex, (GLsizei)args.vertex_count);
 
-                check_error("Draw");
+                gl_check_error("Draw");
             } break;
             case CommandType::DrawInstanced: {
                 auto &args = cmd.args.draw_instanced;
 
                 glDrawArraysInstanced(GL_TRIANGLES, 0, (GLsizei)args.vertex_count, (GLsizei)args.instance_count);
 
-                check_error("DrawInstanced");
+                gl_check_error("DrawInstanced");
             } break;
             case CommandType::EndRenderPass:
             case CommandType::BeginComputePass:
@@ -229,7 +229,7 @@ void CommandBufferGl::submit() {
         #endif
     #endif
 
-                check_error("Dispatch");
+                gl_check_error("Dispatch");
             } break;
             case CommandType::EndComputePass: {
             } break;
@@ -260,7 +260,7 @@ void CommandBufferGl::submit() {
                                 args.data);
                 glBindTexture(GL_TEXTURE_2D, 0); // Unbind.
 
-                check_error("UploadToTexture");
+                gl_check_error("UploadToTexture");
             } break;
             // Unnecessary for OpenGL.
             case CommandType::SyncDescriptorSet:

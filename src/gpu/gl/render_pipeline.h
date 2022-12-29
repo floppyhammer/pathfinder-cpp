@@ -24,6 +24,8 @@ public:
 
         glGenVertexArrays(1, &vao);
 
+        gl_check_error("create_render_pipeline");
+
         DebugMarker::label_program(program->get_id(), label + " program");
         DebugMarker::label_vao(vao, label + " VAO");
     };

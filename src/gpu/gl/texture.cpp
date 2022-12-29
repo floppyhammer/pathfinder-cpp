@@ -46,6 +46,8 @@ TextureGl::TextureGl(Vec2I _size, TextureFormat _format, std::string _label)
 
     glBindTexture(GL_TEXTURE_2D, 0);
 
+    gl_check_error("create_texture");
+
     DebugMarker::label_texture(texture_id, label);
 }
 

@@ -18,8 +18,8 @@ const uint32_t MAX_VERTEX_BUFFER_BINDINGS = 8;
 
 class Buffer {
 public:
-    Buffer(BufferType _type, size_t _size, MemoryProperty _memory_property, std::string _label)
-        : type(_type), size(_size), memory_property(_memory_property), label(std::move(_label)) {}
+    Buffer(BufferType _type, size_t _size, MemoryProperty _memory_property, const std::string& _label)
+        : type(_type), size(_size), memory_property(_memory_property), label(_label) {}
 
     size_t get_size() const {
         return size;

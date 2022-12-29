@@ -12,7 +12,7 @@ namespace Pathfinder {
 
 class BufferGl : public Buffer {
 public:
-    BufferGl(BufferType _type, size_t _size, MemoryProperty _memory_property, std::string _label);
+    BufferGl(BufferType _type, size_t _size, MemoryProperty _memory_property, const std::string& _label);
 
     ~BufferGl();
 
@@ -20,7 +20,10 @@ public:
 
     void download_via_mapping(size_t data_size, size_t offset, void* data) override;
 
-    uint32_t id;
+    uint32_t get_handle() const;
+
+private:
+    uint32_t id = 0;
 };
 
 } // namespace Pathfinder

@@ -29,17 +29,6 @@ public:
     /// Tiles to draw.
     std::vector<DrawTileBatchD3D9> pending_tile_batches;
 
-    explicit RendererD3D9(const std::shared_ptr<Driver> &_driver);
-
-    void set_up_pipelines() override;
-
-    /// We need to call this for each scene.
-    void draw(const std::shared_ptr<SceneBuilder> &_scene_builder) override;
-
-    std::shared_ptr<Texture> get_dest_texture() override;
-
-    void set_dest_texture(const std::shared_ptr<Texture> &new_texture) override;
-
 private:
     /// Vertex buffers.
     std::shared_ptr<Buffer> quad_vertex_buffer;                     // Static
@@ -68,6 +57,18 @@ private:
 
     std::shared_ptr<RenderPass> mask_render_pass_clear, mask_render_pass_load, dest_render_pass_clear,
         dest_render_pass_load;
+
+public:
+    explicit RendererD3D9(const std::shared_ptr<Driver> &_driver);
+
+    void set_up_pipelines() override;
+
+    /// We need to call this for each scene.
+    void draw(const std::shared_ptr<SceneBuilder> &_scene_builder) override;
+
+    std::shared_ptr<Texture> get_dest_texture() override;
+
+    void set_dest_texture(const std::shared_ptr<Texture> &new_texture) override;
 
 private:
     void create_tile_clip_copy_pipeline();

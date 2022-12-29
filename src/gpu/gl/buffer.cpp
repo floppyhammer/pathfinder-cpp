@@ -8,8 +8,8 @@
 
 namespace Pathfinder {
 
-BufferGl::BufferGl(BufferType _type, size_t _size, MemoryProperty _memory_property, std::string _label)
-    : Buffer(_type, _size, _memory_property, std::move(_label)) {
+BufferGl::BufferGl(BufferType _type, size_t _size, MemoryProperty _memory_property, const std::string &_label)
+    : Buffer(_type, _size, _memory_property, _label) {
     if (size == 0) {
         Logger::error("Tried to create a buffer with zero size!");
     }
@@ -25,7 +25,10 @@ BufferGl::BufferGl(BufferType _type, size_t _size, MemoryProperty _memory_proper
         case BufferType::Vertex: {
             glBindBuffer(GL_ARRAY_BUFFER, id);
             glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
-            glBindBuffer(GL_ARRAY_BUFFER, 0); // Unbind.
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+        } break;
+        case BufferType::Index: {
+            Logger::error("Cannot handle index buffers yet!");
         } break;
         case BufferType::Storage: {
     #ifdef PATHFINDER_USE_D3D11
@@ -35,10 +38,12 @@ BufferGl::BufferGl(BufferType _type, size_t _size, MemoryProperty _memory_proper
 
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, id);
             glBufferData(GL_SHADER_STORAGE_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
-            glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // Unbind.
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
     #endif
         } break;
     }
+
+    gl_check_error("create_buffer");
 
     DebugMarker::label_buffer(id, label);
 }
@@ -48,7 +53,7 @@ BufferGl::~BufferGl() {
 }
 
 void BufferGl::upload_via_mapping(size_t data_size, size_t offset, void *data) {
-    int gl_buffer_type;
+    int gl_buffer_type = 0;
 
     switch (type) {
         case BufferType::Vertex: {
@@ -57,22 +62,25 @@ void BufferGl::upload_via_mapping(size_t data_size, size_t offset, void *data) {
         case BufferType::Uniform: {
             gl_buffer_type = GL_UNIFORM_BUFFER;
         } break;
-    #ifdef PATHFINDER_USE_D3D11
-        case BufferType::Storage: {
-            gl_buffer_type = GL_SHADER_STORAGE_BUFFER;
+        case BufferType::Index: {
+            Logger::error("Cannot handle index buffers yet!");
         } break;
+        case BufferType::Storage: {
+    #ifdef PATHFINDER_USE_D3D11
+            gl_buffer_type = GL_SHADER_STORAGE_BUFFER;
     #endif
+        } break;
     }
 
     glBindBuffer(gl_buffer_type, id);
-    glBufferSubData(gl_buffer_type, offset, data_size, data);
-    glBindBuffer(gl_buffer_type, 0); // Unbind.
+    glBufferSubData(gl_buffer_type, (GLintptr)offset, (GLsizeiptr)data_size, data);
+    glBindBuffer(gl_buffer_type, 0);
 
-    check_error("UploadToBuffer");
+    gl_check_error("UploadToBuffer");
 }
 
 void BufferGl::download_via_mapping(size_t data_size, size_t offset, void *data) {
-    // We can only read from general buffers.
+    // We can only read from storage buffers.
     if (type != BufferType::Storage) {
         Logger::error("Tried to read from a non-storage buffer!", "BufferGl");
         return;
@@ -82,7 +90,9 @@ void BufferGl::download_via_mapping(size_t data_size, size_t offset, void *data)
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, id);
         #ifdef __ANDROID__
     void *ptr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, args.offset, args.data_size, GL_MAP_READ_BIT);
-    if (ptr) memcpy(args.data, ptr, args.data_size);
+    if (ptr) {
+        memcpy(args.data, ptr, args.data_size);
+    }
     glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
         #else
     glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, data_size, data);
@@ -90,7 +100,11 @@ void BufferGl::download_via_mapping(size_t data_size, size_t offset, void *data)
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // Unbind.
     #endif
 
-    check_error("ReadBuffer");
+    gl_check_error("ReadBuffer");
+}
+
+uint32_t BufferGl::get_handle() const {
+    return id;
 }
 
 } // namespace Pathfinder
