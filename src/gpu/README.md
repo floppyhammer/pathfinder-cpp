@@ -1,3 +1,3 @@
 # Pathfinder GPU
 
-This a minimal GPU abstraction layer tailored for Pathfinder.
+This is a minimal GPU abstraction layer tailored for Pathfinder.

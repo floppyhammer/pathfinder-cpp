@@ -25,16 +25,16 @@ struct Mat2x2 {
         return Mat2x2<float>::from_scale(Vec2F(1));
     }
 
-    static Mat2x2 from_scale(Vec2F p_scale) {
-        return {p_scale.x, 0.0, 0.0, p_scale.y};
+    static Mat2x2 from_scale(Vec2F _scale) {
+        return {_scale.x, 0.0, 0.0, _scale.y};
     }
 
     static Mat2x2 from_rotation(float theta) {
         return Mat2x2::from_rotation_vector(UnitVector::from_angle(theta));
     }
 
-    static Mat2x2 from_rotation_vector(const UnitVector &p_vector) {
-        return {1.0f * p_vector.x, 1.0f * p_vector.y, -1.0f * p_vector.y, 1.0f * p_vector.x};
+    static Mat2x2 from_rotation_vector(const UnitVector &_vector) {
+        return {1.0f * _vector.x, 1.0f * _vector.y, -1.0f * _vector.y, 1.0f * _vector.x};
     }
 
     inline float det() const {

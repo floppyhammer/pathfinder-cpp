@@ -25,7 +25,7 @@ public:
 
     void print();
 
-    void enable(bool _enabled);
+    void set_enabled(bool _enabled);
 };
 
 } // namespace Pathfinder

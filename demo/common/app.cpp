@@ -25,7 +25,7 @@ App::App(const std::shared_ptr<Driver> &_driver,
     }
 
     // TEST: Draw image.
-    if (false) {
+    if (true) {
         Image image;
         auto image_buffer = ImageBuffer::from_memory(img_input, false);
         image.size = image_buffer->get_size();
@@ -61,7 +61,7 @@ App::App(const std::shared_ptr<Driver> &_driver,
     }
 
     // TEST: Render target pattern.
-    if (false) {
+    if (true) {
         auto sub_render_target_size = Vec2F(400, 300);
         auto sub_render_target =
             RenderTarget(canvas->get_driver(), sub_render_target_size.to_i32(), "Sub render target");
@@ -83,7 +83,7 @@ App::App(const std::shared_ptr<Driver> &_driver,
     }
 
     // TEST: Append SVG scene.
-    if (false) {
+    if (true) {
         SvgScene svg_scene;
         svg_scene.load_from_memory(svg_input, *canvas);
 

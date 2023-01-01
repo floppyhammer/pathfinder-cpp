@@ -11,10 +11,10 @@ Transform2::Transform2(float xform[6]) {
     vector = {xform[4], xform[5]};
 }
 
-Transform2::Transform2(Mat2x2<float> p_matrix, Vec2F p_vector) : matrix(p_matrix), vector(p_vector) {}
+Transform2::Transform2(Mat2x2<float> _matrix, Vec2F _vector) : matrix(_matrix), vector(_vector) {}
 
-Transform2 Transform2::translate(Vec2F p_vector) const {
-    return Transform2::from_translation(p_vector) * *this;
+Transform2 Transform2::translate(Vec2F _vector) const {
+    return Transform2::from_translation(_vector) * *this;
 }
 
 Transform2 Transform2::rotate(float theta) const {

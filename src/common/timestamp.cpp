@@ -49,7 +49,7 @@ void Timestamp::print() {
     }
 }
 
-void Timestamp::enable(bool _enabled) {
+void Timestamp::set_enabled(bool _enabled) {
     enabled = _enabled;
 }
 

@@ -11,9 +11,9 @@ struct UnitVector {
     float x;
     float y;
 
-    UnitVector(float p_x, float p_y);
+    UnitVector(float _x, float _y);
 
-    explicit UnitVector(const Vec2F &p_value);
+    explicit UnitVector(const Vec2F &_vec2);
 
     static UnitVector from_angle(float theta) {
         return {std::cos(theta), std::sin(theta)};

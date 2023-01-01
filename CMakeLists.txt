@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.16.1)
+
 project(pathfinder)
 
 set(CMAKE_CXX_STANDARD 14)
@@ -6,17 +7,16 @@ set(CMAKE_CXX_STANDARD 14)
 # Set binary output directory. Using CMAKE_CURRENT_SOURCE_DIR is necessary.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
-# Reset CMake cache for these to take effect.
-option(VULKAN_SUPPORT "Vulkan over OpenGL" OFF)
-
+# Reset CMake cache for these options to take effect.
+option(VULKAN_SUPPORT "Prefer Vulkan over OpenGL" OFF)
 option(BUILD_DEMO "Build demo" ON)
-option(ENABLE_WEB "Enable web" ON)
+option(BUILD_FOR_WEB "Build for web" OFF)
 
 if (VULKAN_SUPPORT)
     message("Will use Vulkan")
 
-    # No web for Vulkan.
-    set(ENABLE_WEB OFF)
+    # No web build for Vulkan.
+    set(BUILD_FOR_WEB OFF)
 
     add_compile_definitions(PATHFINDER_USE_VULKAN)
 
@@ -40,7 +40,7 @@ endif ()
 include_directories(external third_party)
 
 # Emscripten has its own version of GLFW.
-if (NOT ENABLE_WEB)
+if (NOT BUILD_FOR_WEB)
     # GLFW headers.
     include_directories(external/glfw/include)
 endif ()
@@ -51,8 +51,8 @@ add_subdirectory(src)
 if (BUILD_DEMO)
     message("Will build demo")
 
-    if (ENABLE_WEB)
-        message("Will build demo for web")
+    if (BUILD_FOR_WEB)
+        message("Will build for web")
 
         string(APPEND CMAKE_CXX_FLAGS " -s USE_GLFW=3 -s USE_WEBGL2=1 -s FULL_ES3=1")
         string(APPEND CMAKE_CXX_FLAGS " -s WASM_BIGINT")

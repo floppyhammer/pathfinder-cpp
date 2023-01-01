@@ -13,7 +13,7 @@
 using namespace Pathfinder;
 
 /**
- * Simple class to blit a texture onto the screen.
+ * Simple class to blit a texture to screen.
  */
 class TextureRect {
 public:
@@ -21,15 +21,15 @@ public:
                 const std::shared_ptr<RenderPass> &render_pass,
                 const Vec2F &_size);
 
-    void set_texture(const std::shared_ptr<Texture> &_texture);
+    void set_texture(const std::shared_ptr<Texture> &new_texture);
 
     void draw(const std::shared_ptr<CommandBuffer> &cmd_buffer, const Vec2I &framebuffer_size);
 
+private:
     Vec2F position;
     Vec2F size;
     Vec2F scale{1};
 
-private:
     std::shared_ptr<Driver> driver;
 
     std::shared_ptr<Texture> texture;

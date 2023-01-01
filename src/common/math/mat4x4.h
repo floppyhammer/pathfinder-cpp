@@ -18,22 +18,22 @@ struct Mat4x4 {
         }
     }
 
-    static Mat4x4 from_scale(const Vec3F &p_scale) {
+    static Mat4x4 from_scale(const Vec3F &_scale) {
         auto mat = Mat4x4(1);
 
-        mat.v[0] = p_scale.x;
-        mat.v[5] = p_scale.y;
-        mat.v[10] = p_scale.z;
+        mat.v[0] = _scale.x;
+        mat.v[5] = _scale.y;
+        mat.v[10] = _scale.z;
 
         return mat;
     }
 
-    static Mat4x4 from_translation(const Vec3F &p_translation) {
+    static Mat4x4 from_translation(const Vec3F &_translation) {
         auto mat = Mat4x4(1);
 
-        mat.v[12] = p_translation.x;
-        mat.v[13] = p_translation.y;
-        mat.v[14] = p_translation.z;
+        mat.v[12] = _translation.x;
+        mat.v[13] = _translation.y;
+        mat.v[14] = _translation.z;
 
         return mat;
     }
@@ -54,12 +54,12 @@ struct Mat4x4 {
         return mat;
     }
 
-    inline Mat4x4 translate(const Vec3<T> &p_translation) const {
-        return *this * Mat4x4<float>::from_translation(p_translation);
+    inline Mat4x4 translate(const Vec3<T> &_translation) const {
+        return *this * Mat4x4<float>::from_translation(_translation);
     }
 
-    inline Mat4x4 scale(const Vec3<T> &p_scale) const {
-        return *this * Mat4x4<float>::from_scale(p_scale);
+    inline Mat4x4 scale(const Vec3<T> &_scale) const {
+        return *this * Mat4x4<float>::from_scale(_scale);
     }
 };
 

@@ -18,7 +18,7 @@ public:
 
     explicit Transform2(float xform[6]);
 
-    Transform2(Mat2x2<float> p_matrix, Vec2F p_vector);
+    Transform2(Mat2x2<float> _matrix, Vec2F _vector);
 
     static Transform2 from_scale(const Vec2F &scale) {
         return {Mat2x2<float>::from_scale(scale), Vec2F(0)};
@@ -32,8 +32,8 @@ public:
         return {Mat2x2<float>::identity(), translation};
     }
 
-    static Transform2 from_rotation_vector(const UnitVector &p_vector) {
-        return {Mat2x2<float>::from_rotation_vector(p_vector), Vec2F(0)};
+    static Transform2 from_rotation_vector(const UnitVector &_vector) {
+        return {Mat2x2<float>::from_rotation_vector(_vector), Vec2F(0)};
     }
 
     bool is_identity() const;
@@ -42,10 +42,10 @@ public:
 
     /**
      * Left-multiply a translation matrix.
-     * @param p_vector Translation
+     * @param _vector Translation
      * @return New transform
      */
-    Transform2 translate(Vec2F p_vector) const;
+    Transform2 translate(Vec2F _vector) const;
 
     /**
      * Left-multiply a rotation matrix.
@@ -80,15 +80,15 @@ public:
         return vector.y;
     }
 
-    inline Vec2F operator*(const Vec2F &p_vector) const {
-        return {matrix * p_vector + vector};
+    inline Vec2F operator*(const Vec2F &_vector) const {
+        return {matrix * _vector + vector};
     }
 
-    inline RectF operator*(const RectF &p_rect) const {
-        auto upper_left = *this * p_rect.origin();
-        auto upper_right = *this * p_rect.upper_right();
-        auto lower_left = *this * p_rect.lower_left();
-        auto lower_right = *this * p_rect.lower_right();
+    inline RectF operator*(const RectF &_rect) const {
+        auto upper_left = *this * _rect.origin();
+        auto upper_right = *this * _rect.upper_right();
+        auto lower_left = *this * _rect.lower_left();
+        auto lower_right = *this * _rect.lower_right();
         auto min_point = upper_left.min(upper_right).min(lower_left).min(lower_right);
         auto max_point = upper_left.max(upper_right).max(lower_left).max(lower_right);
 

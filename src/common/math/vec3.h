@@ -13,7 +13,9 @@ struct Vec3 {
 
     explicit Vec3(T s) : x(s), y(s), z(s){};
 
-    Vec3(T p_x, T p_y, T p_z) : x(p_x), y(p_y), z(p_z){};
+    Vec3(T _x, T _y, T _z) : x(_x), y(_y), z(_z){};
+
+    Vec3(Vec2<T> _vec2, T _z) : x(_vec2.x), y(_vec2.y), z(_z){};
 
     Vec2<T> xy() const {
         return {x, y};

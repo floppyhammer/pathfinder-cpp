@@ -51,7 +51,6 @@ TextureRect::TextureRect(const std::shared_ptr<Driver> &_driver,
 #endif
 
         std::vector<VertexInputAttributeDescription> attribute_descriptions;
-        attribute_descriptions.reserve(3);
 
         uint32_t stride = 4 * sizeof(float);
 
@@ -77,27 +76,26 @@ TextureRect::TextureRect(const std::shared_ptr<Driver> &_driver,
     }
 }
 
-void TextureRect::set_texture(const std::shared_ptr<Texture> &_texture) {
-    texture = _texture;
+void TextureRect::set_texture(const std::shared_ptr<Texture> &new_texture) {
+    texture = new_texture;
 
     descriptor_set->add_or_update({
         Descriptor::sampler(1, ShaderStage::Fragment, "uTexture", texture),
     });
 }
 
-void TextureRect::draw(const std::shared_ptr<CommandBuffer> &cmd_buffer, const Vec2I &viewport_size) {
+void TextureRect::draw(const std::shared_ptr<CommandBuffer> &cmd_buffer, const Vec2I &framebuffer_size) {
     // Get MVP matrix.
-    // -------------------------------------------------
-    // The actual application order of these matrices is reverse.
+    // -------------------------------
+    // The actual application order of these matrices is reversed.
     auto model_mat = Mat4x4<float>(1.0f);
-    model_mat =
-        model_mat.translate(Vec3F(position.x / viewport_size.x * 2.0f, position.y / viewport_size.y * 2.0f, 0.0f));
+    model_mat = model_mat.translate(Vec3F(position / framebuffer_size.to_f32() * 2.0f, 0.0f));
     model_mat = model_mat.translate(Vec3F(-1.0, -1.0, 0.0f));
-    model_mat = model_mat.scale(Vec3F(scale.x, scale.y, 1.0f));
-    model_mat = model_mat.scale(Vec3F(size.x / viewport_size.x * 2.0f, size.y / viewport_size.y * 2.0f, 1.0f));
+    model_mat = model_mat.scale(Vec3F(scale, 1.0f));
+    model_mat = model_mat.scale(Vec3F(size / framebuffer_size.to_f32() * 2.0f, 1.0f));
 
     auto mvp_mat = model_mat;
-    // -------------------------------------------------
+    // -------------------------------
 
     auto one_time_cmd_buffer = driver->create_command_buffer("Upload TextureRect uniform buffer");
     one_time_cmd_buffer->upload_to_buffer(uniform_buffer, 0, 16 * sizeof(float), &mvp_mat);
