@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
 # Reset CMake cache for these options to take effect.
-option(VULKAN_SUPPORT "Prefer Vulkan over OpenGL" OFF)
+option(VULKAN_SUPPORT "Prefer Vulkan over OpenGL" ON)
 option(BUILD_DEMO "Build demo" ON)
 option(BUILD_FOR_WEB "Build for web" OFF)
 
@@ -62,6 +62,8 @@ if (BUILD_DEMO)
 
         add_subdirectory(demo/web)
     else ()
+        add_compile_definitions(WINVER=0x0502)
+        add_compile_definitions(_WIN32_WINNT=0x0502)
         add_subdirectory(external/glfw)
 
         add_subdirectory(demo/native)
