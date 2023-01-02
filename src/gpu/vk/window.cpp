@@ -41,7 +41,7 @@ void destroy_debug_utils_messenger_ext(VkInstance instance,
 
 WindowVk::WindowVk(Vec2I _window_size) : Window(_window_size) {
     // Get a GLFW window.
-    init_window();
+    init_glfw_window();
 
     // Initialize Vulkan by creating an instance.
     create_instance();
@@ -78,42 +78,14 @@ void WindowVk::create_command_pool() {
     }
 }
 
-void WindowVk::init_window() {
+void WindowVk::init_glfw_window() {
     // Initializes GLFW.
     glfwInit();
 
     // To not create an OpenGL context (as we're using Vulkan).
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-    // Enable window resizing.
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-
-    // Hide window upon creation as we need to center the window before showing it.
-    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-
-    // Get monitor position (used to correctly center the window in a multi-monitor scenario).
-    int monitor_count, monitor_x, monitor_y;
-    GLFWmonitor **monitors = glfwGetMonitors(&monitor_count);
-    const GLFWvidmode *video_mode = glfwGetVideoMode(monitors[0]);
-    glfwGetMonitorPos(monitors[0], &monitor_x, &monitor_y);
-
-    // Get DPI scale.
-    float dpi_scale_x, dpi_scale_y;
-    glfwGetMonitorContentScale(monitors[0], &dpi_scale_x, &dpi_scale_y);
-
-    glfw_window = glfwCreateWindow(size.x, size.y, "Pathfinder (Vulkan)", nullptr, nullptr);
-
-    // Center the window.
-    glfwSetWindowPos(glfw_window,
-                     monitor_x + (video_mode->width - size.x) / 2,
-                     monitor_y + (video_mode->height - size.y) / 2);
-
-    // Show the window.
-    glfwShowWindow(glfw_window);
-
-    // Assign this to window user, so we can fetch it when window size changes.
-    glfwSetWindowUserPointer(glfw_window, this);
-    glfwSetFramebufferSizeCallback(glfw_window, framebuffer_resize_callback);
+    common_glfw_init();
 }
 
 void WindowVk::create_instance() {

@@ -143,7 +143,7 @@ private:
     VkCommandPool command_pool{};
 
 private:
-    void init_window();
+    void init_glfw_window();
 
     void setup_debug_messenger();
 

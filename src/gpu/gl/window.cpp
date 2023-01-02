@@ -47,18 +47,9 @@ void WindowGl::init() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
             #endif
 
-    // GLFW: window creation.
-    glfw_window = glfwCreateWindow(size.x, size.y, "Pathfinder (OpenGL)", nullptr, nullptr);
-
-    if (glfw_window == nullptr) {
-        throw std::runtime_error("Failed to create GLFW window!");
-    }
+    common_glfw_init();
 
     glfwMakeContextCurrent(glfw_window);
-
-    // Set window resize callback.
-    glfwSetWindowUserPointer(glfw_window, this);
-    glfwSetFramebufferSizeCallback(glfw_window, framebuffer_resize_callback);
 
     // GLAD: load all OpenGL function pointers.
     if (!gladLoadGL(glfwGetProcAddress)) {
