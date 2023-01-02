@@ -11,9 +11,9 @@
 
 namespace Pathfinder {
 
-std::shared_ptr<Window> Window::new_impl(DeviceType device_type, Vec2I _window_size) {
+std::shared_ptr<Window> Window::new_impl(DeviceType device_type, Vec2I _size) {
     if (device_type == DeviceType::Vulkan) {
-        return std::make_shared<WindowVk>(_window_size);
+        return std::make_shared<WindowVk>(_size);
     }
 
     abort();

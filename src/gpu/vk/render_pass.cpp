@@ -9,7 +9,7 @@ namespace Pathfinder {
 Pathfinder::RenderPassVk::RenderPassVk(VkDevice _device,
                                        TextureFormat texture_format,
                                        AttachmentLoadOp load_op,
-                                       bool is_swapchain_render_pass,
+                                       bool is_swap_chain_pass,
                                        const std::string &_label) {
     vk_device = _device;
     label = _label;
@@ -33,7 +33,7 @@ Pathfinder::RenderPassVk::RenderPassVk(VkDevice _device,
         load_op == AttachmentLoadOp::Clear ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     // The layout the attachment image subresource will be transitioned to when a render pass instance ends.
     colorAttachment.finalLayout =
-        is_swapchain_render_pass ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        is_swap_chain_pass ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
     VkAttachmentReference colorAttachmentRef{};
     colorAttachmentRef.attachment = 0;

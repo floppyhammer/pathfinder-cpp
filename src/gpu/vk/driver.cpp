@@ -344,11 +344,12 @@ std::shared_ptr<ComputePipeline> DriverVk::create_compute_pipeline(const std::ve
 
 std::shared_ptr<RenderPass> DriverVk::create_render_pass(TextureFormat format,
                                                          AttachmentLoadOp load_op,
-                                                         bool is_swapchain_render_pass,
                                                          const std::string &label) {
-    auto render_pass_vk = std::make_shared<RenderPassVk>(device, format, load_op, is_swapchain_render_pass, label);
+    return std::make_shared<RenderPassVk>(device, format, load_op, false, label);
+}
 
-    return render_pass_vk;
+std::shared_ptr<RenderPass> DriverVk::create_swap_chain_render_pass(TextureFormat format, AttachmentLoadOp load_op) {
+    return std::make_shared<RenderPassVk>(device, format, load_op, true, "Swap chain render pass");
 }
 
 std::shared_ptr<Framebuffer> DriverVk::create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,

@@ -42,7 +42,7 @@ struct SwapchainSupportDetails {
 
 class WindowVk : public Window {
 public:
-    explicit WindowVk(Vec2I _window_size);
+    explicit WindowVk(Vec2I _size);
 
     std::shared_ptr<Driver> create_driver() override;
 

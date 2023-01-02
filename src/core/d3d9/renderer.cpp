@@ -42,19 +42,17 @@ const size_t CLIP_TILE_INSTANCE_SIZE = 16;
 const size_t MAX_FILLS_PER_BATCH = 0x10000;
 
 RendererD3D9::RendererD3D9(const std::shared_ptr<Driver> &_driver) : Renderer(_driver) {
-    mask_render_pass_clear = driver->create_render_pass(TextureFormat::Rgba16Float,
-                                                        AttachmentLoadOp::Clear,
-                                                        false,
-                                                        "Mask render pass clear");
+    mask_render_pass_clear =
+        driver->create_render_pass(TextureFormat::Rgba16Float, AttachmentLoadOp::Clear, "Mask render pass clear");
 
     mask_render_pass_load =
-        driver->create_render_pass(TextureFormat::Rgba16Float, AttachmentLoadOp::Load, false, "Mask render pass load");
+        driver->create_render_pass(TextureFormat::Rgba16Float, AttachmentLoadOp::Load, "Mask render pass load");
 
     dest_render_pass_clear =
-        driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Clear, false, "Dest render pass clear");
+        driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Clear, "Dest render pass clear");
 
     dest_render_pass_load =
-        driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Load, false, "Dest render pass load");
+        driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Load, "Dest render pass load");
 
     auto mask_texture = driver->create_texture({MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT},
                                                TextureFormat::Rgba16Float,

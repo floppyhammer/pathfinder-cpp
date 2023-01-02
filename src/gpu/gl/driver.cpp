@@ -34,8 +34,11 @@ std::shared_ptr<CommandBuffer> DriverGl::create_command_buffer(const std::string
 
 std::shared_ptr<RenderPass> DriverGl::create_render_pass(TextureFormat format,
                                                          AttachmentLoadOp load_op,
-                                                         bool is_swapchain_render_pass,
                                                          const std::string &label) {
+    return std::make_shared<RenderPassGl>(load_op);
+}
+
+std::shared_ptr<RenderPass> DriverGl::create_swap_chain_render_pass(TextureFormat format, AttachmentLoadOp load_op) {
     return std::make_shared<RenderPassGl>(load_op);
 }
 
