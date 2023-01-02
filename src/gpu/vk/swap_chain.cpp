@@ -80,14 +80,6 @@ void SwapChainVk::init_swapchain() {
 }
 
 void SwapChainVk::recreate_swapchain() {
-    // Handling window minimization.
-    //        int width = 0, height = 0;
-    //        glfwGetFramebufferSize(window, &width, &height);
-    //        while (width == 0 || height == 0) {
-    //            glfwGetFramebufferSize(window, &width, &height);
-    //            glfwWaitEvents();
-    //        }
-
     cleanup_swapchain();
 
     init_swapchain();

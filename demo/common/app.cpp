@@ -13,7 +13,6 @@ App::App(const std::shared_ptr<Driver> &_driver,
 
     // Set up a canvas.
     canvas = std::make_shared<Canvas>(driver);
-    canvas->set_size(window_size);
     canvas->set_new_dst_texture(window_size);
 
     // TEST: Clip path.
@@ -127,4 +126,8 @@ void App::update() {
 
 void App::cleanup() {
     canvas.reset();
+}
+
+void App::when_window_resized(Vec2I new_size) const {
+    canvas->set_new_dst_texture(new_size);
 }

@@ -8,13 +8,13 @@ int main() {
     Vec2I window_size = {WINDOW_WIDTH, WINDOW_HEIGHT};
 
 #ifdef PATHFINDER_USE_VULKAN
-    auto device_type = Pathfinder::DeviceType::Vulkan;
+    auto device_type = DeviceType::Vulkan;
 #else
-    auto device_type = Pathfinder::DeviceType::OpenGl4;
+    auto device_type = DeviceType::OpenGl4;
 #endif
 
     // Create a window.
-    auto window = Pathfinder::Window::new_impl(device_type, window_size);
+    auto window = Window::new_impl(device_type, window_size);
 
     // Create a driver via window.
     auto driver = window->create_driver();
@@ -23,10 +23,7 @@ int main() {
     auto swap_chain = window->create_swap_chain(driver);
 
     // Create app.
-    App app(driver,
-            window_size,
-            Pathfinder::load_file_as_bytes("../assets/features.svg"),
-            Pathfinder::load_file_as_bytes("../assets/sea.png"));
+    App app(driver, window_size, load_file_as_bytes("../assets/features.svg"), load_file_as_bytes("../assets/sea.png"));
 
     // Set viewport texture to a texture rect.
     auto texture_rect = std::make_shared<TextureRect>(driver, swap_chain->get_render_pass(), window_size.to_f32());
@@ -41,6 +38,10 @@ int main() {
             continue;
         }
 
+        if (window->get_size() != app.canvas->get_size() && window->get_size().area() != 0) {
+            app.when_window_resized(window->get_size());
+        }
+
         app.update();
 
         auto cmd_buffer = swap_chain->get_command_buffer();
@@ -49,9 +50,7 @@ int main() {
 
         // Swap chain render pass.
         {
-            cmd_buffer->begin_render_pass(swap_chain->get_render_pass(),
-                                          framebuffer,
-                                          Pathfinder::ColorF(0.2, 0.2, 0.2, 1.0));
+            cmd_buffer->begin_render_pass(swap_chain->get_render_pass(), framebuffer, ColorF(0.2, 0.2, 0.2, 1.0));
 
             // Draw canvas to screen.
             texture_rect->draw(cmd_buffer, framebuffer->get_size());

@@ -32,8 +32,6 @@ public:
         if (texture) {
             return texture->get_size();
         }
-
-        // Render to screen or swapchain.
         return size;
     }
 

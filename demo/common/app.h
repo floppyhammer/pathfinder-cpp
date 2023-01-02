@@ -19,6 +19,8 @@ public:
 
     void cleanup();
 
+    void when_window_resized(Vec2I new_size) const;
+
     std::shared_ptr<Canvas> canvas;
 
 private:

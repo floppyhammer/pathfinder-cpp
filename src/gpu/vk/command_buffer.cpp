@@ -201,7 +201,7 @@ void CommandBufferVk::submit() {
                 auto render_pass_vk = static_cast<RenderPassVk *>(args.render_pass);
                 auto framebuffer_vk = static_cast<FramebufferVk *>(args.framebuffer);
 
-                // Transition non-swapchain-framebuffer image.
+                // Transition non-swap-chain-framebuffer image.
                 if (framebuffer_vk->get_texture()) {
                     auto texture_vk = static_cast<TextureVk *>(framebuffer_vk->get_texture().get());
 
