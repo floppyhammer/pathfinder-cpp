@@ -1,4 +1,4 @@
-#include "platform.h"
+#include "window.h"
 
 #include <set>
 #include <stdexcept>
@@ -11,9 +11,9 @@
 
 namespace Pathfinder {
 
-std::shared_ptr<Platform> Platform::new_impl(DeviceType device_type, Vec2I _window_size) {
+std::shared_ptr<Window> Window::new_impl(DeviceType device_type, Vec2I _window_size) {
     if (device_type == DeviceType::Vulkan) {
-        return std::make_shared<PlatformVk>(_window_size);
+        return std::make_shared<WindowVk>(_window_size);
     }
 
     abort();
@@ -39,7 +39,7 @@ void destroy_debug_utils_messenger_ext(VkInstance instance,
     }
 }
 
-PlatformVk::PlatformVk(Vec2I _window_size) : Platform(_window_size) {
+WindowVk::WindowVk(Vec2I _window_size) : Window(_window_size) {
     // Get a GLFW window.
     init_window();
 
@@ -61,11 +61,11 @@ PlatformVk::PlatformVk(Vec2I _window_size) : Platform(_window_size) {
     create_command_pool();
 }
 
-std::shared_ptr<Driver> PlatformVk::create_driver() {
+std::shared_ptr<Driver> WindowVk::create_driver() {
     return std::make_shared<DriverVk>(device, physical_device, graphics_queue, command_pool);
 }
 
-void PlatformVk::create_command_pool() {
+void WindowVk::create_command_pool() {
     QueueFamilyIndices qf_indices = find_queue_families(physical_device);
 
     VkCommandPoolCreateInfo pool_info{};
@@ -78,7 +78,7 @@ void PlatformVk::create_command_pool() {
     }
 }
 
-void PlatformVk::init_window() {
+void WindowVk::init_window() {
     // Initializes GLFW.
     glfwInit();
 
@@ -101,22 +101,22 @@ void PlatformVk::init_window() {
     float dpi_scale_x, dpi_scale_y;
     glfwGetMonitorContentScale(monitors[0], &dpi_scale_x, &dpi_scale_y);
 
-    window = glfwCreateWindow(window_size.x, window_size.y, "Pathfinder (Vulkan)", nullptr, nullptr);
+    glfw_window = glfwCreateWindow(size.x, size.y, "Pathfinder (Vulkan)", nullptr, nullptr);
 
     // Center the window.
-    glfwSetWindowPos(window,
-                     monitor_x + (video_mode->width - window_size.x) / 2,
-                     monitor_y + (video_mode->height - window_size.y) / 2);
+    glfwSetWindowPos(glfw_window,
+                     monitor_x + (video_mode->width - size.x) / 2,
+                     monitor_y + (video_mode->height - size.y) / 2);
 
     // Show the window.
-    glfwShowWindow(window);
+    glfwShowWindow(glfw_window);
 
     // Assign this to window user, so we can fetch it when window size changes.
-    glfwSetWindowUserPointer(window, this);
-    glfwSetFramebufferSizeCallback(window, framebuffer_resize_callback);
+    glfwSetWindowUserPointer(glfw_window, this);
+    glfwSetFramebufferSizeCallback(glfw_window, framebuffer_resize_callback);
 }
 
-void PlatformVk::create_instance() {
+void WindowVk::create_instance() {
     if (enable_validation_layers && !check_validation_layer_support()) {
         throw std::runtime_error("Validation layers requested, but not available!");
     }
@@ -164,12 +164,12 @@ void PlatformVk::create_instance() {
     DebugMarker::get_singleton()->setup(instance);
 }
 
-VkExtent2D PlatformVk::choose_swap_extent(const VkSurfaceCapabilitiesKHR &capabilities) const {
+VkExtent2D WindowVk::choose_swap_extent(const VkSurfaceCapabilitiesKHR &capabilities) const {
     if (capabilities.currentExtent.width != UINT32_MAX) {
         return capabilities.currentExtent;
     } else {
         int width, height;
-        glfwGetFramebufferSize(window, &width, &height);
+        glfwGetFramebufferSize(glfw_window, &width, &height);
 
         VkExtent2D actual_extent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 
@@ -182,7 +182,7 @@ VkExtent2D PlatformVk::choose_swap_extent(const VkSurfaceCapabilitiesKHR &capabi
     }
 }
 
-void PlatformVk::populate_debug_messenger_create_info(VkDebugUtilsMessengerCreateInfoEXT &create_info) {
+void WindowVk::populate_debug_messenger_create_info(VkDebugUtilsMessengerCreateInfoEXT &create_info) {
     create_info = {};
     create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
@@ -194,7 +194,7 @@ void PlatformVk::populate_debug_messenger_create_info(VkDebugUtilsMessengerCreat
     create_info.pfnUserCallback = debug_callback;
 }
 
-void PlatformVk::setup_debug_messenger() {
+void WindowVk::setup_debug_messenger() {
     if (!enable_validation_layers) {
         return;
     }
@@ -207,13 +207,13 @@ void PlatformVk::setup_debug_messenger() {
     }
 }
 
-void PlatformVk::create_surface() {
-    if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
+void WindowVk::create_surface() {
+    if (glfwCreateWindowSurface(instance, glfw_window, nullptr, &surface) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create window surface!");
     }
 }
 
-bool PlatformVk::check_device_extension_support(VkPhysicalDevice _physical_device) const {
+bool WindowVk::check_device_extension_support(VkPhysicalDevice _physical_device) const {
     uint32_t extension_count;
     vkEnumerateDeviceExtensionProperties(_physical_device, nullptr, &extension_count, nullptr);
 
@@ -229,7 +229,7 @@ bool PlatformVk::check_device_extension_support(VkPhysicalDevice _physical_devic
     return required_extensions.empty();
 }
 
-SwapchainSupportDetails PlatformVk::query_swapchain_support(VkPhysicalDevice _physical_device) const {
+SwapchainSupportDetails WindowVk::query_swapchain_support(VkPhysicalDevice _physical_device) const {
     SwapchainSupportDetails details;
 
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_physical_device, surface, &details.capabilities);
@@ -256,7 +256,7 @@ SwapchainSupportDetails PlatformVk::query_swapchain_support(VkPhysicalDevice _ph
     return details;
 }
 
-bool PlatformVk::is_device_suitable(VkPhysicalDevice _physical_device) const {
+bool WindowVk::is_device_suitable(VkPhysicalDevice _physical_device) const {
     QueueFamilyIndices indices = find_queue_families(_physical_device);
 
     bool extensions_supported = check_device_extension_support(_physical_device);
@@ -273,7 +273,7 @@ bool PlatformVk::is_device_suitable(VkPhysicalDevice _physical_device) const {
     return indices.is_complete() && extensions_supported && swapchain_adequate && supported_features.samplerAnisotropy;
 }
 
-void PlatformVk::pick_physical_device() {
+void WindowVk::pick_physical_device() {
     // Enumerates the physical devices accessible to a Vulkan instance.
     uint32_t device_count = 0;
     vkEnumeratePhysicalDevices(instance, &device_count, nullptr);
@@ -299,7 +299,7 @@ void PlatformVk::pick_physical_device() {
     }
 }
 
-VkSurfaceFormatKHR PlatformVk::choose_swap_surface_format(const std::vector<VkSurfaceFormatKHR> &available_formats) {
+VkSurfaceFormatKHR WindowVk::choose_swap_surface_format(const std::vector<VkSurfaceFormatKHR> &available_formats) {
     for (const auto &available_format : available_formats) {
         if (available_format.format == VK_FORMAT_R8G8B8A8_UNORM &&
             available_format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
@@ -310,7 +310,7 @@ VkSurfaceFormatKHR PlatformVk::choose_swap_surface_format(const std::vector<VkSu
     return available_formats[0];
 }
 
-VkPresentModeKHR PlatformVk::choose_swap_present_mode(const std::vector<VkPresentModeKHR> &available_present_modes) {
+VkPresentModeKHR WindowVk::choose_swap_present_mode(const std::vector<VkPresentModeKHR> &available_present_modes) {
     for (const auto &available_present_mode : available_present_modes) {
         if (available_present_mode == VK_PRESENT_MODE_MAILBOX_KHR) {
             return available_present_mode;
@@ -320,7 +320,7 @@ VkPresentModeKHR PlatformVk::choose_swap_present_mode(const std::vector<VkPresen
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-QueueFamilyIndices PlatformVk::find_queue_families(VkPhysicalDevice _physical_device) const {
+QueueFamilyIndices WindowVk::find_queue_families(VkPhysicalDevice _physical_device) const {
     QueueFamilyIndices qf_indices;
 
     // Reports properties of the queues of the specified physical device.
@@ -357,7 +357,7 @@ QueueFamilyIndices PlatformVk::find_queue_families(VkPhysicalDevice _physical_de
     return qf_indices;
 }
 
-void PlatformVk::create_logical_device() {
+void WindowVk::create_logical_device() {
     QueueFamilyIndices qf_indices = find_queue_families(physical_device);
 
     // Structure specifying parameters of a newly created device queue.
@@ -411,9 +411,9 @@ void PlatformVk::create_logical_device() {
     vkGetDeviceQueue(device, *qf_indices.present_family, 0, &present_queue);
 }
 
-VkFormat PlatformVk::find_supported_format(const std::vector<VkFormat> &candidates,
-                                           VkImageTiling tiling,
-                                           VkFormatFeatureFlags features) const {
+VkFormat WindowVk::find_supported_format(const std::vector<VkFormat> &candidates,
+                                         VkImageTiling tiling,
+                                         VkFormatFeatureFlags features) const {
     for (VkFormat format : candidates) {
         VkFormatProperties props;
         vkGetPhysicalDeviceFormatProperties(physical_device, format, &props);
@@ -428,13 +428,13 @@ VkFormat PlatformVk::find_supported_format(const std::vector<VkFormat> &candidat
     throw std::runtime_error("Failed to find supported format!");
 }
 
-VkFormat PlatformVk::find_depth_format() const {
+VkFormat WindowVk::find_depth_format() const {
     return find_supported_format({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
                                  VK_IMAGE_TILING_OPTIMAL,
                                  VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 }
 
-void PlatformVk::cleanup() {
+void WindowVk::cleanup() {
     vkDestroyCommandPool(device, command_pool, nullptr);
 
     // Destroy the logical device.
@@ -448,14 +448,14 @@ void PlatformVk::cleanup() {
 
     vkDestroyInstance(instance, nullptr);
 
-    glfwDestroyWindow(window);
+    glfwDestroyWindow(glfw_window);
 
     glfwTerminate();
 }
 
-std::shared_ptr<SwapChain> PlatformVk::create_swap_chain(const std::shared_ptr<Driver> &driver) {
+std::shared_ptr<SwapChain> WindowVk::create_swap_chain(const std::shared_ptr<Driver> &driver) {
     auto driver_vk = static_cast<DriverVk *>(driver.get());
-    auto swap_chain_vk = std::make_shared<SwapChainVk>(window_size, this, driver_vk);
+    auto swap_chain_vk = std::make_shared<SwapChainVk>(size, this, driver_vk);
     return swap_chain_vk;
 }
 

@@ -1,5 +1,5 @@
 #include "../common/app.h"
-#include "../src/gpu/platform.h"
+#include "../src/gpu/window.h"
 
 const int32_t WINDOW_WIDTH = 1280;
 const int32_t WINDOW_HEIGHT = 720;
@@ -13,14 +13,14 @@ int main() {
     auto device_type = Pathfinder::DeviceType::OpenGl4;
 #endif
 
-    // Create platform.
-    auto platform = Pathfinder::Platform::new_impl(device_type, window_size);
+    // Create a window.
+    auto window = Pathfinder::Window::new_impl(device_type, window_size);
 
-    // Create driver via platform.
-    auto driver = platform->create_driver();
+    // Create a driver via window.
+    auto driver = window->create_driver();
 
-    // Create swap chain via platform.
-    auto swap_chain = platform->create_swap_chain(driver);
+    // Create swap chain via window.
+    auto swap_chain = window->create_swap_chain(driver);
 
     // Create app.
     App app(driver,
@@ -33,8 +33,8 @@ int main() {
     texture_rect->set_texture(app.canvas->get_dst_texture());
 
     // Main loop.
-    while (!glfwWindowShouldClose(platform->get_glfw_window())) {
-        platform->poll_events();
+    while (!window->should_close()) {
+        window->poll_events();
 
         // Acquire next swap chain image.
         if (!swap_chain->acquire_image()) {
@@ -70,7 +70,7 @@ int main() {
     app.cleanup();
     texture_rect.reset();
 
-    platform->cleanup();
+    window->cleanup();
 
     return 0;
 }

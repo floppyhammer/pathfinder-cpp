@@ -7,7 +7,7 @@
 #include "../../common/math/basic.h"
 #include "../../common/timestamp.h"
 #include "../../gpu/command_buffer.h"
-#include "../../gpu/platform.h"
+#include "../../gpu/window.h"
 #include "../data/data.h"
 #include "gpu_data.h"
 

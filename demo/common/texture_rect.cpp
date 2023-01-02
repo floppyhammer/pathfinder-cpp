@@ -5,7 +5,6 @@
 #include "../../src/common/global_macros.h"
 #include "../../src/common/math/basic.h"
 #include "../../src/common/math/mat4x4.h"
-#include "../../src/gpu/platform.h"
 
 #ifdef PATHFINDER_USE_VULKAN
     #include "../../src/shaders/generated/blit_frag_spv.h"

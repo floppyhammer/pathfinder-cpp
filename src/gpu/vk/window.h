@@ -1,5 +1,5 @@
-#ifndef PATHFINDER_GPU_PLATFORM_VK_H
-#define PATHFINDER_GPU_PLATFORM_VK_H
+#ifndef PATHFINDER_GPU_WINDOW_VK_H
+#define PATHFINDER_GPU_WINDOW_VK_H
 
 #include <cstring>
 #include <iostream>
@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "../../common/global_macros.h"
-#include "../platform.h"
+#include "../window.h"
 #include "driver.h"
 
 #ifdef PATHFINDER_USE_VULKAN
@@ -40,9 +40,9 @@ struct SwapchainSupportDetails {
     std::vector<VkPresentModeKHR> present_modes;
 };
 
-class PlatformVk : public Platform {
+class WindowVk : public Window {
 public:
-    explicit PlatformVk(Vec2I _window_size);
+    explicit WindowVk(Vec2I _window_size);
 
     std::shared_ptr<Driver> create_driver() override;
 
@@ -175,4 +175,4 @@ private:
 
 #endif
 
-#endif // PATHFINDER_GPU_PLATFORM_VK_H
+#endif // PATHFINDER_GPU_WINDOW_VK_H

@@ -1,6 +1,5 @@
 #include "descriptor_set.h"
 
-#include "../platform.h"
 #include "buffer.h"
 #include "texture.h"
 

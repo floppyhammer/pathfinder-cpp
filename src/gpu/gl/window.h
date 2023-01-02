@@ -1,20 +1,20 @@
-#ifndef PATHFINDER_GPU_PLATFORM_WEBGL_H
-#define PATHFINDER_GPU_PLATFORM_WEBGL_H
+#ifndef PATHFINDER_GPU_WINDOW_GL_H
+#define PATHFINDER_GPU_WINDOW_GL_H
 
 #include <iostream>
 #include <optional>
 #include <vector>
 
 #include "../../common/global_macros.h"
-#include "../platform.h"
+#include "../window.h"
 
-#ifdef __EMSCRIPTEN__
+#ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
 
-class PlatformWebGl : public Platform {
+class WindowGl : public Window {
 public:
-    explicit PlatformWebGl(Vec2I _window_size);
+    explicit WindowGl(Vec2I _window_size);
 
     std::shared_ptr<Driver> create_driver() override;
 
@@ -23,11 +23,11 @@ public:
     void cleanup() override;
 
 private:
-    void init_window();
+    void init();
 };
 
 } // namespace Pathfinder
 
 #endif
 
-#endif // PATHFINDER_GPU_PLATFORM_WEBGL_H
+#endif // PATHFINDER_GPU_WINDOW_GL_H

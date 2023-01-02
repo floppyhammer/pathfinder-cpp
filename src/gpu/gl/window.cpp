@@ -1,4 +1,4 @@
-#include "platform.h"
+#include "window.h"
 
 #include <sstream>
 #include <stdexcept>
@@ -15,31 +15,31 @@
 
 namespace Pathfinder {
 
-std::shared_ptr<Platform> Platform::new_impl(DeviceType device_type, Vec2I _window_size) {
+std::shared_ptr<Window> Window::new_impl(DeviceType device_type, Vec2I _size) {
     if (device_type == DeviceType::OpenGl4) {
-        return std::make_shared<PlatformGl>(_window_size);
+        return std::make_shared<WindowGl>(_size);
     }
 
     abort();
 }
 
-PlatformGl::PlatformGl(Vec2I _window_size) : Platform(_window_size) {
+WindowGl::WindowGl(Vec2I _size) : Window(_size) {
     // Get a GLFW window.
-    init_window();
+    init();
 }
 
-void PlatformGl::init_window() {
+void WindowGl::init() {
         #ifndef __ANDROID__
     // GLFW: initialize and configure.
     glfwInit();
 
             #ifdef PATHFINDER_USE_D3D11
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
             #else
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
             #endif
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
@@ -48,17 +48,17 @@ void PlatformGl::init_window() {
             #endif
 
     // GLFW: window creation.
-    window = glfwCreateWindow(window_size.x, window_size.y, "Pathfinder (OpenGL)", nullptr, nullptr);
+    glfw_window = glfwCreateWindow(size.x, size.y, "Pathfinder (OpenGL)", nullptr, nullptr);
 
-    if (window == nullptr) {
+    if (glfw_window == nullptr) {
         throw std::runtime_error("Failed to create GLFW window!");
     }
 
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(glfw_window);
 
     // Set window resize callback.
-    glfwSetWindowUserPointer(window, this);
-    glfwSetFramebufferSizeCallback(window, framebuffer_resize_callback);
+    glfwSetWindowUserPointer(glfw_window, this);
+    glfwSetFramebufferSizeCallback(glfw_window, framebuffer_resize_callback);
 
     // GLAD: load all OpenGL function pointers.
     if (!gladLoadGL(glfwGetProcAddress)) {
@@ -66,9 +66,9 @@ void PlatformGl::init_window() {
     }
 
     if (GLAD_GL_EXT_debug_label) {
-        Logger::info("EXT_debug_label enabled.", "PlatformGl");
+        Logger::info("EXT_debug_label enabled.", "WindowGl");
     } else {
-        Logger::info("EXT_debug_label disabled. Try to run from RenderDoc!", "PlatformGl");
+        Logger::info("EXT_debug_label disabled. Try to run from RenderDoc!", "WindowGl");
     }
 
         #endif
@@ -83,19 +83,19 @@ void PlatformGl::init_window() {
     Logger::info(string_stream.str(), "OpenGL");
 }
 
-void PlatformGl::cleanup() {
+void WindowGl::cleanup() {
         #ifndef __ANDROID__
     // GLFW: terminate, clearing all previously allocated resources (including windows).
     glfwTerminate();
         #endif
 }
 
-std::shared_ptr<Driver> PlatformGl::create_driver() {
+std::shared_ptr<Driver> WindowGl::create_driver() {
     return std::make_shared<Pathfinder::DriverGl>();
 }
 
-std::shared_ptr<SwapChain> PlatformGl::create_swap_chain(const std::shared_ptr<Driver> &driver) {
-    return std::make_shared<SwapChainGl>(window_size, window);
+std::shared_ptr<SwapChain> WindowGl::create_swap_chain(const std::shared_ptr<Driver> &driver) {
+    return std::make_shared<SwapChainGl>(size, glfw_window);
 }
 
 } // namespace Pathfinder

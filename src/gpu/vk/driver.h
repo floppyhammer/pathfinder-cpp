@@ -12,7 +12,7 @@
 namespace Pathfinder {
 
 class DriverVk : public Driver {
-    friend class PlatformVk;
+    friend class WindowVk;
 
     friend class SwapChainVk;
 

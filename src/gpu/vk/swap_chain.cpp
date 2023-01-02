@@ -5,14 +5,14 @@
 
 #include "command_buffer.h"
 #include "debug_marker.h"
-#include "platform.h"
+#include "window.h"
 
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
 
-SwapChainVk::SwapChainVk(Vec2I _size, PlatformVk *_platform, DriverVk *_driver) : SwapChain(_size) {
-    platform = _platform;
+SwapChainVk::SwapChainVk(Vec2I _size, WindowVk *_window, DriverVk *_driver) : SwapChain(_size) {
+    window = _window;
     driver = _driver;
 
     // Swap chain related resources.
@@ -38,7 +38,7 @@ std::shared_ptr<CommandBuffer> SwapChainVk::get_command_buffer() {
 bool SwapChainVk::acquire_image() {
     auto device = driver->get_device();
 
-    if (platform->get_window_minimized()) {
+    if (window->get_minimized()) {
         return false;
     }
 
@@ -136,11 +136,11 @@ void SwapChainVk::cleanup() {
 void SwapChainVk::create_swapchain() {
     auto device = driver->get_device();
 
-    SwapchainSupportDetails swapchain_support = platform->query_swapchain_support(platform->physical_device);
+    SwapchainSupportDetails swapchain_support = window->query_swapchain_support(window->physical_device);
 
-    VkSurfaceFormatKHR surface_format = platform->choose_swap_surface_format(swapchain_support.formats);
-    VkPresentModeKHR present_mode = platform->choose_swap_present_mode(swapchain_support.present_modes);
-    VkExtent2D vk_extent = platform->choose_swap_extent(swapchain_support.capabilities);
+    VkSurfaceFormatKHR surface_format = window->choose_swap_surface_format(swapchain_support.formats);
+    VkPresentModeKHR present_mode = window->choose_swap_present_mode(swapchain_support.present_modes);
+    VkExtent2D vk_extent = window->choose_swap_extent(swapchain_support.capabilities);
 
     uint32_t image_count = swapchain_support.capabilities.minImageCount + 1;
     if (swapchain_support.capabilities.maxImageCount > 0 &&
@@ -150,7 +150,7 @@ void SwapChainVk::create_swapchain() {
 
     VkSwapchainCreateInfoKHR create_info{};
     create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    create_info.surface = platform->surface;
+    create_info.surface = window->surface;
 
     create_info.minImageCount = image_count;
     create_info.imageFormat = surface_format.format;
@@ -159,7 +159,7 @@ void SwapChainVk::create_swapchain() {
     create_info.imageArrayLayers = 1;
     create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    QueueFamilyIndices qf_indices = platform->find_queue_families(platform->physical_device);
+    QueueFamilyIndices qf_indices = window->find_queue_families(window->physical_device);
     uint32_t queue_family_indices[] = {*qf_indices.graphics_family, *qf_indices.present_family};
 
     if (*qf_indices.graphics_family != *qf_indices.present_family) {
@@ -272,7 +272,7 @@ void SwapChainVk::create_command_buffers() {
 void SwapChainVk::flush() {
     auto device = driver->get_device();
     auto graphics_queue = driver->get_graphics_queue();
-    auto present_queue = platform->get_present_queue();
+    auto present_queue = window->get_present_queue();
 
     if (images_in_flight[image_index] != VK_NULL_HANDLE) {
         vkWaitForFences(device, 1, &images_in_flight[image_index], VK_TRUE, UINT64_MAX);
@@ -325,7 +325,7 @@ void SwapChainVk::flush() {
     VkResult result = vkQueuePresentKHR(present_queue, &present_info);
     // -------------------------------------
 
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || platform->get_window_resize_flag()) {
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window->get_resize_flag()) {
         recreate_swapchain();
     } else if (result != VK_SUCCESS) {
         throw std::runtime_error("Failed to present swap chain image!");

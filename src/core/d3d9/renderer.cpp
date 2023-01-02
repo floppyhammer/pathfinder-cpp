@@ -7,7 +7,7 @@
 #include "../../common/timestamp.h"
 #include "../../gpu/command_buffer.h"
 #include "../../gpu/driver.h"
-#include "../../gpu/platform.h"
+#include "../../gpu/window.h"
 
 #ifdef PATHFINDER_USE_VULKAN
     #include "../../shaders/generated/fill_frag_spv.h"

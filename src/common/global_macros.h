@@ -2,7 +2,7 @@
 #define PATHFINDER_GLOBAL_MACROS_H
 
 // Choose between D3D9 and D3D11.
-//#define PATHFINDER_USE_D3D11
+#define PATHFINDER_USE_D3D11
 
 // Enable DEBUG mode. Influencing performance.
 // For GL, we will check for errors.

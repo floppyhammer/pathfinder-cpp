@@ -6,7 +6,7 @@
 #include "../swap_chain.h"
 #include "command_buffer.h"
 #include "framebuffer.h"
-#include "platform.h"
+#include "window.h"
 
 #ifdef PATHFINDER_USE_VULKAN
 
@@ -23,7 +23,7 @@ class SwapChainVk : public SwapChain {
     friend class DriverVk;
 
 public:
-    SwapChainVk(Vec2I _size, PlatformVk *_platform, DriverVk *_driver);
+    SwapChainVk(Vec2I _size, WindowVk *_window, DriverVk *_driver);
 
     std::shared_ptr<RenderPass> get_render_pass() override;
 
@@ -37,7 +37,7 @@ private:
     std::shared_ptr<RenderPass> render_pass;
     std::vector<std::shared_ptr<Framebuffer>> framebuffers;
 
-    PlatformVk *platform{};
+    WindowVk *window{};
     DriverVk *driver{};
 
     VkSwapchainKHR swapchain{};
