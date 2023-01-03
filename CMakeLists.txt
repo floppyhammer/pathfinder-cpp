@@ -54,6 +54,8 @@ if (BUILD_DEMO)
     if (BUILD_FOR_WEB)
         message("Will build for web")
 
+        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/demo/web")
+
         string(APPEND CMAKE_CXX_FLAGS " -s USE_GLFW=3 -s USE_WEBGL2=1 -s FULL_ES3=1")
         string(APPEND CMAKE_CXX_FLAGS " -s WASM_BIGINT")
 

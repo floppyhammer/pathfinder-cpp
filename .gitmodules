@@ -1,3 +1,4 @@
+# Run `git submodule sync --recursive` after editing this file.
 # git pull --recurse-submodules | git submodule update --remote --recursive
 [submodule "external/glfw"]
 	path = external/glfw
