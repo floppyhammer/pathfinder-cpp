@@ -31,6 +31,7 @@ public:
 
 protected:
     inline void common_glfw_init() {
+#ifndef __EMSCRIPTEN__
         // Enable window resizing.
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
@@ -46,12 +47,14 @@ protected:
         // Get DPI scale.
         float dpi_scale_x, dpi_scale_y;
         glfwGetMonitorContentScale(monitors[0], &dpi_scale_x, &dpi_scale_y);
+#endif
 
         glfw_window = glfwCreateWindow(size.x, size.y, "Pathfinder", nullptr, nullptr);
         if (glfw_window == nullptr) {
             throw std::runtime_error("Failed to create GLFW window!");
         }
 
+#ifndef __EMSCRIPTEN__
         // Center the window.
         glfwSetWindowPos(glfw_window,
                          monitor_x + (video_mode->width - size.x) / 2,
@@ -59,6 +62,7 @@ protected:
 
         // Show the window.
         glfwShowWindow(glfw_window);
+#endif
 
         // Assign this to window user, so we can fetch it when window size changes.
         glfwSetWindowUserPointer(glfw_window, this);

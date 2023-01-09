@@ -1,25 +1,34 @@
 # Method 1 (doesn't work, no wasm and js files generated)
 
-`D:`
+1. Go to the project folder.
 
-`cd D:/pathfinder-cpp`
+2. Activate emsdk.
+   `D:/Env/emsdk/emsdk activate latest`
 
-`D:/Env/wasm/emsdk/emsdk activate latest`
+3. Create a build folder.
 
-`mkdir build`
+   `mkdir build`
 
-`cd build`
+   `cd build`
 
-`D:/Env/wasm/emsdk/upstream/emscripten/emcmake cmake .. -G "MinGW Makefiles"`
+4. CMake.
 
-`D:/Env/wasm/emsdk/upstream/emscripten/emmake make`
+   `D:/Env/emsdk/upstream/emscripten/emcmake cmake .. -G "MinGW Makefiles"`
+
+5. Make.
+
+   `D:/Env/emsdk/upstream/emscripten/emmake make`
 
 # Method 2
 
-Use CMake to create makefile.
+1. Use CMake to create makefile.
 
-Go to the folder containing the makefile.
+2. Specify toolchain file for cross-compiling.
 
-`D:/Env/wasm/emsdk/emsdk activate latest`
+   `D:/Env/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake`
 
-`D:/Env/wasm/emsdk/upstream/emscripten/emmake make`
+3. Go to the folder containing the created makefile.
+
+   `D:/Env/emsdk/emsdk activate latest`
+
+   `D:/Env/emsdk/upstream/emscripten/emmake make`

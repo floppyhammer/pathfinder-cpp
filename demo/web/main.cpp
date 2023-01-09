@@ -1,5 +1,5 @@
 #include "../common/app.h"
-#include "../src/gpu/platform.h"
+#include "../src/gpu/window.h"
 
 #ifdef __EMSCRIPTEN__
     #include <emscripten.h>
@@ -43,11 +43,11 @@ void render(void* _swap_chain) {
 int main() {
     Vec2I window_size = {WINDOW_WIDTH, WINDOW_HEIGHT};
 
-    auto platform = Platform::new_impl(DeviceType::WebGl2, window_size);
+    auto window = Window::new_impl(DeviceType::WebGl2, window_size);
 
-    auto driver = platform->create_driver();
+    auto driver = window->create_driver();
 
-    auto swap_chain = platform->create_swap_chain(driver);
+    auto swap_chain = window->create_swap_chain(driver);
 
     // Create app.
     app = new App(driver, window_size, {}, {});
@@ -56,10 +56,7 @@ int main() {
     texture_rect = new TextureRect(driver, swap_chain->get_render_pass(), window_size.to_f32());
     texture_rect->set_texture(app->canvas->get_dst_texture());
 
-    //    emscripten_set_pointerlockchange_callback(NULL, NULL, 0, on_pointerlockchange);
-
     emscripten_set_main_loop_arg(render, swap_chain.get(), 0, 1);
-    __builtin_trap();
 
     swap_chain->cleanup();
 
@@ -67,7 +64,7 @@ int main() {
     delete app;
     delete texture_rect;
 
-    platform->cleanup();
+    window->cleanup();
 
     return 0;
 }

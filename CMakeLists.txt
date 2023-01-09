@@ -12,6 +12,10 @@ option(VULKAN_SUPPORT "Prefer Vulkan over OpenGL" ON)
 option(BUILD_DEMO "Build demo" ON)
 option(BUILD_FOR_WEB "Build for web" OFF)
 
+if (BUILD_FOR_WEB)
+    set(VULKAN_SUPPORT OFF)
+endif ()
+
 if (VULKAN_SUPPORT)
     message("Will use Vulkan")
 
