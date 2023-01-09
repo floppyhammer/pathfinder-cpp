@@ -10,4 +10,4 @@ add_executable(web-demo ${SOURCE_FILES}
         ../common/texture_rect.cpp)
 
 # Link libraries.
-target_link_libraries(web-demo glfw pathfinder)
+target_link_libraries(web-demo pathfinder)
