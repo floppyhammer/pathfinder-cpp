@@ -33,9 +33,9 @@ void WindowWebGl::init() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
-    glfw_window = glfwCreateWindow(size.x, size.y, "pathfinder", NULL, NULL);
+    glfw_window = glfwCreateWindow(size.x, size.y, "Pathfinder", NULL, NULL);
     if (glfw_window == nullptr) {
-        Logger::error("Failed to create a GLFW window!", "WindowWebGl");
+        Logger::error("Failed to create GLFW window!", "WindowWebGl");
     }
 
     glfwMakeContextCurrent(glfw_window);

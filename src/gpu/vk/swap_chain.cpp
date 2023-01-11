@@ -38,7 +38,7 @@ std::shared_ptr<CommandBuffer> SwapChainVk::get_command_buffer() {
 bool SwapChainVk::acquire_image() {
     auto device = driver->get_device();
 
-    if (window->get_minimized()) {
+    if (window->is_minimized()) {
         return false;
     }
 

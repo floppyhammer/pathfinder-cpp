@@ -25,7 +25,7 @@ public:
         return just_resized;
     }
 
-    bool get_minimized() const {
+    bool is_minimized() const {
         return minimized;
     }
 
@@ -41,6 +41,7 @@ protected:
         // Get monitor position (used to correctly center the window in a multi-monitor scenario).
         int monitor_count, monitor_x, monitor_y;
         GLFWmonitor **monitors = glfwGetMonitors(&monitor_count);
+
         const GLFWvidmode *video_mode = glfwGetVideoMode(monitors[0]);
         glfwGetMonitorPos(monitors[0], &monitor_x, &monitor_y);
 
@@ -91,7 +92,7 @@ public:
             window->size = {width, height};
             window->minimized = window->size.area() == 0;
 
-            Logger::info("Window resized to " + window->size.to_string() + ".");
+            Logger::info("Window resized to " + window->size.to_string());
         } else {
             Logger::error("glfwGetWindowUserPointer is NULL!");
         }

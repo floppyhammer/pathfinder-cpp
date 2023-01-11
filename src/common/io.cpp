@@ -59,7 +59,7 @@ std::shared_ptr<ImageBuffer> ImageBuffer::from_memory(const std::vector<char> &b
                                                     STBI_rgb_alpha);
 
     if (channels != 4) {
-        Logger::info("Converted non-RGBA pixels to RGBA ones.", "Image Buffer");
+        Logger::info("Converted non-RGBA pixels to RGBA ones", "Image Buffer");
     }
 
     // Generate a texture using the previously loaded image data.
