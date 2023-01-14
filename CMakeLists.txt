@@ -4,23 +4,30 @@ project(pathfinder)
 
 set(CMAKE_CXX_STANDARD 14)
 
-# Set binary output directory. Using CMAKE_CURRENT_SOURCE_DIR is necessary.
+# Set binary output directory.
+# Using CMAKE_CURRENT_SOURCE_DIR is necessary.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
-# Reset CMake cache for these options to take effect.
-option(VULKAN_SUPPORT "Prefer Vulkan over OpenGL" ON)
-option(BUILD_DEMO "Build demo" ON)
-option(BUILD_FOR_WEB "Build for web" OFF)
+option(VULKAN_SUPPORT "Use Vulkan instead of OpenGL")
+option(BUILD_DEMO "Build demo")
+option(BUILD_FOR_WEB "Build for web")
 
+set(VULKAN_SUPPORT ON)
+set(BUILD_DEMO OFF)
+set(BUILD_FOR_WEB OFF)
+
+# No Vulkan support for web.
 if (BUILD_FOR_WEB)
+    message("Will build for web")
     set(VULKAN_SUPPORT OFF)
+else ()
+    # Include GLFW headers.
+    # Emscripten has its own version of GLFW.
+    include_directories(external/glfw/include)
 endif ()
 
 if (VULKAN_SUPPORT)
     message("Will use Vulkan")
-
-    # No web build for Vulkan.
-    set(BUILD_FOR_WEB OFF)
 
     add_compile_definitions(PATHFINDER_USE_VULKAN)
 
@@ -43,21 +50,15 @@ endif ()
 # Include external and third_party headers.
 include_directories(external third_party)
 
-# Emscripten has its own version of GLFW.
-if (NOT BUILD_FOR_WEB)
-    # GLFW headers.
-    include_directories(external/glfw/include)
-endif ()
-
 # Core library.
 add_subdirectory(src)
 
+# Add demo.
 if (BUILD_DEMO)
     message("Will build demo")
 
     if (BUILD_FOR_WEB)
-        message("Will build for web")
-
+        # Set output directory to the web demo, so we don't have to copy output files manually.
         set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/demo/web")
 
         string(APPEND CMAKE_CXX_FLAGS " -s USE_GLFW=3 -s USE_WEBGL2=1 -s FULL_ES3=1")
