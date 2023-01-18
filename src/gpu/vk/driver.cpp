@@ -367,31 +367,28 @@ std::shared_ptr<Framebuffer> DriverVk::create_framebuffer(const std::shared_ptr<
     return framebuffer_vk;
 }
 
-std::shared_ptr<Buffer> DriverVk::create_buffer(BufferType type,
-                                                size_t size,
-                                                MemoryProperty property,
-                                                const std::string &_label) {
-    auto buffer_vk = std::make_shared<BufferVk>(device, type, size, property, _label);
+std::shared_ptr<Buffer> DriverVk::create_buffer(const BufferDescriptor &desc, const std::string &label) {
+    auto buffer_vk = std::make_shared<BufferVk>(device, desc, label);
 
-    auto vk_memory_property = to_vk_memory_property(property);
+    auto vk_memory_property = to_vk_memory_property(desc.property);
 
-    switch (type) {
+    switch (desc.type) {
         case BufferType::Uniform: {
-            create_vk_buffer(size,
+            create_vk_buffer(desc.size,
                              VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                              vk_memory_property,
                              buffer_vk->vk_buffer,
                              buffer_vk->vk_device_memory);
         } break;
         case BufferType::Vertex: {
-            create_vk_buffer(size,
+            create_vk_buffer(desc.size,
                              VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
                              vk_memory_property,
                              buffer_vk->vk_buffer,
                              buffer_vk->vk_device_memory);
         } break;
         case BufferType::Storage: {
-            create_vk_buffer(size,
+            create_vk_buffer(desc.size,
                              VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
                                  VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
                              vk_memory_property,
@@ -400,10 +397,7 @@ std::shared_ptr<Buffer> DriverVk::create_buffer(BufferType type,
         } break;
     }
 
-    DebugMarker::get_singleton()->set_object_name(device,
-                                                  (uint64_t)buffer_vk->vk_buffer,
-                                                  VK_OBJECT_TYPE_BUFFER,
-                                                  _label);
+    DebugMarker::get_singleton()->set_object_name(device, (uint64_t)buffer_vk->vk_buffer, VK_OBJECT_TYPE_BUFFER, label);
 
     return buffer_vk;
 }

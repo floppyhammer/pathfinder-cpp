@@ -8,7 +8,7 @@
 #include "../../src/gpu/framebuffer.h"
 #include "../../src/gpu/render_pipeline.h"
 #include "../../src/gpu/texture.h"
-#include "../../src/pathfinder.h"
+#include "pathfinder.h"
 
 using namespace Pathfinder;
 

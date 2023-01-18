@@ -3,7 +3,7 @@
 
 #include <chrono>
 
-#include "../../src/pathfinder.h"
+#include "pathfinder.h"
 #include "texture_rect.h"
 
 using namespace Pathfinder;

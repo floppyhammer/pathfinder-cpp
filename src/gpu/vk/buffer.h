@@ -15,7 +15,7 @@ class BufferVk : public Buffer {
     friend class DriverVk;
 
 public:
-    BufferVk(VkDevice _vk_device, BufferType _type, size_t _size, MemoryProperty _memory_property, std::string _label);
+    BufferVk(VkDevice _vk_device, const BufferDescriptor& _desc, const std::string& _label);
 
     ~BufferVk();
 

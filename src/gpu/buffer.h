@@ -16,21 +16,26 @@ const uint64_t MAX_BUFFER_SIZE_CLASS = 16 * 1024 * 1024;
 // Maximum binding number of vertex buffers during a draw call.
 const uint32_t MAX_VERTEX_BUFFER_BINDINGS = 8;
 
+struct BufferDescriptor {
+    BufferType type;
+    size_t size;
+    MemoryProperty property;
+};
+
 class Buffer {
 public:
-    Buffer(BufferType _type, size_t _size, MemoryProperty _memory_property, const std::string& _label)
-        : type(_type), size(_size), memory_property(_memory_property), label(_label) {}
+    Buffer(const BufferDescriptor& _desc, const std::string& _label) : desc(_desc), label(_label) {}
 
     size_t get_size() const {
-        return size;
+        return desc.size;
     }
 
     BufferType get_type() const {
-        return type;
+        return desc.type;
     }
 
     MemoryProperty get_memory_property() const {
-        return memory_property;
+        return desc.property;
     }
 
     virtual void upload_via_mapping(size_t data_size, size_t offset, void* data) = 0;
@@ -38,11 +43,7 @@ public:
     virtual void download_via_mapping(size_t data_size, size_t offset, void* data) = 0;
 
 protected:
-    size_t size;
-
-    BufferType type;
-
-    MemoryProperty memory_property;
+    BufferDescriptor desc;
 
     /// Debug label.
     std::string label;

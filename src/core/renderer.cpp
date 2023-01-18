@@ -12,10 +12,9 @@ namespace Pathfinder {
 
 Renderer::Renderer(const std::shared_ptr<Driver> &_driver) : driver(_driver) {
     // Uniform buffer for some constants.
-    constants_ub = driver->create_buffer(BufferType::Uniform,
-                                         8 * sizeof(float),
-                                         MemoryProperty::HostVisibleAndCoherent,
-                                         "Constants uniform buffer");
+    constants_ub =
+        driver->create_buffer({BufferType::Uniform, 8 * sizeof(float), MemoryProperty::HostVisibleAndCoherent},
+                              "Constants uniform buffer");
 
     std::array<float, 6> constants = {MASK_FRAMEBUFFER_WIDTH,
                                       MASK_FRAMEBUFFER_HEIGHT,

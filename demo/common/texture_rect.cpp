@@ -26,14 +26,11 @@ TextureRect::TextureRect(const std::shared_ptr<Driver> &_driver,
 
                         0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0};
 
-    vertex_buffer = driver->create_buffer(BufferType::Vertex,
-                                          sizeof(vertices),
-                                          MemoryProperty::DeviceLocal,
+    vertex_buffer = driver->create_buffer({BufferType::Vertex, sizeof(vertices), MemoryProperty::DeviceLocal},
                                           "TextureRect vertex buffer");
-    uniform_buffer = driver->create_buffer(BufferType::Uniform,
-                                           16 * sizeof(float),
-                                           MemoryProperty::HostVisibleAndCoherent,
-                                           "TextureRect uniform buffer");
+    uniform_buffer =
+        driver->create_buffer({BufferType::Uniform, 16 * sizeof(float), MemoryProperty::HostVisibleAndCoherent},
+                              "TextureRect uniform buffer");
 
     auto cmd_buffer = driver->create_command_buffer("Upload TextureRect vertex buffer");
     cmd_buffer->upload_to_buffer(vertex_buffer, 0, sizeof(vertices), (void *)vertices);

@@ -9,12 +9,8 @@
 
 namespace Pathfinder {
 
-BufferVk::BufferVk(VkDevice _vk_device,
-                   BufferType _type,
-                   size_t _size,
-                   MemoryProperty _memory_property,
-                   std::string _label)
-    : Buffer(_type, _size, _memory_property, std::move(_label)), vk_device(_vk_device) {}
+BufferVk::BufferVk(VkDevice _vk_device, const BufferDescriptor& _desc, const std::string& _label)
+    : Buffer(_desc, _label), vk_device(_vk_device) {}
 
 BufferVk::~BufferVk() {
     vkDestroyBuffer(vk_device, vk_buffer, nullptr);
@@ -30,7 +26,7 @@ VkDeviceMemory BufferVk::get_vk_device_memory() {
 }
 
 void BufferVk::upload_via_mapping(size_t data_size, size_t offset, void* data) {
-    if (memory_property != MemoryProperty::HostVisibleAndCoherent) {
+    if (desc.property != MemoryProperty::HostVisibleAndCoherent) {
         abort();
     }
 
@@ -45,7 +41,7 @@ void BufferVk::upload_via_mapping(size_t data_size, size_t offset, void* data) {
 }
 
 void BufferVk::download_via_mapping(size_t data_size, size_t offset, void* data) {
-    if (memory_property != MemoryProperty::HostVisibleAndCoherent) {
+    if (desc.property != MemoryProperty::HostVisibleAndCoherent) {
         abort();
     }
 

@@ -20,10 +20,7 @@ public:
                                                             const std::shared_ptr<Texture> &texture,
                                                             const std::string &label) = 0;
 
-    virtual std::shared_ptr<Buffer> create_buffer(BufferType type,
-                                                  size_t size,
-                                                  MemoryProperty property,
-                                                  const std::string &label) = 0;
+    virtual std::shared_ptr<Buffer> create_buffer(const BufferDescriptor &desc, const std::string &label) = 0;
 
     virtual std::shared_ptr<Texture> create_texture(Vec2I size, TextureFormat _format, const std::string &label) = 0;
 

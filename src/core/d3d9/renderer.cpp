@@ -67,9 +67,7 @@ RendererD3D9::RendererD3D9(const std::shared_ptr<Driver> &_driver) : Renderer(_d
         driver->create_framebuffer(mask_render_pass_clear, temp_mask_texture, "Temp mask framebuffer");
 
     // Quad vertex buffer. Shared by fills and tiles drawing.
-    quad_vertex_buffer = driver->create_buffer(BufferType::Vertex,
-                                               12 * sizeof(uint16_t),
-                                               MemoryProperty::DeviceLocal,
+    quad_vertex_buffer = driver->create_buffer({BufferType::Vertex, 12 * sizeof(uint16_t), MemoryProperty::DeviceLocal},
                                                "Quad vertex buffer");
 
     auto cmd_buffer = driver->create_command_buffer("Upload quad vertex data");
@@ -163,14 +161,12 @@ void RendererD3D9::set_up_pipelines() {
         }
 
         // Create uniform buffers.
-        tile_transform_ub = driver->create_buffer(BufferType::Uniform,
-                                                  16 * sizeof(float),
-                                                  MemoryProperty::HostVisibleAndCoherent,
-                                                  "Tile transform uniform buffer");
-        tile_varying_sizes_ub = driver->create_buffer(BufferType::Uniform,
-                                                      8 * sizeof(float),
-                                                      MemoryProperty::HostVisibleAndCoherent,
-                                                      "Tile varying sizes uniform buffer");
+        tile_transform_ub =
+            driver->create_buffer({BufferType::Uniform, 16 * sizeof(float), MemoryProperty::HostVisibleAndCoherent},
+                                  "Tile transform uniform buffer");
+        tile_varying_sizes_ub =
+            driver->create_buffer({BufferType::Uniform, 8 * sizeof(float), MemoryProperty::HostVisibleAndCoherent},
+                                  "Tile varying sizes uniform buffer");
 
         // Set descriptor set.
         tile_descriptor_set = driver->create_descriptor_set();
@@ -317,10 +313,9 @@ void RendererD3D9::upload_fills(const std::vector<Fill> &fills, const std::share
 
     // If we need to allocate a new fill vertex buffer.
     if (fill_vertex_buffer == nullptr || byte_size > fill_vertex_buffer->get_size()) {
-        fill_vertex_buffer = driver->create_buffer(BufferType::Vertex,
-                                                   byte_size,
-                                                   MemoryProperty::HostVisibleAndCoherent,
-                                                   "Fill vertex buffer");
+        fill_vertex_buffer =
+            driver->create_buffer({BufferType::Vertex, byte_size, MemoryProperty::HostVisibleAndCoherent},
+                                  "Fill vertex buffer");
     }
 
     cmd_buffer->upload_to_buffer(fill_vertex_buffer, 0, byte_size, (void *)fills.data());
@@ -345,10 +340,9 @@ void RendererD3D9::upload_tiles(const std::vector<TileObjectPrimitive> &tiles,
 
     // If we need to allocate a new tile vertex buffer.
     if (tile_vertex_buffer == nullptr || byte_size > tile_vertex_buffer->get_size()) {
-        tile_vertex_buffer = driver->create_buffer(BufferType::Vertex,
-                                                   byte_size,
-                                                   MemoryProperty::HostVisibleAndCoherent,
-                                                   "Tile vertex buffer");
+        tile_vertex_buffer =
+            driver->create_buffer({BufferType::Vertex, byte_size, MemoryProperty::HostVisibleAndCoherent},
+                                  "Tile vertex buffer");
     }
 
     cmd_buffer->upload_to_buffer(tile_vertex_buffer, 0, byte_size, (void *)tiles.data());
@@ -424,7 +418,7 @@ ClipBufferInfo RendererD3D9::upload_clip_tiles(const std::vector<Clip> &clips,
     auto byte_size = sizeof(Clip) * clips.size();
 
     info.clip_buffer =
-        driver->create_buffer(BufferType::Vertex, byte_size, MemoryProperty::HostVisibleAndCoherent, "Clip buffer");
+        driver->create_buffer({BufferType::Vertex, byte_size, MemoryProperty::HostVisibleAndCoherent}, "Clip buffer");
 
     cmd_buffer->upload_to_buffer(info.clip_buffer, 0, byte_size, (void *)clips.data());
 
