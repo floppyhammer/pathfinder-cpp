@@ -1,7 +1,5 @@
 #include "allocator.h"
 
-#include "../gpu/driver.h"
-
 namespace Pathfinder {
 
 uint64_t GpuMemoryAllocator::allocate_general_buffer(size_t byte_size, const std::string& tag) {

@@ -32,10 +32,6 @@ BufferGl::BufferGl(BufferType _type, size_t _size, MemoryProperty _memory_proper
         } break;
         case BufferType::Storage: {
     #ifdef PATHFINDER_USE_D3D11
-            if (size < MAX_BUFFER_SIZE_CLASS) {
-                size = upper_power_of_two(size);
-            }
-
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, id);
             glBufferData(GL_SHADER_STORAGE_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);

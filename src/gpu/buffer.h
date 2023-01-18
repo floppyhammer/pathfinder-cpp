@@ -10,9 +10,6 @@
 
 namespace Pathfinder {
 
-// Everything above 16 MB is allocated exactly for general buffer.
-const uint64_t MAX_BUFFER_SIZE_CLASS = 16 * 1024 * 1024;
-
 // Maximum binding number of vertex buffers during a draw call.
 const uint32_t MAX_VERTEX_BUFFER_BINDINGS = 8;
 

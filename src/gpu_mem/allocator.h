@@ -12,8 +12,8 @@
 
 namespace Pathfinder {
 
-// Everything above 16 MB is allocated exactly.
-// const size_t MAX_BUFFER_SIZE_CLASS = 16 * 1024 * 1024;
+// Everything above 16 MB is allocated exactly for general buffers.
+const size_t MAX_BUFFER_SIZE_CLASS = 16 * 1024 * 1024;
 
 // Number of seconds before unused memory is purged.
 //
@@ -40,7 +40,7 @@ struct FramebufferAllocation {
     std::string tag;
 };
 
-enum FreeObjectKind {
+enum class FreeObjectKind {
     GeneralBuffer,
     IndexBuffer,
     Texture,
