@@ -84,4 +84,32 @@ std::shared_ptr<Buffer> GpuMemoryAllocator::get_general_buffer(uint64_t id) {
     return general_buffers_in_use[id].buffer;
 }
 
+void GpuMemoryAllocator::purge_if_needed() {
+    auto now = std::chrono::steady_clock::now();
+
+    while (true) {
+        if (free_objects.empty()) {
+            break;
+        }
+
+        std::chrono::duration<double> duration = now - free_objects.front().timestamp;
+
+        // If the first free object has not decayed, so do the rest free objects.
+        if (duration.count() * 1.0e6 < DECAY_TIME) {
+            break;
+        }
+
+        switch (free_objects.front().kind) {
+            case FreeObjectKind::GeneralBuffer: {
+                Logger::debug("Purging general buffer...", "GpuMemoryAllocator");
+                auto allocation = free_objects.front();
+                free_objects.erase(free_objects.begin());
+                bytes_allocated -= allocation.general_allocation.buffer->get_size();
+            } break;
+            default:
+                break;
+        }
+    }
+}
+
 } // namespace Pathfinder

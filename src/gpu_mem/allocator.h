@@ -62,6 +62,14 @@ class GpuMemoryAllocator {
 public:
     GpuMemoryAllocator(const std::shared_ptr<Driver>& _driver) : driver(_driver) {}
 
+    uint64_t allocate_general_buffer(size_t byte_size, const std::string& tag);
+
+    std::shared_ptr<Buffer> get_general_buffer(uint64_t id);
+
+    void free_general_buffer(uint64_t id);
+
+    void purge_if_needed();
+
 private:
     std::shared_ptr<Driver> driver;
 
@@ -80,12 +88,6 @@ private:
     // Statistic data.
     size_t bytes_committed = 0;
     size_t bytes_allocated = 0;
-
-    uint64_t allocate_general_buffer(size_t byte_size, const std::string& tag);
-
-    void free_general_buffer(uint64_t id);
-
-    std::shared_ptr<Buffer> get_general_buffer(uint64_t id);
 };
 
 } // namespace Pathfinder
