@@ -113,7 +113,7 @@ void App::update() {
 
         // Show frame time.
         std::ostringstream string_stream;
-        string_stream << "Frame time: " << round(average_frame_time * 100.f) * 0.01f << " ms\n";
+        string_stream << "Frame time: " << round(average_frame_time * 100.f) * 0.01f << " ms";
         Logger::info(string_stream.str(), "Benchmark");
 
         frame_count = 0;

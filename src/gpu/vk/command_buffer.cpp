@@ -308,7 +308,7 @@ void CommandBufferVk::submit() {
                                             0,
                                             nullptr);
                 } else {
-                    Logger::error("No valid pipeline bound when binding descriptor set!", "Command Buffer");
+                    Logger::error("No valid pipeline bound when binding descriptor set!", "CommandBuffer");
                     abort();
                 }
             } break;
@@ -361,7 +361,7 @@ void CommandBufferVk::submit() {
                         int32_t dst_access_mask{};
                         switch (buffer_vk->get_type()) {
                             case BufferType::Vertex: {
-                                Logger::error("Why do we have a vertex buffer in a descriptor set?", "Command Buffer");
+                                Logger::error("Why do we have a vertex buffer in a descriptor set?", "CommandBuffer");
                             } break;
                             case BufferType::Uniform: {
                                 dst_access_mask = VK_ACCESS_SHADER_READ_BIT;

@@ -55,9 +55,6 @@ uint64_t GpuMemoryAllocator::allocate_general_buffer(size_t byte_size, const std
 }
 
 void GpuMemoryAllocator::free_general_buffer(uint64_t id) {
-    if (id == 0) {
-        auto a = 1;
-    }
     if (general_buffers_in_use.find(id) == general_buffers_in_use.end()) {
         Logger::error("Attempted to free unallocated general buffer!", "GpuMemoryAllocator");
         return;
@@ -92,6 +89,8 @@ std::shared_ptr<Buffer> GpuMemoryAllocator::get_general_buffer(uint64_t id) {
 void GpuMemoryAllocator::purge_if_needed() {
     auto now = std::chrono::steady_clock::now();
 
+    bool purge_happened = false;
+
     while (true) {
         if (free_objects.empty()) {
             break;
@@ -109,10 +108,18 @@ void GpuMemoryAllocator::purge_if_needed() {
                 auto allocation = free_objects.front();
                 free_objects.erase(free_objects.begin());
                 bytes_allocated -= allocation.general_allocation.buffer->get_size();
+
+                purge_happened = true;
             } break;
             default:
                 break;
         }
+    }
+
+    if (purge_happened) {
+        Logger::info("GPU memory purged, current status: ALLOCATED " + std::to_string(bytes_allocated) +
+                         " bytes | COMMITTED " + std::to_string(bytes_committed) + " bytes",
+                     "GpuMemoryAllocator");
     }
 }
 

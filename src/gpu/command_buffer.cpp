@@ -112,7 +112,7 @@ void CommandBuffer::begin_compute_pass() {
 
 void CommandBuffer::dispatch(uint32_t group_size_x, uint32_t group_size_y, uint32_t group_size_z) {
     if (group_size_x == 0 || group_size_y == 0 || group_size_z == 0) {
-        Logger::error("Compute group size cannot be zero!", "Command Buffer");
+        Logger::error("Compute group size cannot be zero!", "CommandBuffer");
         return;
     }
 
@@ -174,7 +174,7 @@ void CommandBuffer::upload_to_texture(const std::shared_ptr<Texture> &texture, R
 
     // Check if the region is a subset of the whole texture region.
     if (!region.union_rect(whole_region).is_valid()) {
-        Logger::error("Invalid texture region when uploading data to texture!", "Command Buffer");
+        Logger::error("Invalid texture region when uploading data to texture!", "CommandBuffer");
         return;
     }
 
@@ -226,7 +226,7 @@ void CommandBuffer::read_buffer(const std::shared_ptr<Buffer> &buffer,
             commands.push(cmd);
         } break;
         default: {
-            Logger::error("Cannot read data from non-storage buffers!", "Command Buffer");
+            Logger::error("Cannot read data from non-storage buffers!", "CommandBuffer");
         } break;
     }
 }
