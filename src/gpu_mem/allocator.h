@@ -13,6 +13,7 @@
 namespace Pathfinder {
 
 // Everything above 16 MB is allocated exactly for general buffers.
+// This improves general buffer re-usability in a GPU memory allocator.
 const size_t MAX_BUFFER_SIZE_CLASS = 16 * 1024 * 1024;
 
 // Number of seconds before unused memory is purged.
@@ -80,14 +81,14 @@ private:
 
     std::vector<FreeObject> free_objects;
 
-    uint64_t next_general_buffer_id;
-    uint64_t next_index_buffer_id;
-    uint64_t next_texture_id;
-    uint64_t next_framebuffer_id;
+    uint64_t next_general_buffer_id = 0;
+    uint64_t next_index_buffer_id = 0;
+    uint64_t next_texture_id = 0;
+    uint64_t next_framebuffer_id = 0;
 
     // Statistic data.
-    size_t bytes_committed = 0;
-    size_t bytes_allocated = 0;
+    size_t bytes_committed = 0; // In-use objects.
+    size_t bytes_allocated = 0; // In-use objects + free objects.
 };
 
 } // namespace Pathfinder

@@ -59,27 +59,32 @@ Vec2I pixel_size_to_tile_size(Vec2I pixel_size) {
 
 void SceneSourceBuffers::upload(SegmentsD3D11 &segments,
                                 const std::shared_ptr<Driver> &driver,
-                                const std::shared_ptr<CommandBuffer> &cmd_buffer) {
+                                const std::shared_ptr<CommandBuffer> &cmd_buffer,
+                                const std::shared_ptr<GpuMemoryAllocator> &allocator) {
     auto needed_points_capacity = upper_power_of_two(segments.points.size());
     auto needed_point_indices_capacity = upper_power_of_two(segments.indices.size());
 
     // Reallocate if capacity is not enough.
     if (points_capacity < needed_points_capacity) {
-        // Old buffer will be dropped automatically.
-        points_buffer = driver->create_buffer(
-            {BufferType::Storage, needed_points_capacity * sizeof(Vec2F), MemoryProperty::HostVisibleAndCoherent},
-            "Points buffer");
+        if (points_buffer) {
+            allocator->free_general_buffer(*points_buffer);
+        }
+
+        points_buffer = std::make_shared<uint64_t>(
+            allocator->allocate_general_buffer(needed_points_capacity * sizeof(Vec2F), "Points buffer"));
 
         points_capacity = needed_points_capacity;
     }
 
     // Reallocate if capacity is not enough.
     if (point_indices_capacity < needed_point_indices_capacity) {
-        // Old buffer will be dropped automatically.
-        point_indices_buffer = driver->create_buffer({BufferType::Storage,
-                                                      needed_point_indices_capacity * sizeof(SegmentIndicesD3D11),
-                                                      MemoryProperty::HostVisibleAndCoherent},
-                                                     "Point indices buffer");
+        if (point_indices_buffer) {
+            allocator->free_general_buffer(*point_indices_buffer);
+        }
+
+        point_indices_buffer = std::make_shared<uint64_t>(
+            allocator->allocate_general_buffer(needed_point_indices_capacity * sizeof(SegmentIndicesD3D11),
+                                               "Point indices buffer"));
 
         point_indices_capacity = needed_point_indices_capacity;
     }
@@ -88,9 +93,12 @@ void SceneSourceBuffers::upload(SegmentsD3D11 &segments,
 
     // Upload data.
     if (needed_points_capacity != 0 && needed_point_indices_capacity != 0) {
-        cmd_buffer->upload_to_buffer(points_buffer, 0, segments.points.size() * sizeof(Vec2F), segments.points.data());
+        cmd_buffer->upload_to_buffer(allocator->get_general_buffer(*points_buffer),
+                                     0,
+                                     segments.points.size() * sizeof(Vec2F),
+                                     segments.points.data());
 
-        cmd_buffer->upload_to_buffer(point_indices_buffer,
+        cmd_buffer->upload_to_buffer(allocator->get_general_buffer(*point_indices_buffer),
                                      0,
                                      segments.indices.size() * sizeof(SegmentIndicesD3D11),
                                      segments.indices.data());
@@ -100,9 +108,10 @@ void SceneSourceBuffers::upload(SegmentsD3D11 &segments,
 void SceneBuffers::upload(SegmentsD3D11 &draw_segments,
                           SegmentsD3D11 &clip_segments,
                           const std::shared_ptr<Pathfinder::Driver> &driver,
-                          const std::shared_ptr<CommandBuffer> &cmd_buffer) {
-    draw.upload(draw_segments, driver, cmd_buffer);
-    clip.upload(clip_segments, driver, cmd_buffer);
+                          const std::shared_ptr<CommandBuffer> &cmd_buffer,
+                          const std::shared_ptr<GpuMemoryAllocator> &allocator) {
+    draw.upload(draw_segments, driver, cmd_buffer, allocator);
+    clip.upload(clip_segments, driver, cmd_buffer, allocator);
 }
 
 RendererD3D11::RendererD3D11(const std::shared_ptr<Pathfinder::Driver> &driver) : Renderer(driver) {
@@ -134,6 +143,8 @@ RendererD3D11::RendererD3D11(const std::shared_ptr<Pathfinder::Driver> &driver) 
     mask_texture = driver->create_texture({MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT},
                                           TextureFormat::Rgba8Unorm,
                                           "Mask texture");
+
+    allocator = std::make_shared<GpuMemoryAllocator>(driver);
 }
 
 void RendererD3D11::set_up_pipelines() {
@@ -271,7 +282,9 @@ void RendererD3D11::draw(const std::shared_ptr<SceneBuilder> &_scene_builder) {
     }
 
     // Clear all batch info.
-    tile_batch_info.clear();
+    free_tile_batch_buffers();
+
+    allocator->purge_if_needed();
 }
 
 std::shared_ptr<Texture> RendererD3D11::get_dest_texture() {
@@ -284,7 +297,7 @@ void RendererD3D11::set_dest_texture(const std::shared_ptr<Texture> &new_texture
 
 void RendererD3D11::upload_scene(SegmentsD3D11 &draw_segments, SegmentsD3D11 &clip_segments) {
     auto cmd_buffer = driver->create_command_buffer("Upload scene");
-    scene_buffers.upload(draw_segments, clip_segments, driver, cmd_buffer);
+    scene_buffers.upload(draw_segments, clip_segments, driver, cmd_buffer, allocator);
     cmd_buffer->submit_and_wait();
 }
 
@@ -300,13 +313,10 @@ void RendererD3D11::prepare_and_draw_tiles(DrawTileBatchD3D11 &batch) {
                batch.render_target,
                batch.metadata_texture,
                batch.color_texture);
-
-    // Replace with empty info, freeing storage buffers related to this batch.
-    batch_info = TileBatchInfoD3D11{};
 }
 
-void RendererD3D11::draw_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
-                               const std::shared_ptr<Buffer> &first_tile_map_buffer_id,
+void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
+                               uint64_t first_tile_map_buffer_id,
                                const RenderTarget &render_target,
                                const std::shared_ptr<Texture> &metadata_texture,
                                const std::shared_ptr<Texture> &color_texture) {
@@ -356,9 +366,9 @@ void RendererD3D11::draw_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer
     // Update descriptor set.
     tile_descriptor_set->add_or_update({
         // Read only.
-        Descriptor::storage(0, ShaderStage::Compute, tiles_d3d11_buffer_id),
+        Descriptor::storage(0, ShaderStage::Compute, allocator->get_general_buffer(tiles_d3d11_buffer_id)),
         // Read only.
-        Descriptor::storage(1, ShaderStage::Compute, first_tile_map_buffer_id),
+        Descriptor::storage(1, ShaderStage::Compute, allocator->get_general_buffer(first_tile_map_buffer_id)),
         Descriptor::sampler(2, ShaderStage::Compute, "uTextureMetadata", metadata_texture),
         Descriptor::sampler(3, ShaderStage::Compute, "uZBuffer", mask_texture),
         Descriptor::sampler(4, ShaderStage::Compute, "uColorTexture0", color_texture ? color_texture : dummy_texture),
@@ -385,31 +395,25 @@ Vec2I RendererD3D11::tile_size() const {
     return {temp.x / TILE_WIDTH, temp.y / TILE_HEIGHT};
 }
 
-std::shared_ptr<Buffer> RendererD3D11::allocate_z_buffer() {
+uint64_t RendererD3D11::allocate_z_buffer() {
     // This includes the fill indirect draw params because some drivers limit the number of
     // SSBOs to 8 (#373).
     // Add FILL_INDIRECT_DRAW_PARAMS_SIZE in case tile size is zero.
     auto size = tile_size().area() + FILL_INDIRECT_DRAW_PARAMS_SIZE;
-    auto buffer_id =
-        driver->create_buffer({BufferType::Storage, size * sizeof(int32_t), MemoryProperty::HostVisibleAndCoherent},
-                              "Z buffer");
+    auto buffer_id = allocator->allocate_general_buffer(size * sizeof(int32_t), "Z buffer");
 
     return buffer_id;
 }
 
-std::shared_ptr<Buffer> RendererD3D11::allocate_first_tile_map() {
+uint64_t RendererD3D11::allocate_first_tile_map() {
     auto size = tile_size().area();
-    auto buffer_id = driver->create_buffer(
-        {BufferType::Storage, size * sizeof(FirstTileD3D11), MemoryProperty::HostVisibleAndCoherent},
-        "First tile map buffer");
+    auto buffer_id = allocator->allocate_general_buffer(size * sizeof(FirstTileD3D11), "First tile map buffer");
 
     return buffer_id;
 }
 
-std::shared_ptr<Buffer> RendererD3D11::allocate_alpha_tile_info(uint32_t index_count) {
-    auto buffer_id = driver->create_buffer(
-        {BufferType::Storage, index_count * sizeof(AlphaTileD3D11), MemoryProperty::HostVisibleAndCoherent},
-        "Alpha tile buffer");
+uint64_t RendererD3D11::allocate_alpha_tile_info(uint32_t index_count) {
+    auto buffer_id = allocator->allocate_general_buffer(index_count * sizeof(AlphaTileD3D11), "Alpha tile buffer");
 
     return buffer_id;
 }
@@ -418,40 +422,34 @@ PropagateMetadataBufferIDsD3D11 RendererD3D11::upload_propagate_metadata(
     std::vector<PropagateMetadataD3D11> &propagate_metadata,
     std::vector<BackdropInfoD3D11> &backdrops) {
     auto propagate_metadata_storage_id =
-        driver->create_buffer({BufferType::Storage,
-                               propagate_metadata.size() * sizeof(PropagateMetadataD3D11),
-                               MemoryProperty::HostVisibleAndCoherent},
-                              "Propagate metadata buffer");
+        allocator->allocate_general_buffer(propagate_metadata.size() * sizeof(PropagateMetadataD3D11),
+                                           "Propagate metadata buffer");
 
     auto cmd_buffer = driver->create_command_buffer("Upload to propagate metadata buffer");
-    cmd_buffer->upload_to_buffer(propagate_metadata_storage_id,
+    cmd_buffer->upload_to_buffer(allocator->get_general_buffer(propagate_metadata_storage_id),
                                  0,
                                  propagate_metadata.size() * sizeof(PropagateMetadataD3D11),
                                  propagate_metadata.data());
     cmd_buffer->submit_and_wait();
 
-    auto backdrops_storage_id = driver->create_buffer(
-        {BufferType::Storage, backdrops.size() * sizeof(BackdropInfoD3D11), MemoryProperty::HostVisibleAndCoherent},
-        "Backdrops buffer");
+    auto backdrops_storage_id =
+        allocator->allocate_general_buffer(backdrops.size() * sizeof(BackdropInfoD3D11), "Backdrops buffer");
 
     return {propagate_metadata_storage_id, backdrops_storage_id};
 }
 
-void RendererD3D11::upload_initial_backdrops(const std::shared_ptr<Buffer> &backdrops_buffer_id,
-                                             std::vector<BackdropInfoD3D11> &backdrops) {
+void RendererD3D11::upload_initial_backdrops(uint64_t backdrops_buffer_id, std::vector<BackdropInfoD3D11> &backdrops) {
+    auto backdrops_buffer = allocator->get_general_buffer(backdrops_buffer_id);
+
     auto cmd_buffer = driver->create_command_buffer("Upload initial backdrops");
-    cmd_buffer->upload_to_buffer(backdrops_buffer_id,
-                                 0,
-                                 backdrops.size() * sizeof(BackdropInfoD3D11),
-                                 backdrops.data());
+    cmd_buffer->upload_to_buffer(backdrops_buffer, 0, backdrops.size() * sizeof(BackdropInfoD3D11), backdrops.data());
     cmd_buffer->submit_and_wait();
 }
 
 void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
     // Upload tiles to GPU or allocate them as appropriate.
-    auto tiles_d3d11_buffer_id = driver->create_buffer(
-        {BufferType::Storage, batch.tile_count * sizeof(TileD3D11), MemoryProperty::HostVisibleAndCoherent},
-        "Tiles d3d11 buffer");
+    auto tiles_d3d11_buffer_id =
+        allocator->allocate_general_buffer(batch.tile_count * sizeof(TileD3D11), "Tiles d3d11 buffer");
 
     // Fetch and/or allocate clip storage as needed.
     shared_ptr<ClipBufferIDs> clip_buffer_ids;
@@ -477,7 +475,7 @@ void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
 
     // Dice (flatten) segments into micro-lines. We might have to do this twice if our
     // first attempt runs out of space in the storage buffer.
-    MicrolineBufferIDsD3D11 microline_storage{};
+    std::shared_ptr<MicrolineBufferIDsD3D11> microline_storage{};
     for (int _ = 0; _ < 2; _++) {
         microline_storage = dice_segments(batch.prepare_info.dice_metadata,
                                           batch.segment_count,
@@ -485,11 +483,11 @@ void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
                                           batch.prepare_info.transform);
 
         // If the microline buffer has been allocated successfully.
-        if (microline_storage.buffer_id != nullptr) {
+        if (microline_storage != nullptr) {
             break;
         }
     }
-    if (microline_storage.buffer_id == nullptr) {
+    if (microline_storage == nullptr) {
         Logger::error("Ran out of space for microlines when dicing!", "D3D11");
     }
 
@@ -497,7 +495,7 @@ void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
     // attempt runs out of space in the fill buffer. If this is the case, we also
     // need to re-initialize tiles and re-upload backdrops because they would have
     // been modified during the first attempt.
-    FillBufferInfoD3D11 fill_buffer_info{};
+    std::shared_ptr<FillBufferInfoD3D11> fill_buffer_info;
     for (int _ = 0; _ < 2; _++) {
         // Initialize tiles.
         bound(tiles_d3d11_buffer_id, batch.tile_count, batch.prepare_info.tile_path_info);
@@ -506,19 +504,19 @@ void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
         upload_initial_backdrops(propagate_metadata_buffer_ids.backdrops, batch.prepare_info.backdrops);
 
         fill_buffer_info =
-            bin_segments(microline_storage, propagate_metadata_buffer_ids, tiles_d3d11_buffer_id, z_buffer_id);
+            bin_segments(*microline_storage, propagate_metadata_buffer_ids, tiles_d3d11_buffer_id, z_buffer_id);
 
         // If the fill buffer has been allocated successfully.
-        if (fill_buffer_info.fill_vertex_buffer_id != nullptr) {
+        if (fill_buffer_info != nullptr) {
             break;
         }
     }
-    if (fill_buffer_info.fill_vertex_buffer_id == nullptr) {
+    if (fill_buffer_info == nullptr) {
         Logger::error("Ran out of space for fills when binning!", "D3D11");
     }
 
     // Free microline storage as it's not needed anymore.
-    microline_storage.buffer_id.reset();
+    allocator->free_general_buffer(microline_storage->buffer_id);
 
     // TODO(pcwalton): If we run out of space for alpha tile indices, propagate multiple times.
 
@@ -532,12 +530,14 @@ void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
                                                 propagate_metadata_buffer_ids,
                                                 clip_buffer_ids);
 
-    propagate_metadata_buffer_ids.backdrops.reset();
+    // Free buffer.
+    allocator->free_general_buffer(propagate_metadata_buffer_ids.backdrops);
 
-    draw_fills(fill_buffer_info, tiles_d3d11_buffer_id, alpha_tiles_buffer_id, propagate_tiles_info);
+    draw_fills(*fill_buffer_info, tiles_d3d11_buffer_id, alpha_tiles_buffer_id, propagate_tiles_info);
 
-    fill_buffer_info.fill_vertex_buffer_id.reset();
-    alpha_tiles_buffer_id.reset();
+    // Free buffers.
+    allocator->free_general_buffer(fill_buffer_info->fill_vertex_buffer_id);
+    allocator->free_general_buffer(alpha_tiles_buffer_id);
 
     // FIXME(pcwalton): This seems like the wrong place to do this...
     sort_tiles(tiles_d3d11_buffer_id, first_tile_map_buffer_id, z_buffer_id);
@@ -553,27 +553,27 @@ void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
                            });
 }
 
-MicrolineBufferIDsD3D11 RendererD3D11::dice_segments(std::vector<DiceMetadataD3D11> &dice_metadata,
-                                                     uint32_t batch_segment_count,
-                                                     PathSource path_source,
-                                                     Transform2 transform) {
+std::shared_ptr<MicrolineBufferIDsD3D11> RendererD3D11::dice_segments(std::vector<DiceMetadataD3D11> &dice_metadata,
+                                                                      uint32_t batch_segment_count,
+                                                                      PathSource path_source,
+                                                                      Transform2 transform) {
     // Allocate some general buffers.
-    auto microline_buffer_id = driver->create_buffer({BufferType::Storage,
-                                                      allocated_microline_count * sizeof(MicrolineD3D11),
-                                                      MemoryProperty::HostVisibleAndCoherent},
-                                                     "Microline buffer");
-    auto dice_metadata_buffer_id = driver->create_buffer(
-        {BufferType::Storage, dice_metadata.size() * sizeof(DiceMetadataD3D11), MemoryProperty::HostVisibleAndCoherent},
-        "Dice metadata buffer");
-    auto indirect_draw_params_buffer_id = driver->create_buffer({BufferType::Storage,
-                                                                 FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
-                                                                 MemoryProperty::HostVisibleAndCoherent},
-                                                                "Indirect draw params_buffer");
+    auto microline_buffer_id =
+        allocator->allocate_general_buffer(allocated_microline_count * sizeof(MicrolineD3D11), "Microline buffer");
+    auto dice_metadata_buffer_id =
+        allocator->allocate_general_buffer(dice_metadata.size() * sizeof(DiceMetadataD3D11), "Dice metadata buffer");
+    auto indirect_draw_params_buffer_id =
+        allocator->allocate_general_buffer(FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
+                                           "Indirect draw params buffer");
+
+    auto microline_buffer = allocator->get_general_buffer(microline_buffer_id);
+    auto dice_metadata_buffer = allocator->get_general_buffer(dice_metadata_buffer_id);
+    auto indirect_draw_params_buffer = allocator->get_general_buffer(indirect_draw_params_buffer_id);
 
     // Get scene source buffers.
     auto &scene_source_buffers = path_source == PathSource::Draw ? scene_buffers.draw : scene_buffers.clip;
-    auto points_buffer_id = scene_source_buffers.points_buffer;
-    auto point_indices_buffer_id = scene_source_buffers.point_indices_buffer;
+    auto points_buffer_id = *scene_source_buffers.points_buffer;
+    auto point_indices_buffer_id = *scene_source_buffers.point_indices_buffer;
     auto point_indices_count = scene_source_buffers.point_indices_count;
 
     uint32_t indirect_compute_params[8] = {0, 0, 0, 0, point_indices_count, 0, 0, 0};
@@ -581,13 +581,13 @@ MicrolineBufferIDsD3D11 RendererD3D11::dice_segments(std::vector<DiceMetadataD3D
     auto cmd_buffer = driver->create_command_buffer("Dice segments");
 
     // Upload dice indirect draw params, which will be read later.
-    cmd_buffer->upload_to_buffer(indirect_draw_params_buffer_id,
+    cmd_buffer->upload_to_buffer(indirect_draw_params_buffer,
                                  0,
                                  FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
                                  indirect_compute_params);
 
     // Upload dice metadata.
-    cmd_buffer->upload_to_buffer(dice_metadata_buffer_id,
+    cmd_buffer->upload_to_buffer(dice_metadata_buffer,
                                  0,
                                  dice_metadata.size() * sizeof(DiceMetadataD3D11),
                                  dice_metadata.data());
@@ -611,18 +611,21 @@ MicrolineBufferIDsD3D11 RendererD3D11::dice_segments(std::vector<DiceMetadataD3D
                                         static_cast<int32_t>(allocated_microline_count)};
     cmd_buffer->upload_to_buffer(dice_ub1, 0, 3 * sizeof(int32_t), ubo_data1.data());
 
+    auto points_buffer = allocator->get_general_buffer(points_buffer_id);
+    auto point_indices_buffer = allocator->get_general_buffer(point_indices_buffer_id);
+
     // Bind storage buffers.
     dice_descriptor_set->add_or_update({
         // Read and write.
-        Descriptor::storage(0, ShaderStage::Compute, indirect_draw_params_buffer_id),
+        Descriptor::storage(0, ShaderStage::Compute, indirect_draw_params_buffer),
         // Read only.
-        Descriptor::storage(1, ShaderStage::Compute, dice_metadata_buffer_id),
+        Descriptor::storage(1, ShaderStage::Compute, dice_metadata_buffer),
         // Read only.
-        Descriptor::storage(2, ShaderStage::Compute, points_buffer_id),
+        Descriptor::storage(2, ShaderStage::Compute, points_buffer),
         // Read only.
-        Descriptor::storage(3, ShaderStage::Compute, point_indices_buffer_id),
+        Descriptor::storage(3, ShaderStage::Compute, point_indices_buffer),
         // Write only.
-        Descriptor::storage(4, ShaderStage::Compute, microline_buffer_id),
+        Descriptor::storage(4, ShaderStage::Compute, microline_buffer),
     });
 
     cmd_buffer->sync_descriptor_set(dice_descriptor_set);
@@ -640,9 +643,13 @@ MicrolineBufferIDsD3D11 RendererD3D11::dice_segments(std::vector<DiceMetadataD3D
     cmd_buffer->submit_and_wait();
 
     // Read indirect draw params back to CPU memory.
-    indirect_draw_params_buffer_id->download_via_mapping(FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
-                                                         0,
-                                                         indirect_compute_params);
+    indirect_draw_params_buffer->download_via_mapping(FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
+                                                      0,
+                                                      indirect_compute_params);
+
+    // Free buffers.
+    allocator->free_general_buffer(dice_metadata_buffer_id);
+    allocator->free_general_buffer(indirect_draw_params_buffer_id);
 
     // Fetch microline count from indirect draw params.
     auto microline_count = indirect_compute_params[BIN_INDIRECT_DRAW_PARAMS_MICROLINE_COUNT_INDEX];
@@ -650,25 +657,29 @@ MicrolineBufferIDsD3D11 RendererD3D11::dice_segments(std::vector<DiceMetadataD3D
     // Allocate more space if not allocated enough.
     if (microline_count > allocated_microline_count) {
         allocated_microline_count = upper_power_of_two(microline_count);
-        return {{}, 0};
+        allocator->free_general_buffer(microline_buffer_id);
+        return nullptr;
     }
 
-    return {microline_buffer_id, microline_count};
+    auto ids = std::make_shared<MicrolineBufferIDsD3D11>();
+    ids->buffer_id = microline_buffer_id;
+    ids->count = microline_count;
+
+    return ids;
 }
 
-void RendererD3D11::bound(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
+void RendererD3D11::bound(uint64_t tiles_d3d11_buffer_id,
                           uint32_t tile_count,
                           std::vector<TilePathInfoD3D11> &tile_path_info) {
     // This is a staging buffer, which will be freed at the end of this function.
-    auto path_info_buffer_id = driver->create_buffer({BufferType::Storage,
-                                                      tile_path_info.size() * sizeof(TilePathInfoD3D11),
-                                                      MemoryProperty::HostVisibleAndCoherent},
-                                                     "Path info buffer");
+    auto path_info_buffer_id =
+        allocator->allocate_general_buffer(tile_path_info.size() * sizeof(TilePathInfoD3D11), "Path info buffer");
 
     auto cmd_buffer = driver->create_command_buffer("Bound");
 
     // Upload buffer data.
-    cmd_buffer->upload_to_buffer(path_info_buffer_id,
+    auto tile_path_info_buffer = allocator->get_general_buffer(path_info_buffer_id);
+    cmd_buffer->upload_to_buffer(tile_path_info_buffer,
                                  0,
                                  tile_path_info.size() * sizeof(TilePathInfoD3D11),
                                  tile_path_info.data());
@@ -680,9 +691,9 @@ void RendererD3D11::bound(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
     // Update the descriptor set.
     bound_descriptor_set->add_or_update({
         // Read only.
-        Descriptor::storage(0, ShaderStage::Compute, path_info_buffer_id),
+        Descriptor::storage(0, ShaderStage::Compute, tile_path_info_buffer),
         // Write only.
-        Descriptor::storage(1, ShaderStage::Compute, tiles_d3d11_buffer_id),
+        Descriptor::storage(1, ShaderStage::Compute, allocator->get_general_buffer(tiles_d3d11_buffer_id)),
     });
 
     cmd_buffer->sync_descriptor_set(bound_descriptor_set);
@@ -698,27 +709,31 @@ void RendererD3D11::bound(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
     cmd_buffer->end_compute_pass();
 
     cmd_buffer->submit_and_wait();
+
+    allocator->free_general_buffer(path_info_buffer_id);
 }
 
-FillBufferInfoD3D11 RendererD3D11::bin_segments(MicrolineBufferIDsD3D11 &microline_storage,
-                                                PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids,
-                                                const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
-                                                const std::shared_ptr<Buffer> &z_buffer_id) {
+std::shared_ptr<FillBufferInfoD3D11> RendererD3D11::bin_segments(
+    MicrolineBufferIDsD3D11 &microline_storage,
+    PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids,
+    uint64_t tiles_d3d11_buffer_id,
+    uint64_t z_buffer_id) {
     // What will be the output of this function.
-    auto fill_vertex_buffer_id = driver->create_buffer(
-        {BufferType::Storage, allocated_fill_count * sizeof(Fill), MemoryProperty::HostVisibleAndCoherent},
-        "Fill vertex buffer");
+    auto fill_vertex_buffer_id =
+        allocator->allocate_general_buffer(allocated_fill_count * sizeof(Fill), "Fill vertex buffer");
 
     uint32_t indirect_draw_params[FILL_INDIRECT_DRAW_PARAMS_SIZE] = {6, 0, 0, 0, 0, microline_storage.count, 0, 0};
 
     auto cmd_buffer = driver->create_command_buffer("Bin segments");
+
+    auto z_buffer = allocator->get_general_buffer(z_buffer_id);
 
     // Upload Z buffer data.
     {
         // Upload fill indirect draw params to header of the Z-buffer.
         // This is in the Z-buffer, not its own buffer, to work around the 8 SSBO limitation on
         // some drivers (#373).
-        cmd_buffer->upload_to_buffer(z_buffer_id,
+        cmd_buffer->upload_to_buffer(z_buffer,
                                      0,
                                      FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
                                      indirect_draw_params);
@@ -731,17 +746,21 @@ FillBufferInfoD3D11 RendererD3D11::bin_segments(MicrolineBufferIDsD3D11 &microli
     // Update the descriptor set.
     bin_descriptor_set->add_or_update({
         // Read only.
-        Descriptor::storage(0, ShaderStage::Compute, microline_storage.buffer_id),
+        Descriptor::storage(0, ShaderStage::Compute, allocator->get_general_buffer(microline_storage.buffer_id)),
         // Read only.
-        Descriptor::storage(1, ShaderStage::Compute, propagate_metadata_buffer_ids.propagate_metadata),
+        Descriptor::storage(1,
+                            ShaderStage::Compute,
+                            allocator->get_general_buffer(propagate_metadata_buffer_ids.propagate_metadata)),
         // Read and write.
-        Descriptor::storage(2, ShaderStage::Compute, z_buffer_id),
+        Descriptor::storage(2, ShaderStage::Compute, z_buffer),
         // Write only.
-        Descriptor::storage(3, ShaderStage::Compute, fill_vertex_buffer_id),
+        Descriptor::storage(3, ShaderStage::Compute, allocator->get_general_buffer(fill_vertex_buffer_id)),
         // Read and write.
-        Descriptor::storage(4, ShaderStage::Compute, tiles_d3d11_buffer_id),
+        Descriptor::storage(4, ShaderStage::Compute, allocator->get_general_buffer(tiles_d3d11_buffer_id)),
         // Read and write.
-        Descriptor::storage(5, ShaderStage::Compute, propagate_metadata_buffer_ids.backdrops),
+        Descriptor::storage(5,
+                            ShaderStage::Compute,
+                            allocator->get_general_buffer(propagate_metadata_buffer_ids.backdrops)),
     });
 
     cmd_buffer->sync_descriptor_set(bin_descriptor_set);
@@ -759,7 +778,7 @@ FillBufferInfoD3D11 RendererD3D11::bin_segments(MicrolineBufferIDsD3D11 &microli
     cmd_buffer->submit_and_wait();
 
     // Read buffer.
-    z_buffer_id->download_via_mapping(FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t), 0, indirect_draw_params);
+    z_buffer->download_via_mapping(FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t), 0, indirect_draw_params);
 
     // Get the actual fill count. Do this after the command buffer is submitted.
     auto needed_fill_count = indirect_draw_params[FILL_INDIRECT_DRAW_PARAMS_INSTANCE_COUNT_INDEX];
@@ -767,19 +786,29 @@ FillBufferInfoD3D11 RendererD3D11::bin_segments(MicrolineBufferIDsD3D11 &microli
     // If we didn't allocate enough space for the needed fills, we need to call this function again.
     if (needed_fill_count > allocated_fill_count) {
         allocated_fill_count = upper_power_of_two(needed_fill_count);
-        return {};
+        allocator->free_general_buffer(fill_vertex_buffer_id);
+        return nullptr;
     }
 
-    return {fill_vertex_buffer_id};
+    auto fill_buffer_info = std::make_shared<FillBufferInfoD3D11>();
+    fill_buffer_info->fill_vertex_buffer_id = fill_vertex_buffer_id;
+
+    return fill_buffer_info;
 }
 
 PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
-                                                       const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
-                                                       const std::shared_ptr<Buffer> &z_buffer_id,
-                                                       const std::shared_ptr<Buffer> &first_tile_map_buffer_id,
-                                                       const std::shared_ptr<Buffer> &alpha_tiles_buffer_id,
+                                                       uint64_t tiles_d3d11_buffer_id,
+                                                       uint64_t z_buffer_id,
+                                                       uint64_t first_tile_map_buffer_id,
+                                                       uint64_t alpha_tiles_buffer_id,
                                                        PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids,
                                                        const shared_ptr<ClipBufferIDs> &clip_buffer_ids) {
+    auto tiles_d3d11_buffer = allocator->get_general_buffer(tiles_d3d11_buffer_id);
+    auto propagate_metadata_buffer = allocator->get_general_buffer(propagate_metadata_buffer_ids.propagate_metadata);
+    auto backdrops_buffer = allocator->get_general_buffer(propagate_metadata_buffer_ids.backdrops);
+    auto z_buffer = allocator->get_general_buffer(z_buffer_id);
+    auto alpha_tiles_buffer = allocator->get_general_buffer(alpha_tiles_buffer_id);
+
     auto cmd_buffer = driver->create_command_buffer("Propagate tiles");
 
     // Upload data to buffers.
@@ -789,17 +818,15 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
     auto z_buffer_data = std::vector<int32_t>(tile_area, 0);
 
     // Fill zeros in the Z buffer. Note the offset for the fill indirect params.
-    cmd_buffer->upload_to_buffer(z_buffer_id,
+    cmd_buffer->upload_to_buffer(z_buffer,
                                  FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
                                  tile_area * sizeof(int32_t),
                                  z_buffer_data.data());
 
     // TODO(pcwalton): Initialize the first tiles buffer on GPU?
+    auto first_tile_map_buffer = allocator->get_general_buffer(first_tile_map_buffer_id);
     auto first_tile_map = std::vector<FirstTileD3D11>(tile_area, FirstTileD3D11());
-    cmd_buffer->upload_to_buffer(first_tile_map_buffer_id,
-                                 0,
-                                 tile_area * sizeof(FirstTileD3D11),
-                                 first_tile_map.data());
+    cmd_buffer->upload_to_buffer(first_tile_map_buffer, 0, tile_area * sizeof(FirstTileD3D11), first_tile_map.data());
 
     // Update uniform buffers.
     auto framebuffer_tile_size0 = framebuffer_tile_size();
@@ -813,22 +840,22 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
     {
         propagate_descriptor_set->add_or_update({
             // Read only.
-            Descriptor::storage(0, ShaderStage::Compute, propagate_metadata_buffer_ids.propagate_metadata),
+            Descriptor::storage(0, ShaderStage::Compute, propagate_metadata_buffer),
             // Read only.
-            Descriptor::storage(2, ShaderStage::Compute, propagate_metadata_buffer_ids.backdrops),
+            Descriptor::storage(2, ShaderStage::Compute, backdrops_buffer),
             // Read and write.
-            Descriptor::storage(3, ShaderStage::Compute, tiles_d3d11_buffer_id),
+            Descriptor::storage(3, ShaderStage::Compute, tiles_d3d11_buffer),
             // Read and write.
-            Descriptor::storage(5, ShaderStage::Compute, z_buffer_id),
+            Descriptor::storage(5, ShaderStage::Compute, z_buffer),
             // Read and write.
-            Descriptor::storage(6, ShaderStage::Compute, first_tile_map_buffer_id),
+            Descriptor::storage(6, ShaderStage::Compute, first_tile_map_buffer),
             // Write only.
-            Descriptor::storage(7, ShaderStage::Compute, alpha_tiles_buffer_id),
+            Descriptor::storage(7, ShaderStage::Compute, alpha_tiles_buffer),
         });
 
         if (clip_buffer_ids) {
-            auto clip_metadata_buffer = clip_buffer_ids->metadata;
-            auto clip_tile_buffer = clip_buffer_ids->tiles;
+            auto clip_metadata_buffer = allocator->get_general_buffer(clip_buffer_ids->metadata);
+            auto clip_tile_buffer = allocator->get_general_buffer(clip_buffer_ids->tiles);
 
             propagate_descriptor_set->add_or_update({
                 // Read only.
@@ -838,8 +865,8 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
             });
         } else { // Placeholders.
             propagate_descriptor_set->add_or_update({
-                Descriptor::storage(1, ShaderStage::Compute, propagate_metadata_buffer_ids.propagate_metadata),
-                Descriptor::storage(4, ShaderStage::Compute, tiles_d3d11_buffer_id),
+                Descriptor::storage(1, ShaderStage::Compute, propagate_metadata_buffer),
+                Descriptor::storage(4, ShaderStage::Compute, tiles_d3d11_buffer),
             });
         }
     }
@@ -861,7 +888,7 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
     cmd_buffer->submit_and_wait();
 
     // Read buffer.
-    z_buffer_id->download_via_mapping(FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t), 0, fill_indirect_draw_params);
+    z_buffer->download_via_mapping(FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t), 0, fill_indirect_draw_params);
 
     // Do this after the command buffer is submitted.
     auto batch_alpha_tile_count = fill_indirect_draw_params[FILL_INDIRECT_DRAW_PARAMS_ALPHA_TILE_COUNT_INDEX];
@@ -878,8 +905,8 @@ Vec2I RendererD3D11::framebuffer_tile_size() {
 }
 
 void RendererD3D11::draw_fills(FillBufferInfoD3D11 &fill_storage_info,
-                               const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
-                               const std::shared_ptr<Buffer> &alpha_tiles_buffer_id,
+                               uint64_t tiles_d3d11_buffer_id,
+                               uint64_t alpha_tiles_buffer_id,
                                PropagateTilesInfoD3D11 &propagate_tiles_info) {
     auto alpha_tile_range = propagate_tiles_info.alpha_tile_range;
 
@@ -894,14 +921,18 @@ void RendererD3D11::draw_fills(FillBufferInfoD3D11 &fill_storage_info,
                                        static_cast<int32_t>(alpha_tile_range.end)};
     cmd_buffer->upload_to_buffer(fill_ub, 0, 2 * sizeof(int32_t), ubo_data.data());
 
+    auto fill_vertex_buffer = allocator->get_general_buffer(fill_storage_info.fill_vertex_buffer_id);
+    auto tiles_d3d11_buffer = allocator->get_general_buffer(tiles_d3d11_buffer_id);
+    auto alpha_tiles_buffer = allocator->get_general_buffer(alpha_tiles_buffer_id);
+
     // Update descriptor set.
     fill_descriptor_set->add_or_update({
         // Read only.
-        Descriptor::storage(0, ShaderStage::Compute, fill_storage_info.fill_vertex_buffer_id),
+        Descriptor::storage(0, ShaderStage::Compute, fill_vertex_buffer),
         // Read only.
-        Descriptor::storage(1, ShaderStage::Compute, tiles_d3d11_buffer_id),
+        Descriptor::storage(1, ShaderStage::Compute, tiles_d3d11_buffer),
         // Read only.
-        Descriptor::storage(2, ShaderStage::Compute, alpha_tiles_buffer_id),
+        Descriptor::storage(2, ShaderStage::Compute, alpha_tiles_buffer),
     });
 
     cmd_buffer->sync_descriptor_set(fill_descriptor_set);
@@ -919,9 +950,13 @@ void RendererD3D11::draw_fills(FillBufferInfoD3D11 &fill_storage_info,
     cmd_buffer->submit_and_wait();
 }
 
-void RendererD3D11::sort_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer_id,
-                               const std::shared_ptr<Buffer> &first_tile_map_buffer_id,
-                               const std::shared_ptr<Buffer> &z_buffer_id) {
+void RendererD3D11::sort_tiles(uint64_t tiles_d3d11_buffer_id,
+                               uint64_t first_tile_map_buffer_id,
+                               uint64_t z_buffer_id) {
+    auto tiles_d3d11_buffer = allocator->get_general_buffer(tiles_d3d11_buffer_id);
+    auto first_tile_map_buffer = allocator->get_general_buffer(first_tile_map_buffer_id);
+    auto z_buffer = allocator->get_general_buffer(z_buffer_id);
+
     auto tile_count = framebuffer_tile_size().area();
 
     auto cmd_buffer = driver->create_command_buffer("Sort tiles");
@@ -932,11 +967,11 @@ void RendererD3D11::sort_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer
     // Update the descriptor set.
     sort_descriptor_set->add_or_update({
         // Read and write.
-        Descriptor::storage(0, ShaderStage::Compute, tiles_d3d11_buffer_id),
+        Descriptor::storage(0, ShaderStage::Compute, tiles_d3d11_buffer),
         // Read and write.
-        Descriptor::storage(1, ShaderStage::Compute, first_tile_map_buffer_id),
+        Descriptor::storage(1, ShaderStage::Compute, first_tile_map_buffer),
         // Read only.
-        Descriptor::storage(2, ShaderStage::Compute, z_buffer_id),
+        Descriptor::storage(2, ShaderStage::Compute, z_buffer),
     });
 
     cmd_buffer->sync_descriptor_set(sort_descriptor_set);
@@ -952,6 +987,23 @@ void RendererD3D11::sort_tiles(const std::shared_ptr<Buffer> &tiles_d3d11_buffer
     cmd_buffer->end_compute_pass();
 
     cmd_buffer->submit_and_wait();
+}
+
+void RendererD3D11::free_tile_batch_buffers() {
+    while (true) {
+        if (tile_batch_info.empty()) {
+            break;
+        }
+
+        auto &info = tile_batch_info.back();
+
+        allocator->free_general_buffer(info.z_buffer_id);
+        allocator->free_general_buffer(info.tiles_d3d11_buffer_id);
+        allocator->free_general_buffer(info.propagate_metadata_buffer_id);
+        allocator->free_general_buffer(info.first_tile_map_buffer_id);
+
+        tile_batch_info.pop_back();
+    }
 }
 
 } // namespace Pathfinder

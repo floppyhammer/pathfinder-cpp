@@ -11,11 +11,11 @@ uint64_t GpuMemoryAllocator::allocate_general_buffer(size_t byte_size, const std
 
     // Try to find a free object.
     for (int free_object_index = 0; free_object_index < free_objects.size(); free_object_index++) {
-        auto& free_obj = free_objects[free_object_index];
+        auto free_obj = free_objects[free_object_index];
 
         if (free_obj.kind == FreeObjectKind::GeneralBuffer) {
             std::chrono::duration<double> duration = now - free_obj.timestamp;
-            auto elapsed_time_in_s = duration.count() * 1.0e6;
+            auto elapsed_time_in_s = duration.count();
 
             if (free_obj.general_allocation.buffer->get_size() == byte_size && elapsed_time_in_s >= REUSE_TIME) {
             } else {
@@ -25,12 +25,14 @@ uint64_t GpuMemoryAllocator::allocate_general_buffer(size_t byte_size, const std
 
         // Reuse this free object.
         free_objects.erase(free_objects.begin() + free_object_index);
+
         uint64_t id = free_obj.id;
         BufferAllocation allocation = free_obj.general_allocation;
 
         // Update tag.
         allocation.tag = tag;
-        bytes_committed += allocation.buffer->get_size();
+
+        bytes_committed += byte_size;
 
         general_buffers_in_use[id] = allocation;
 
@@ -53,8 +55,11 @@ uint64_t GpuMemoryAllocator::allocate_general_buffer(size_t byte_size, const std
 }
 
 void GpuMemoryAllocator::free_general_buffer(uint64_t id) {
+    if (id == 0) {
+        auto a = 1;
+    }
     if (general_buffers_in_use.find(id) == general_buffers_in_use.end()) {
-        Logger::error("Tried to free nonexistent general buffer!", "GpuMemoryAllocator");
+        Logger::error("Attempted to free unallocated general buffer!", "GpuMemoryAllocator");
         return;
     }
 
@@ -93,9 +98,8 @@ void GpuMemoryAllocator::purge_if_needed() {
         }
 
         std::chrono::duration<double> duration = now - free_objects.front().timestamp;
-
         // If the first free object has not decayed, so do the rest free objects.
-        if (duration.count() * 1.0e6 < DECAY_TIME) {
+        if (duration.count() < DECAY_TIME) {
             break;
         }
 

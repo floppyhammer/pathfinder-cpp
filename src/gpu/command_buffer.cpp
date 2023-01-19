@@ -140,6 +140,12 @@ void CommandBuffer::upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
                                      void *data) {
     if (data_size == 0 || data == nullptr) {
         Logger::error("Tried to upload invalid data to buffer!");
+        return;
+    }
+
+    if (buffer == nullptr) {
+        Logger::error("Tried to upload data to NULL buffer!");
+        return;
     }
 
     // Write buffer by memory mapping.
