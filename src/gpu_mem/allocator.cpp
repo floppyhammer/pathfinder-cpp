@@ -15,9 +15,8 @@ uint64_t GpuMemoryAllocator::allocate_general_buffer(size_t byte_size, const std
 
         if (free_obj.kind == FreeObjectKind::GeneralBuffer) {
             std::chrono::duration<double> duration = now - free_obj.timestamp;
-            auto elapsed_time_in_s = duration.count();
 
-            if (free_obj.general_allocation.buffer->get_size() == byte_size && elapsed_time_in_s >= REUSE_TIME) {
+            if (free_obj.general_allocation.buffer->get_size() == byte_size && duration.count() >= REUSE_TIME) {
             } else {
                 continue;
             }
@@ -79,7 +78,7 @@ void GpuMemoryAllocator::free_general_buffer(uint64_t id) {
 
 std::shared_ptr<Buffer> GpuMemoryAllocator::get_general_buffer(uint64_t id) {
     if (general_buffers_in_use.find(id) == general_buffers_in_use.end()) {
-        Logger::error("Tried to get nonexistent general buffer!", "GpuMemoryAllocator");
+        Logger::error("Attempted to get nonexistent general buffer!", "GpuMemoryAllocator");
         return nullptr;
     }
 

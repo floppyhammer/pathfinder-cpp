@@ -31,7 +31,7 @@ struct PropagateMetadataBufferIDsD3D11 {
     uint64_t backdrops;
 };
 
-struct MicrolineBufferIDsD3D11 {
+struct MicrolinesBufferIDsD3D11 {
     uint64_t buffer_id;
     uint32_t count;
 };
@@ -110,10 +110,10 @@ private:
      * @note COMPUTE INPUT dice_metadata_buffer
      * @note COMPUTE OUTPUT microlines_buffer
      */
-    std::shared_ptr<MicrolineBufferIDsD3D11> dice_segments(std::vector<DiceMetadataD3D11> &dice_metadata,
-                                                           uint32_t batch_segment_count,
-                                                           PathSource path_source,
-                                                           Transform2 transform);
+    std::shared_ptr<MicrolinesBufferIDsD3D11> dice_segments(std::vector<DiceMetadataD3D11> &dice_metadata,
+                                                            uint32_t batch_segment_count,
+                                                            PathSource path_source,
+                                                            Transform2 transform);
 
     /**
      * Initializes the tile maps.
@@ -130,7 +130,7 @@ private:
      * @BufferRead Microlines buffer, propagate metadata buffers, tiles buffer, z buffer
      * @BufferWrite Fill vertex buffer
      */
-    std::shared_ptr<FillBufferInfoD3D11> bin_segments(MicrolineBufferIDsD3D11 &microlines_storage,
+    std::shared_ptr<FillBufferInfoD3D11> bin_segments(MicrolinesBufferIDsD3D11 &microlines_storage,
                                                       PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids,
                                                       uint64_t tiles_d3d11_buffer_id,
                                                       uint64_t z_buffer_id);

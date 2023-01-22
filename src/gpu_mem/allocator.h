@@ -46,11 +46,12 @@ enum class FreeObjectKind {
     IndexBuffer,
     Texture,
     Framebuffer,
+    Max,
 };
 
 struct FreeObject {
     std::chrono::time_point<std::chrono::steady_clock> timestamp;
-    FreeObjectKind kind;
+    FreeObjectKind kind = FreeObjectKind::Max;
     uint64_t id;
 
     BufferAllocation general_allocation;
