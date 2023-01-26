@@ -8,36 +8,36 @@
 
 namespace Pathfinder {
 
-BufferGl::BufferGl(BufferType _type, size_t _size, MemoryProperty _memory_property, const std::string &_label)
-    : Buffer(_type, _size, _memory_property, _label) {
-    if (size == 0) {
-        Logger::error("Tried to create a buffer with zero size!");
+BufferGl::BufferGl(const BufferDescriptor &_desc, const std::string &_label) : Buffer(_desc, _label) {
+    if (_desc.size == 0) {
+        Logger::error("Attempted to create a buffer of zero size!");
     }
 
     glGenBuffers(1, &id);
 
-    switch (type) {
+    GLint target = GL_NONE;
+
+    switch (_desc.type) {
         case BufferType::Uniform: {
-            glBindBuffer(GL_UNIFORM_BUFFER, id);
-            glBufferData(GL_UNIFORM_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
-            glBindBuffer(GL_UNIFORM_BUFFER, 0); // Unbind.
+            target = GL_UNIFORM_BUFFER;
         } break;
         case BufferType::Vertex: {
-            glBindBuffer(GL_ARRAY_BUFFER, id);
-            glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            target = GL_ARRAY_BUFFER;
         } break;
         case BufferType::Index: {
             Logger::error("Cannot handle index buffers yet!");
+            abort();
         } break;
         case BufferType::Storage: {
     #ifdef PATHFINDER_USE_D3D11
-            glBindBuffer(GL_SHADER_STORAGE_BUFFER, id);
-            glBufferData(GL_SHADER_STORAGE_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
-            glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+            target = GL_SHADER_STORAGE_BUFFER;
     #endif
         } break;
     }
+
+    glBindBuffer(target, id);
+    glBufferData(target, _desc.size, nullptr, GL_DYNAMIC_DRAW);
+    glBindBuffer(target, 0);
 
     gl_check_error("create_buffer");
 
@@ -51,7 +51,7 @@ BufferGl::~BufferGl() {
 void BufferGl::upload_via_mapping(size_t data_size, size_t offset, void *data) {
     int gl_buffer_type = 0;
 
-    switch (type) {
+    switch (desc.type) {
         case BufferType::Vertex: {
             gl_buffer_type = GL_ARRAY_BUFFER;
         } break;
@@ -77,7 +77,7 @@ void BufferGl::upload_via_mapping(size_t data_size, size_t offset, void *data) {
 
 void BufferGl::download_via_mapping(size_t data_size, size_t offset, void *data) {
     // We can only read from storage buffers.
-    if (type != BufferType::Storage) {
+    if (desc.type != BufferType::Storage) {
         Logger::error("Tried to read from a non-storage buffer!", "BufferGl");
         return;
     }
