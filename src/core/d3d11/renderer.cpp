@@ -119,30 +119,28 @@ RendererD3D11::RendererD3D11(const std::shared_ptr<Pathfinder::Driver> &driver) 
     allocated_fill_count = INITIAL_ALLOCATED_FILL_COUNT;
 
     // Create uniform buffers.
-    bin_ub = driver->create_buffer({BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HostVisibleAndCoherent},
-                                   "bin uniform buffer");
-    bound_ub = driver->create_buffer({BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HostVisibleAndCoherent},
-                                     "bound uniform buffer");
-    dice_ub0 = driver->create_buffer({BufferType::Uniform, 12 * sizeof(float), MemoryProperty::HostVisibleAndCoherent},
-                                     "dice uniform buffer 0");
-    dice_ub1 = driver->create_buffer({BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HostVisibleAndCoherent},
-                                     "dice uniform buffer 1");
-    fill_ub = driver->create_buffer({BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HostVisibleAndCoherent},
-                                    "fill uniform buffer");
-    propagate_ub =
-        driver->create_buffer({BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HostVisibleAndCoherent},
-                              "propagate uniform buffer");
-    sort_ub = driver->create_buffer({BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HostVisibleAndCoherent},
-                                    "sort uniform buffer");
-    tile_ub0 = driver->create_buffer({BufferType::Uniform, 8 * sizeof(float), MemoryProperty::HostVisibleAndCoherent},
-                                     "tile uniform buffer 0");
-    tile_ub1 = driver->create_buffer({BufferType::Uniform, 8 * sizeof(int32_t), MemoryProperty::HostVisibleAndCoherent},
-                                     "tile uniform buffer 1");
+    bin_ub = driver->create_buffer(
+        {BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HostVisibleAndCoherent, "bin uniform buffer"});
+    bound_ub = driver->create_buffer(
+        {BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HostVisibleAndCoherent, "bound uniform buffer"});
+    dice_ub0 = driver->create_buffer(
+        {BufferType::Uniform, 12 * sizeof(float), MemoryProperty::HostVisibleAndCoherent, "dice uniform buffer 0"});
+    dice_ub1 = driver->create_buffer(
+        {BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HostVisibleAndCoherent, "dice uniform buffer 1"});
+    fill_ub = driver->create_buffer(
+        {BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HostVisibleAndCoherent, "fill uniform buffer"});
+    propagate_ub = driver->create_buffer(
+        {BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HostVisibleAndCoherent, "propagate uniform buffer"});
+    sort_ub = driver->create_buffer(
+        {BufferType::Uniform, 4 * sizeof(int32_t), MemoryProperty::HostVisibleAndCoherent, "sort uniform buffer"});
+    tile_ub0 = driver->create_buffer(
+        {BufferType::Uniform, 8 * sizeof(float), MemoryProperty::HostVisibleAndCoherent, "tile uniform buffer 0"});
+    tile_ub1 = driver->create_buffer(
+        {BufferType::Uniform, 8 * sizeof(int32_t), MemoryProperty::HostVisibleAndCoherent, "tile uniform buffer 1"});
 
     // Unlike D3D9, we use RGBA8 instead of RGBA16F for the mask texture.
-    mask_texture = driver->create_texture({MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT},
-                                          TextureFormat::Rgba8Unorm,
-                                          "Mask texture");
+    mask_texture = driver->create_texture(
+        {{MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT}, TextureFormat::Rgba8Unorm, "Mask texture"});
 
     allocator = std::make_shared<GpuMemoryAllocator>(driver);
 }

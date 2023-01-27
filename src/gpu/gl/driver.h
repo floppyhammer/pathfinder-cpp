@@ -22,9 +22,9 @@ public:
                                                     const std::shared_ptr<Texture> &texture,
                                                     const std::string &label) override;
 
-    std::shared_ptr<Buffer> create_buffer(const BufferDescriptor &_desc, const std::string &label) override;
+    std::shared_ptr<Buffer> create_buffer(const BufferDescriptor &desc) override;
 
-    std::shared_ptr<Texture> create_texture(Vec2I size, TextureFormat format, const std::string &label) override;
+    std::shared_ptr<Texture> create_texture(const TextureDescriptor &desc) override;
 
     std::shared_ptr<CommandBuffer> create_command_buffer(const std::string &label) override;
 

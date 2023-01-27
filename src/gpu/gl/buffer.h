@@ -12,7 +12,7 @@ namespace Pathfinder {
 
 class BufferGl : public Buffer {
 public:
-    BufferGl(const BufferDescriptor& _desc, const std::string& _label);
+    explicit BufferGl(const BufferDescriptor& _desc);
 
     ~BufferGl();
 

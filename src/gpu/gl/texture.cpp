@@ -9,11 +9,7 @@
 
 namespace Pathfinder {
 
-TextureGl::TextureGl(Vec2I _size, TextureFormat _format, std::string _label)
-    : Texture(_size, _format, std::move(_label)) {
-    // We can deduce the pixel data type by the texture format.
-    DataType type = texture_format_to_data_type(format);
-
+TextureGl::TextureGl(const TextureDescriptor& _desc) : Texture(_desc) {
     // Generate a texture.
     glGenTextures(1, &texture_id);
     glBindTexture(GL_TEXTURE_2D, texture_id);
@@ -21,13 +17,16 @@ TextureGl::TextureGl(Vec2I _size, TextureFormat _format, std::string _label)
     // Allocate space.
     // We need to use glTexStorage2D() in order to access the texture via image2D in compute shaders.
     #ifdef PATHFINDER_USE_D3D11
-    glTexStorage2D(GL_TEXTURE_2D, 1, to_gl_texture_format(format), size.x, size.y);
+    glTexStorage2D(GL_TEXTURE_2D, 1, to_gl_texture_format(_desc.format), _desc.size.x, _desc.size.y);
     #else
+    // We can deduce the pixel data type by the texture format.
+    DataType type = texture_format_to_data_type(_desc.format);
+
     glTexImage2D(GL_TEXTURE_2D,
                  0,
-                 to_gl_texture_format(format),
-                 size.x,
-                 size.y,
+                 to_gl_texture_format(_desc.format),
+                 _desc.size.x,
+                 _desc.size.y,
                  0,
                  GL_RGBA,
                  to_gl_data_type(type),
@@ -36,7 +35,7 @@ TextureGl::TextureGl(Vec2I _size, TextureFormat _format, std::string _label)
 
     // Set texture sampler.
     // Set wrapping parameters.
-    // Noteable: It has to be CLAMP_TO_EDGE. Artifacts will show for both REPEAT and MIRRORED_REPEAT.
+    // Note: It has to be CLAMP_TO_EDGE. Artifacts will show for both REPEAT and MIRRORED_REPEAT.
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
@@ -48,7 +47,7 @@ TextureGl::TextureGl(Vec2I _size, TextureFormat _format, std::string _label)
 
     gl_check_error("create_texture");
 
-    DebugMarker::label_texture(texture_id, label);
+    DebugMarker::label_texture(texture_id, _desc.label);
 }
 
 TextureGl::~TextureGl() {

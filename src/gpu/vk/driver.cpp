@@ -367,8 +367,8 @@ std::shared_ptr<Framebuffer> DriverVk::create_framebuffer(const std::shared_ptr<
     return framebuffer_vk;
 }
 
-std::shared_ptr<Buffer> DriverVk::create_buffer(const BufferDescriptor &desc, const std::string &label) {
-    auto buffer_vk = std::make_shared<BufferVk>(device, desc, label);
+std::shared_ptr<Buffer> DriverVk::create_buffer(const BufferDescriptor &desc) {
+    auto buffer_vk = std::make_shared<BufferVk>(device, desc);
 
     auto vk_memory_property = to_vk_memory_property(desc.property);
 
@@ -397,17 +397,20 @@ std::shared_ptr<Buffer> DriverVk::create_buffer(const BufferDescriptor &desc, co
         } break;
     }
 
-    DebugMarker::get_singleton()->set_object_name(device, (uint64_t)buffer_vk->vk_buffer, VK_OBJECT_TYPE_BUFFER, label);
+    DebugMarker::get_singleton()->set_object_name(device,
+                                                  (uint64_t)buffer_vk->vk_buffer,
+                                                  VK_OBJECT_TYPE_BUFFER,
+                                                  desc.label);
 
     return buffer_vk;
 }
 
-std::shared_ptr<Texture> DriverVk::create_texture(Vec2I size, TextureFormat format, const std::string &_label) {
-    auto texture_vk = std::make_shared<TextureVk>(device, size, format, _label);
+std::shared_ptr<Texture> DriverVk::create_texture(const TextureDescriptor &desc) {
+    auto texture_vk = std::make_shared<TextureVk>(device, desc);
 
-    create_vk_image(size.x,
-                    size.y,
-                    to_vk_texture_format(format),
+    create_vk_image(desc.size.x,
+                    desc.size.y,
+                    to_vk_texture_format(desc.format),
                     VK_IMAGE_TILING_OPTIMAL,
                     VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
                         VK_IMAGE_USAGE_STORAGE_BIT,
@@ -417,12 +420,15 @@ std::shared_ptr<Texture> DriverVk::create_texture(Vec2I size, TextureFormat form
 
     // Create image view.
     texture_vk->vk_image_view =
-        create_vk_image_view(texture_vk->vk_image, to_vk_texture_format(format), VK_IMAGE_ASPECT_COLOR_BIT);
+        create_vk_image_view(texture_vk->vk_image, to_vk_texture_format(desc.format), VK_IMAGE_ASPECT_COLOR_BIT);
 
     // Create sampler.
     texture_vk->vk_sampler = create_vk_sampler();
 
-    DebugMarker::get_singleton()->set_object_name(device, (uint64_t)texture_vk->vk_image, VK_OBJECT_TYPE_IMAGE, _label);
+    DebugMarker::get_singleton()->set_object_name(device,
+                                                  (uint64_t)texture_vk->vk_image,
+                                                  VK_OBJECT_TYPE_IMAGE,
+                                                  desc.label);
 
     return texture_vk;
 }

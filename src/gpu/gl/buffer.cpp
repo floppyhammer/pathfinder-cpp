@@ -8,7 +8,7 @@
 
 namespace Pathfinder {
 
-BufferGl::BufferGl(const BufferDescriptor &_desc, const std::string &_label) : Buffer(_desc, _label) {
+BufferGl::BufferGl(const BufferDescriptor &_desc) : Buffer(_desc) {
     if (_desc.size == 0) {
         Logger::error("Attempted to create a buffer of zero size!");
     }
@@ -41,7 +41,7 @@ BufferGl::BufferGl(const BufferDescriptor &_desc, const std::string &_label) : B
 
     gl_check_error("create_buffer");
 
-    DebugMarker::label_buffer(id, label);
+    DebugMarker::label_buffer(id, _desc.label);
 }
 
 BufferGl::~BufferGl() {

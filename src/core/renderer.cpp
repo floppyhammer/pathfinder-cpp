@@ -12,9 +12,8 @@ namespace Pathfinder {
 
 Renderer::Renderer(const std::shared_ptr<Driver> &_driver) : driver(_driver) {
     // Uniform buffer for some constants.
-    constants_ub =
-        driver->create_buffer({BufferType::Uniform, 8 * sizeof(float), MemoryProperty::HostVisibleAndCoherent},
-                              "Constants uniform buffer");
+    constants_ub = driver->create_buffer(
+        {BufferType::Uniform, 8 * sizeof(float), MemoryProperty::HostVisibleAndCoherent, "Constants uniform buffer"});
 
     std::array<float, 6> constants = {MASK_FRAMEBUFFER_WIDTH,
                                       MASK_FRAMEBUFFER_HEIGHT,
@@ -26,10 +25,11 @@ Renderer::Renderer(const std::shared_ptr<Driver> &_driver) : driver(_driver) {
     // Area-Lut texture.
     auto image_buffer = ImageBuffer::from_memory({std::begin(area_lut_png), std::end(area_lut_png)}, false);
 
-    area_lut_texture = driver->create_texture(image_buffer->get_size(), TextureFormat::Rgba8Unorm, "Area-Lut texture");
+    area_lut_texture =
+        driver->create_texture({image_buffer->get_size(), TextureFormat::Rgba8Unorm, "Area-Lut texture"});
 
     // Dummy texture.
-    dummy_texture = driver->create_texture({1, 1}, TextureFormat::Rgba8Unorm, "Dummy texture");
+    dummy_texture = driver->create_texture({{1, 1}, TextureFormat::Rgba8Unorm, "Dummy texture"});
 
     auto cmd_buffer = driver->create_command_buffer("Upload constant data");
 

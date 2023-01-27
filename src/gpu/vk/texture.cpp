@@ -10,8 +10,7 @@
 
 namespace Pathfinder {
 
-TextureVk::TextureVk(VkDevice _vk_device, Vec2I _size, TextureFormat _format, std::string _label)
-    : Texture(_size, _format, std::move(_label)), vk_device(_vk_device) {}
+TextureVk::TextureVk(VkDevice _vk_device, const TextureDescriptor& _desc) : Texture(_desc), vk_device(_vk_device) {}
 
 TextureVk::~TextureVk() {
     vkDestroySampler(vk_device, vk_sampler, nullptr);

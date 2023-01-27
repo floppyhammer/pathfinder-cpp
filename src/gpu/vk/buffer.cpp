@@ -9,8 +9,7 @@
 
 namespace Pathfinder {
 
-BufferVk::BufferVk(VkDevice _vk_device, const BufferDescriptor& _desc, const std::string& _label)
-    : Buffer(_desc, _label), vk_device(_vk_device) {}
+BufferVk::BufferVk(VkDevice _vk_device, const BufferDescriptor& _desc) : Buffer(_desc), vk_device(_vk_device) {}
 
 BufferVk::~BufferVk() {
     vkDestroyBuffer(vk_device, vk_buffer, nullptr);

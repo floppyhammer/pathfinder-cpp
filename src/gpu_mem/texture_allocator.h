@@ -78,7 +78,7 @@ struct TexturePage {
     /// Actual GPU resource.
     std::shared_ptr<Texture> texture;
 
-    TexturePage(TexturePageAllocator _allocator, bool _is_new, std::shared_ptr<Driver> driver);
+    TexturePage(TexturePageAllocator _allocator, bool _is_new, const std::shared_ptr<Driver>& driver);
 };
 
 enum AllocationMode {

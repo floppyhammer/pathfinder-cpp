@@ -14,7 +14,7 @@ namespace Pathfinder {
 /// Use Texture via smart pointers as its de-constructor will release its GL resources.
 class TextureGl : public Texture {
 public:
-    TextureGl(Vec2I _size, TextureFormat _format, std::string _label);
+    explicit TextureGl(const TextureDescriptor& _desc);
 
     ~TextureGl();
 

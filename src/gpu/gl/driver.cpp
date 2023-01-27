@@ -17,12 +17,12 @@ std::shared_ptr<Framebuffer> DriverGl::create_framebuffer(const std::shared_ptr<
     return std::make_shared<FramebufferGl>(texture, label);
 }
 
-std::shared_ptr<Buffer> DriverGl::create_buffer(const BufferDescriptor &_desc, const std::string &label) {
-    return std::make_shared<BufferGl>(_desc, label);
+std::shared_ptr<Buffer> DriverGl::create_buffer(const BufferDescriptor &desc) {
+    return std::make_shared<BufferGl>(desc);
 }
 
-std::shared_ptr<Texture> DriverGl::create_texture(Vec2I size, TextureFormat format, const std::string &label) {
-    return std::make_shared<TextureGl>(size, format, label);
+std::shared_ptr<Texture> DriverGl::create_texture(const TextureDescriptor &desc) {
+    return std::make_shared<TextureGl>(desc);
 }
 
 std::shared_ptr<CommandBuffer> DriverGl::create_command_buffer(const std::string &label) {

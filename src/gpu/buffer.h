@@ -17,11 +17,12 @@ struct BufferDescriptor {
     BufferType type;
     size_t size;
     MemoryProperty property;
+    std::string label;
 };
 
 class Buffer {
 public:
-    Buffer(const BufferDescriptor& _desc, const std::string& _label) : desc(_desc), label(_label) {}
+    explicit Buffer(BufferDescriptor _desc) : desc(std::move(_desc)) {}
 
     size_t get_size() const {
         return desc.size;
@@ -41,9 +42,6 @@ public:
 
 protected:
     BufferDescriptor desc;
-
-    /// Debug label.
-    std::string label;
 };
 
 } // namespace Pathfinder

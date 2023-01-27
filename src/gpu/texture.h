@@ -9,26 +9,26 @@
 
 namespace Pathfinder {
 
+struct TextureDescriptor {
+    Vec2I size;
+    TextureFormat format;
+    std::string label;
+};
+
 class Texture {
 public:
-    Texture(Vec2I _size, TextureFormat _format, std::string _label)
-        : size(_size), format(_format), label(std::move(_label)) {}
+    explicit Texture(TextureDescriptor _desc) : desc(std::move(_desc)) {}
 
     inline Vec2I get_size() const {
-        return size;
+        return desc.size;
     }
 
     inline TextureFormat get_format() const {
-        return format;
+        return desc.format;
     }
 
 protected:
-    Vec2I size;
-
-    TextureFormat format;
-
-    /// Debug label.
-    std::string label;
+    TextureDescriptor desc;
 };
 
 } // namespace Pathfinder

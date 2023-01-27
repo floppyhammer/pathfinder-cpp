@@ -347,13 +347,13 @@ bool prop_allocation_and_freeing_work(uint32_t length, std::vector<Vec2I> sizes)
     return true;
 }
 
-TexturePage::TexturePage(TexturePageAllocator _allocator, bool _is_new, std::shared_ptr<Driver> driver)
+TexturePage::TexturePage(TexturePageAllocator _allocator, bool _is_new, const std::shared_ptr<Driver> &driver)
     : allocator(_allocator), is_new(_is_new) {
     if (allocator.type == TexturePageAllocator::Type::Image) {
-        texture = driver->create_texture(allocator.image_size, TextureFormat::Rgba8Unorm, "Texture page (image)");
+        texture = driver->create_texture({allocator.image_size, TextureFormat::Rgba8Unorm, "Texture page (image)"});
     } else {
-        texture =
-            driver->create_texture(Vec2I(allocator.allocator.size), TextureFormat::Rgba8Unorm, "Texture page (atlas)");
+        texture = driver->create_texture(
+            {Vec2I(allocator.allocator.size), TextureFormat::Rgba8Unorm, "Texture page (atlas)"});
     }
 }
 

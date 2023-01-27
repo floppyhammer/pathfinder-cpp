@@ -40,7 +40,7 @@ uint64_t GpuMemoryAllocator::allocate_general_buffer(size_t byte_size, const std
 
     // Create a new buffer.
 
-    auto buffer = driver->create_buffer({BufferType::Storage, byte_size, MemoryProperty::HostVisibleAndCoherent}, tag);
+    auto buffer = driver->create_buffer({BufferType::Storage, byte_size, MemoryProperty::HostVisibleAndCoherent, tag});
 
     auto id = next_general_buffer_id;
     next_general_buffer_id += 1;
