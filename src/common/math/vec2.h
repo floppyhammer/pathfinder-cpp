@@ -119,11 +119,11 @@ struct Vec2 {
     }
 
     inline bool operator==(const Vec2 &b) const {
-        return (x == b.x && y == b.y);
+        return x == b.x && y == b.y;
     }
 
     inline bool operator!=(const Vec2 &b) const {
-        return (x != b.x || y != b.y);
+        return x != b.x || y != b.y;
     }
 
     inline void operator+=(const Vec2 &b) {

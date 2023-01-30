@@ -33,6 +33,7 @@ struct BufferAllocation {
 
 struct TextureAllocation {
     std::shared_ptr<Texture> texture;
+    TextureDescriptor descriptor;
     std::string tag;
 };
 
@@ -62,13 +63,19 @@ struct FreeObject {
 
 class GpuMemoryAllocator {
 public:
-    GpuMemoryAllocator(const std::shared_ptr<Driver>& _driver) : driver(_driver) {}
+    explicit GpuMemoryAllocator(const std::shared_ptr<Driver>& _driver) : driver(_driver) {}
 
     uint64_t allocate_general_buffer(size_t byte_size, const std::string& tag);
 
+    uint64_t allocate_texture(Vec2I size, TextureFormat format, const std::string& tag);
+
     std::shared_ptr<Buffer> get_general_buffer(uint64_t id);
 
+    std::shared_ptr<Texture> get_texture(uint64_t id);
+
     void free_general_buffer(uint64_t id);
+
+    void free_texture(uint64_t id);
 
     void purge_if_needed();
 

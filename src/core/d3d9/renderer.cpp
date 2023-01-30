@@ -306,6 +306,8 @@ void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &_scene_builder) {
 
     // Tiles need to be drawn after fill drawing and after tile batches are prepared.
     upload_and_draw_tiles(scene_builder->tile_batches);
+
+    allocator->purge_if_needed();
 }
 
 void RendererD3D9::upload_fills(const std::vector<Fill> &fills, const std::shared_ptr<CommandBuffer> &cmd_buffer) {
@@ -320,17 +322,18 @@ void RendererD3D9::upload_fills(const std::vector<Fill> &fills, const std::share
     cmd_buffer->upload_to_buffer(fill_vertex_buffer, 0, byte_size, (void *)fills.data());
 }
 
-void RendererD3D9::upload_z_buffer(const DenseTileMap<uint32_t> &z_buffer_map,
-                                   const std::shared_ptr<CommandBuffer> &cmd_buffer) {
+uint64_t RendererD3D9::upload_z_buffer(const DenseTileMap<uint32_t> &z_buffer_map,
+                                       const std::shared_ptr<CommandBuffer> &cmd_buffer) {
     // Prepare the Z buffer texture.
     // Its size is always the same as the dst framebuffer size.
     // Its size should depend on the batch's dst framebuffer, but it's easier to cache it this way.
-    if (z_buffer_texture == nullptr) {
-        z_buffer_texture =
-            driver->create_texture({z_buffer_map.rect.size(), TextureFormat::Rgba8Unorm, "Z buffer texture"});
-    }
+    auto z_buffer_texture_id =
+        allocator->allocate_texture(z_buffer_map.rect.size(), TextureFormat::Rgba8Unorm, "Z buffer texture");
 
+    auto z_buffer_texture = allocator->get_texture(z_buffer_texture_id);
     cmd_buffer->upload_to_texture(z_buffer_texture, {}, z_buffer_map.data.data());
+
+    return z_buffer_texture_id;
 }
 
 void RendererD3D9::upload_tiles(const std::vector<TileObjectPrimitive> &tiles,
@@ -372,16 +375,18 @@ void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &t
 
         upload_tiles(batch.tiles, cmd_buffer);
 
-        upload_z_buffer(batch.z_buffer_data, cmd_buffer);
+        auto z_buffer_texture_id = upload_z_buffer(batch.z_buffer_data, cmd_buffer);
 
         draw_tiles(tile_count,
                    batch.render_target,
                    batch.metadata_texture,
                    batch.color_texture,
-                   z_buffer_texture,
+                   z_buffer_texture_id,
                    cmd_buffer);
 
         cmd_buffer->submit_and_wait();
+
+        allocator->free_texture(z_buffer_texture_id);
     }
 }
 
@@ -468,7 +473,7 @@ void RendererD3D9::draw_tiles(uint32_t tiles_count,
                               const RenderTarget &render_target,
                               const std::shared_ptr<Texture> &metadata_texture,
                               const std::shared_ptr<Texture> &color_texture,
-                              const std::shared_ptr<Texture> &z_buffer_texture,
+                              uint64_t z_buffer_texture_id,
                               const std::shared_ptr<CommandBuffer> &cmd_buffer) {
     std::shared_ptr<Framebuffer> target_framebuffer;
 
@@ -490,6 +495,8 @@ void RendererD3D9::draw_tiles(uint32_t tiles_count,
     }
 
     Vec2F target_framebuffer_size = target_framebuffer->get_size().to_f32();
+
+    auto z_buffer_texture = allocator->get_texture(z_buffer_texture_id);
 
     // Update uniform buffers.
     {

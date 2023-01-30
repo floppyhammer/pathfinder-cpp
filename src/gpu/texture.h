@@ -13,6 +13,14 @@ struct TextureDescriptor {
     Vec2I size;
     TextureFormat format;
     std::string label;
+
+    size_t byte_size() const {
+        return size.area() * get_pixel_size(format);
+    }
+
+    inline bool operator==(const TextureDescriptor &b) const {
+        return size == b.size && format == b.format;
+    }
 };
 
 class Texture {

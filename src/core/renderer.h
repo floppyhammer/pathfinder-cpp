@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include "../gpu/driver.h"
+#include "../gpu_mem/allocator.h"
 #include "data/data.h"
 #include "scene_builder.h"
 
@@ -50,6 +51,8 @@ protected:
 
     /// Uniform buffer containing some constants. Shared by D3D9 and D3D10.
     std::shared_ptr<Buffer> constants_ub{};
+
+    std::shared_ptr<GpuMemoryAllocator> allocator;
 };
 
 } // namespace Pathfinder

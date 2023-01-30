@@ -11,6 +11,8 @@
 namespace Pathfinder {
 
 Renderer::Renderer(const std::shared_ptr<Driver> &_driver) : driver(_driver) {
+    allocator = std::make_shared<GpuMemoryAllocator>(driver);
+
     // Uniform buffer for some constants.
     constants_ub = driver->create_buffer(
         {BufferType::Uniform, 8 * sizeof(float), MemoryProperty::HostVisibleAndCoherent, "Constants uniform buffer"});

@@ -4,7 +4,6 @@
 #include "../../gpu/buffer.h"
 #include "../../gpu/compute_pipeline.h"
 #include "../../gpu/descriptor_set.h"
-#include "../../gpu_mem/allocator.h"
 #include "../renderer.h"
 #include "../scene.h"
 #include "gpu_data.h"
@@ -201,8 +200,6 @@ private:
     uint32_t alpha_tile_count = 0;
 
     std::vector<TileBatchInfoD3D11> tile_batch_info;
-
-    std::shared_ptr<GpuMemoryAllocator> allocator;
 };
 
 } // namespace Pathfinder

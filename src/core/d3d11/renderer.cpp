@@ -141,8 +141,6 @@ RendererD3D11::RendererD3D11(const std::shared_ptr<Pathfinder::Driver> &driver) 
     // Unlike D3D9, we use RGBA8 instead of RGBA16F for the mask texture.
     mask_texture = driver->create_texture(
         {{MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT}, TextureFormat::Rgba8Unorm, "Mask texture"});
-
-    allocator = std::make_shared<GpuMemoryAllocator>(driver);
 }
 
 void RendererD3D11::set_up_pipelines() {
