@@ -39,6 +39,7 @@ struct TextureAllocation {
 
 struct FramebufferAllocation {
     std::shared_ptr<Framebuffer> framebuffer;
+    TextureDescriptor descriptor;
     std::string tag;
 };
 
@@ -69,13 +70,19 @@ public:
 
     uint64_t allocate_texture(Vec2I size, TextureFormat format, const std::string& tag);
 
+    uint64_t allocate_framebuffer(Vec2I size, TextureFormat format, const std::string& tag);
+
     std::shared_ptr<Buffer> get_general_buffer(uint64_t id);
 
     std::shared_ptr<Texture> get_texture(uint64_t id);
 
+    std::shared_ptr<Framebuffer> get_framebuffer(uint64_t id);
+
     void free_general_buffer(uint64_t id);
 
     void free_texture(uint64_t id);
+
+    void free_framebuffer(uint64_t id);
 
     void purge_if_needed();
 
@@ -93,6 +100,9 @@ private:
     uint64_t next_index_buffer_id = 0;
     uint64_t next_texture_id = 0;
     uint64_t next_framebuffer_id = 0;
+
+    // Framebuffers are pass dependent.
+    std::unordered_map<TextureFormat, std::shared_ptr<RenderPass>> render_pass_cache;
 
     // Statistic data.
     size_t bytes_committed = 0; // In-use objects.
