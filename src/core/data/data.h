@@ -138,7 +138,15 @@ struct Range {
 
     Range() = default;
 
-    Range(unsigned long long p_start, unsigned long long p_end) : start(p_start), end(p_end){};
+    Range(unsigned long long _start, unsigned long long _end) : start(_start), end(_end){};
+
+    unsigned long long length() const {
+        if (end < start) {
+            Logger::error("Smaller END than START in a Range!");
+        }
+
+        return end - start;
+    }
 };
 
 /// Only for draw paths. Not for clip paths.
