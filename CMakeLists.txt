@@ -69,7 +69,6 @@ if (BUILD_DEMO)
 
         add_subdirectory(demo/web)
     else ()
-        add_compile_definitions(_WIN32_WINNT=0x0502)
         add_subdirectory(external/glfw)
 
         add_subdirectory(demo/native)
