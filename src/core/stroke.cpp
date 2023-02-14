@@ -24,7 +24,9 @@ void ContourStrokeToFill::offset_forward() {
         auto segment = segments_iter.get_next();
 
         // Invalid segment.
-        if (segment.kind == SegmentKind::None) break;
+        if (segment.kind == SegmentKind::None) {
+            break;
+        }
 
         // FIXME(pcwalton): We negate the radius here so that round end caps can be drawn clockwise.
         // Of course, we should just implement anticlockwise arcs to begin with...
@@ -263,7 +265,9 @@ void Contour::push_arc_from_unit_chord(Transform2 &transform, LineSegmentF chord
 
         push_segment(segment, push_segment_flags);
 
-        if (last) break;
+        if (last) {
+            break;
+        }
 
         vector = vector.rotate_by(sweep_vector);
     }

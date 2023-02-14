@@ -50,7 +50,9 @@ std::vector<Segment> Contour::get_segments(bool force_closed) const {
     // Traverse curve/line segments.
     while (!segments_iter.is_at_end()) {
         auto segment = segments_iter.get_next(force_closed);
-        if (segment.kind == SegmentKind::None) break;
+        if (segment.kind == SegmentKind::None) {
+            break;
+        }
         segments.push_back(segment);
     }
 

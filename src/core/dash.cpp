@@ -16,7 +16,9 @@ DashState::DashState(const std::vector<float> &_dashes, float _offset) : dashes(
     current_dash_index = 0;
     while (current_dash_index < dashes.size()) {
         auto dash = dashes[current_dash_index];
-        if (_offset < dash) break;
+        if (_offset < dash) {
+            break;
+        }
 
         _offset -= dash;
         current_dash_index += 1;
@@ -74,7 +76,9 @@ void ContourDash::dash() {
         if (queued_segment_is_none) {
             if (!segments_iter.is_at_end()) {
                 queued_segment = segments_iter.get_next();
-                if (queued_segment.kind == SegmentKind::None) break;
+                if (queued_segment.kind == SegmentKind::None) {
+                    break;
+                }
                 queued_segment_is_none = false;
             } else {
                 break;
