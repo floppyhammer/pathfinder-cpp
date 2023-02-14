@@ -161,6 +161,11 @@ void SvgScene::load_from_memory(std::vector<char> bytes, Canvas &canvas) {
                     continue;
                 }
 
+                // If the path is closed, the last segment provided by NanoSVG is unnecessary.
+                if (nsvg_path->closed && point_index >= nsvg_path->npts - 6) {
+                    continue;
+                }
+
                 path.cubic_to(p[2], p[3], p[4], p[5], p[6], p[7]);
             }
 
