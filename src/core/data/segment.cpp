@@ -140,4 +140,16 @@ float Segment::arc_length() const {
     }
 }
 
+bool Segment::check_validity() const {
+    switch (kind) {
+        case SegmentKind::Line:
+            return baseline.check_validity();
+        case SegmentKind::Quadratic:
+        case SegmentKind::Cubic: {
+            return baseline.check_validity() && ctrl.check_validity();
+        }
+    }
+    return false;
+}
+
 } // namespace Pathfinder

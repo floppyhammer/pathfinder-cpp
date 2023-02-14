@@ -151,6 +151,8 @@ struct Segment {
 
     /// FIXME: Make this more accurate for curves.
     float arc_length() const;
+
+    bool check_validity() const;
 };
 
 } // namespace Pathfinder

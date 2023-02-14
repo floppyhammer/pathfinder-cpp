@@ -68,8 +68,8 @@ void OutlineStrokeToFill::offset() {
         // Scale the contour up, forming an outer contour.
         stroker.offset_forward();
 
-        // If closed (easy case), we can just use even-odd fill rule on the outer and inner contours to get the stroke
-        // fill.
+        // If closed (easy case), we can just use even-odd fill rule on the outer and inner contours
+        // to get the stroke fill.
         if (closed) {
             push_stroked_contour(new_contours, stroker, true);
             stroker = ContourStrokeToFill(contour, style.line_width * 0.5f, style.line_join, style.miter_limit);
@@ -99,6 +99,19 @@ void OutlineStrokeToFill::offset() {
 }
 
 Outline OutlineStrokeToFill::into_outline() const {
+    // Stroke->fill conversion isn't really robust, so here we do validations on the final output.
+    bool every_point_is_valid = true;
+    for (auto &contour : output.contours) {
+        for (auto &point : contour.points) {
+            if (std::isnan(point.x) || std::isnan(point.y)) {
+                every_point_is_valid = false;
+            }
+        }
+    }
+    if (!every_point_is_valid) {
+        Logger::error("Something went wrong during stroke->fill conversion!", "OutlineStrokeToFill");
+    }
+
     return output;
 }
 

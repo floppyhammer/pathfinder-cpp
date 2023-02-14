@@ -96,4 +96,13 @@ LineSegmentF LineSegmentF::offset(float distance) const {
     }
 }
 
+bool LineSegmentF::check_validity() const {
+    if (std::isnan(value.get<0>()) || std::isnan(value.get<1>()) || std::isnan(value.get<2>()) ||
+        std::isnan(value.get<3>())) {
+        Logger::error("NaN encountered!", "LineSegmentF");
+        return false;
+    }
+    return true;
+}
+
 } // namespace Pathfinder

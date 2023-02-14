@@ -527,6 +527,7 @@ Pattern Canvas::create_pattern_from_canvas(Canvas &canvas, const Transform2 &tra
 
     auto pattern = Pattern::from_render_target(render_target_id, subscene_size);
     pattern.apply_transform(transform);
+
     return pattern;
 }
 
@@ -555,7 +556,9 @@ void Path2d::cubic_to(float cx0, float cy0, float cx1, float cy1, float x, float
 }
 
 void Path2d::add_line(const Vec2F &start, const Vec2F &end) {
-    if (start == end) return;
+    if (start == end) {
+        return;
+    }
 
     move_to(start.x, start.y);
     line_to(end.x, end.y);
@@ -564,7 +567,9 @@ void Path2d::add_line(const Vec2F &start, const Vec2F &end) {
 const float CIRCLE_RATIO = 0.552284749831; // 4.0f * (sqrt(2.0f) - 1.0f) / 3.0f
 
 void Path2d::add_rect(const RectF &rect, float corner_radius) {
-    if (rect.size().x == 0 || rect.size().y == 0) return;
+    if (rect.size().x == 0 || rect.size().y == 0) {
+        return;
+    }
 
     if (corner_radius <= 0) {
         move_to(rect.min_x(), rect.min_y());

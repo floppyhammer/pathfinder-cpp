@@ -129,6 +129,12 @@ bool clip_line_segment_to_rect(LineSegmentF &line_segment, RectF rect) {
 /// The algorithm to step through tiles is Amanatides and Woo, "A Fast Voxel Traversal Algorithm for
 /// Ray Tracing" 1987: http://www.cse.yorku.ca/~amana/research/grid.pdf
 void process_line_segment(LineSegmentF line_segment, SceneBuilderD3D9 &scene_builder, ObjectBuilder &object_builder) {
+    // Validate the tile coordinates. This an attempt that tries to avoid an endless WHILE loop below.
+    if (line_segment.check_validity()) {
+        Logger::error("Invalid line segment!", "process_line_segment()");
+        abort();
+    }
+
     // Clip the line segment if it intersects the view box bounds.
     {
         // Clip by the view box.
