@@ -6,10 +6,9 @@
 #include <utility>
 #include <vector>
 
-#include "../common/math/basic.h"
-#include "../common/math/rect.h"
-#include "../common/math/vec2.h"
-#include "../gpu/driver.h"
+#include "../../common/math/basic.h"
+#include "../../common/math/rect.h"
+#include "../../common/math/vec2.h"
 
 namespace Pathfinder {
 
@@ -75,10 +74,7 @@ struct TexturePage {
     TexturePageAllocator allocator;
     bool is_new;
 
-    /// Actual GPU resource.
-    std::shared_ptr<Texture> texture;
-
-    TexturePage(TexturePageAllocator _allocator, bool _is_new, const std::shared_ptr<Driver>& driver);
+    TexturePage(TexturePageAllocator _allocator, bool _is_new) : allocator(_allocator), is_new(_is_new) {}
 };
 
 enum AllocationMode {
@@ -99,11 +95,9 @@ struct TextureAllocator {
     friend struct TexturePageIter;
 
 public:
-    explicit TextureAllocator(std::shared_ptr<Driver> _driver) : driver(std::move(_driver)){};
+    explicit TextureAllocator() = default;
 
 private:
-    std::shared_ptr<Driver> driver;
-
     std::vector<std::shared_ptr<TexturePage>> pages;
 
     TextureLocation allocate(Vec2I requested_size, AllocationMode mode);

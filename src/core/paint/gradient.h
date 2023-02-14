@@ -8,8 +8,8 @@
 
 #include "../../common/math/transform2.h"
 #include "../../gpu/driver.h"
-#include "../../gpu_mem/texture_allocator.h"
 #include "effects.h"
+#include "texture_allocator.h"
 
 namespace Pathfinder {
 
