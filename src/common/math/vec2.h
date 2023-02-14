@@ -5,6 +5,8 @@
 #include <iostream>
 #include <sstream>
 
+#include "../logger.h"
+
 #undef min
 #undef max
 
@@ -58,6 +60,10 @@ struct Vec2 {
     }
 
     inline Vec2 normalize() const {
+        if (length() == 0) {
+            Logger::error("Attempted to normalize a vector of zero length. This may indicate a bug in your code!",
+                          "Vec2");
+        }
         return *this / length();
     }
 

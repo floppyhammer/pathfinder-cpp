@@ -12,6 +12,11 @@ void Contour::push_segment(const Segment &segment, PushSegmentFlags _flags) {
         return;
     }
 
+    if (!segment.is_valid()) {
+        Logger::error("Attempted to push an invalid segment!", "Contour");
+        return;
+    }
+
     auto update_bounds = (_flags.value & PushSegmentFlags::UPDATE_BOUNDS) > 0x00;
 
     // Push the first on-curve point.

@@ -140,13 +140,13 @@ float Segment::arc_length() const {
     }
 }
 
-bool Segment::check_validity() const {
+bool Segment::is_valid() const {
     switch (kind) {
         case SegmentKind::Line:
-            return baseline.check_validity();
+            return baseline.is_valid();
         case SegmentKind::Quadratic:
         case SegmentKind::Cubic: {
-            return baseline.check_validity() && ctrl.check_validity();
+            return baseline.is_valid() && ctrl.is_valid();
         }
     }
     return false;

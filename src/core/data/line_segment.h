@@ -85,7 +85,7 @@ struct LineSegmentF {
 
     LineSegmentF offset(float distance) const;
 
-    bool check_validity() const;
+    bool is_valid() const;
 
     inline LineSegmentF operator+(const Vec2F &v) const {
         return {from() + v, to() + v};

@@ -130,7 +130,7 @@ bool clip_line_segment_to_rect(LineSegmentF &line_segment, RectF rect) {
 /// Ray Tracing" 1987: http://www.cse.yorku.ca/~amana/research/grid.pdf
 void process_line_segment(LineSegmentF line_segment, SceneBuilderD3D9 &scene_builder, ObjectBuilder &object_builder) {
     // Validate the tile coordinates. This an attempt that tries to avoid an endless WHILE loop below.
-    if (line_segment.check_validity()) {
+    if (line_segment.is_valid()) {
         Logger::error("Invalid line segment!", "process_line_segment()");
         abort();
     }

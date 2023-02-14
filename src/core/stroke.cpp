@@ -109,7 +109,7 @@ Outline OutlineStrokeToFill::into_outline() const {
         }
     }
     if (!every_point_is_valid) {
-        Logger::error("Something went wrong during stroke->fill conversion!", "OutlineStrokeToFill");
+        Logger::error("Something went wrong during the stroke->fill conversion!", "OutlineStrokeToFill");
     }
 
     return output;
@@ -220,19 +220,21 @@ void Contour::add_join(float distance, LineJoin join, Vec2F join_point, LineSegm
             break;
         case LineJoin::Miter: {
             float prev_tangent_t;
-            auto valid = prev_tangent.intersection_t(next_tangent, prev_tangent_t);
-            if (!valid) return;
+            bool valid = prev_tangent.intersection_t(next_tangent, prev_tangent_t);
+            if (valid) {
+                if (prev_tangent_t < -EPSILON) {
+                    return;
+                }
 
-            if (prev_tangent_t < -EPSILON) {
-                return;
-            }
+                auto miter_endpoint = prev_tangent.sample(prev_tangent_t);
+                auto threshold = miter_limit * distance;
 
-            auto miter_endpoint = prev_tangent.sample(prev_tangent_t);
-            auto threshold = miter_limit * distance;
-            if ((miter_endpoint - join_point).square_length() > threshold * threshold) {
-                return;
+                if ((miter_endpoint - join_point).square_length() > threshold * threshold) {
+                    return;
+                }
+
+                push_endpoint(miter_endpoint);
             }
-            push_endpoint(miter_endpoint);
         } break;
         case LineJoin::Round: {
             auto scale = std::abs(distance);
