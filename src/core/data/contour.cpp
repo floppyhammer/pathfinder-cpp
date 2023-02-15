@@ -152,10 +152,15 @@ Segment SegmentsIter::get_next(bool force_closed) {
     } else { // Reach end.
         // Close contour.
         if ((closed || force_closed) && points.size() > 1) {
-            segment.baseline.set_from(points.back());
-            segment.baseline.set_to(points.front());
-            segment.kind = SegmentKind::Line;
-            segment.flags = SegmentFlags::LAST_IN_CONTOUR;
+            // If the start and end point of the contour are already the same,
+            // there's no need to add an extra line connecting them.
+            // This fixes incorrect line cap.
+            if (!points.front().is_close(points.back(), 1e-4)) {
+                segment.baseline.set_from(points.back());
+                segment.baseline.set_to(points.front());
+                segment.kind = SegmentKind::Line;
+                segment.flags = SegmentFlags::LAST_IN_CONTOUR;
+            }
         }
 
         has_next = false;

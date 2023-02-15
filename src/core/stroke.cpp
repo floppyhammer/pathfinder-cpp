@@ -26,7 +26,7 @@ void ContourStrokeToFill::offset_forward() {
         auto segment = segments_iter.get_next();
         segment_index++;
 
-        // Invalid segment.
+        // An invalid segment indicates the iterator has already ended.
         if (segment.kind == SegmentKind::None) {
             break;
         }
