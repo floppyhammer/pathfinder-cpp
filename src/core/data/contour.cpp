@@ -53,7 +53,7 @@ std::vector<Segment> Contour::get_segments(bool force_closed) const {
     auto segments_iter = SegmentsIter(points, flags, closed);
 
     // Traverse curve/line segments.
-    while (!segments_iter.is_at_end()) {
+    while (!segments_iter.has_no_next()) {
         auto segment = segments_iter.get_next(force_closed);
         if (segment.kind == SegmentKind::None) {
             break;
@@ -164,11 +164,7 @@ Segment SegmentsIter::get_next(bool force_closed) {
     return segment;
 }
 
-bool SegmentsIter::is_at_start() const {
-    return head == 0;
-}
-
-bool SegmentsIter::is_at_end() const {
+bool SegmentsIter::has_no_next() const {
     return !has_next;
 }
 

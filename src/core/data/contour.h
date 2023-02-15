@@ -84,8 +84,7 @@ public:
     /// Get next segment in the contour.
     Segment get_next(bool force_closed = false);
 
-    bool is_at_start() const;
-    bool is_at_end() const;
+    bool has_no_next() const;
 
 private:
     /// Contour data.

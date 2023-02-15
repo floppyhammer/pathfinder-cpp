@@ -74,7 +74,7 @@ void ContourDash::dash() {
     // Traverse curve/line segments.
     while (true) {
         if (queued_segment_is_none) {
-            if (!segments_iter.is_at_end()) {
+            if (!segments_iter.has_no_next()) {
                 queued_segment = segments_iter.get_next();
                 if (queued_segment.kind == SegmentKind::None) {
                     break;

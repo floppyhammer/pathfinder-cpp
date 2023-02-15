@@ -18,10 +18,13 @@ ContourStrokeToFill::ContourStrokeToFill(Contour _input, float _radius, LineJoin
 void ContourStrokeToFill::offset_forward() {
     auto segments_iter = SegmentsIter(input.points, input.flags, input.closed);
 
+    int32_t segment_index = -1;
+
     // Traverse curve/line segments.
-    while (!segments_iter.is_at_end()) {
+    while (!segments_iter.has_no_next()) {
         // Get next segment in the contour.
         auto segment = segments_iter.get_next();
+        segment_index++;
 
         // Invalid segment.
         if (segment.kind == SegmentKind::None) {
@@ -30,7 +33,7 @@ void ContourStrokeToFill::offset_forward() {
 
         // FIXME(pcwalton): We negate the radius here so that round end caps can be drawn clockwise.
         // Of course, we should just implement anticlockwise arcs to begin with...
-        LineJoin line_join = segments_iter.is_at_start() ? LineJoin::Bevel : join;
+        LineJoin line_join = segment_index == 0 ? LineJoin::Bevel : join;
 
         segment.offset(-radius, line_join, join_miter_limit, output);
     }
@@ -209,6 +212,7 @@ void Contour::add_join(float distance, LineJoin join, Vec2F join_point, LineSegm
     auto p0 = position_of_last(2);
     auto p1 = position_of_last(1);
 
+    // The tangent vector at the current end of the contour, which points outward.
     auto prev_tangent = LineSegmentF(p0, p1);
 
     if (prev_tangent.square_length() < EPSILON || next_tangent.square_length() < EPSILON) {
@@ -237,11 +241,17 @@ void Contour::add_join(float distance, LineJoin join, Vec2F join_point, LineSegm
             }
         } break;
         case LineJoin::Round: {
+            if ((prev_tangent.to() - join_point).square_length() == 0 ||
+                (next_tangent.to() - join_point).square_length() == 0) {
+                return;
+            }
+
             auto scale = std::abs(distance);
             auto transform = Transform2::from_scale(Vec2F(scale)).translate(join_point);
             auto chord_from = (prev_tangent.to() - join_point).normalize();
             auto chord_to = (next_tangent.to() - join_point).normalize();
             auto chord = LineSegmentF(chord_from, chord_to);
+
             push_arc_from_unit_chord(transform, chord, ArcDirection::CW);
         } break;
     }
@@ -408,6 +418,7 @@ void Segment::add_to_contour(float distance,
 
         // NB: If you change the representation of quadratic curves,
         // you will need to change this.
+        // Both quadratic and cubic curves use ctrl.from(), as the tangent vector points to the FROM point.
         Vec2F p4 = is_line() ? baseline.to() : ctrl.from();
 
         contour.add_join(distance, join, join_point, LineSegmentF(p4, p3), join_miter_limit);
@@ -421,11 +432,14 @@ void Segment::add_to_contour(float distance,
 
 void Segment::offset(float distance, LineJoin join, float join_miter_limit, Contour &contour) const {
     auto join_point = baseline.from();
+
+    // If the segment is short enough.
     if (baseline.square_length() < STROKE_TOL * STROKE_TOL) {
         add_to_contour(distance, join, join_point, join_miter_limit, contour);
         return;
     }
 
+    // Make a try.
     auto candidate = offset_once(distance);
     if (error_is_within_tolerance(candidate, distance)) {
         candidate.add_to_contour(distance, join, join_point, join_miter_limit, contour);

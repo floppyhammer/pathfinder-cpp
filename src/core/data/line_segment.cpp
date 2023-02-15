@@ -72,7 +72,7 @@ void LineSegmentF::set_to(const Vec2F &point) {
 }
 
 float LineSegmentF::square_length() const {
-    return (to() - from()).square_length();
+    return vector().square_length();
 }
 
 bool LineSegmentF::intersection_t(const LineSegmentF &other, float &output) const {

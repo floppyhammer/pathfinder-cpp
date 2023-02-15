@@ -76,6 +76,13 @@ struct Segment {
                         float join_miter_limit,
                         Contour &contour) const;
 
+    /**
+     * Offset segment by a distance.
+     * @param distance Distance to offset in normal direction. Negative is outward and positive is inward.
+     * @param join Join type.
+     * @param join_miter_limit Only for miter join.
+     * @param contour Target contour to add new segment.
+     */
     void offset(float distance, LineJoin join, float join_miter_limit, Contour &contour) const;
 
     /**
