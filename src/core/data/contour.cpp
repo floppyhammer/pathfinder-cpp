@@ -82,8 +82,8 @@ void Contour::push_endpoint(const Vec2F &to) {
     push_point(to, PointFlag::ON_CURVE_POINT, true);
 }
 
-void Contour::push_quadratic(const Vec2F &ctrl0, const Vec2F &to) {
-    push_point(ctrl0, PointFlag::CONTROL_POINT_0, true);
+void Contour::push_quadratic(const Vec2F &ctrl, const Vec2F &to) {
+    push_point(ctrl, PointFlag::CONTROL_POINT_0, true);
     push_point(to, PointFlag::ON_CURVE_POINT, true);
 }
 

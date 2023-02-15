@@ -156,14 +156,6 @@ void SvgScene::load_from_memory(std::vector<char> bytes, Canvas &canvas) {
                 // * 2 because a point has x and y components.
                 float *p = &nsvg_path->pts[point_index * 2];
 
-                float point_position_tol = 1e-4;
-
-                // Skip segments with the exactly same base and control points.
-                if (is_close(p[2], p[4], point_position_tol) && is_close(p[4], p[6], point_position_tol) &&
-                    is_close(p[3], p[5], point_position_tol) && is_close(p[5], p[7], point_position_tol)) {
-                    continue;
-                }
-
                 path.cubic_to(p[2], p[3], p[4], p[5], p[6], p[7]);
             }
 

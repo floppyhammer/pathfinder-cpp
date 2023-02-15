@@ -11,6 +11,8 @@
 
 namespace Pathfinder {
 
+const float POINT_POSITION_TOL = 1e-4;
+
 struct ShadowBlurRenderTargetInfo {
     /// Render target ids.
     RenderTargetId id_x;
@@ -548,10 +550,45 @@ void Path2d::line_to(float x, float y) {
 }
 
 void Path2d::quadratic_to(float cx, float cy, float x, float y) {
-    current_contour.push_quadratic({cx, cy}, {x, y});
+    Vec2F &point0 = current_contour.points.back();
+    Vec2F ctrl = {cx, cy};
+    Vec2F point1 = {x, y};
+
+    // Degenerated into a line.
+    if (point0.is_close(ctrl, POINT_POSITION_TOL) || point1.is_close(ctrl, POINT_POSITION_TOL)) {
+        current_contour.push_endpoint(point1);
+    }
+
+    current_contour.push_quadratic(ctrl, point1);
 }
 
 void Path2d::cubic_to(float cx0, float cy0, float cx1, float cy1, float x, float y) {
+    Vec2F &point0 = current_contour.points.back();
+    Vec2F ctrl0 = {cx0, cy0};
+    Vec2F ctrl1 = {cx1, cy1};
+    Vec2F point1 = {x, y};
+
+    // The degeneration into lower-level curves are to fix incorrect line caps.
+    if (ctrl0.is_close(ctrl1, POINT_POSITION_TOL) && ctrl1.is_close(point1, POINT_POSITION_TOL)) {
+        // No point to add the exactly same on-curve and control points.
+        if (point0.is_close(ctrl0, POINT_POSITION_TOL)) {
+            return;
+        }
+
+        // Degenerated into a line.
+        current_contour.push_endpoint(point1);
+    }
+
+    // Degenerated into a quadratic curve.
+    if (point0.is_close(ctrl0, POINT_POSITION_TOL)) {
+        current_contour.push_quadratic(ctrl1, point1);
+        return;
+    }
+    if (point1.is_close(ctrl1, POINT_POSITION_TOL)) {
+        current_contour.push_quadratic(ctrl0, point1);
+        return;
+    }
+
     current_contour.push_cubic({cx0, cy0}, {cx1, cy1}, {x, y});
 }
 
