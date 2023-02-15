@@ -47,6 +47,10 @@ inline int alignup_i32(int32_t a, int32_t b) {
     return (a + b - 1) / b;
 }
 
+inline bool is_close(float a, float b, float tol) {
+    return std::abs(a - b) < tol;
+}
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_BASIC_MATH_H
