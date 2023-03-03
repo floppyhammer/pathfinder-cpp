@@ -86,8 +86,6 @@ public:
     /// Clears the current canvas.
     void clear();
 
-    void set_new_dst_texture(const Vec2I &size);
-
     void set_dst_texture(const std::shared_ptr<Texture> &new_dst_texture);
 
     std::shared_ptr<Texture> get_dst_texture();

@@ -178,6 +178,8 @@ inline bool blend_mode_occludes_backdrop(BlendMode blend_mode) {
         case BlendMode::Luminosity: {
             return false;
         }
+        default:
+            abort();
     }
 }
 

@@ -460,12 +460,6 @@ std::shared_ptr<Texture> Canvas::get_dst_texture() {
     return renderer->get_dest_texture();
 }
 
-void Canvas::set_new_dst_texture(const Vec2I &size) {
-    set_dst_texture(RenderTarget(driver, size, "Dest render target").framebuffer->get_texture());
-
-    Logger::info("Set new dst texture with size " + size.to_string(), "Canvas");
-}
-
 void Canvas::save_state() {
     saved_states.push_back(current_state);
 }

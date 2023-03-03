@@ -24,10 +24,13 @@ int main() {
 
     // Create app.
     App app(driver, window_size, load_file_as_bytes("../assets/features.svg"), load_file_as_bytes("../assets/sea.png"));
+    auto dst_texture = driver->create_texture({window_size, TextureFormat::Rgba8Unorm, "dst texture"});
+
+    app.canvas->set_dst_texture(dst_texture);
 
     // Set viewport texture to a texture rect.
     auto texture_rect = std::make_shared<TextureRect>(driver, swap_chain->get_render_pass(), window_size.to_f32());
-    texture_rect->set_texture(app.canvas->get_dst_texture());
+    texture_rect->set_texture(dst_texture);
 
     // Main loop.
     while (!window->should_close()) {
@@ -39,7 +42,11 @@ int main() {
         }
 
         if (window->get_size() != app.canvas->get_size() && window->get_size().area() != 0) {
-            app.when_window_resized(window->get_size());
+            auto new_size = window->get_size();
+            dst_texture = driver->create_texture({new_size, TextureFormat::Rgba8Unorm, "dst texture"});
+
+            app.canvas->set_dst_texture(dst_texture);
+            texture_rect->set_texture(dst_texture);
         }
 
         app.update();

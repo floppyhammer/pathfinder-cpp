@@ -20,6 +20,13 @@ public:
     // Actual deconstruction is done by itself.
     ~TextureVk();
 
+    static std::shared_ptr<TextureVk> from_wrapping(const TextureDescriptor& _desc,
+                                                    VkImage image,
+                                                    VkDeviceMemory image_memory,
+                                                    VkImageView image_view,
+                                                    VkSampler sampler,
+                                                    TextureLayout layout);
+
     VkImage get_image() const;
 
     VkImageView get_image_view() const;

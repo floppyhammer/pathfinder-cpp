@@ -199,6 +199,8 @@ inline uint32_t get_pixel_size(TextureFormat format) {
         case TextureFormat::Rgba16Float: {
             return 8;
         }
+        default:
+            abort();
     }
 }
 
@@ -213,6 +215,8 @@ inline DataType texture_format_to_data_type(TextureFormat format) {
         case TextureFormat::Rgba16Float: {
             return DataType::f16;
         }
+        default:
+            abort();
     }
 }
 

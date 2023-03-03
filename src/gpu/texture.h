@@ -37,6 +37,8 @@ public:
 
 protected:
     TextureDescriptor desc;
+
+    bool resource_ownership = true;
 };
 
 } // namespace Pathfinder
