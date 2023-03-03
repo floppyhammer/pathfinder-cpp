@@ -41,7 +41,7 @@ struct DrawPath {
     FillRule fill_rule = FillRule::Winding;
 
     /// How to blend this shape with everything below it.
-    BlendMode blend_mode{};
+    BlendMode blend_mode = BlendMode::SrcOver;
 };
 
 /// A thin wrapper over Outline, which describes a path that can be used to clip other paths.

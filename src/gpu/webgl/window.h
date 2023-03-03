@@ -2,7 +2,6 @@
 #define PATHFINDER_GPU_WINDOW_WEBGL_H
 
 #include <iostream>
-#include <optional>
 #include <vector>
 
 #include "../../common/global_macros.h"

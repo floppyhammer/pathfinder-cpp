@@ -36,7 +36,7 @@ struct State {
     Vec2F shadow_offset;
 
     float global_alpha = 1;
-    BlendMode global_composite_operation;
+    BlendMode global_composite_operation = BlendMode::SrcOver;
 
     // The clip path is scene-dependent, so remember to clear it when switching scene.
     std::shared_ptr<uint32_t> clip_path; // Optional
