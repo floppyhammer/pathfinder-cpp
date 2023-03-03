@@ -192,8 +192,6 @@ public:
     /// Returns the inner scene, replacing it with a blank scene.
     std::shared_ptr<Scene> take_scene();
 
-    std::shared_ptr<Scene> replace_scene(const std::shared_ptr<Scene> &new_scene);
-
     // Canvas state
 
     void save_state();
