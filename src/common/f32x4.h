@@ -1,6 +1,8 @@
 #ifndef PATHFINDER_F32X4_H
 #define PATHFINDER_F32X4_H
 
+#include <algorithm>
+
 #include "global_macros.h"
 #include "logger.h"
 #include "math/vec2.h"
@@ -10,7 +12,7 @@
 
 #ifdef PATHFINDER_ENABLE_SIMD
     #ifdef __ANDROID__
-        // A C/C++ header file that converts Intel SSE intrinsics to Arm/Aarch64 NEON intrinsics.
+        // Converts Intel SSE intrinsics to Arm/Aarch64 NEON intrinsics.
         #include <sse2neon.h>
     #else
         #include <emmintrin.h>
