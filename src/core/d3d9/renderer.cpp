@@ -78,6 +78,10 @@ void RendererD3D9::set_dest_texture(const std::shared_ptr<Texture> &texture) {
 }
 
 std::shared_ptr<Texture> RendererD3D9::get_dest_texture() {
+    // In case there's no destination texture set before.
+    if (!dest_framebuffer) {
+        return nullptr;
+    }
     return dest_framebuffer->get_texture();
 }
 
