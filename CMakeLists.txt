@@ -10,14 +10,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
 option(VULKAN_SUPPORT "Use Vulkan instead of OpenGL")
 option(BUILD_DEMO "Build demo")
-option(BUILD_FOR_WEB "Build for web")
 
 set(VULKAN_SUPPORT ON)
 set(BUILD_DEMO OFF)
-set(BUILD_FOR_WEB OFF)
 
 # No Vulkan support for web.
-if (BUILD_FOR_WEB)
+if (EMSCRIPTEN)
     message("Will build for web")
     set(VULKAN_SUPPORT OFF)
 else ()
@@ -57,7 +55,7 @@ add_subdirectory(src)
 if (BUILD_DEMO)
     message("Will build demo")
 
-    if (BUILD_FOR_WEB)
+    if (EMSCRIPTEN)
         # Set output directory to the web demo, so we don't have to copy output files manually.
         set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/demo/web")
 
