@@ -4,7 +4,8 @@ This is a C++ port of [Pathfinder 3](https://github.com/servo/pathfinder) with a
 
 ## Requirements
 
-* `D3D9` Vulkan / OpenGL 3.3+ / OpenGL ES 3.0+.
+* C++ 14 Standard.
+* `D3D9` Vulkan / OpenGL 3.3+ / OpenGL ES 3.0+ / WebGL 2.
 * `D3D11` Vulkan / OpenGL 4.3+ / OpenGL ES 3.1+.
 
 ## Run demos
@@ -26,22 +27,20 @@ This is a C++ port of [Pathfinder 3](https://github.com/servo/pathfinder) with a
 * Open `demo/android-gles` or `demo/android-vulkan` in Android Studio.
 * Build and run.
 
-### Web (for Windows)
+### Web
 
-1. Change shader version to `#version 300 es` in all related shaders.
+1. Have the emscripten environment set up.
 
-2. Regenerate shaders.
-
-3. Have the emscripten environment set up.
-
-4. Convert the CMake project to a makefile project using CMake GUI.
+2. Convert the CMake project to a makefile project using CMake GUI.
     * Locate the source code.
     * Configurate.
-    * Specify `MinGW Makefiles` as the generator.
+    * Specify `MinGW Makefiles` (Windows) or `Unix Makefiles` (Linux) as the generator.
     * Specify toolchain file for cross-compiling.
       `[path_to_your_emsdk]/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake`
     * Generate.
 
-5. Go to the folder containing the generated makefile.
-   `[path_to_your_emsdk]/emsdk/emsdk activate latest`
-   `[path_to_your_emsdk]/emsdk/upstream/emscripten/emmake make`
+3. Go to the folder containing the generated makefile. Build with:
+
+   `emmake make`
+
+4. Go to `demo/web` to serve a website.

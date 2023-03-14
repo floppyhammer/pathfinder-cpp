@@ -52,9 +52,13 @@ int main() {
     // Create app.
     app = new App(driver, window_size, {}, {});
 
+    auto dst_texture = driver->create_texture({window_size, TextureFormat::Rgba8Unorm, "dst texture"});
+
+    app->canvas->set_dst_texture(dst_texture);
+
     // Set viewport texture to a texture rect.
     texture_rect = new TextureRect(driver, swap_chain->get_render_pass(), window_size.to_f32());
-    texture_rect->set_texture(app->canvas->get_dst_texture());
+    texture_rect->set_texture(dst_texture);
 
     emscripten_set_main_loop_arg(render, swap_chain.get(), 0, 1);
 

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16.1)
 
 project(pathfinder)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
 # Set binary output directory.
 # Using CMAKE_CURRENT_SOURCE_DIR is necessary.
@@ -11,7 +11,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 option(VULKAN_SUPPORT "Use Vulkan instead of OpenGL")
 option(BUILD_DEMO "Build demo")
 
-set(VULKAN_SUPPORT ON)
+set(VULKAN_SUPPORT OFF)
 set(BUILD_DEMO OFF)
 
 # No Vulkan support for web.
@@ -59,11 +59,10 @@ if (BUILD_DEMO)
         # Set output directory to the web demo, so we don't have to copy output files manually.
         set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/demo/web")
 
-        string(APPEND CMAKE_CXX_FLAGS " -s USE_GLFW=3 -s USE_WEBGL2=1 -s FULL_ES3=1")
-        string(APPEND CMAKE_CXX_FLAGS " -s WASM_BIGINT")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s USE_GLFW=3 -s USE_WEBGL2=1 -s FULL_ES3=1")
 
         # For debugging.
-        string(APPEND CMAKE_CXX_FLAGS " -gsource-map -s ASSERTIONS=2 -s SAFE_HEAP=1 -s STACK_OVERFLOW_CHECK=1 --source-map-base http://127.0.0.1:8000/")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -gsource-map -s ASSERTIONS=2 -s SAFE_HEAP=1 -s STACK_OVERFLOW_CHECK=1 --source-map-base http://127.0.0.1:8000/")
 
         add_subdirectory(demo/web)
     else ()

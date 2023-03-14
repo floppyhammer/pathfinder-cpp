@@ -1,5 +1,7 @@
 #include "program.h"
 
+#include <regex>
+
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
@@ -54,6 +56,12 @@ RasterProgram::RasterProgram(const std::vector<char> &vertex_code, const std::ve
     /// Has to pass string.c_str(), as vector<char>.data() doesn't work.
     std::string vert_string = {vertex_code.begin(), vertex_code.end()};
     std::string frag_string = {fragment_code.begin(), fragment_code.end()};
+
+    // WebGL only supports ES3.0 shaders.
+    #ifdef __EMSCRIPTEN__
+    vert_string = std::regex_replace(vert_string, std::regex("#version 310 es"), "#version 300 es");
+    frag_string = std::regex_replace(frag_string, std::regex("#version 310 es"), "#version 300 es");
+    #endif
 
     compile(vert_string.c_str(), frag_string.c_str());
 }

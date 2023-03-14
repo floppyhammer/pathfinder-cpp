@@ -26,10 +26,12 @@ App::App(const std::shared_ptr<Driver> &_driver,
     if (true) {
         Image image;
         auto image_buffer = ImageBuffer::from_memory(img_input, false);
-        image.size = image_buffer->get_size();
-        image.pixels = image_buffer->to_rgba_pixels();
-        Vec2F pos = {100, 200};
-        canvas->draw_image(image, RectF(pos, pos + image.size.to_f32()));
+        if (image_buffer) {
+            image.size = image_buffer->get_size();
+            image.pixels = image_buffer->to_rgba_pixels();
+            Vec2F pos = {100, 200};
+            canvas->draw_image(image, RectF(pos, pos + image.size.to_f32()));
+        }
     }
 
     // TEST: Minimal path.
