@@ -168,7 +168,7 @@ vector<DrawTileBatchD3D11> build_tile_batches_for_draw_path_display_item(
             draw_tile_batch = std::make_shared<DrawTileBatchD3D11>();
 
             draw_tile_batch->tile_batch_data = TileBatchDataD3D11(next_batch_id, PathSource::Draw);
-            draw_tile_batch->metadata_texture = scene.palette.metadata_texture;
+            draw_tile_batch->metadata_texture = scene.palette.get_metadata_texture();
             draw_tile_batch->tile_batch_data.prepare_info.transform = transform;
             draw_tile_batch->color_texture = draw_path->color_texture;
 

@@ -59,7 +59,7 @@ struct PatternSource {
         Image,
         /// GPU framebuffer.
         RenderTarget,
-    } type = Type::RenderTarget;
+    } type = Type::Image;
 
     /// A image whose pixels are stored in CPU memory.
     Image image;
@@ -97,6 +97,7 @@ struct PatternFlags {
 struct Pattern {
     PatternSource source;
     Transform2 transform;
+
     /// (Optional) A pattern doesn't necessarily need a filter.
     std::shared_ptr<PatternFilter> filter;
     PatternFlags flags;

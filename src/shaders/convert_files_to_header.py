@@ -9,8 +9,6 @@ for current_dir, dir_list, file_list in os.walk(r"./"):
         if not file_name.endswith("." + target_extension):
             continue
 
-        print("Converting file: " + current_dir + "/" + file_name)
-
         base_name = os.path.splitext(file_name)[0]
         base_name = base_name.replace(".", "_")
         base_name = base_name.replace("-", "_")
@@ -36,4 +34,4 @@ for current_dir, dir_list, file_list in os.walk(r"./"):
         dst_stream.write("}\n\n#endif //PATHFINDER_RESOURCE_" + base_name.upper() + "_H\n")
         dst_stream.close()
 
-        print("Converted to: " + current_dir + "/" + header_file_name + "\n")
+        print("Converted " + file_name + " to " + header_file_name)

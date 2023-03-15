@@ -1,5 +1,4 @@
 #version 430
-//#version 310 es
 
 // Assigns microlines to tiles. Generate fills used in fill.comp.
 

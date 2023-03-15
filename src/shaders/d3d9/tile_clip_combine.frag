@@ -1,7 +1,4 @@
 #version 310 es
-//#version 300 es (For GLES & WebGL)
-//#version 330 (For GL)
-//#version 310 es (For Vulkan)
 
 // pathfinder/shaders/tile_clip_combine.fs.glsl
 //

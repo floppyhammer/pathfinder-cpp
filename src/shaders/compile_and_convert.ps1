@@ -1,3 +1,5 @@
+Remove-Item -Path "generated" -Recurse
+
 New-Item -Path "generated" -ItemType Directory
 
 New-Variable -Name "GLSLC" -Visibility Public -Value "$env:VULKAN_SDK/Bin/glslc.exe"

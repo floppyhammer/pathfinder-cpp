@@ -210,8 +210,8 @@ RenderTargetId Palette::push_render_target(const RenderTarget &render_target) {
     return {scene_id, id};
 }
 
-RenderTarget Palette::get_render_target(RenderTargetId id) const {
-    return render_targets[id.render_target];
+RenderTarget Palette::get_render_target(RenderTargetId render_target_id) const {
+    return render_targets[render_target_id.render_target];
 }
 
 std::vector<PaintMetadata> Palette::build_paint_info(const std::shared_ptr<Driver> &driver) {
@@ -236,15 +236,15 @@ std::vector<PaintMetadata> Palette::build_paint_info(const std::shared_ptr<Drive
     return paint_metadata;
 }
 
-std::vector<TextureMetadataEntry> Palette::create_texture_metadata(const std::vector<PaintMetadata> &_paint_metadata) {
+std::vector<TextureMetadataEntry> Palette::create_texture_metadata(const std::vector<PaintMetadata> &paint_metadata) {
     std::vector<TextureMetadataEntry> texture_metadata;
-    texture_metadata.reserve(_paint_metadata.size());
+    texture_metadata.reserve(paint_metadata.size());
 
-    for (const auto &paint_metadata : _paint_metadata) {
+    for (const auto &metadata : paint_metadata) {
         TextureMetadataEntry entry;
 
-        if (paint_metadata.color_texture_metadata) {
-            entry.color_transform = paint_metadata.color_texture_metadata->transform;
+        if (metadata.color_texture_metadata) {
+            entry.color_transform = metadata.color_texture_metadata->transform;
 
             // Changed from SrcIn to DestIn to get pure shadow.
             entry.color_combine_mode = ColorCombineMode::SrcIn;
@@ -253,9 +253,9 @@ std::vector<TextureMetadataEntry> Palette::create_texture_metadata(const std::ve
             entry.color_combine_mode = ColorCombineMode::None;
         }
 
-        entry.base_color = paint_metadata.base_color;
-        entry.filter = paint_metadata.filter();
-        entry.blend_mode = paint_metadata.blend_mode;
+        entry.base_color = metadata.base_color;
+        entry.filter = metadata.filter();
+        entry.blend_mode = metadata.blend_mode;
 
         texture_metadata.push_back(entry);
     }
@@ -509,6 +509,10 @@ MergedPaletteInfo Palette::append_palette(const Palette &palette) {
     }
 
     return {render_target_mapping, paint_mapping};
+}
+
+std::shared_ptr<Texture> Palette::get_metadata_texture() const {
+    return metadata_texture;
 }
 
 } // namespace Pathfinder

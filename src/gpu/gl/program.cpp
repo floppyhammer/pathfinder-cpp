@@ -57,8 +57,7 @@ RasterProgram::RasterProgram(const std::vector<char> &vertex_code, const std::ve
     std::string vert_string = {vertex_code.begin(), vertex_code.end()};
     std::string frag_string = {fragment_code.begin(), fragment_code.end()};
 
-    // WebGL only supports ES3.0 shaders.
-    #ifdef __EMSCRIPTEN__
+    #ifdef PATHFINDER_MINIMUM_SHADER_VERSION_SUPPORT
     vert_string = std::regex_replace(vert_string, std::regex("#version 310 es"), "#version 300 es");
     frag_string = std::regex_replace(frag_string, std::regex("#version 310 es"), "#version 300 es");
     #endif

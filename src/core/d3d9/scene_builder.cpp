@@ -50,7 +50,7 @@ vector<DrawTileBatchD3D9> build_tile_batches_for_draw_path_display_item(const Sc
             auto tile_bounds = round_rect_out_to_tile_bounds(scene.get_view_box());
 
             draw_tile_batch->z_buffer_data = DenseTileMap<uint32_t>::z_builder(tile_bounds);
-            draw_tile_batch->metadata_texture = scene.palette.metadata_texture;
+            draw_tile_batch->metadata_texture = scene.palette.get_metadata_texture();
             draw_tile_batch->color_texture = draw_path.color_texture;
         }
 
