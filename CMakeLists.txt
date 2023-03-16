@@ -16,7 +16,7 @@ set(BUILD_DEMO OFF)
 
 # No Vulkan support for web.
 if (EMSCRIPTEN)
-    message("Will build for web")
+    message("Pathfinder will build for web")
     set(VULKAN_SUPPORT OFF)
 else ()
     # Include GLFW headers.
@@ -25,7 +25,7 @@ else ()
 endif ()
 
 if (VULKAN_SUPPORT)
-    message("Will use Vulkan")
+    message("Pathfinder will use Vulkan")
 
     add_compile_definitions(PATHFINDER_USE_VULKAN)
 
@@ -42,7 +42,7 @@ if (VULKAN_SUPPORT)
     # We need to include Vulkan headers manually because of the above reason.
     include_directories(${Vulkan_INCLUDE_DIRS})
 else ()
-    message("Will use OpenGL")
+    message("Pathfinder will use OpenGL")
 endif ()
 
 # Include external and third_party headers.
@@ -53,7 +53,7 @@ add_subdirectory(src)
 
 # Add demo.
 if (BUILD_DEMO)
-    message("Will build demo")
+    message("Pathfinder will build demo")
 
     if (EMSCRIPTEN)
         # Set output directory to the web demo, so we don't have to copy output files manually.
