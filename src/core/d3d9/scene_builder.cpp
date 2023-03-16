@@ -136,6 +136,21 @@ vector<BuiltDrawPath> SceneBuilderD3D9::build_paths_on_cpu(vector<PaintMetadata>
     auto clip_paths_count = scene->clip_paths.size();
     auto view_box = scene->get_view_box();
 
+#ifdef __EMSCRIPTEN__
+    std::vector<BuiltPath> built_clip_paths(clip_paths_count);
+
+    for (uint32_t path_index = 0; path_index < clip_paths_count; path_index++) {
+        built_clip_paths[path_index] = build_clip_path_on_cpu(PathBuildParams{path_index, view_box, scene});
+    }
+
+    std::vector<BuiltDrawPath> built_draw_paths(draw_paths_count);
+
+    for (uint32_t path_index = 0; path_index < draw_paths_count; path_index++) {
+        auto params = DrawPathBuildParams({path_index, view_box, scene}, paint_metadata, built_clip_paths);
+
+        built_draw_paths[path_index] = build_draw_path_on_cpu(params);
+    }
+#else
     // We need to build clip paths first.
     std::vector<BuiltPath> built_clip_paths(clip_paths_count);
     {
@@ -183,6 +198,7 @@ vector<BuiltDrawPath> SceneBuilderD3D9::build_paths_on_cpu(vector<PaintMetadata>
             t.join();
         }
     }
+#endif
 
     return built_draw_paths;
 }

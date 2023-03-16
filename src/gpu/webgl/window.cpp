@@ -28,7 +28,7 @@ void WindowWebGl::init() {
         Logger::error("GLFW initialization is not OK!", "WindowWebGl");
     }
 
-    Logger::error(std::string(glfwGetVersionString()), "WindowWebGl");
+    Logger::info(std::string(glfwGetVersionString()), "WindowWebGl");
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
