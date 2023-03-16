@@ -31,16 +31,8 @@ This is a C++ port of [Pathfinder 3](https://github.com/servo/pathfinder) with a
 
 1. Have the emscripten environment set up.
 
-2. Convert the CMake project to a makefile project using CMake GUI.
-    * Locate the source code.
-    * Configurate.
-    * Specify `MinGW Makefiles` (Windows) or `Unix Makefiles` (Linux) as the generator.
-    * Specify toolchain file for cross-compiling.
-      `[path_to_your_emsdk]/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake`
-    * Generate.
+2. Run `wasm/make.ps1` to build the demo.
 
-3. Go to the folder containing the generated makefile. Build with:
+3. Run `demo/web/serve.ps1` to serve a local website.
 
-   `emmake make`
-
-4. Go to `demo/web` to serve a website.
+4. Open http://127.0.0.1:8000/.

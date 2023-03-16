@@ -148,8 +148,9 @@ bool Segment::is_valid() const {
         case SegmentKind::Cubic: {
             return baseline.is_valid() && ctrl.is_valid();
         }
+        default:
+            return false;
     }
-    return false;
 }
 
 } // namespace Pathfinder
