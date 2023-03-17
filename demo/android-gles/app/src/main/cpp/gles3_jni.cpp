@@ -1,26 +1,10 @@
-/*
- * Copyright 2013 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 #include <jni.h>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <android/asset_manager_jni.h>
 
-#include "gles3jni.h"
+#include "gles3_jni.h"
 
 static void print_gl_string(const char *name, GLenum s) {
     const char *v = (const char *) glGetString(s);
@@ -29,19 +13,19 @@ static void print_gl_string(const char *name, GLenum s) {
 
 // ----------------------------------------------------------------------------
 
-Renderer::Renderer(AAssetManager *p_asset_manager) {
-    asset_manager = p_asset_manager;
+RendererES::RendererES(AAssetManager *_asset_manager) {
+    asset_manager = _asset_manager;
 }
 
-Renderer::~Renderer() = default;
+RendererES::~RendererES() = default;
 
-void Renderer::resize(int width, int height) {}
+void RendererES::resize(int width, int height) {}
 
-void Renderer::render() {}
+void RendererES::render() {}
 
 // ----------------------------------------------------------------------------
 
-static Renderer *g_renderer = nullptr;
+static RendererES *g_renderer = nullptr;
 
 extern "C" {
 JNIEXPORT void JNICALL

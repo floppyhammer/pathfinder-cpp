@@ -55,7 +55,14 @@ add_subdirectory(src)
 if (BUILD_DEMO)
     message("Pathfinder will build demo")
 
-    if (EMSCRIPTEN)
+    add_subdirectory(demo/common)
+
+    if (WIN32)
+        add_subdirectory(external/glfw)
+        add_subdirectory(demo/native)
+    elseif (ANDROID)
+        # Do nothing.
+    elseif (EMSCRIPTEN)
         # Set output directory to the web demo, so we don't have to copy output files manually.
         set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/demo/web")
 
@@ -65,9 +72,5 @@ if (BUILD_DEMO)
         #        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -gsource-map -s ASSERTIONS=2 -s SAFE_HEAP=1 -s STACK_OVERFLOW_CHECK=1 --source-map-base http://127.0.0.1:8000/")
 
         add_subdirectory(demo/web)
-    else ()
-        add_subdirectory(external/glfw)
-
-        add_subdirectory(demo/native)
     endif ()
 endif ()

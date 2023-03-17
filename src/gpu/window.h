@@ -31,6 +31,7 @@ public:
 
 protected:
     inline void common_glfw_init() {
+#ifndef __ANDROID__
 #ifndef __EMSCRIPTEN__
         // Enable window resizing.
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
@@ -68,10 +69,13 @@ protected:
         // Assign this to window user, so we can fetch it when window size changes.
         glfwSetWindowUserPointer(glfw_window, this);
         glfwSetFramebufferSizeCallback(glfw_window, framebuffer_resize_callback);
+#endif
     }
 
 protected:
+#ifndef __ANDROID__
     GLFWwindow *glfw_window{};
+#endif
 
     Vec2I size;
     bool just_resized = false;

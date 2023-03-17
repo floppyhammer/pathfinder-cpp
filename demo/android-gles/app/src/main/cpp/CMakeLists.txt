@@ -14,20 +14,23 @@ else ()
     set(OPENGL_LIB GLESv3)
 endif (${ANDROID_PLATFORM_LEVEL} LESS 12)
 
-include_directories(third_party)
+include_directories(../../../../../../include)
+include_directories(../../../../../../third_party)
+include_directories(../../../../../../demo/common)
+
+add_subdirectory(../../../../../../ pathfinder)
 
 link_directories(lib/${ANDROID_ABI})
 
 add_library(gles3jni SHARED
         ${GL3STUB_SRC}
-        gles3jni.cpp
-        RendererES3.cpp
-        demo/common/app.cpp
-        demo/common/texture_rect.cpp)
+        gles3_jni.cpp
+        renderer_es3.cpp)
 
 target_link_libraries(gles3jni
         ${OPENGL_LIB}
         pathfinder
+        pathfinder_demo
         android
         EGL
         log

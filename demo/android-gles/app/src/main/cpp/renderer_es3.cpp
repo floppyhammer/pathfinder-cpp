@@ -1,52 +1,7 @@
-/*
- * Copyright 2013 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "gles3jni.h"
-#include <EGL/egl.h>
-#include <android/asset_manager.h>
-
-#include "demo/common/app.h"
+#include "renderer_es3.h"
 
 #include <iostream>
 #include <chrono>
-
-class RendererES3 : public Renderer {
-public:
-    explicit RendererES3(AAssetManager *p_asset_manager);
-
-    ~RendererES3() override;
-
-    void init(int width, int height);
-
-    void render() override;
-
-private:
-    EGLContext eglContext;
-
-    std::shared_ptr<App> app;
-    std::shared_ptr<Pathfinder::Driver> driver;
-    std::shared_ptr<TextureRect> texture_rect;
-};
-
-Renderer *createES3Renderer(int width, int height, AAssetManager *p_asset_manager) {
-    auto *renderer = new RendererES3(p_asset_manager);
-    renderer->init(width, height);
-
-    return renderer;
-}
 
 std::vector<char> get_asset_file(AAssetManager *asset_manager, const char *p_filename) {
     AAssetDir *asset_dir = AAssetManager_openDir(asset_manager, "");
@@ -96,25 +51,38 @@ std::vector<char> get_asset_file(AAssetManager *asset_manager, const char *p_fil
     return buffer;
 }
 
-RendererES3::RendererES3(AAssetManager *p_asset_manager)
-        : Renderer(p_asset_manager), eglContext(eglGetCurrentContext()) {}
+RendererES *createES3Renderer(int width, int height, AAssetManager *_asset_manager) {
+    auto *renderer = new RendererES3(_asset_manager);
+    renderer->init(width, height);
+
+    return renderer;
+}
+
+RendererES3::RendererES3(AAssetManager *_asset_manager)
+        : RendererES(_asset_manager), egl_context(eglGetCurrentContext()) {}
 
 void RendererES3::init(int width, int height) {
     ALOGV("Using OpenGL ES 3.0 renderer");
 
+    window_size = {width, height};
+
     auto svg_input = get_asset_file(asset_manager, "features.svg");
     auto img_input = get_asset_file(asset_manager, "sea.png");
 
+    // Wrap a driver.
     driver = std::make_shared<Pathfinder::DriverGl>();
 
-    app = std::make_shared<App>(driver, width, height, svg_input, img_input);
+    app = std::make_shared<App>(driver, window_size, svg_input, img_input);
 
-    // Set viewport texture to a texture rect.
+    auto dst_texture = driver->create_texture(
+            {window_size, TextureFormat::Rgba8Unorm, "dst texture"});
+
+    app->canvas->set_dst_texture(dst_texture);
+
     texture_rect = std::make_shared<TextureRect>(driver,
                                                  nullptr,
-                                                 width,
-                                                 height);
-    texture_rect->set_texture(app->canvas->get_dst_texture());
+                                                 window_size.to_f32());
+    texture_rect->set_texture(dst_texture);
 }
 
 RendererES3::~RendererES3() {
@@ -124,7 +92,7 @@ RendererES3::~RendererES3() {
      * If the context exists, it must be current. This only happens when we're
      * cleaning up after a failed init().
      */
-    if (eglGetCurrentContext() != eglContext) {
+    if (eglGetCurrentContext() != egl_context) {
         return;
     }
 }
@@ -133,11 +101,11 @@ void RendererES3::render() {
     app->update();
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(0, 0, (int32_t) texture_rect->size.x, (int32_t) texture_rect->size.y);
+    glViewport(0, 0, window_size.x, window_size.y);
 
     auto cmd_buffer = driver->create_command_buffer("");
 
-    texture_rect->draw(driver, cmd_buffer, texture_rect->size.to_i32());
+    texture_rect->draw(cmd_buffer, window_size);
 
     cmd_buffer->submit();
 }
