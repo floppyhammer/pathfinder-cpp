@@ -128,7 +128,8 @@ uint pathBackdropOffset) {
     }
 }
 
-vec4 unpackMicroline(uvec4 packedMicroline, out uint outPathIndex) {
+// Add "readonly" to fix memory qualifier error in GLES.
+vec4 unpackMicroline(readonly uvec4 packedMicroline, out uint outPathIndex) {
     outPathIndex = packedMicroline.w;
     ivec4 signedMicroline = ivec4(packedMicroline);
     return vec4((signedMicroline.x << 16) >> 16, signedMicroline.x >> 16, (signedMicroline.y << 16) >> 16, signedMicroline.y >> 16)

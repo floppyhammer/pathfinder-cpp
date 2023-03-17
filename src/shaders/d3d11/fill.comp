@@ -19,8 +19,9 @@ layout(local_size_x = 16, local_size_y = 4) in;
 #define TILE_CTRL_MASK_EVEN_ODD                 0x2
 #define TILE_CTRL_MASK_0_SHIFT                  0
 
+// No simultaneous image READ & WRITE for GLES.
 #ifdef GL_ES
-layout(rgba8, binding = 3) uniform writeonly image2D uDest;
+writeonly layout(rgba8, binding = 3) uniform image2D uDest;
 #else
 layout(rgba8, binding = 3) uniform image2D uDest;
 #endif
@@ -144,11 +145,16 @@ void main() {
         coverages = clamp(1.0 - abs(1.0 - mod(coverages, 2.0)), 0.0, 1.0);
     }
 
+    // Not available for GLES.
+    #ifndef GL_ES
     // Handle clip if necessary.
+
+    // clipTileIndex should be converted to int first, as it might be negative.
     int clipTileIndex = int(iAlphaTiles[batchAlphaTileIndex * 2u + 1u]);
     if (clipTileIndex >= 0) {
         coverages = min(coverages, imageLoad(uDest, computeTileCoord(uint(clipTileIndex))));
     }
+    #endif
 
     imageStore(uDest, computeTileCoord(alphaTileIndex), coverages);
 }

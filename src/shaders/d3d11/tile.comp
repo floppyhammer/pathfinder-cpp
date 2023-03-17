@@ -23,8 +23,9 @@ layout(binding = 4) uniform sampler2D uColorTexture0;
 layout(binding = 5) uniform sampler2D uMaskTexture0;
 layout(binding = 6) uniform sampler2D uGammaLUT;
 
+// No simultaneous image READ & WRITE for GLES.
 #ifdef GL_ES
-layout(rgba8, binding = 7) uniform writeonly image2D uDestImage;
+writeonly layout(rgba8, binding = 7) uniform image2D uDestImage;
 #else
 layout(rgba8, binding = 7) uniform image2D uDestImage;
 #endif
@@ -761,9 +762,11 @@ void main() {
         if (uLoadAction == LOAD_ACTION_CLEAR) {
             destColors[subY] = uClearColor;
         } else {
-            // No simultaneous READ & WRITE for Image on GLES.
+            // Not available for GLES.
+            #ifndef GL_ES
             ivec2 imageCoords = toImageCoords(firstFragCoord + ivec2(0, subY));
             destColors[subY] = imageLoad(uDestImage, imageCoords);
+            #endif
         }
     }
 
@@ -797,7 +800,7 @@ void main() {
                 if (backdrop != 0) {
                     int maskCtrl = (tileCtrl >> TILE_CTRL_MASK_0_SHIFT) & TILE_CTRL_MASK_MASK;
 
-                    if ((maskCtrl & TILE_CTRL_MASK_EVEN_ODD) != 0 && mod(abs(backdrop), 2) == 0) {
+                    if ((maskCtrl & TILE_CTRL_MASK_EVEN_ODD) != 0 && int(mod(float(abs(backdrop)), 2.0)) == 0) {
                         break;
                     }
                 }
