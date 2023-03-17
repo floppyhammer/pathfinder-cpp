@@ -1,0 +1,1 @@
+Manually building shared libraries using NDK is deprecated. It is recommended to build from Android Studio directly.
