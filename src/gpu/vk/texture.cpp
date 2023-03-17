@@ -35,7 +35,7 @@ std::shared_ptr<TextureVk> TextureVk::from_wrapping(const TextureDescriptor& _de
                                                     VkImageView image_view,
                                                     VkSampler sampler,
                                                     TextureLayout layout) {
-    auto texture_vk = std::make_shared<TextureVk>(VK_NULL_HANDLE, _desc);
+    auto texture_vk = std::make_shared<TextureVk>(nullptr, _desc);
 
     texture_vk->resource_ownership = false;
     texture_vk->vk_image = image;

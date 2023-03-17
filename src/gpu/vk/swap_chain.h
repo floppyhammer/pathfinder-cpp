@@ -10,7 +10,7 @@
 
 #ifdef PATHFINDER_USE_VULKAN
 
-    #ifndef __ANDROID__
+    #if defined(WIN32) || defined(LINUX)
 
 namespace Pathfinder {
 

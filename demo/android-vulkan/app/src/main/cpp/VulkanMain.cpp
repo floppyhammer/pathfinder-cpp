@@ -1,21 +1,7 @@
-// Copyright 2016 Google Inc. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 #include "VulkanMain.hpp"
 #include "vulkan_wrapper.h"
 
-#include "demo/common/app.h"
+#include "app.h"
 
 #include <android/log.h>
 
@@ -804,18 +790,26 @@ bool InitVulkan(android_app *app) {
 
     // Pathfinder initialization.
     // -----------------------------
+    // Wrap a driver.
     driver = std::make_shared<Pathfinder::DriverVk>(device.device_,
                                                     device.gpuDevice_,
                                                     device.queue_,
                                                     render.cmdPool_);
 
+    auto window_size = Vec2I{(int) swapchain.displaySize_.width,
+                             (int) swapchain.displaySize_.height};
+
     pathfinder_app = std::make_shared<App>(driver,
-                                           swapchain.displaySize_.width,
-                                           swapchain.displaySize_.height,
+                                           window_size,
                                            load_asset("features.svg"),
                                            load_asset("sea.png"));
 
-    Pathfinder::TextureVk *texture_vk = static_cast<Pathfinder::TextureVk *>(pathfinder_app->canvas->get_dst_texture().get());
+    auto dst_texture = driver->create_texture(
+            {window_size, TextureFormat::Rgba8Unorm, "dst texture"});
+
+    pathfinder_app->canvas->set_dst_texture(dst_texture);
+
+    auto *texture_vk = static_cast<Pathfinder::TextureVk *>(dst_texture.get());
 
     // Create descriptor set.
     {

@@ -26,6 +26,6 @@ public class MainActivity extends GameActivity {
     }
 
     static {
-        System.loadLibrary("pathfinder_demo");
+        System.loadLibrary("android_demo_vulkan");
     }
 }

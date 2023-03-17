@@ -30,7 +30,7 @@ add_library(gles3jni SHARED
 target_link_libraries(gles3jni
         ${OPENGL_LIB}
         pathfinder
-        pathfinder_demo
+        pathfinder_demo_common
         android
         EGL
         log

@@ -85,9 +85,9 @@ void BufferGl::download_via_mapping(size_t data_size, size_t offset, void *data)
     #ifdef PATHFINDER_USE_D3D11
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, id);
         #ifdef __ANDROID__
-    void *ptr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, args.offset, args.data_size, GL_MAP_READ_BIT);
+    void *ptr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, offset, data_size, GL_MAP_READ_BIT);
     if (ptr) {
-        memcpy(args.data, ptr, args.data_size);
+        memcpy(data, ptr, data_size);
     }
     glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
         #else

@@ -7,6 +7,7 @@
 #include "driver.h"
 #include "swap_chain.h"
 
+#if defined(WIN32) || defined(LINUX)
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
@@ -432,4 +433,5 @@ std::shared_ptr<SwapChain> WindowVk::create_swap_chain(const std::shared_ptr<Dri
 
 } // namespace Pathfinder
 
+#endif
 #endif

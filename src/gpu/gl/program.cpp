@@ -96,6 +96,10 @@ ComputeProgram::ComputeProgram(const std::vector<char> &compute_code) : Program(
     /// Has to pass string.c_str(), as vector<char>.data() doesn't work.
     std::string compute_string = {compute_code.begin(), compute_code.end()};
 
+    #ifdef PATHFINDER_MINIMUM_SHADER_VERSION_SUPPORT
+    compute_string = std::regex_replace(compute_string, std::regex("#version 430"), "#version 310 es");
+    #endif
+
     compile(compute_string.c_str());
 }
 

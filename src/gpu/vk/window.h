@@ -9,9 +9,8 @@
 #include "../window.h"
 #include "driver.h"
 
-#ifdef PATHFINDER_USE_VULKAN
-
-    #ifndef __ANDROID__
+#if defined(WIN32) || defined(LINUX)
+    #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
 
@@ -171,7 +170,6 @@ private:
 } // namespace Pathfinder
 
     #endif
-
 #endif
 
 #endif // PATHFINDER_GPU_WINDOW_VK_H

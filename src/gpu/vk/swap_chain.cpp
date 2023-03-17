@@ -7,6 +7,8 @@
 #include "debug_marker.h"
 #include "window.h"
 
+#if defined(WIN32) || defined(LINUX)
+
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
@@ -327,4 +329,5 @@ void SwapChainVk::flush() {
 
 } // namespace Pathfinder
 
+#endif
 #endif

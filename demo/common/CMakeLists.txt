@@ -5,4 +5,4 @@ include_directories(../../include)
 file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS *.cpp *.h)
 
 # Compile as static library.
-add_library(pathfinder_demo ${SOURCE_FILES})
+add_library(pathfinder_demo_common ${SOURCE_FILES})
