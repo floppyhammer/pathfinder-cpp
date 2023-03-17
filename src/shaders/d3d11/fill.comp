@@ -145,9 +145,9 @@ void main() {
     }
 
     // Handle clip if necessary.
-    int clipTileIndex = int(iAlphaTiles[batchAlphaTileIndex * 2 + 1]);
+    int clipTileIndex = int(iAlphaTiles[batchAlphaTileIndex * 2u + 1u]);
     if (clipTileIndex >= 0) {
-        coverages = min(coverages, imageLoad(uDest, computeTileCoord(clipTileIndex)));
+        coverages = min(coverages, imageLoad(uDest, computeTileCoord(uint(clipTileIndex))));
     }
 
     imageStore(uDest, computeTileCoord(alphaTileIndex), coverages);

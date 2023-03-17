@@ -196,7 +196,7 @@ void main() {
             int tileCtrl = int((drawTileWord >> 16) & 0xffu);
             int maskCtrl = (tileCtrl >> TILE_CTRL_MASK_0_SHIFT) & TILE_CTRL_MASK_MASK;
 
-            if ((maskCtrl & TILE_CTRL_MASK_EVEN_ODD) != 0 && mod(abs(drawTileBackdrop), 2) == 0) {
+            if ((maskCtrl & TILE_CTRL_MASK_EVEN_ODD) != 0 && int(mod(float(abs(drawTileBackdrop)), 2.0)) == 0) {
                 zWrite = false;
             }
         }
