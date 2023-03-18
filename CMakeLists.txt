@@ -11,14 +11,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 option(VULKAN_SUPPORT "Use Vulkan instead of OpenGL")
 option(BUILD_DEMO "Build demo")
 
-set(VULKAN_SUPPORT OFF)
+set(VULKAN_SUPPORT ON)
 set(BUILD_DEMO OFF)
 
 # No Vulkan support for web.
 if (EMSCRIPTEN)
     message("Pathfinder will build for web")
     set(VULKAN_SUPPORT OFF)
-else ()
+elseif (WIN32 OR LINUX)
     # Include GLFW headers.
     # Emscripten has its own version of GLFW.
     include_directories(external/glfw/include)
@@ -51,17 +51,15 @@ include_directories(external third_party)
 # Core library.
 add_subdirectory(src)
 
-# Add demo.
 if (BUILD_DEMO)
     message("Pathfinder will build demo")
 
+    # Demo library.
     add_subdirectory(demo/common)
 
-    if (WIN32)
+    if (WIN32 OR LINUX)
         add_subdirectory(external/glfw)
         add_subdirectory(demo/native)
-    elseif (ANDROID)
-        # Do nothing.
     elseif (EMSCRIPTEN)
         # Set output directory to the web demo, so we don't have to copy output files manually.
         set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/demo/web")
