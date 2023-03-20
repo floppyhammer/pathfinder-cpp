@@ -7,10 +7,11 @@
 
 namespace Pathfinder {
 
-struct Contour;
+class Contour;
 
 /// A single line or Bézier curve segment, with explicit start and end points.
-struct Segment {
+class Segment {
+public:
     // The start and end points of the curve.
     LineSegmentF baseline;
 
