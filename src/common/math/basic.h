@@ -51,6 +51,18 @@ inline bool is_close(float a, float b, float tol) {
     return std::abs(a - b) < tol;
 }
 
+inline static uint64_t fnv_hash(const char* bytes, size_t size) {
+    const unsigned int fnv_prime = 0x811C9DC5;
+    uint64_t hash = 0;
+
+    for (uint32_t i = 0; i < size; i++) {
+        hash *= fnv_prime;
+        hash ^= (bytes[i]);
+    }
+
+    return hash;
+}
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_BASIC_MATH_H

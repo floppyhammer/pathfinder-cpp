@@ -13,6 +13,8 @@
 
 namespace Pathfinder {
 
+class Renderer;
+
 /// For draw path and clip path.
 struct PathBuildParams {
     uint32_t path_id{};
@@ -55,7 +57,7 @@ public:
     std::array<std::atomic<size_t>, ALPHA_TILE_LEVEL_COUNT> next_alpha_tile_indices;
 
     /// Build everything we need for rendering.
-    void build(const std::shared_ptr<Driver> &driver) override;
+    void build(const std::shared_ptr<Driver> &driver, Renderer *renderer) override;
 
 private:
     /// For parallel fill insertion.

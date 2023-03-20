@@ -145,7 +145,7 @@ void TextureAtlasAllocator::free(RectI rect) {
     root.free({}, size, rect.origin(), requested_length);
 }
 
-bool TextureAtlasAllocator::is_empty() {
+bool TextureAtlasAllocator::is_empty() const {
     if (root.type == TreeNode::EmptyLeaf) {
         return true;
     }

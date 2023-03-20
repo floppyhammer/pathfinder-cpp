@@ -39,10 +39,14 @@ class Renderer {
 public:
     explicit Renderer(const std::shared_ptr<Driver> &_driver);
 
+    ~Renderer();
+
     /// Allocate GPU resources for a pattern texture page.
     void allocate_pattern_texture_page(uint64_t page_id, Vec2I texture_size);
 
     void upload_texel_data(std::vector<ColorU> &texels, TextureLocation location);
+
+    void declare_render_target(RenderTargetId render_target_id, TextureLocation location);
 
     virtual void set_up_pipelines() = 0;
 
@@ -50,9 +54,15 @@ public:
 
     virtual void set_dest_texture(const std::shared_ptr<Texture> &new_texture) = 0;
 
+    void start_rendering();
+
     virtual void draw(const std::shared_ptr<SceneBuilder> &_scene_builder) = 0;
 
     std::shared_ptr<Driver> driver;
+
+    std::shared_ptr<Texture> metadata_texture;
+
+    std::vector<std::shared_ptr<PatternTexturePage>> pattern_texture_pages;
 
 protected:
     /// If we should clear the dest framebuffer or texture.
@@ -69,7 +79,7 @@ protected:
 
     std::shared_ptr<GpuMemoryAllocator> allocator;
 
-    std::vector<std::shared_ptr<PatternTexturePage>> pattern_texture_pages;
+    std::vector<TextureLocation> render_targets;
 };
 
 } // namespace Pathfinder

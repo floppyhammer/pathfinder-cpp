@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "../../common/color.h"
+#include "../../common/math/basic.h"
 #include "../../common/math/transform2.h"
 #include "../../common/math/vec2.h"
 #include "../../gpu/driver.h"
@@ -33,6 +34,11 @@ struct RenderTargetId {
 struct Image {
     Vec2I size;
     std::vector<ColorU> pixels;
+
+    /// Returns a non-cryptographic hash of the image, which should be globally unique.
+    uint64_t get_hash() {
+        return fnv_hash(reinterpret_cast<const char *>(pixels.data()), pixels.size() * 4);
+    }
 };
 
 /// A raster image target that can be rendered to and later reused as a pattern.
@@ -42,14 +48,10 @@ struct Image {
 /// applied to a group of paths.
 struct RenderTarget {
     Vec2I size;
-    /// Render pass.
-    std::shared_ptr<RenderPass> render_pass;
-    /// Framebuffer.
-    std::shared_ptr<Framebuffer> framebuffer;
 
-    RenderTarget() = default;
+    std::string name;
 
-    RenderTarget(const std::shared_ptr<Driver> &driver, const Vec2I &_size, const std::string &label);
+    std::shared_ptr<uint64_t> framebuffer_id;
 };
 
 /// Where a raster image pattern comes from.
@@ -61,8 +63,8 @@ struct PatternSource {
         RenderTarget,
     } type = Type::Image;
 
-    /// A image whose pixels are stored in CPU memory.
-    Image image;
+    /// An image whose pixels are stored in CPU memory.
+    std::shared_ptr<Image> image;
 
     /// Previously-rendered vector content.
     ///
@@ -109,7 +111,7 @@ struct Pattern {
     /// Creates a new pattern from the given image.
     ///
     /// The transform is initialized to the identity transform. There is no filter.
-    static inline Pattern from_image(const Image &image) {
+    static inline Pattern from_image(const std::shared_ptr<Image> &image) {
         PatternSource source;
         source.type = PatternSource::Type::Image;
         source.image = image;
@@ -145,7 +147,7 @@ struct Pattern {
     inline Vec2I get_size() const {
         switch (source.type) {
             case PatternSource::Type::Image:
-                return source.image.size;
+                return source.image->size;
             case PatternSource::Type::RenderTarget:
                 return source.size;
         }

@@ -60,9 +60,13 @@ PaintFilter PaintMetadata::filter() const {
     return filter;
 }
 
-std::shared_ptr<Texture> PaintMetadata::tile_batch_texture() const {
+std::shared_ptr<TileBatchTextureInfo> PaintMetadata::tile_batch_texture_info() const {
     if (color_texture_metadata) {
-        return color_texture_metadata->color_texture;
+        auto info = std::make_shared<TileBatchTextureInfo>();
+        info->page_id = color_texture_metadata->location.page;
+        info->sampling_flags = color_texture_metadata->sampling_flags;
+        info->composite_op = color_texture_metadata->composite_op;
+        return info;
     }
 
     return nullptr;

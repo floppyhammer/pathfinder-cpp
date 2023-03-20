@@ -381,12 +381,7 @@ void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &t
 
         auto z_buffer_texture_id = upload_z_buffer(batch.z_buffer_data, cmd_buffer);
 
-        draw_tiles(tile_count,
-                   batch.render_target,
-                   batch.metadata_texture,
-                   batch.color_texture,
-                   z_buffer_texture_id,
-                   cmd_buffer);
+        draw_tiles(tile_count, batch.render_target, batch.color_texture_info, z_buffer_texture_id, cmd_buffer);
 
         cmd_buffer->submit_and_wait();
 
@@ -475,8 +470,7 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info,
 
 void RendererD3D9::draw_tiles(uint32_t tiles_count,
                               const RenderTarget &render_target,
-                              const std::shared_ptr<Texture> &metadata_texture,
-                              const std::shared_ptr<Texture> &color_texture,
+                              const std::shared_ptr<TileBatchTextureInfo> &color_texture_info,
                               uint64_t z_buffer_texture_id,
                               const std::shared_ptr<CommandBuffer> &cmd_buffer) {
     std::shared_ptr<Framebuffer> target_framebuffer;
@@ -484,7 +478,7 @@ void RendererD3D9::draw_tiles(uint32_t tiles_count,
     cmd_buffer->sync_descriptor_set(tile_descriptor_set);
 
     // If no specific RenderTarget is given.
-    if (render_target.framebuffer == nullptr) {
+    if (render_target.framebuffer_id == nullptr) {
         cmd_buffer->begin_render_pass(clear_dest_texture ? dest_render_pass_clear : dest_render_pass_load,
                                       dest_framebuffer,
                                       ColorF());
@@ -493,9 +487,11 @@ void RendererD3D9::draw_tiles(uint32_t tiles_count,
 
         clear_dest_texture = false;
     } else { // Otherwise, we need to render to that render target.
-        cmd_buffer->begin_render_pass(dest_render_pass_clear, render_target.framebuffer, ColorF());
+        auto framebuffer = allocator->get_framebuffer(*render_target.framebuffer_id);
 
-        target_framebuffer = render_target.framebuffer;
+        cmd_buffer->begin_render_pass(dest_render_pass_clear, framebuffer, ColorF());
+
+        target_framebuffer = framebuffer;
     }
 
     Vec2F target_framebuffer_size = target_framebuffer->get_size().to_f32();
@@ -503,6 +499,7 @@ void RendererD3D9::draw_tiles(uint32_t tiles_count,
     auto z_buffer_texture = allocator->get_texture(z_buffer_texture_id);
 
     // Update uniform buffers.
+    std::shared_ptr<Texture> color_texture = dummy_texture;
     {
         // MVP (with only the model matrix).
         auto model_mat = Mat4x4<float>(1.f);
@@ -517,11 +514,21 @@ void RendererD3D9::draw_tiles(uint32_t tiles_count,
                                          target_framebuffer_size.x,
                                          target_framebuffer_size.y};
 
-        if (color_texture) {
-            Vec2F color_tex_size = color_texture->get_size().to_f32();
-            ubo_data[2] = color_tex_size.x;
-            ubo_data[3] = color_tex_size.y;
+        if (color_texture_info) {
+            auto color_texture_page = pattern_texture_pages[color_texture_info->page_id];
+            if (color_texture_page) {
+                color_texture = allocator->get_framebuffer(color_texture_page->framebuffer_id)->get_texture();
+
+                if (color_texture == nullptr) {
+                    Logger::error("Failed to obtain color texture!", "RendererD3D9");
+                    return;
+                }
+            }
         }
+
+        Vec2F color_texture_size = color_texture->get_size().to_f32();
+        ubo_data[2] = color_texture_size.x;
+        ubo_data[3] = color_texture_size.y;
 
         // We don't need to preserve the data until the upload commands are implemented because
         // these uniform buffers are host-visible/coherent.
@@ -533,7 +540,7 @@ void RendererD3D9::draw_tiles(uint32_t tiles_count,
     tile_descriptor_set->add_or_update({
         Descriptor::sampler(0, ShaderStage::Vertex, "uTextureMetadata", metadata_texture),
         Descriptor::sampler(1, ShaderStage::Vertex, "uZBuffer", z_buffer_texture),
-        Descriptor::sampler(5, ShaderStage::Fragment, "uColorTexture0", color_texture ? color_texture : dummy_texture),
+        Descriptor::sampler(5, ShaderStage::Fragment, "uColorTexture0", color_texture),
     });
 
     cmd_buffer->bind_render_pipeline(tile_pipeline);

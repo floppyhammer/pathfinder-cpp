@@ -69,15 +69,21 @@ bool Gradient::is_opaque() {
     return opaque;
 }
 
-TextureLocation GradientTileBuilder::allocate(const Gradient &gradient) {
+TextureLocation GradientTileBuilder::allocate(const Gradient &gradient,
+                                              TextureAllocator &allocator,
+                                              std::vector<TextureLocation> transient_paint_locations) {
     // Allocate new texture page.
     if (tiles.empty() || tiles.back().next_index == GRADIENT_TILE_LENGTH) {
-        uint32_t area = GRADIENT_TILE_LENGTH * GRADIENT_TILE_LENGTH;
+        auto size = Vec2I(GRADIENT_TILE_LENGTH);
+        uint32_t area = size.area();
+
+        auto page_location = allocator.allocate(size, AllocationMode::OwnPage);
+        transient_paint_locations.push_back(page_location);
 
         // New tile.
         tiles.push_back(GradientTile{
             std::vector<ColorU>(area, ColorU::black()),
-            0,
+            page_location.page,
             0,
         });
     }

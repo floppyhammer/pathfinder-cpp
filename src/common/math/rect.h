@@ -133,6 +133,10 @@ struct Rect {
         return Vec2<T>(left + right, top + bottom) * 0.5f;
     }
 
+    inline Rect<T> contract(Vec2<T> amount) {
+        return RectI(origin() + amount, lower_right() - amount);
+    }
+
     inline Rect<float> to_f32() const {
         return {(float)left, (float)top, (float)right, (float)bottom};
     }

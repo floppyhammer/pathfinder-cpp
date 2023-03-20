@@ -23,6 +23,8 @@ struct PaintTextureManager {
     std::map<uint64_t, TextureLocation> cached_images;
 };
 
+class Renderer;
+
 /// Stores all paints in a scene.
 /// A palette will give two things to a renderer:
 /// 1. A metadata texture.
@@ -41,7 +43,7 @@ public:
     RenderTarget get_render_target(RenderTargetId render_target_id) const;
 
     /// Important step.
-    std::vector<PaintMetadata> build_paint_info(const std::shared_ptr<Driver> &driver);
+    std::vector<PaintMetadata> build_paint_info(const std::shared_ptr<Driver> &driver, Renderer *renderer);
 
     /// Append another palette to this append_palette, merging paints and render targets.
     MergedPaletteInfo append_palette(const Palette &palette);
@@ -55,15 +57,25 @@ private:
     /// Cached paints.
     std::map<Paint, uint32_t> cache;
 
+    // Only for IMAGE pattern source management.
     std::shared_ptr<PaintTextureManager> paint_texture_manager;
 
     /// Which scene this palette belongs to.
     uint32_t scene_id;
 
-    std::shared_ptr<Texture> metadata_texture;
-
 private:
-    std::vector<PaintMetadata> assign_paint_locations(const std::shared_ptr<Driver> &driver);
+    static void free_transient_locations(PaintTextureManager &texture_manager,
+                                  const std::vector<TextureLocation> &transient_paint_locations);
+
+    // Frees images that are cached but not used this frame.
+    static void free_unused_images(PaintTextureManager &texture_manager, std::set<uint64_t> used_image_hashes);
+
+    std::vector<TextureLocation> assign_render_target_locations(
+        std::vector<TextureLocation> &transient_paint_locations);
+
+    PaintLocationsInfo assign_paint_locations(const std::shared_ptr<Driver> &driver,
+                                              const std::vector<TextureLocation> &render_target_metadata,
+                                              std::vector<TextureLocation> &transient_paint_locations);
 
     /// Calculate color texture transforms.
     void calculate_texture_transforms(std::vector<PaintMetadata> &paint_metadata);
@@ -72,7 +84,7 @@ private:
     static std::vector<TextureMetadataEntry> create_texture_metadata(const std::vector<PaintMetadata> &paint_metadata);
 
     /// Allocate GPU textures for the images in the paint texture manager.
-    void allocate_textures();
+    void allocate_textures(Renderer *renderer);
 };
 
 } // namespace Pathfinder

@@ -33,6 +33,10 @@ Renderer::Renderer(const std::shared_ptr<Driver> &_driver) : driver(_driver) {
     // Dummy texture.
     dummy_texture = driver->create_texture({{1, 1}, TextureFormat::Rgba8Unorm, "Dummy texture"});
 
+    metadata_texture = driver->create_texture({{TEXTURE_METADATA_TEXTURE_WIDTH, TEXTURE_METADATA_TEXTURE_HEIGHT},
+                                               TextureFormat::Rgba16Float,
+                                               "Metadata texture"});
+
     auto cmd_buffer = driver->create_command_buffer("Upload constant data");
 
     cmd_buffer->upload_to_buffer(constants_ub, 0, 6 * sizeof(float), constants.data());
@@ -40,6 +44,14 @@ Renderer::Renderer(const std::shared_ptr<Driver> &_driver) : driver(_driver) {
     cmd_buffer->upload_to_texture(area_lut_texture, {}, image_buffer->get_data());
 
     cmd_buffer->submit_and_wait();
+}
+
+Renderer::~Renderer() {
+    for (const auto &texture_page : pattern_texture_pages) {
+        if (texture_page != nullptr) {
+            allocator->free_framebuffer(texture_page->framebuffer_id);
+        }
+    }
 }
 
 void Renderer::allocate_pattern_texture_page(uint64_t page_id, Vec2I texture_size) {
@@ -59,6 +71,16 @@ void Renderer::allocate_pattern_texture_page(uint64_t page_id, Vec2I texture_siz
     pattern_texture_pages[page_id] = std::make_shared<PatternTexturePage>(framebuffer_id, false);
 }
 
+void Renderer::declare_render_target(RenderTargetId render_target_id, TextureLocation location) {
+    while (render_targets.size() < render_target_id.render_target + 1) {
+        render_targets.push_back(TextureLocation{std::numeric_limits<uint32_t>::max(), RectI()});
+    }
+
+    auto &render_target = render_targets[render_target_id.render_target];
+    assert(render_target.page == std::numeric_limits<uint32_t>::max());
+    render_target = location;
+}
+
 void Renderer::upload_texel_data(std::vector<ColorU> &texels, TextureLocation location) {
     if (location.page >= pattern_texture_pages.size()) {
         Logger::error("Texture page ID is invalid!", "Renderer");
@@ -71,11 +93,18 @@ void Renderer::upload_texel_data(std::vector<ColorU> &texels, TextureLocation lo
         return;
     }
 
-    auto framebuffer = allocator->get_texture(texture_page->framebuffer_id);
+    auto framebuffer = allocator->get_framebuffer(texture_page->framebuffer_id);
+    auto texture = framebuffer->get_texture();
 
-    //    pathfinder_gpu::upload_to_texture(&self.core.queue, texture, location.rect, wgpu::TextureFormat::R8Unorm);
+    auto cmd_buffer = driver->create_command_buffer("Upload data of the pattern texture pages");
+    cmd_buffer->upload_to_texture(texture, location.rect, texels.data());
+    cmd_buffer->submit_and_wait();
 
     texture_page->must_preserve_contents = true;
+}
+
+void Renderer::start_rendering() {
+    render_targets.clear();
 }
 
 } // namespace Pathfinder

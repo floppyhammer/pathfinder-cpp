@@ -131,7 +131,7 @@ public:
     void set_bounds(const RectF &new_bounds);
 
     /// Build the scene by SceneBuilder.
-    void build(std::shared_ptr<Driver> &driver);
+    void build(std::shared_ptr<Driver> &driver, std::shared_ptr<Renderer> &renderer);
 
     /// A convenience method to build and render the scene.
     void build_and_render(std::shared_ptr<Renderer> &renderer);

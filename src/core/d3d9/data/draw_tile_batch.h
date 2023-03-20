@@ -23,9 +23,7 @@ struct DrawTileBatchD3D9 {
     DenseTileMap<uint32_t> z_buffer_data;
 
     /// The color texture to use.
-    std::shared_ptr<Texture> color_texture;
-
-    std::shared_ptr<Texture> metadata_texture;
+    std::shared_ptr<TileBatchTextureInfo> color_texture_info;
 
     /// Render target.
     RenderTarget render_target;

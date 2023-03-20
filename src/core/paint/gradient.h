@@ -141,7 +141,9 @@ class GradientTileBuilder {
 public:
     std::vector<GradientTile> tiles;
 
-    TextureLocation allocate(const Gradient &gradient);
+    TextureLocation allocate(const Gradient &gradient,
+                             TextureAllocator &allocator,
+                             std::vector<TextureLocation> transient_paint_locations);
 
     void upload(const std::shared_ptr<CommandBuffer> &cmd_buffer, const std::shared_ptr<Texture> &texture);
 };

@@ -84,6 +84,7 @@ public:
     explicit Canvas(const std::shared_ptr<Driver> &_driver);
 
     /// Clears the current canvas.
+    /// You shouldn't call this per frame.
     void clear();
 
     void set_dst_texture(const std::shared_ptr<Texture> &new_dst_texture);
@@ -168,9 +169,9 @@ public:
 
     // Drawing images
 
-    void draw_image(const Image &image, const RectF &dst_rect);
+    void draw_image(const std::shared_ptr<Image> &image, const RectF &dst_rect);
 
-    void draw_subimage(const Image &image, const RectF &src_rect, const RectF &dst_rect);
+    void draw_subimage(const std::shared_ptr<Image> &image, const RectF &src_rect, const RectF &dst_rect);
 
     void draw_render_target(const RenderTargetId &render_target_id, const RectF &dst_rect);
 

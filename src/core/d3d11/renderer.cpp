@@ -307,15 +307,13 @@ void RendererD3D11::prepare_and_draw_tiles(DrawTileBatchD3D11 &batch) {
     draw_tiles(batch_info.tiles_d3d11_buffer_id,
                batch_info.first_tile_map_buffer_id,
                batch.render_target,
-               batch.metadata_texture,
-               batch.color_texture);
+               batch.color_texture_info);
 }
 
 void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
                                uint64_t first_tile_map_buffer_id,
                                const RenderTarget &render_target,
-                               const std::shared_ptr<Texture> &metadata_texture,
-                               const std::shared_ptr<Texture> &color_texture) {
+                               const std::shared_ptr<TileBatchTextureInfo> &color_texture_info) {
     // The framebuffer mentioned here is different from the target viewport.
     // This doesn't change as long as the destination texture's size doesn't change.
     auto framebuffer_tile_size0 = framebuffer_tile_size();
@@ -325,28 +323,42 @@ void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
     std::shared_ptr<Texture> target_texture;
     int clear_op;
     // If no specific RenderTarget is given, we render to the destination texture.
-    if (render_target.framebuffer == nullptr) {
+    if (render_target.framebuffer_id == nullptr) {
         target_size = dest_texture->get_size();
         target_texture = dest_texture;
         clear_op = clear_dest_texture ? LOAD_ACTION_CLEAR : LOAD_ACTION_LOAD;
         clear_dest_texture = false;
     } else {
-        target_size = render_target.framebuffer->get_size();
-        target_texture = render_target.framebuffer->get_texture();
+        auto framebuffer = allocator->get_framebuffer(*render_target.framebuffer_id);
+        target_texture = framebuffer->get_texture();
+
+        target_size = target_texture->get_size();
         clear_op = LOAD_ACTION_CLEAR;
     }
 
     auto cmd_buffer = driver->create_command_buffer("Draw tiles");
 
-    Vec2F color_tex_size = color_texture ? color_texture->get_size().to_f32() : Vec2F(0);
+    std::shared_ptr<Texture> color_texture = dummy_texture;
+    if (color_texture_info) {
+        auto color_texture_page = pattern_texture_pages[color_texture_info->page_id];
+        if (color_texture_page) {
+            color_texture = allocator->get_framebuffer(color_texture_page->framebuffer_id)->get_texture();
+
+            if (color_texture == nullptr) {
+                Logger::error("Failed to obtain color texture!", "RendererD3D9");
+                return;
+            }
+        }
+    }
+    Vec2F color_texture_size = color_texture->get_size().to_f32();
 
     // Update uniform buffers.
     std::array<float, 8> ubo_data0 = {0,
                                       0,
                                       0,
                                       0, // uClearColor
-                                      color_tex_size.x,
-                                      color_tex_size.y, // uColorTextureSize0
+                                      color_texture_size.x,
+                                      color_texture_size.y, // uColorTextureSize0
                                       (float)target_size.x,
                                       (float)target_size.y}; // uFramebufferSize
 
@@ -367,7 +379,7 @@ void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
         Descriptor::storage(1, ShaderStage::Compute, allocator->get_general_buffer(first_tile_map_buffer_id)),
         Descriptor::sampler(2, ShaderStage::Compute, "uTextureMetadata", metadata_texture),
         Descriptor::sampler(3, ShaderStage::Compute, "uZBuffer", mask_texture),
-        Descriptor::sampler(4, ShaderStage::Compute, "uColorTexture0", color_texture ? color_texture : dummy_texture),
+        Descriptor::sampler(4, ShaderStage::Compute, "uColorTexture0", color_texture),
         Descriptor::image(7, ShaderStage::Compute, "uDestImage", target_texture),
     });
 

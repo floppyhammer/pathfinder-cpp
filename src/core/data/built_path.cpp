@@ -42,7 +42,7 @@ BuiltDrawPath::BuiltDrawPath(const BuiltPath &built_path,
     path = built_path;
     clip_path_id = path_object.clip_path;
     //                filter = paint_metadata.filter();
-    color_texture = paint_metadata.tile_batch_texture();
+    color_texture_info = paint_metadata.tile_batch_texture_info();
     sampling_flags = TextureSamplingFlags();
     mask_fill_rule = path_object.fill_rule;
 }

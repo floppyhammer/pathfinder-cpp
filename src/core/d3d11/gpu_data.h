@@ -185,11 +185,8 @@ struct DrawTileBatchD3D11 {
     /// Data for the tile batch.
     TileBatchDataD3D11 tile_batch_data;
 
-    /// Metadata.
-    std::shared_ptr<Texture> metadata_texture;
-
     /// The color texture to use.
-    std::shared_ptr<Texture> color_texture;
+    std::shared_ptr<TileBatchTextureInfo> color_texture_info;
 
     /// Where to draw this batch.
     RenderTarget render_target;

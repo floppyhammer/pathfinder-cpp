@@ -3,6 +3,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <utility>
 
 #include "../../common/math/rect.h"
@@ -20,6 +21,12 @@ enum class PaintCompositeOp {
     SrcIn,
     /// Destination which overlaps the source, replaces the source.
     DestIn,
+};
+
+struct TileBatchTextureInfo {
+    uint32_t page_id;
+    TextureSamplingFlags sampling_flags;
+    PaintCompositeOp composite_op;
 };
 
 RectF rect_to_uv(const RectI &rect, const Vec2F &texture_scale);
@@ -112,6 +119,20 @@ public:
     }
 };
 
+struct ImageTexelInfo {
+    TextureLocation location;
+    std::shared_ptr<std::vector<ColorU>> texels;
+};
+
+struct PaintMetadata;
+
+struct PaintLocationsInfo {
+    std::vector<PaintMetadata> paint_metadata;
+    GradientTileBuilder gradient_tile_builder;
+    std::vector<ImageTexelInfo> image_texel_info;
+    std::set<uint64_t> used_image_hashes;
+};
+
 /// Metadata related to the color texture.
 struct PaintColorTextureMetadata {
     /// The location of the paint.
@@ -119,9 +140,6 @@ struct PaintColorTextureMetadata {
 
     /// The scale for the page this paint is on.
     Vec2F page_scale;
-
-    /// Will be used during tile batch building.
-    std::shared_ptr<Texture> color_texture;
 
     /// The transform to apply to screen coordinates to translate them into UVs.
     Transform2 transform;
@@ -156,7 +174,7 @@ struct PaintMetadata {
 
     PaintFilter filter() const;
 
-    std::shared_ptr<Texture> tile_batch_texture() const;
+    std::shared_ptr<TileBatchTextureInfo> tile_batch_texture_info() const;
 };
 
 } // namespace Pathfinder

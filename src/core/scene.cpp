@@ -200,14 +200,16 @@ void Scene::set_bounds(const RectF &new_bounds) {
     epoch.next();
 }
 
-void Scene::build(std::shared_ptr<Driver> &driver) {
+void Scene::build(std::shared_ptr<Driver> &driver, std::shared_ptr<Renderer> &renderer) {
     if (scene_builder) {
-        scene_builder->build(driver);
+        scene_builder->build(driver, renderer.get());
     }
 }
 
 void Scene::build_and_render(std::shared_ptr<Renderer> &renderer) {
-    build(renderer->driver);
+    renderer->start_rendering();
+
+    build(renderer->driver, renderer);
 
     renderer->draw(scene_builder);
 }

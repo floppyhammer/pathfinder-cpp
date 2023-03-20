@@ -24,13 +24,13 @@ App::App(const std::shared_ptr<Driver> &_driver,
 
     // TEST: Draw image.
     if (true) {
-        Image image;
+        auto image = std::make_shared<Image>();
         auto image_buffer = ImageBuffer::from_memory(img_input, false);
         if (image_buffer) {
-            image.size = image_buffer->get_size();
-            image.pixels = image_buffer->to_rgba_pixels();
+            image->size = image_buffer->get_size();
+            image->pixels = image_buffer->to_rgba_pixels();
             Vec2F pos = {100, 200};
-            canvas->draw_image(image, RectF(pos, pos + image.size.to_f32()));
+            canvas->draw_image(image, RectF(pos, pos + image->size.to_f32()));
         }
     }
 
@@ -62,11 +62,10 @@ App::App(const std::shared_ptr<Driver> &_driver,
 
     // TEST: Render target pattern.
     if (true) {
-        auto sub_render_target_size = Vec2F(400, 300);
-        auto sub_render_target =
-            RenderTarget(canvas->get_driver(), sub_render_target_size.to_i32(), "Sub render target");
+        auto render_target_size = Vec2I(400, 300);
+        auto render_target = RenderTarget{render_target_size, "Sub render target"};
 
-        auto render_target_id = canvas->get_scene()->push_render_target(sub_render_target);
+        auto render_target_id = canvas->get_scene()->push_render_target(render_target);
 
         Path2d path;
         path.add_circle({200, 150}, 50);
@@ -79,7 +78,7 @@ App::App(const std::shared_ptr<Driver> &_driver,
 
         canvas->get_scene()->pop_render_target();
 
-        canvas->draw_render_target(render_target_id, {{}, sub_render_target_size});
+        canvas->draw_render_target(render_target_id, {{}, render_target_size.to_f32()});
     }
 
     // TEST: Append SVG scene.

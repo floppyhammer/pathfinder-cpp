@@ -52,7 +52,7 @@ struct TextureAtlasAllocator {
 
     void free(RectI rect);
 
-    bool is_empty();
+    bool is_empty() const;
 };
 
 struct TexturePageAllocator {
@@ -105,18 +105,18 @@ public:
     /// Mark all pages as allocated as GPU textures.
     void mark_all_pages_as_allocated();
 
-private:
-    std::vector<std::shared_ptr<TexturePage>> pages;
+    TextureLocation allocate_image(Vec2I requested_size);
 
     TextureLocation allocate(Vec2I requested_size, AllocationMode mode);
 
-    TextureLocation allocate_image(Vec2I requested_size);
-
-    uint32_t get_first_free_page_id();
+    Vec2F page_scale(uint32_t page_id);
 
     void free(TextureLocation location);
 
-    Vec2F page_scale(uint32_t page_id);
+private:
+    std::vector<std::shared_ptr<TexturePage>> pages;
+
+    uint32_t get_first_free_page_id();
 };
 
 struct TexturePageIter {

@@ -2,17 +2,6 @@
 
 namespace Pathfinder {
 
-RenderTarget::RenderTarget(const std::shared_ptr<Driver>& driver, const Vec2I& _size, const std::string& label) {
-    size = _size;
-
-    render_pass = driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Clear, label + "render pass");
-
-    auto target_texture = driver->create_texture({size, TextureFormat::Rgba8Unorm, label + " texture"});
-
-    // Create a new framebuffer.
-    framebuffer = driver->create_framebuffer(render_pass, target_texture, label + "framebuffer");
-}
-
 bool Pattern::repeat_x() const {
     return (flags.value & PatternFlags::REPEAT_X) != 0x0;
 }

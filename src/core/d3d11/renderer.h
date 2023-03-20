@@ -155,8 +155,7 @@ private:
     void draw_tiles(uint64_t tiles_d3d11_buffer_id,
                     uint64_t first_tile_map_buffer_id,
                     const RenderTarget &render_target,
-                    const std::shared_ptr<Texture> &metadata_texture,
-                    const std::shared_ptr<Texture> &color_texture);
+                    const std::shared_ptr<TileBatchTextureInfo> &color_texture_info);
 
     void upload_initial_backdrops(uint64_t backdrops_buffer_id, std::vector<BackdropInfoD3D11> &backdrops);
 

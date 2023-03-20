@@ -5,23 +5,23 @@
 #include "../../common/global_macros.h"
 #include "../../common/timestamp.h"
 #include "../scene.h"
+#include "renderer.h"
 #include "tiler.h"
 
 #undef min
 #undef max
 
-using std::vector;
-
 namespace Pathfinder {
 
 /// Create tile batches. Different batches use different color textures.
-vector<DrawTileBatchD3D9> build_tile_batches_for_draw_path_display_item(const Scene &scene,
-                                                                        const std::vector<BuiltDrawPath> &built_paths,
-                                                                        Range draw_path_range) {
-    vector<DrawTileBatchD3D9> flushed_draw_tile_batches;
+std::vector<DrawTileBatchD3D9> build_tile_batches_for_draw_path_display_item(
+    const Scene &scene,
+    const std::vector<BuiltDrawPath> &built_paths,
+    Range draw_path_range) {
+    std::vector<DrawTileBatchD3D9> flushed_draw_tile_batches;
 
     // New draw tile batch.
-    shared_ptr<DrawTileBatchD3D9> draw_tile_batch;
+    std::shared_ptr<DrawTileBatchD3D9> draw_tile_batch;
 
     for (auto draw_path_id = draw_path_range.start; draw_path_id < draw_path_range.end; draw_path_id++) {
         const auto &draw_path = built_paths[draw_path_id];
@@ -32,7 +32,7 @@ vector<DrawTileBatchD3D9> build_tile_batches_for_draw_path_display_item(const Sc
 
         // Try to reuse the current batch if we can.
         if (draw_tile_batch) {
-            flush_needed = !fixup_batch_for_new_path_if_possible(draw_tile_batch->color_texture, draw_path);
+            flush_needed = !fixup_batch_for_new_path_if_possible(draw_tile_batch->color_texture_info, draw_path);
         }
 
         // If we couldn't reuse the batch, flush it.
@@ -50,8 +50,7 @@ vector<DrawTileBatchD3D9> build_tile_batches_for_draw_path_display_item(const Sc
             auto tile_bounds = round_rect_out_to_tile_bounds(scene.get_view_box());
 
             draw_tile_batch->z_buffer_data = DenseTileMap<uint32_t>::z_builder(tile_bounds);
-            draw_tile_batch->metadata_texture = scene.palette.get_metadata_texture();
-            draw_tile_batch->color_texture = draw_path.color_texture;
+            draw_tile_batch->color_texture_info = draw_path.color_texture_info;
         }
 
         for (const auto &tile : path_data.tiles.data) {
@@ -94,7 +93,7 @@ vector<DrawTileBatchD3D9> build_tile_batches_for_draw_path_display_item(const Sc
     return flushed_draw_tile_batches;
 }
 
-void SceneBuilderD3D9::build(const std::shared_ptr<Driver> &driver) {
+void SceneBuilderD3D9::build(const std::shared_ptr<Driver> &driver, Renderer *renderer) {
     // No need to rebuild the scene if it hasn't changed.
     // Comment this to do benchmark more precisely.
     if (!scene->is_dirty) {
@@ -102,7 +101,7 @@ void SceneBuilderD3D9::build(const std::shared_ptr<Driver> &driver) {
     }
 
     // Build paint data.
-    auto paint_metadata = scene->palette.build_paint_info(driver);
+    auto paint_metadata = scene->palette.build_paint_info(driver, renderer);
 
     // Most important step.
     // Build draw paths into built draw paths.
@@ -120,7 +119,7 @@ void SceneBuilderD3D9::finish_building(const std::vector<BuiltDrawPath> &built_p
     build_tile_batches(built_paths);
 }
 
-vector<BuiltDrawPath> SceneBuilderD3D9::build_paths_on_cpu(vector<PaintMetadata> &paint_metadata) {
+std::vector<BuiltDrawPath> SceneBuilderD3D9::build_paths_on_cpu(std::vector<PaintMetadata> &paint_metadata) {
     // Reset builder.
     // ------------------------------
     // Clear pending fills.

@@ -2,6 +2,7 @@
 
 #include "../../common/math/basic.h"
 #include "../d3d9/tiler.h"
+#include "../renderer.h"
 #include "umHalf.h"
 
 namespace Pathfinder {
@@ -216,26 +217,51 @@ RenderTarget Palette::get_render_target(RenderTargetId render_target_id) const {
     return render_targets[render_target_id.render_target];
 }
 
-std::vector<PaintMetadata> Palette::build_paint_info(const std::shared_ptr<Driver> &driver) {
-    std::vector<PaintMetadata> paint_metadata = assign_paint_locations(driver);
+std::vector<PaintMetadata> Palette::build_paint_info(const std::shared_ptr<Driver> &driver, Renderer *renderer) {
+    std::vector<TextureLocation> transient_paint_locations;
+
+    // Assign render target locations.
+    auto render_target_metadata = assign_render_target_locations(transient_paint_locations);
+
+    PaintLocationsInfo paint_locations_info =
+        assign_paint_locations(driver, render_target_metadata, transient_paint_locations);
 
     // Calculate texture transforms.
-    calculate_texture_transforms(paint_metadata);
+    calculate_texture_transforms(paint_locations_info.paint_metadata);
 
     // Create texture metadata.
-    auto texture_metadata_entries = create_texture_metadata(paint_metadata);
-
-    // We only allocate the metadata texture once.
-    if (metadata_texture == nullptr) {
-        metadata_texture = driver->create_texture({{TEXTURE_METADATA_TEXTURE_WIDTH, TEXTURE_METADATA_TEXTURE_HEIGHT},
-                                                   TextureFormat::Rgba16Float,
-                                                   "Metadata texture"});
-    }
+    auto texture_metadata_entries = create_texture_metadata(paint_locations_info.paint_metadata);
 
     // Upload texture metadata.
-    upload_texture_metadata(metadata_texture, texture_metadata_entries, driver);
+    upload_texture_metadata(renderer->metadata_texture, texture_metadata_entries, driver);
 
-    return paint_metadata;
+    // Allocate textures for all images in the paint texture manager.
+    allocate_textures(renderer);
+
+    {
+        for (uint32_t index = 0; index < render_target_metadata.size(); index++) {
+            auto &metadata = render_target_metadata[index];
+            auto id = RenderTargetId{scene_id, index};
+            renderer->declare_render_target(id, metadata);
+        }
+
+        for (auto &tile : paint_locations_info.gradient_tile_builder.tiles) {
+            renderer->upload_texel_data(tile.texels,
+                                        TextureLocation{tile.page, RectI(Vec2I(0, 0), Vec2I(GRADIENT_TILE_LENGTH))});
+        }
+
+        for (auto &texel_info : paint_locations_info.image_texel_info) {
+            renderer->upload_texel_data(*texel_info.texels, texel_info.location);
+        }
+    }
+
+    // Free transient locations and unused images, now that they're no longer needed.
+    free_transient_locations(*paint_texture_manager, transient_paint_locations);
+
+    // Frees images that are cached but not used this frame.
+    free_unused_images(*paint_texture_manager, paint_locations_info.used_image_hashes);
+
+    return paint_locations_info.paint_metadata;
 }
 
 std::vector<TextureMetadataEntry> Palette::create_texture_metadata(const std::vector<PaintMetadata> &paint_metadata) {
@@ -265,36 +291,51 @@ std::vector<TextureMetadataEntry> Palette::create_texture_metadata(const std::ve
     return texture_metadata;
 }
 
-std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr<Driver> &driver) {
+std::vector<TextureLocation> Palette::assign_render_target_locations(
+    std::vector<TextureLocation> &transient_paint_locations) {
+    std::vector<TextureLocation> render_target_metadata;
+
+    for (const auto &render_target : render_targets) {
+        auto location = paint_texture_manager->allocator.allocate_image(render_target.size);
+        render_target_metadata.push_back(location);
+        transient_paint_locations.push_back(location);
+    }
+
+    return render_target_metadata;
+}
+
+PaintLocationsInfo Palette::assign_paint_locations(const std::shared_ptr<Driver> &driver,
+                                                   const std::vector<TextureLocation> &render_target_metadata,
+                                                   std::vector<TextureLocation> &transient_paint_locations) {
     std::vector<PaintMetadata> paint_metadata;
-    paint_metadata.reserve(paints.size());
-
-    // For gradient color texture.
+    //    paint_metadata.reserve(paints.size());
     GradientTileBuilder gradient_tile_builder;
-
-    auto gradient_tile_texture = driver->create_texture(
-        {{GRADIENT_TILE_LENGTH, GRADIENT_TILE_LENGTH}, TextureFormat::Rgba8Unorm, "Gradient tile texture"});
-
-    auto cmd_buffer = driver->create_command_buffer("Upload to color textures (for gradient & image patterns)");
+    std::vector<ImageTexelInfo> image_texel_info;
+    std::set<uint64_t> used_image_hashes;
 
     // Traverse paints.
     for (const auto &paint : paints) {
+        auto &allocator = paint_texture_manager->allocator;
+
         std::shared_ptr<PaintColorTextureMetadata> color_texture_metadata;
 
         auto overlay = paint.get_overlay();
 
         // If not a solid color paint.
         if (overlay) {
-            // For the color texture used in the shaders.
             color_texture_metadata = std::make_shared<PaintColorTextureMetadata>();
 
+            // Gradient.
             if (overlay->contents.type == PaintContents::Type::Gradient) {
-                auto &gradient = overlay->contents.gradient;
+                const auto &gradient = overlay->contents.gradient;
 
                 TextureSamplingFlags sampling_flags;
                 if (gradient.wrap == GradientWrap::Repeat) {
                     sampling_flags.value |= TextureSamplingFlags::REPEAT_U;
                 }
+
+                // FIXME(pcwalton): The gradient size might not be big enough. Detect this.
+                auto location = gradient_tile_builder.allocate(gradient, allocator, transient_paint_locations);
 
                 if (gradient.geometry.type == GradientGeometry::Type::Linear) {
                     color_texture_metadata->filter.type = PaintFilter::Type::None;
@@ -305,68 +346,79 @@ std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr
                 }
 
                 // Assign the gradient to a color texture location.
-                color_texture_metadata->location = gradient_tile_builder.allocate(gradient);
+                color_texture_metadata->location = location;
+                color_texture_metadata->page_scale = allocator.page_scale(location.page);
                 color_texture_metadata->sampling_flags = sampling_flags;
                 color_texture_metadata->transform = Transform2();
                 color_texture_metadata->composite_op = overlay->composite_op;
                 color_texture_metadata->border = Vec2I();
-
-                // Set the gradient tile texture as the color texture.
-                color_texture_metadata->color_texture = gradient_tile_texture;
-            } else { // Pattern
+            }
+            // Pattern.
+            else {
                 const auto &pattern = overlay->contents.pattern;
 
                 auto border = Vec2I(pattern.repeat_x() ? 0 : 1, pattern.repeat_y() ? 0 : 1);
 
-                TextureLocation texture_location;
-                {
-                    // Image
-                    if (pattern.source.type == PatternSource::Type::Image) {
-                        texture_location.rect = RectI({}, pattern.source.image.size);
+                TextureLocation location;
 
-                        // Set the newly created image texture as the color texture.
-                        color_texture_metadata->color_texture = driver->create_texture(
-                            {pattern.source.image.size, TextureFormat::Rgba8Unorm, "Image pattern color texture"});
+                // Render target
+                if (pattern.source.type == PatternSource::Type::RenderTarget) {
+                    auto render_target_id = pattern.source.render_target_id;
 
-                        cmd_buffer->upload_to_texture(color_texture_metadata->color_texture,
-                                                      RectI({}, pattern.source.image.size),
-                                                      pattern.source.image.pixels.data());
-                    } else { // Render target
-                        texture_location.rect = RectI({}, pattern.source.size);
+                    auto index = render_target_id.render_target;
 
-                        auto render_target = get_render_target(pattern.source.render_target_id);
-
-                        // Set the framebuffer texture as the color texture.
-                        color_texture_metadata->color_texture = render_target.framebuffer->get_texture();
-                    }
+                    location = render_target_metadata[index];
                 }
+                // Image
+                else {
+                    auto image = pattern.source.image;
 
-                PaintFilter paint_filter;
-                {
-                    // We can have a pattern without a filter.
-                    if (pattern.filter == nullptr) {
-                        paint_filter.type = PaintFilter::Type::None;
+                    // TODO(pcwalton): We should be able to use tile cleverness to
+                    // repeat inside the atlas in some cases.
+                    auto image_hash = image->get_hash();
+
+                    // Check cache.
+                    if (paint_texture_manager->cached_images.find(image_hash) !=
+                        paint_texture_manager->cached_images.end()) {
+                        location = paint_texture_manager->cached_images[image_hash];
                     } else {
-                        paint_filter.type = PaintFilter::Type::PatternFilter;
-                        paint_filter.pattern_filter = *pattern.filter;
+                        // Leave a pixel of border on the side.
+                        auto allocation_mode = AllocationMode::OwnPage;
+                        location = allocator.allocate(image->size + border * 2, allocation_mode);
+                        paint_texture_manager->cached_images[image_hash] = location;
                     }
+
+                    image_texel_info.push_back(ImageTexelInfo{
+                        TextureLocation{
+                            location.page,
+                            location.rect.contract(border),
+                        },
+                        std::make_shared<std::vector<ColorU>>(image->pixels),
+                    });
                 }
 
                 TextureSamplingFlags sampling_flags;
-                {
-                    if (pattern.repeat_x()) {
-                        sampling_flags.value |= TextureSamplingFlags::REPEAT_U;
-                    }
-                    if (pattern.repeat_y()) {
-                        sampling_flags.value |= TextureSamplingFlags::REPEAT_V;
-                    }
-                    if (!pattern.smoothing_enabled()) {
-                        sampling_flags.value |= TextureSamplingFlags::NEAREST_MIN | TextureSamplingFlags::NEAREST_MAG;
-                    }
+                if (pattern.repeat_x()) {
+                    sampling_flags.value |= TextureSamplingFlags::REPEAT_U;
+                }
+                if (pattern.repeat_y()) {
+                    sampling_flags.value |= TextureSamplingFlags::REPEAT_V;
+                }
+                if (!pattern.smoothing_enabled()) {
+                    sampling_flags.value |= TextureSamplingFlags::NEAREST_MIN | TextureSamplingFlags::NEAREST_MAG;
                 }
 
-                color_texture_metadata->location = texture_location;
-                //                color_texture_metadata->page_scale = ;
+                PaintFilter paint_filter;
+                // We can have a pattern without a filter.
+                if (pattern.filter == nullptr) {
+                    paint_filter.type = PaintFilter::Type::None;
+                } else {
+                    paint_filter.type = PaintFilter::Type::PatternFilter;
+                    paint_filter.pattern_filter = *pattern.filter;
+                }
+
+                color_texture_metadata->location = location;
+                color_texture_metadata->page_scale = allocator.page_scale(location.page);
                 color_texture_metadata->sampling_flags = sampling_flags;
                 color_texture_metadata->filter = paint_filter;
                 color_texture_metadata->transform = Transform2::from_translation(border.to_f32());
@@ -379,11 +431,12 @@ std::vector<PaintMetadata> Palette::assign_paint_locations(const std::shared_ptr
             {color_texture_metadata, paint.get_base_color(), BlendMode::SrcOver, paint.is_opaque()});
     }
 
-    gradient_tile_builder.upload(cmd_buffer, gradient_tile_texture);
-
-    cmd_buffer->submit_and_wait();
-
-    return paint_metadata;
+    return PaintLocationsInfo{
+        paint_metadata,
+        gradient_tile_builder,
+        image_texel_info,
+        used_image_hashes,
+    };
 }
 
 void Palette::calculate_texture_transforms(std::vector<PaintMetadata> &paint_metadata) {
@@ -459,6 +512,32 @@ void Palette::calculate_texture_transforms(std::vector<PaintMetadata> &paint_met
     }
 }
 
+void Palette::free_transient_locations(PaintTextureManager &texture_manager,
+                                       const std::vector<TextureLocation> &transient_paint_locations) {
+    for (const auto &location : transient_paint_locations) {
+        texture_manager.allocator.free(location);
+    }
+}
+
+// Frees images that are cached but not used this frame.
+void Palette::free_unused_images(PaintTextureManager &texture_manager, std::set<uint64_t> used_image_hashes) {
+    auto &cached_images = texture_manager.cached_images;
+    auto &allocator = texture_manager.allocator;
+
+    std::vector<uint64_t> image_hashes_to_remove;
+    for (auto &image : cached_images) {
+        bool keep = used_image_hashes.find(image.first) != used_image_hashes.end();
+        if (!keep) {
+            allocator.free(image.second);
+            image_hashes_to_remove.push_back(image.first);
+        }
+    }
+
+    for (auto &hash : image_hashes_to_remove) {
+        cached_images.erase(hash);
+    }
+}
+
 MergedPaletteInfo Palette::append_palette(const Palette &palette) {
     // Merge render targets.
     std::map<RenderTargetId, RenderTargetId> render_target_mapping;
@@ -513,26 +592,25 @@ MergedPaletteInfo Palette::append_palette(const Palette &palette) {
     return {render_target_mapping, paint_mapping};
 }
 
-std::shared_ptr<Texture> Palette::get_metadata_texture() const {
-    return metadata_texture;
-}
-
-void Palette::allocate_textures() {
-    auto iter = paint_texture_manager->allocator.page_ids();
+void Palette::allocate_textures(Renderer *renderer) {
+    auto &allocator = paint_texture_manager->allocator;
+    auto iter = allocator.page_ids();
 
     while (true) {
         auto page_id = iter.next();
 
         if (page_id != nullptr) {
-            auto page_size = paint_texture_manager->allocator.page_size(*page_id);
+            auto page_size = allocator.page_size(*page_id);
 
-            if (paint_texture_manager->allocator.page_is_new(*page_id)) {
-                // Renderer::allocate_pattern_texture_page(uint64_t page_id, Vec2I texture_size)
+            if (allocator.page_is_new(*page_id)) {
+                renderer->allocate_pattern_texture_page(*page_id, page_size);
             }
+        } else {
+            break;
         }
     }
 
-    paint_texture_manager->allocator.mark_all_pages_as_allocated();
+    allocator.mark_all_pages_as_allocated();
 }
 
 } // namespace Pathfinder

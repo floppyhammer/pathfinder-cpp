@@ -49,7 +49,7 @@ struct BuiltDrawPath {
     shared_ptr<uint32_t> clip_path_id;
     BlendMode blend_mode;
     //    Filter filter;
-    shared_ptr<Texture> color_texture; // Will be used in tile batch building.
+    std::shared_ptr<TileBatchTextureInfo> color_texture_info; // Will be used in tile batch building.
     TextureSamplingFlags sampling_flags;
     FillRule mask_fill_rule;
 
