@@ -91,11 +91,19 @@ struct TextureLocation {
 
 struct TexturePageIter;
 
-struct TextureAllocator {
+class TextureAllocator {
     friend struct TexturePageIter;
 
 public:
     explicit TextureAllocator() = default;
+    TexturePageIter page_ids();
+
+    Vec2I page_size(uint32_t page_id);
+
+    bool page_is_new(uint32_t page_id);
+
+    /// Mark all pages as allocated as GPU textures.
+    void mark_all_pages_as_allocated();
 
 private:
     std::vector<std::shared_ptr<TexturePage>> pages;
@@ -108,15 +116,7 @@ private:
 
     void free(TextureLocation location);
 
-    Vec2I page_size(uint32_t page_id);
-
     Vec2F page_scale(uint32_t page_id);
-
-    bool page_is_new(uint32_t page_id);
-
-    void mark_all_pages_as_allocated();
-
-    TexturePageIter page_ids();
 };
 
 struct TexturePageIter {

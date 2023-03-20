@@ -23,11 +23,26 @@ void upload_texture_metadata(const std::shared_ptr<Texture> &metadata_texture,
                              const std::vector<TextureMetadataEntry> &metadata,
                              const std::shared_ptr<Driver> &driver);
 
+/// Pattern GPU textures.
+class PatternTexturePage {
+public:
+    PatternTexturePage(uint64_t _framebuffer_id, bool _must_preserve_contents)
+        : framebuffer_id(_framebuffer_id), must_preserve_contents(_must_preserve_contents) {}
+
+    uint64_t framebuffer_id;
+    bool must_preserve_contents;
+};
+
 /// In most cases, we have only one renderer set up, while having
 /// multiple scenes prepared for rendering.
 class Renderer {
 public:
     explicit Renderer(const std::shared_ptr<Driver> &_driver);
+
+    /// Allocate GPU resources for a pattern texture page.
+    void allocate_pattern_texture_page(uint64_t page_id, Vec2I texture_size);
+
+    void upload_texel_data(std::vector<ColorU> &texels, TextureLocation location);
 
     virtual void set_up_pipelines() = 0;
 
@@ -53,6 +68,8 @@ protected:
     std::shared_ptr<Buffer> constants_ub{};
 
     std::shared_ptr<GpuMemoryAllocator> allocator;
+
+    std::vector<std::shared_ptr<PatternTexturePage>> pattern_texture_pages;
 };
 
 } // namespace Pathfinder

@@ -71,7 +71,8 @@ enum class GradientWrap {
 };
 
 /// A gradient, either linear or radial.
-struct Gradient {
+class Gradient {
+public:
     /// Information specific to the type of gradient (linear or radial).
     GradientGeometry geometry;
 
@@ -136,7 +137,8 @@ struct GradientTile {
     uint32_t next_index;
 };
 
-struct GradientTileBuilder {
+class GradientTileBuilder {
+public:
     std::vector<GradientTile> tiles;
 
     TextureLocation allocate(const Gradient &gradient);

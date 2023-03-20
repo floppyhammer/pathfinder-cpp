@@ -176,11 +176,13 @@ void upload_texture_metadata(const std::shared_ptr<Texture> &metadata_texture,
     cmd_buffer->submit_and_wait();
 }
 
-Palette::Palette(uint32_t _scene_id) : scene_id(_scene_id) {}
+Palette::Palette(uint32_t _scene_id) : scene_id(_scene_id) {
+    paint_texture_manager = std::make_shared<PaintTextureManager>();
+}
 
 uint32_t Palette::push_paint(const Paint &paint) {
-    // Check if already has this paint.
-    // FIXME: Only for pure-color paints for now.
+    // Check if this paint already exists.
+    // FIXME: caching is only for pure-color paints for now.
     if (paint.get_overlay() == nullptr) {
         auto iter = cache.find(paint);
         if (iter != cache.end()) {
@@ -513,6 +515,24 @@ MergedPaletteInfo Palette::append_palette(const Palette &palette) {
 
 std::shared_ptr<Texture> Palette::get_metadata_texture() const {
     return metadata_texture;
+}
+
+void Palette::allocate_textures() {
+    auto iter = paint_texture_manager->allocator.page_ids();
+
+    while (true) {
+        auto page_id = iter.next();
+
+        if (page_id != nullptr) {
+            auto page_size = paint_texture_manager->allocator.page_size(*page_id);
+
+            if (paint_texture_manager->allocator.page_is_new(*page_id)) {
+                // Renderer::allocate_pattern_texture_page(uint64_t page_id, Vec2I texture_size)
+            }
+        }
+    }
+
+    paint_texture_manager->allocator.mark_all_pages_as_allocated();
 }
 
 } // namespace Pathfinder

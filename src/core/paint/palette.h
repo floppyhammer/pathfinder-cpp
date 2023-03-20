@@ -17,11 +17,17 @@ struct MergedPaletteInfo {
     std::map<uint16_t, uint16_t> paint_mapping;
 };
 
+// Caches CPU texture images from scene to scene.
+struct PaintTextureManager {
+    TextureAllocator allocator;
+    std::map<uint64_t, TextureLocation> cached_images;
+};
+
 /// Stores all paints in a scene.
 /// A palette will give two things to a renderer:
 /// 1. A metadata texture.
 /// 2. A vector of PaintMetadata.
-struct Palette {
+class Palette {
 public:
     explicit Palette(uint32_t _scene_id);
 
@@ -49,6 +55,8 @@ private:
     /// Cached paints.
     std::map<Paint, uint32_t> cache;
 
+    std::shared_ptr<PaintTextureManager> paint_texture_manager;
+
     /// Which scene this palette belongs to.
     uint32_t scene_id;
 
@@ -62,6 +70,9 @@ private:
 
     /// Convert PaintMetadata to TextureMetadataEntry, which will be used in a renderer.
     static std::vector<TextureMetadataEntry> create_texture_metadata(const std::vector<PaintMetadata> &paint_metadata);
+
+    /// Allocate GPU textures for the images in the paint texture manager.
+    void allocate_textures();
 };
 
 } // namespace Pathfinder

@@ -42,4 +42,40 @@ Renderer::Renderer(const std::shared_ptr<Driver> &_driver) : driver(_driver) {
     cmd_buffer->submit_and_wait();
 }
 
+void Renderer::allocate_pattern_texture_page(uint64_t page_id, Vec2I texture_size) {
+    // Fill in IDs up to the requested page ID.
+    while (pattern_texture_pages.size() < page_id + 1) {
+        pattern_texture_pages.push_back(nullptr);
+    }
+
+    // Clear out any existing texture.
+    auto old_texture_page = pattern_texture_pages[page_id];
+    if (old_texture_page != nullptr) {
+        allocator->free_framebuffer(old_texture_page->framebuffer_id);
+    }
+
+    // Allocate texture.
+    auto framebuffer_id = allocator->allocate_framebuffer(texture_size, TextureFormat::Rgba8Unorm, "PatternPage");
+    pattern_texture_pages[page_id] = std::make_shared<PatternTexturePage>(framebuffer_id, false);
+}
+
+void Renderer::upload_texel_data(std::vector<ColorU> &texels, TextureLocation location) {
+    if (location.page >= pattern_texture_pages.size()) {
+        Logger::error("Texture page ID is invalid!", "Renderer");
+        return;
+    }
+
+    auto texture_page = pattern_texture_pages[location.page];
+    if (texture_page == nullptr) {
+        Logger::error("Texture page not allocated yet!", "Renderer");
+        return;
+    }
+
+    auto framebuffer = allocator->get_texture(texture_page->framebuffer_id);
+
+    //    pathfinder_gpu::upload_to_texture(&self.core.queue, texture, location.rect, wgpu::TextureFormat::R8Unorm);
+
+    texture_page->must_preserve_contents = true;
+}
+
 } // namespace Pathfinder
