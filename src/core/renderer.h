@@ -46,6 +46,9 @@ public:
 
     ~Renderer();
 
+    /// Upload texture metadata built by palette.
+    void upload_texture_metadata(const std::vector<TextureMetadataEntry> &metadata);
+
     /// Allocate GPU resources for a pattern texture page.
     void allocate_pattern_texture_page(uint64_t page_id, Vec2I texture_size);
 
@@ -80,26 +83,35 @@ public:
 
     std::shared_ptr<Driver> driver;
 
-    std::shared_ptr<Texture> metadata_texture;
-
-    std::vector<std::shared_ptr<PatternTexturePage>> pattern_texture_pages;
-
 protected:
     /// If we should clear the dest framebuffer or texture.
     bool clear_dest_texture = true;
+
+    // Basic data.
+    std::shared_ptr<GpuMemoryAllocator> allocator;
+
+    // Read-only static core resources.
+    // -----------------------------------------------
+    /// Uniform buffer containing some constants. Shared by D3D9 and D3D10.
+    std::shared_ptr<Buffer> constants_ub{};
 
     /// Pre-Defined texture used to draw the mask texture. Shared by D3D9 and D3D10.
     std::shared_ptr<Texture> area_lut_texture;
 
     /// For unused texture binding point.
     std::shared_ptr<Texture> dummy_texture;
+    // -----------------------------------------------
 
-    /// Uniform buffer containing some constants. Shared by D3D9 and D3D10.
-    std::shared_ptr<Buffer> constants_ub{};
+    // Read-write static core resources.
+    // -----------------------------------------------
+    std::shared_ptr<Texture> metadata_texture;
+    // -----------------------------------------------
 
-    std::shared_ptr<GpuMemoryAllocator> allocator;
-
+    // Dynamic resources and associated metadata.
+    // -----------------------------------------------
     std::vector<TextureLocation> render_target_locations;
+    std::vector<std::shared_ptr<PatternTexturePage>> pattern_texture_pages;
+    // -----------------------------------------------
 };
 
 } // namespace Pathfinder

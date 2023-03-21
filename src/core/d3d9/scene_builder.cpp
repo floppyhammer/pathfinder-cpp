@@ -95,7 +95,7 @@ std::vector<DrawTileBatchD3D9> build_tile_batches_for_draw_path_display_item(
 
 void SceneBuilderD3D9::build(const std::shared_ptr<Driver> &driver, Renderer *renderer) {
     // Build paint data.
-    auto paint_metadata = scene->palette.build_paint_info(driver, renderer);
+    auto paint_metadata = scene->palette.build_paint_info(renderer);
 
     // Most important step.
     // Build draw paths into built draw paths.

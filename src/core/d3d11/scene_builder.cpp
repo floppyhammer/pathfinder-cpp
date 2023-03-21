@@ -199,7 +199,7 @@ void SceneBuilderD3D11::build(const std::shared_ptr<Driver> &driver, Renderer *r
     built_segments = BuiltSegments::from_scene(*scene);
 
     // Build paint data.
-    auto paint_metadata = scene->palette.build_paint_info(driver, renderer);
+    auto paint_metadata = scene->palette.build_paint_info(renderer);
 
     auto last_scene =
         LastSceneInfo{scene->id, scene->epoch, built_segments.draw_segment_ranges, built_segments.clip_segment_ranges};

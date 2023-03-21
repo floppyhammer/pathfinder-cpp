@@ -19,15 +19,6 @@ const int32_t COMBINER_CTRL_COLOR_FILTER_SHIFT = 4;
 const int32_t COMBINER_CTRL_COLOR_COMBINE_SHIFT = 8;
 const int32_t COMBINER_CTRL_COMPOSITE_SHIFT = 10;
 
-struct FilterParams {
-    F32x4 p0 = F32x4::splat(0);
-    F32x4 p1 = F32x4::splat(0);
-    F32x4 p2 = F32x4::splat(0);
-    F32x4 p3 = F32x4::splat(0);
-    F32x4 p4 = F32x4::splat(0);
-    int32_t ctrl = 0;
-};
-
 FilterParams compute_filter_params(const PaintFilter &filter,
                                    BlendMode blend_mode,
                                    ColorCombineMode color_combine_mode) {
@@ -84,99 +75,6 @@ FilterParams compute_filter_params(const PaintFilter &filter,
     return filter_params;
 }
 
-void upload_texture_metadata(const std::shared_ptr<Texture> &metadata_texture,
-                             const std::vector<TextureMetadataEntry> &metadata,
-                             const std::shared_ptr<Driver> &driver) {
-    auto padded_texel_size =
-        alignup_i32((int32_t)metadata.size(), TEXTURE_METADATA_ENTRIES_PER_ROW) * TEXTURE_METADATA_TEXTURE_WIDTH * 4;
-
-    std::vector<half> texels;
-    texels.reserve(padded_texel_size);
-
-    for (const auto &entry : metadata) {
-        auto base_color = entry.base_color.to_f32();
-
-        auto filter_params = compute_filter_params(entry.filter, entry.blend_mode, entry.color_combine_mode);
-
-        // 40 f16 points, 10 RGBA pixels in total.
-        std::array<half, 40> slice = {
-            // 0 pixel
-            entry.color_transform.m11(),
-            entry.color_transform.m21(),
-            entry.color_transform.m12(),
-            entry.color_transform.m22(),
-            // 1 pixel
-            entry.color_transform.m13(),
-            entry.color_transform.m23(),
-            0.0f,
-            0.0f,
-            // 2 pixel
-            base_color.r,
-            base_color.g,
-            base_color.b,
-            base_color.a,
-            // 3 pixel
-            filter_params.p0.xy().x,
-            filter_params.p0.xy().y,
-            filter_params.p0.zw().x,
-            filter_params.p0.zw().y,
-            // 4 pixel
-            filter_params.p1.xy().x,
-            filter_params.p1.xy().y,
-            filter_params.p1.zw().x,
-            filter_params.p1.zw().y,
-            // 5 pixel
-            filter_params.p2.xy().x,
-            filter_params.p2.xy().y,
-            filter_params.p2.zw().x,
-            filter_params.p2.zw().y,
-            // 6 pixel
-            filter_params.p3.xy().x,
-            filter_params.p3.xy().y,
-            filter_params.p3.zw().x,
-            filter_params.p3.zw().y,
-            // 7 pixel
-            filter_params.p4.xy().x,
-            filter_params.p4.xy().y,
-            filter_params.p4.zw().x,
-            filter_params.p4.zw().y,
-            // 8 pixel
-            (float)filter_params.ctrl,
-            0.0f,
-            0.0f,
-            0.0f,
-            // 9 pixel
-            0.0f,
-            0.0f,
-            0.0f,
-            0.0f,
-        };
-
-        texels.insert(texels.end(), slice.begin(), slice.end());
-    }
-
-    // Add padding.
-    while (texels.size() < padded_texel_size) {
-        texels.emplace_back(0.0f);
-    }
-
-    // Update the region that contains info instead of the whole texture.
-    auto region_rect =
-        RectI(0, 0, TEXTURE_METADATA_TEXTURE_WIDTH, texels.size() / (4 * TEXTURE_METADATA_TEXTURE_WIDTH));
-
-    // Don't use a vector as we need to delay the de-allocation until the image data is uploaded to GPU.
-    auto raw_texels = new half[texels.size()];
-    std::copy(texels.begin(), texels.end(), raw_texels);
-
-    // Callback to clean up staging resources.
-    auto callback = [raw_texels] { delete[] raw_texels; };
-
-    auto cmd_buffer = driver->create_command_buffer("Upload to metadata texture");
-    cmd_buffer->add_callback(callback);
-    cmd_buffer->upload_to_texture(metadata_texture, region_rect, raw_texels);
-    cmd_buffer->submit_and_wait();
-}
-
 Palette::Palette(uint32_t _scene_id) : scene_id(_scene_id) {}
 
 uint32_t Palette::push_paint(const Paint &paint) {
@@ -215,7 +113,7 @@ RenderTargetDesc Palette::get_render_target(RenderTargetId render_target_id) con
     return render_targets_desc[render_target_id.render_target];
 }
 
-std::vector<PaintMetadata> Palette::build_paint_info(const std::shared_ptr<Driver> &driver, Renderer *renderer) {
+std::vector<PaintMetadata> Palette::build_paint_info(Renderer *renderer) {
     auto paint_texture_manager = std::make_shared<PaintTextureManager>();
 
     std::vector<TextureLocation> transient_paint_locations;
@@ -233,7 +131,7 @@ std::vector<PaintMetadata> Palette::build_paint_info(const std::shared_ptr<Drive
     auto texture_metadata_entries = create_texture_metadata(paint_locations_info.paint_metadata);
 
     // Upload texture metadata.
-    upload_texture_metadata(renderer->metadata_texture, texture_metadata_entries, driver);
+    renderer->upload_texture_metadata(texture_metadata_entries);
 
     // Allocate textures for all images in the paint texture manager.
     allocate_textures(paint_texture_manager, renderer);

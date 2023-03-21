@@ -130,4 +130,95 @@ void Renderer::end_scene() {
     allocator->purge_if_needed();
 }
 
+void Renderer::upload_texture_metadata(const std::vector<TextureMetadataEntry> &metadata) {
+    auto padded_texel_size =
+        alignup_i32((int32_t)metadata.size(), TEXTURE_METADATA_ENTRIES_PER_ROW) * TEXTURE_METADATA_TEXTURE_WIDTH * 4;
+
+    std::vector<half> texels;
+    texels.reserve(padded_texel_size);
+
+    for (const auto &entry : metadata) {
+        auto base_color = entry.base_color.to_f32();
+
+        auto filter_params = compute_filter_params(entry.filter, entry.blend_mode, entry.color_combine_mode);
+
+        // 40 f16 points, 10 RGBA pixels in total.
+        std::array<half, 40> slice = {
+            // 0 pixel
+            entry.color_transform.m11(),
+            entry.color_transform.m21(),
+            entry.color_transform.m12(),
+            entry.color_transform.m22(),
+            // 1 pixel
+            entry.color_transform.m13(),
+            entry.color_transform.m23(),
+            0.0f,
+            0.0f,
+            // 2 pixel
+            base_color.r,
+            base_color.g,
+            base_color.b,
+            base_color.a,
+            // 3 pixel
+            filter_params.p0.xy().x,
+            filter_params.p0.xy().y,
+            filter_params.p0.zw().x,
+            filter_params.p0.zw().y,
+            // 4 pixel
+            filter_params.p1.xy().x,
+            filter_params.p1.xy().y,
+            filter_params.p1.zw().x,
+            filter_params.p1.zw().y,
+            // 5 pixel
+            filter_params.p2.xy().x,
+            filter_params.p2.xy().y,
+            filter_params.p2.zw().x,
+            filter_params.p2.zw().y,
+            // 6 pixel
+            filter_params.p3.xy().x,
+            filter_params.p3.xy().y,
+            filter_params.p3.zw().x,
+            filter_params.p3.zw().y,
+            // 7 pixel
+            filter_params.p4.xy().x,
+            filter_params.p4.xy().y,
+            filter_params.p4.zw().x,
+            filter_params.p4.zw().y,
+            // 8 pixel
+            (float)filter_params.ctrl,
+            0.0f,
+            0.0f,
+            0.0f,
+            // 9 pixel
+            0.0f,
+            0.0f,
+            0.0f,
+            0.0f,
+        };
+
+        texels.insert(texels.end(), slice.begin(), slice.end());
+    }
+
+    // Add padding.
+    while (texels.size() < padded_texel_size) {
+        texels.emplace_back(0.0f);
+    }
+
+    // Update the region that contains info instead of the whole texture.
+    auto region_rect =
+        RectI(0, 0, TEXTURE_METADATA_TEXTURE_WIDTH, texels.size() / (4 * TEXTURE_METADATA_TEXTURE_WIDTH));
+
+    // Don't use a vector as we need to delay the de-allocation until the image data is uploaded to GPU.
+    auto raw_texels = new half[texels.size()];
+    std::copy(texels.begin(), texels.end(), raw_texels);
+
+    // Callback to clean up staging resources.
+    auto callback = [raw_texels] { delete[] raw_texels; };
+
+    auto cmd_buffer = driver->create_command_buffer("Upload to metadata texture");
+    cmd_buffer->add_callback(callback);
+    cmd_buffer->upload_to_texture(metadata_texture, region_rect, raw_texels);
+    cmd_buffer->submit_and_wait();
+}
+
 } // namespace Pathfinder

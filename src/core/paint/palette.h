@@ -23,12 +23,23 @@ struct PaintTextureManager {
     std::map<uint64_t, TextureLocation> cached_images;
 };
 
+struct FilterParams {
+    F32x4 p0 = F32x4::splat(0);
+    F32x4 p1 = F32x4::splat(0);
+    F32x4 p2 = F32x4::splat(0);
+    F32x4 p3 = F32x4::splat(0);
+    F32x4 p4 = F32x4::splat(0);
+    int32_t ctrl = 0;
+};
+
+FilterParams compute_filter_params(const PaintFilter &filter,
+                                   BlendMode blend_mode,
+                                   ColorCombineMode color_combine_mode);
+
 class Renderer;
 
 /// Stores all paints in a scene.
-/// A palette will give two things to a renderer:
-/// 1. A metadata texture.
-/// 2. A vector of PaintMetadata.
+/// Note that a palette doesn't own any GPU resources.
 class Palette {
 public:
     explicit Palette(uint32_t _scene_id);
@@ -43,7 +54,7 @@ public:
     RenderTargetDesc get_render_target(RenderTargetId render_target_id) const;
 
     /// Important step.
-    std::vector<PaintMetadata> build_paint_info(const std::shared_ptr<Driver> &driver, Renderer *renderer);
+    std::vector<PaintMetadata> build_paint_info(Renderer *renderer);
 
     /// Append another palette to this append_palette, merging paints and render targets.
     MergedPaletteInfo append_palette(const Palette &palette);
