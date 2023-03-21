@@ -397,7 +397,7 @@ void Canvas::draw_subimage(const std::shared_ptr<Image> &image, const RectF &src
     auto transform = Transform2::from_scale(scale).translate(offset);
 
     auto pattern = Pattern::from_image(image);
-    pattern.apply_transform(transform);
+    pattern.apply_transform(current_state.transform * transform);
 
     // Save the current fill paint.
     auto old_fill_paint = current_state.fill_paint;
