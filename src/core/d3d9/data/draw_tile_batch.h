@@ -25,8 +25,8 @@ struct DrawTileBatchD3D9 {
     /// The color texture to use.
     std::shared_ptr<TileBatchTextureInfo> color_texture_info;
 
-    /// Render target.
-    RenderTarget render_target;
+    /// Render target ID.
+    std::shared_ptr<RenderTargetId> render_target_id;
 
     /// The filter to use.
     // Filter filter;

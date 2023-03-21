@@ -46,8 +46,8 @@ ShadowBlurRenderTargetInfo push_shadow_blur_render_targets(const std::shared_ptr
     // Bounds expansion caused by blurring.
     auto bounds = outline_bounds.dilate(sigma * 3.f).round_out().to_i32();
 
-    shadow_blur_info.id_y = scene.push_render_target(RenderTarget{bounds.size(), "Shadow Blur X", nullptr});
-    shadow_blur_info.id_x = scene.push_render_target(RenderTarget{bounds.size(), "Shadow Blur Y", nullptr});
+    shadow_blur_info.id_y = scene.push_render_target(RenderTargetDesc{bounds.size(), "Shadow Blur X"});
+    shadow_blur_info.id_x = scene.push_render_target(RenderTargetDesc{bounds.size(), "Shadow Blur Y"});
 
     shadow_blur_info.sigma = sigma;
     shadow_blur_info.bounds = bounds;
@@ -507,8 +507,8 @@ Pattern Canvas::create_pattern_from_canvas(Canvas &canvas, const Transform2 &tra
     auto subscene_size = canvas.get_size();
     auto subscene = canvas.get_scene();
 
-    auto render_target = RenderTarget{subscene_size, "Pattern Render Pass"};
-    auto render_target_id = scene->push_render_target(render_target);
+    auto render_target_desc = RenderTargetDesc{subscene_size, "Pattern Render Pass"};
+    auto render_target_id = scene->push_render_target(render_target_desc);
 
     scene->append_scene(*subscene, transform);
     scene->pop_render_target();

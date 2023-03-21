@@ -63,6 +63,7 @@ void Renderer::allocate_pattern_texture_page(uint64_t page_id, Vec2I texture_siz
     // Clear out any existing texture.
     auto old_texture_page = pattern_texture_pages[page_id];
     if (old_texture_page != nullptr) {
+        pattern_texture_pages[page_id] = nullptr;
         allocator->free_framebuffer(old_texture_page->framebuffer_id);
     }
 
@@ -72,13 +73,29 @@ void Renderer::allocate_pattern_texture_page(uint64_t page_id, Vec2I texture_siz
 }
 
 void Renderer::declare_render_target(RenderTargetId render_target_id, TextureLocation location) {
-    while (render_targets.size() < render_target_id.render_target + 1) {
-        render_targets.push_back(TextureLocation{std::numeric_limits<uint32_t>::max(), RectI()});
+    while (render_target_locations.size() < render_target_id.render_target + 1) {
+        render_target_locations.push_back(TextureLocation{std::numeric_limits<uint32_t>::max(), RectI()});
     }
 
-    auto &render_target = render_targets[render_target_id.render_target];
+    auto &render_target = render_target_locations[render_target_id.render_target];
     assert(render_target.page == std::numeric_limits<uint32_t>::max());
     render_target = location;
+}
+
+TextureLocation Renderer::get_render_target_location(RenderTargetId render_target_id) {
+    return render_target_locations[render_target_id.render_target];
+}
+
+RenderTarget Renderer::get_render_target(RenderTargetId render_target_id) {
+    auto texture_page_id = get_render_target_location(render_target_id).page;
+
+    auto texture_page = pattern_texture_pages[texture_page_id];
+    if (texture_page == nullptr) {
+        Logger::error("Texture page not allocated!", "Renderer");
+        return {nullptr};
+    }
+
+    return {allocator->get_framebuffer(texture_page->framebuffer_id)};
 }
 
 void Renderer::upload_texel_data(std::vector<ColorU> &texels, TextureLocation location) {
@@ -104,7 +121,7 @@ void Renderer::upload_texel_data(std::vector<ColorU> &texels, TextureLocation lo
 }
 
 void Renderer::start_rendering() {
-    render_targets.clear();
+    render_target_locations.clear();
 }
 
 } // namespace Pathfinder

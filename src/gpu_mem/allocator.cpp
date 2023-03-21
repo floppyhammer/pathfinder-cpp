@@ -174,7 +174,6 @@ void GpuMemoryAllocator::free_texture(uint64_t id) {
     }
 
     auto allocation = textures_in_use[id];
-    allocation.tag = "";
 
     textures_in_use.erase(id);
 
@@ -259,8 +258,16 @@ void GpuMemoryAllocator::purge_if_needed() {
     }
 
     if (purge_happened) {
+        size_t texture_count = textures_in_use.size();
+        size_t framebuffer_count = framebuffers_in_use.size();
+        size_t general_buffer_count = general_buffers_in_use.size();
+        size_t free_object_count = free_objects.size();
+
         Logger::info("GPU memory purged, current status: ALLOCATED " + std::to_string(bytes_allocated) +
-                         " bytes | COMMITTED " + std::to_string(bytes_committed) + " bytes",
+                         " bytes | COMMITTED " + std::to_string(bytes_committed) + " bytes | Textures " +
+                         std::to_string(texture_count) + " | Framebuffers " + std::to_string(framebuffer_count) +
+                         " | General buffers " + std::to_string(general_buffer_count) + " | Free objects " +
+                         std::to_string(free_object_count),
                      "GpuMemoryAllocator");
     }
 }

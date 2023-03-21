@@ -38,9 +38,9 @@ public:
 
     Paint get_paint(uint32_t paint_id) const;
 
-    RenderTargetId push_render_target(const RenderTarget &render_target);
+    RenderTargetId push_render_target(const RenderTargetDesc &render_target_desc);
 
-    RenderTarget get_render_target(RenderTargetId render_target_id) const;
+    RenderTargetDesc get_render_target(RenderTargetId render_target_id) const;
 
     /// Important step.
     std::vector<PaintMetadata> build_paint_info(const std::shared_ptr<Driver> &driver, Renderer *renderer);
@@ -48,24 +48,23 @@ public:
     /// Append another palette to this append_palette, merging paints and render targets.
     MergedPaletteInfo append_palette(const Palette &palette);
 
-    std::shared_ptr<Texture> get_metadata_texture() const;
-
 private:
     std::vector<Paint> paints;
-    std::vector<RenderTarget> render_targets;
+
+    /// This is not real GPU render target.
+    std::vector<RenderTargetDesc> render_targets_desc;
 
     /// Cached paints.
     std::map<Paint, uint32_t> cache;
 
-    // Only for IMAGE pattern source management.
-    std::shared_ptr<PaintTextureManager> paint_texture_manager;
-
     /// Which scene this palette belongs to.
     uint32_t scene_id;
 
+    std::shared_ptr<PaintTextureManager> paint_texture_manager;
+
 private:
     static void free_transient_locations(PaintTextureManager &texture_manager,
-                                  const std::vector<TextureLocation> &transient_paint_locations);
+                                         const std::vector<TextureLocation> &transient_paint_locations);
 
     // Frees images that are cached but not used this frame.
     static void free_unused_images(PaintTextureManager &texture_manager, std::set<uint64_t> used_image_hashes);

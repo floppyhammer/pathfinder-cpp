@@ -46,12 +46,10 @@ struct Image {
 /// This can be useful for creating "stamps" or "symbols" that are rendered once and reused. It can
 /// also be useful for image effects that require many paths to be processed at once; e.g. opacity
 /// applied to a group of paths.
-struct RenderTarget {
+struct RenderTargetDesc {
     Vec2I size;
 
     std::string name;
-
-    std::shared_ptr<uint64_t> framebuffer_id;
 };
 
 /// Where a raster image pattern comes from.

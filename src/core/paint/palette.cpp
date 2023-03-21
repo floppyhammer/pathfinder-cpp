@@ -207,14 +207,14 @@ Paint Palette::get_paint(uint32_t paint_id) const {
     return paints[paint_id];
 }
 
-RenderTargetId Palette::push_render_target(const RenderTarget &render_target) {
-    uint32_t id = render_targets.size();
-    render_targets.push_back(render_target);
+RenderTargetId Palette::push_render_target(const RenderTargetDesc &render_target_desc) {
+    uint32_t id = render_targets_desc.size();
+    render_targets_desc.push_back(render_target_desc);
     return {scene_id, id};
 }
 
-RenderTarget Palette::get_render_target(RenderTargetId render_target_id) const {
-    return render_targets[render_target_id.render_target];
+RenderTargetDesc Palette::get_render_target(RenderTargetId render_target_id) const {
+    return render_targets_desc[render_target_id.render_target];
 }
 
 std::vector<PaintMetadata> Palette::build_paint_info(const std::shared_ptr<Driver> &driver, Renderer *renderer) {
@@ -295,8 +295,8 @@ std::vector<TextureLocation> Palette::assign_render_target_locations(
     std::vector<TextureLocation> &transient_paint_locations) {
     std::vector<TextureLocation> render_target_metadata;
 
-    for (const auto &render_target : render_targets) {
-        auto location = paint_texture_manager->allocator.allocate_image(render_target.size);
+    for (const auto &desc : render_targets_desc) {
+        auto location = paint_texture_manager->allocator.allocate_image(desc.size);
         render_target_metadata.push_back(location);
         transient_paint_locations.push_back(location);
     }
@@ -541,9 +541,9 @@ void Palette::free_unused_images(PaintTextureManager &texture_manager, std::set<
 MergedPaletteInfo Palette::append_palette(const Palette &palette) {
     // Merge render targets.
     std::map<RenderTargetId, RenderTargetId> render_target_mapping;
-    for (uint32_t old_render_target_index = 0; old_render_target_index < palette.render_targets.size();
+    for (uint32_t old_render_target_index = 0; old_render_target_index < palette.render_targets_desc.size();
          old_render_target_index++) {
-        auto render_target = palette.render_targets[old_render_target_index];
+        auto render_target = palette.render_targets_desc[old_render_target_index];
 
         RenderTargetId old_render_target_id = {
             palette.scene_id,

@@ -243,8 +243,7 @@ void SceneBuilderD3D11::build_tile_batches(LastSceneInfo &last_scene,
                 for (auto &batch : batches) {
                     // Set render target. Render to screen if there's no render targets on the stack.
                     if (!render_target_stack.empty()) {
-                        auto render_target = scene->palette.get_render_target(render_target_stack.back());
-                        batch.render_target = render_target;
+                        batch.render_target_id = std::make_shared<RenderTargetId>(render_target_stack.back());
                     }
 
                     tile_batches.push_back(batch);

@@ -381,7 +381,7 @@ void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &t
 
         auto z_buffer_texture_id = upload_z_buffer(batch.z_buffer_data, cmd_buffer);
 
-        draw_tiles(tile_count, batch.render_target, batch.color_texture_info, z_buffer_texture_id, cmd_buffer);
+        draw_tiles(tile_count, batch.render_target_id, batch.color_texture_info, z_buffer_texture_id, cmd_buffer);
 
         cmd_buffer->submit_and_wait();
 
@@ -469,7 +469,7 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info,
 }
 
 void RendererD3D9::draw_tiles(uint32_t tiles_count,
-                              const RenderTarget &render_target,
+                              const std::shared_ptr<RenderTargetId>& render_target_id,
                               const std::shared_ptr<TileBatchTextureInfo> &color_texture_info,
                               uint64_t z_buffer_texture_id,
                               const std::shared_ptr<CommandBuffer> &cmd_buffer) {
@@ -478,7 +478,7 @@ void RendererD3D9::draw_tiles(uint32_t tiles_count,
     cmd_buffer->sync_descriptor_set(tile_descriptor_set);
 
     // If no specific RenderTarget is given.
-    if (render_target.framebuffer_id == nullptr) {
+    if (render_target_id == nullptr) {
         cmd_buffer->begin_render_pass(clear_dest_texture ? dest_render_pass_clear : dest_render_pass_load,
                                       dest_framebuffer,
                                       ColorF());
@@ -486,8 +486,12 @@ void RendererD3D9::draw_tiles(uint32_t tiles_count,
         target_framebuffer = dest_framebuffer;
 
         clear_dest_texture = false;
-    } else { // Otherwise, we need to render to that render target.
-        auto framebuffer = allocator->get_framebuffer(*render_target.framebuffer_id);
+    }
+    // Otherwise, we need to render to that render target.
+    else {
+        auto render_target = get_render_target(*render_target_id);
+
+        auto framebuffer = render_target.framebuffer;
 
         cmd_buffer->begin_render_pass(dest_render_pass_clear, framebuffer, ColorF());
 

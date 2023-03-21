@@ -63,9 +63,8 @@ App::App(const std::shared_ptr<Driver> &_driver,
     // TEST: Render target pattern.
     if (true) {
         auto render_target_size = Vec2I(400, 300);
-        auto render_target = RenderTarget{render_target_size, "Sub render target"};
-
-        auto render_target_id = canvas->get_scene()->push_render_target(render_target);
+        auto render_target_desc = RenderTargetDesc{render_target_size, "Sub render target"};
+        auto render_target_id = canvas->get_scene()->push_render_target(render_target_desc);
 
         Path2d path;
         path.add_circle({200, 150}, 50);

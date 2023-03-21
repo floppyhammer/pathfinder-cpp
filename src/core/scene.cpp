@@ -155,8 +155,8 @@ void Scene::append_scene(const Scene &scene, const Transform2 &transform) {
     is_dirty = true;
 }
 
-RenderTargetId Scene::push_render_target(const RenderTarget &render_target) {
-    auto render_target_id = palette.push_render_target(render_target);
+RenderTargetId Scene::push_render_target(const RenderTargetDesc &render_target_desc) {
+    auto render_target_id = palette.push_render_target(render_target_desc);
 
     DisplayItem item{};
     item.type = DisplayItem::Type::PushRenderTarget;
@@ -201,14 +201,18 @@ void Scene::set_bounds(const RectF &new_bounds) {
 }
 
 void Scene::build(std::shared_ptr<Driver> &driver, std::shared_ptr<Renderer> &renderer) {
-    if (scene_builder) {
+    // No need to rebuild the scene if it hasn't changed.
+    // Comment this to do benchmark more precisely.
+    if (scene_builder && is_dirty) {
+        renderer->start_rendering();
         scene_builder->build(driver, renderer.get());
+
+        // Mark the scene as clean, so we don't need to rebuild it the next frame.
+        is_dirty = false;
     }
 }
 
 void Scene::build_and_render(std::shared_ptr<Renderer> &renderer) {
-    renderer->start_rendering();
-
     build(renderer->driver, renderer);
 
     renderer->draw(scene_builder);

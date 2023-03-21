@@ -306,13 +306,13 @@ void RendererD3D11::prepare_and_draw_tiles(DrawTileBatchD3D11 &batch) {
 
     draw_tiles(batch_info.tiles_d3d11_buffer_id,
                batch_info.first_tile_map_buffer_id,
-               batch.render_target,
+               batch.render_target_id,
                batch.color_texture_info);
 }
 
 void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
                                uint64_t first_tile_map_buffer_id,
-                               const RenderTarget &render_target,
+                               const std::shared_ptr<RenderTargetId>& render_target_id,
                                const std::shared_ptr<TileBatchTextureInfo> &color_texture_info) {
     // The framebuffer mentioned here is different from the target viewport.
     // This doesn't change as long as the destination texture's size doesn't change.
@@ -323,13 +323,14 @@ void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
     std::shared_ptr<Texture> target_texture;
     int clear_op;
     // If no specific RenderTarget is given, we render to the destination texture.
-    if (render_target.framebuffer_id == nullptr) {
+    if (render_target_id == nullptr) {
         target_size = dest_texture->get_size();
         target_texture = dest_texture;
         clear_op = clear_dest_texture ? LOAD_ACTION_CLEAR : LOAD_ACTION_LOAD;
         clear_dest_texture = false;
     } else {
-        auto framebuffer = allocator->get_framebuffer(*render_target.framebuffer_id);
+        auto render_target = get_render_target(*render_target_id);
+        auto framebuffer = render_target.framebuffer;
         target_texture = framebuffer->get_texture();
 
         target_size = target_texture->get_size();

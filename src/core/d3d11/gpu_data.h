@@ -189,7 +189,7 @@ struct DrawTileBatchD3D11 {
     std::shared_ptr<TileBatchTextureInfo> color_texture_info;
 
     /// Where to draw this batch.
-    RenderTarget render_target;
+    std::shared_ptr<RenderTargetId> render_target_id;
 };
 
 struct SegmentIndicesD3D11 {

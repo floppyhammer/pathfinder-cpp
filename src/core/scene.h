@@ -94,7 +94,7 @@ public:
     ///
     /// Render targets form a stack. All `push_draw_path()` commands go to the render target at the
     /// top of the stack.
-    RenderTargetId push_render_target(const RenderTarget &render_target);
+    RenderTargetId push_render_target(const RenderTargetDesc &render_target_desc);
 
     /// Removes the most-recently-pushed render target from the top of the stack.
     ///

@@ -90,7 +90,7 @@ private:
 
     /// Draw tiles.
     void draw_tiles(uint32_t tile_count,
-                    const RenderTarget &target_viewport,
+                    const std::shared_ptr<RenderTargetId> &render_target_id,
                     const std::shared_ptr<TileBatchTextureInfo> &color_texture_info,
                     uint64_t z_buffer_texture_id,
                     const std::shared_ptr<CommandBuffer> &cmd_buffer);

@@ -19,6 +19,10 @@ const uint32_t MASK_TILES_DOWN = 256;
 const int32_t MASK_FRAMEBUFFER_WIDTH = TILE_WIDTH * MASK_TILES_ACROSS;
 const int32_t MASK_FRAMEBUFFER_HEIGHT = TILE_HEIGHT / 4 * MASK_TILES_DOWN;
 
+struct RenderTarget {
+    std::shared_ptr<Framebuffer> framebuffer;
+};
+
 void upload_texture_metadata(const std::shared_ptr<Texture> &metadata_texture,
                              const std::vector<TextureMetadataEntry> &metadata,
                              const std::shared_ptr<Driver> &driver);
@@ -30,6 +34,7 @@ public:
         : framebuffer_id(_framebuffer_id), must_preserve_contents(_must_preserve_contents) {}
 
     uint64_t framebuffer_id;
+    /// Should preserve framebuffer content.
     bool must_preserve_contents;
 };
 
@@ -58,6 +63,10 @@ public:
 
     virtual void draw(const std::shared_ptr<SceneBuilder> &_scene_builder) = 0;
 
+    TextureLocation get_render_target_location(RenderTargetId render_target_id);
+
+    RenderTarget get_render_target(RenderTargetId render_target_id);
+
     std::shared_ptr<Driver> driver;
 
     std::shared_ptr<Texture> metadata_texture;
@@ -79,7 +88,7 @@ protected:
 
     std::shared_ptr<GpuMemoryAllocator> allocator;
 
-    std::vector<TextureLocation> render_targets;
+    std::vector<TextureLocation> render_target_locations;
 };
 
 } // namespace Pathfinder

@@ -94,12 +94,6 @@ std::vector<DrawTileBatchD3D9> build_tile_batches_for_draw_path_display_item(
 }
 
 void SceneBuilderD3D9::build(const std::shared_ptr<Driver> &driver, Renderer *renderer) {
-    // No need to rebuild the scene if it hasn't changed.
-    // Comment this to do benchmark more precisely.
-    if (!scene->is_dirty) {
-        return;
-    }
-
     // Build paint data.
     auto paint_metadata = scene->palette.build_paint_info(driver, renderer);
 
@@ -109,9 +103,6 @@ void SceneBuilderD3D9::build(const std::shared_ptr<Driver> &driver, Renderer *re
 
     // Prepare batches.
     finish_building(built_paths);
-
-    // Mark the scene as clean, so we don't need to rebuild it the next frame.
-    scene->is_dirty = false;
 }
 
 void SceneBuilderD3D9::finish_building(const std::vector<BuiltDrawPath> &built_paths) {
@@ -285,9 +276,7 @@ void SceneBuilderD3D9::build_tile_batches(const std::vector<BuiltDrawPath> &buil
                     // Set render target of the batches.
                     if (!render_target_stack.empty()) {
                         // Fetch the render target on the top of the stack.
-                        auto render_target = scene->palette.get_render_target(render_target_stack.back());
-
-                        batch.render_target = render_target;
+                        batch.render_target_id = std::make_shared<RenderTargetId>(render_target_stack.back());
                     }
 
                     tile_batches.push_back(batch);
