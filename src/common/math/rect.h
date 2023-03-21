@@ -134,7 +134,7 @@ struct Rect {
     }
 
     inline Rect<T> contract(Vec2<T> amount) {
-        return RectI(origin() + amount, lower_right() - amount);
+        return {origin() + amount, lower_right() - amount};
     }
 
     inline Rect<float> to_f32() const {
