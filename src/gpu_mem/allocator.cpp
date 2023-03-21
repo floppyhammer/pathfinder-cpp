@@ -20,6 +20,8 @@ uint64_t GpuMemoryAllocator::allocate_general_buffer(size_t byte_size, const std
             } else {
                 continue;
             }
+        } else {
+            continue;
         }
 
         // Reuse this free object.
@@ -62,12 +64,8 @@ uint64_t GpuMemoryAllocator::allocate_texture(Vec2I size, TextureFormat format, 
     for (int free_object_index = 0; free_object_index < free_objects.size(); free_object_index++) {
         auto free_obj = free_objects[free_object_index];
 
-        if (free_obj.kind == FreeObjectKind::Texture) {
-            if (free_obj.texture_allocation.descriptor == descriptor) {
-            } else {
-                // Check next one.
-                continue;
-            }
+        if (!(free_obj.kind == FreeObjectKind::Texture && free_obj.texture_allocation.descriptor == descriptor)) {
+            continue;
         }
 
         // Reuse this free object.
@@ -106,12 +104,9 @@ uint64_t GpuMemoryAllocator::allocate_framebuffer(Vec2I size, TextureFormat form
     for (int free_object_index = 0; free_object_index < free_objects.size(); free_object_index++) {
         auto free_obj = free_objects[free_object_index];
 
-        if (free_obj.kind == FreeObjectKind::Framebuffer) {
-            if (free_obj.framebuffer_allocation.descriptor == descriptor) {
-            } else {
-                // Check next one.
-                continue;
-            }
+        if (!(free_obj.kind == FreeObjectKind::Framebuffer &&
+              free_obj.framebuffer_allocation.descriptor == descriptor)) {
+            continue;
         }
 
         // Reuse this free object.
@@ -179,6 +174,7 @@ void GpuMemoryAllocator::free_texture(uint64_t id) {
     }
 
     auto allocation = textures_in_use[id];
+    allocation.tag = "";
 
     textures_in_use.erase(id);
 
