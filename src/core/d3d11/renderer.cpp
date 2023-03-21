@@ -279,8 +279,6 @@ void RendererD3D11::draw(const std::shared_ptr<SceneBuilder> &_scene_builder) {
 
     // Clear all batch info.
     free_tile_batch_buffers();
-
-    allocator->purge_if_needed();
 }
 
 std::shared_ptr<Texture> RendererD3D11::get_dest_texture() {

@@ -106,7 +106,7 @@ void Renderer::upload_texel_data(std::vector<ColorU> &texels, TextureLocation lo
 
     auto texture_page = pattern_texture_pages[location.page];
     if (texture_page == nullptr) {
-        Logger::error("Texture page not allocated yet!", "Renderer");
+        Logger::error("Texture page not allocated!", "Renderer");
         return;
     }
 
@@ -122,6 +122,12 @@ void Renderer::upload_texel_data(std::vector<ColorU> &texels, TextureLocation lo
 
 void Renderer::start_rendering() {
     render_target_locations.clear();
+}
+
+void Renderer::begin_scene() {}
+
+void Renderer::end_scene() {
+    allocator->purge_if_needed();
 }
 
 } // namespace Pathfinder

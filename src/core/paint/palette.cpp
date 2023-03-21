@@ -177,9 +177,7 @@ void upload_texture_metadata(const std::shared_ptr<Texture> &metadata_texture,
     cmd_buffer->submit_and_wait();
 }
 
-Palette::Palette(uint32_t _scene_id) : scene_id(_scene_id) {
-    paint_texture_manager = std::make_shared<PaintTextureManager>();
-}
+Palette::Palette(uint32_t _scene_id) : scene_id(_scene_id) {}
 
 uint32_t Palette::push_paint(const Paint &paint) {
     // Check if this paint already exists.
@@ -218,13 +216,15 @@ RenderTargetDesc Palette::get_render_target(RenderTargetId render_target_id) con
 }
 
 std::vector<PaintMetadata> Palette::build_paint_info(const std::shared_ptr<Driver> &driver, Renderer *renderer) {
+    auto paint_texture_manager = std::make_shared<PaintTextureManager>();
+
     std::vector<TextureLocation> transient_paint_locations;
 
     // Assign render target locations.
-    auto render_target_metadata = assign_render_target_locations(transient_paint_locations);
+    auto render_target_metadata = assign_render_target_locations(paint_texture_manager, transient_paint_locations);
 
     PaintLocationsInfo paint_locations_info =
-        assign_paint_locations(driver, render_target_metadata, transient_paint_locations);
+        assign_paint_locations(paint_texture_manager, render_target_metadata, transient_paint_locations);
 
     // Calculate texture transforms.
     calculate_texture_transforms(paint_locations_info.paint_metadata);
@@ -236,7 +236,7 @@ std::vector<PaintMetadata> Palette::build_paint_info(const std::shared_ptr<Drive
     upload_texture_metadata(renderer->metadata_texture, texture_metadata_entries, driver);
 
     // Allocate textures for all images in the paint texture manager.
-    allocate_textures(renderer);
+    allocate_textures(paint_texture_manager, renderer);
 
     {
         for (uint32_t index = 0; index < render_target_metadata.size(); index++) {
@@ -245,11 +245,13 @@ std::vector<PaintMetadata> Palette::build_paint_info(const std::shared_ptr<Drive
             renderer->declare_render_target(id, metadata);
         }
 
+        // Gradient tiles.
         for (auto &tile : paint_locations_info.gradient_tile_builder.tiles) {
             renderer->upload_texel_data(tile.texels,
                                         TextureLocation{tile.page, RectI(Vec2I(0, 0), Vec2I(GRADIENT_TILE_LENGTH))});
         }
 
+        // Image texels.
         for (auto &texel_info : paint_locations_info.image_texel_info) {
             renderer->upload_texel_data(*texel_info.texels, texel_info.location);
         }
@@ -292,11 +294,12 @@ std::vector<TextureMetadataEntry> Palette::create_texture_metadata(const std::ve
 }
 
 std::vector<TextureLocation> Palette::assign_render_target_locations(
+    const std::shared_ptr<PaintTextureManager> &texture_manager,
     std::vector<TextureLocation> &transient_paint_locations) {
     std::vector<TextureLocation> render_target_metadata;
 
     for (const auto &desc : render_targets_desc) {
-        auto location = paint_texture_manager->allocator.allocate_image(desc.size);
+        auto location = texture_manager->allocator.allocate_image(desc.size);
         render_target_metadata.push_back(location);
         transient_paint_locations.push_back(location);
     }
@@ -304,7 +307,7 @@ std::vector<TextureLocation> Palette::assign_render_target_locations(
     return render_target_metadata;
 }
 
-PaintLocationsInfo Palette::assign_paint_locations(const std::shared_ptr<Driver> &driver,
+PaintLocationsInfo Palette::assign_paint_locations(const std::shared_ptr<PaintTextureManager> &texture_manager,
                                                    const std::vector<TextureLocation> &render_target_metadata,
                                                    std::vector<TextureLocation> &transient_paint_locations) {
     std::vector<PaintMetadata> paint_metadata;
@@ -315,7 +318,7 @@ PaintLocationsInfo Palette::assign_paint_locations(const std::shared_ptr<Driver>
 
     // Traverse paints.
     for (const auto &paint : paints) {
-        auto &allocator = paint_texture_manager->allocator;
+        auto &allocator = texture_manager->allocator;
 
         std::shared_ptr<PaintColorTextureMetadata> color_texture_metadata;
 
@@ -377,15 +380,18 @@ PaintLocationsInfo Palette::assign_paint_locations(const std::shared_ptr<Driver>
                     // repeat inside the atlas in some cases.
                     auto image_hash = image->get_hash();
 
+                    auto &cached_images = texture_manager->cached_images;
+
                     // Check cache.
-                    if (paint_texture_manager->cached_images.find(image_hash) !=
-                        paint_texture_manager->cached_images.end()) {
-                        location = paint_texture_manager->cached_images[image_hash];
+                    if (cached_images.find(image_hash) != cached_images.end()) {
+                        location = cached_images[image_hash];
+                        // Mark this image cache as being used in this frame.
+                        used_image_hashes.insert(image_hash);
                     } else {
                         // Leave a pixel of border on the side.
                         auto allocation_mode = AllocationMode::OwnPage;
                         location = allocator.allocate(image->size + border * 2, allocation_mode);
-                        paint_texture_manager->cached_images[image_hash] = location;
+                        cached_images[image_hash] = location;
                     }
 
                     image_texel_info.push_back(ImageTexelInfo{
@@ -520,13 +526,16 @@ void Palette::free_transient_locations(PaintTextureManager &texture_manager,
 }
 
 // Frees images that are cached but not used this frame.
-void Palette::free_unused_images(PaintTextureManager &texture_manager, std::set<uint64_t> used_image_hashes) {
+void Palette::free_unused_images(PaintTextureManager &texture_manager, const std::set<uint64_t> &used_image_hashes) {
     auto &cached_images = texture_manager.cached_images;
     auto &allocator = texture_manager.allocator;
 
     std::vector<uint64_t> image_hashes_to_remove;
     for (auto &image : cached_images) {
+        // Check if this cache has been used in the current frame.
         bool keep = used_image_hashes.find(image.first) != used_image_hashes.end();
+
+        // Free it if it hasn't.
         if (!keep) {
             allocator.free(image.second);
             image_hashes_to_remove.push_back(image.first);
@@ -592,8 +601,8 @@ MergedPaletteInfo Palette::append_palette(const Palette &palette) {
     return {render_target_mapping, paint_mapping};
 }
 
-void Palette::allocate_textures(Renderer *renderer) {
-    auto &allocator = paint_texture_manager->allocator;
+void Palette::allocate_textures(const std::shared_ptr<PaintTextureManager> &texture_manager, Renderer *renderer) {
+    auto &allocator = texture_manager->allocator;
     auto iter = allocator.page_ids();
 
     while (true) {

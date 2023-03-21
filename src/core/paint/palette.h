@@ -60,19 +60,18 @@ private:
     /// Which scene this palette belongs to.
     uint32_t scene_id;
 
-    std::shared_ptr<PaintTextureManager> paint_texture_manager;
-
 private:
     static void free_transient_locations(PaintTextureManager &texture_manager,
                                          const std::vector<TextureLocation> &transient_paint_locations);
 
     // Frees images that are cached but not used this frame.
-    static void free_unused_images(PaintTextureManager &texture_manager, std::set<uint64_t> used_image_hashes);
+    static void free_unused_images(PaintTextureManager &texture_manager, const std::set<uint64_t> &used_image_hashes);
 
     std::vector<TextureLocation> assign_render_target_locations(
+        const std::shared_ptr<PaintTextureManager> &texture_manager,
         std::vector<TextureLocation> &transient_paint_locations);
 
-    PaintLocationsInfo assign_paint_locations(const std::shared_ptr<Driver> &driver,
+    PaintLocationsInfo assign_paint_locations(const std::shared_ptr<PaintTextureManager> &texture_manager,
                                               const std::vector<TextureLocation> &render_target_metadata,
                                               std::vector<TextureLocation> &transient_paint_locations);
 
@@ -83,7 +82,7 @@ private:
     static std::vector<TextureMetadataEntry> create_texture_metadata(const std::vector<PaintMetadata> &paint_metadata);
 
     /// Allocate GPU textures for the images in the paint texture manager.
-    void allocate_textures(Renderer *renderer);
+    void allocate_textures(const std::shared_ptr<PaintTextureManager> &texture_manager, Renderer *renderer);
 };
 
 } // namespace Pathfinder

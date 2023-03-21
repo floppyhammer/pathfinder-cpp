@@ -205,6 +205,7 @@ void Scene::build(std::shared_ptr<Driver> &driver, std::shared_ptr<Renderer> &re
     // Comment this to do benchmark more precisely.
     if (scene_builder && is_dirty) {
         renderer->start_rendering();
+
         scene_builder->build(driver, renderer.get());
 
         // Mark the scene as clean, so we don't need to rebuild it the next frame.
@@ -213,9 +214,13 @@ void Scene::build(std::shared_ptr<Driver> &driver, std::shared_ptr<Renderer> &re
 }
 
 void Scene::build_and_render(std::shared_ptr<Renderer> &renderer) {
+    renderer->begin_scene();
+
     build(renderer->driver, renderer);
 
     renderer->draw(scene_builder);
+
+    renderer->end_scene();
 }
 
 } // namespace Pathfinder

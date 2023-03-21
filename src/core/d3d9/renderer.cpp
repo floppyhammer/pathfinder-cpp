@@ -310,8 +310,6 @@ void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &_scene_builder) {
 
     // Tiles need to be drawn after fill drawing and after tile batches are prepared.
     upload_and_draw_tiles(scene_builder->tile_batches);
-
-    allocator->purge_if_needed();
 }
 
 void RendererD3D9::upload_fills(const std::vector<Fill> &fills, const std::shared_ptr<CommandBuffer> &cmd_buffer) {

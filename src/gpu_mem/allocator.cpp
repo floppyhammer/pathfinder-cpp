@@ -263,8 +263,8 @@ void GpuMemoryAllocator::purge_if_needed() {
         size_t general_buffer_count = general_buffers_in_use.size();
         size_t free_object_count = free_objects.size();
 
-        Logger::info("GPU memory purged, current status: ALLOCATED " + std::to_string(bytes_allocated) +
-                         " bytes | COMMITTED " + std::to_string(bytes_committed) + " bytes | Textures " +
+        Logger::info("GPU memory purged, current status: ALLOCATED " + std::to_string(int(bytes_allocated / 1024.f)) +
+                         " KB | COMMITTED " + std::to_string(int(bytes_committed / 1024.f)) + " KB | Textures " +
                          std::to_string(texture_count) + " | Framebuffers " + std::to_string(framebuffer_count) +
                          " | General buffers " + std::to_string(general_buffer_count) + " | Free objects " +
                          std::to_string(free_object_count),

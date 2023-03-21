@@ -67,6 +67,17 @@ public:
 
     RenderTarget get_render_target(RenderTargetId render_target_id);
 
+    /// Performs work necessary to begin rendering a scene.
+    ///
+    /// This must be called before `render_command()`.
+    void begin_scene();
+
+    /// Finishes rendering a scene.
+    ///
+    /// Note that, after calling this method, you might need to flush the output to the screen via
+    /// `swap_buffers()`, `present()`, or a similar method that your windowing library offers.
+    void end_scene();
+
     std::shared_ptr<Driver> driver;
 
     std::shared_ptr<Texture> metadata_texture;
