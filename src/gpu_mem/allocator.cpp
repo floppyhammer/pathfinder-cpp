@@ -232,21 +232,21 @@ void GpuMemoryAllocator::purge_if_needed() {
 
         switch (free_objects.front().kind) {
             case FreeObjectKind::GeneralBuffer: {
-                Logger::debug("Purging general buffer...", "GpuMemoryAllocator");
+                Logger::info("Purging general buffer...", "GpuMemoryAllocator");
                 free_objects.erase(free_objects.begin());
                 bytes_allocated -= oldest_free_obj.general_allocation.buffer->get_size();
 
                 purge_happened = true;
             } break;
             case FreeObjectKind::Texture: {
-                Logger::debug("Purging texture...", "GpuMemoryAllocator");
+                Logger::info("Purging texture...", "GpuMemoryAllocator");
                 free_objects.erase(free_objects.begin());
                 bytes_allocated -= oldest_free_obj.texture_allocation.descriptor.byte_size();
 
                 purge_happened = true;
             } break;
             case FreeObjectKind::Framebuffer: {
-                Logger::debug("Purging framebuffer...", "GpuMemoryAllocator");
+                Logger::info("Purging framebuffer...", "GpuMemoryAllocator");
                 free_objects.erase(free_objects.begin());
                 bytes_allocated -= oldest_free_obj.framebuffer_allocation.descriptor.byte_size();
 

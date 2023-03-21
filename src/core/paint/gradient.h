@@ -79,8 +79,6 @@ public:
     /// What should be rendered upon reaching the end of the color stops.
     GradientWrap wrap = GradientWrap::Clamp;
 
-    std::shared_ptr<Texture> tile_texture;
-
     /// Creates a new linear gradient with the given line.
     ///
     /// The line is in scene coordinates, not relative to the bounding box of the current path.
@@ -141,11 +139,10 @@ class GradientTileBuilder {
 public:
     std::vector<GradientTile> tiles;
 
+    /// Handles allocation via PaintTextureManager (no GPU resources involved here).
     TextureLocation allocate(const Gradient &gradient,
                              TextureAllocator &allocator,
                              std::vector<TextureLocation> transient_paint_locations);
-
-    void upload(const std::shared_ptr<CommandBuffer> &cmd_buffer, const std::shared_ptr<Texture> &texture);
 };
 
 } // namespace Pathfinder

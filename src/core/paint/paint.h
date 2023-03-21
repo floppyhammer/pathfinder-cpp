@@ -40,6 +40,22 @@ struct PaintContents {
 
     Gradient gradient;
     Pattern pattern;
+
+    // For hashing.
+    inline bool operator<(const PaintContents &rhs) const {
+        bool res = type < rhs.type;
+
+        if (type == rhs.type) {
+            if (type == PaintContents::Type::Gradient) {
+                // FIXME: incorrect.
+                res = true;
+            } else {
+                res = pattern.source < rhs.pattern.source;
+            }
+        }
+
+        return res;
+    }
 };
 
 /// What is to be overlaid on top of a base color.
@@ -115,7 +131,15 @@ public:
     /// In order to use Paint as Map keys.
     /// See https://stackoverflow.com/questions/1102392/how-can-i-use-stdmaps-with-user-defined-types-as-key.
     inline bool operator<(const Paint &rhs) const {
-        return base_color < rhs.base_color;
+        bool res;
+
+//        if (overlay) {
+//            res = overlay->contents < rhs.overlay->contents;
+//        } else {
+            res = base_color < rhs.base_color;
+//        }
+
+        return res;
     }
 };
 

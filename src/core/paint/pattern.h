@@ -31,13 +31,30 @@ struct RenderTargetId {
 };
 
 /// A raster image, in 32-bit RGBA (8 bits per channel), non-premultiplied form.
-struct Image {
+class Image {
+public:
     Vec2I size;
     std::vector<ColorU> pixels;
+    uint64_t pixels_hash;
+
+    Image(Vec2I _size, const std::vector<ColorU> &_pixels) {
+        size = _size;
+        pixels = _pixels;
+        pixels_hash = fnv_hash(reinterpret_cast<const char *>(pixels.data()), pixels.size() * 4);
+    }
 
     /// Returns a non-cryptographic hash of the image, which should be globally unique.
-    uint64_t get_hash() {
-        return fnv_hash(reinterpret_cast<const char *>(pixels.data()), pixels.size() * 4);
+    uint64_t get_hash() const {
+        return pixels_hash;
+    }
+
+    // For hashing.
+    inline bool operator<(const Image &rhs) const {
+        bool res = size.x < rhs.size.x;
+        res = res && size.y < rhs.size.y;
+        res = res && pixels_hash < rhs.pixels_hash;
+
+        return res;
     }
 };
 
@@ -74,6 +91,23 @@ struct PatternSource {
     inline bool is_opaque() const {
         // We assume all images and render targets are opaque for the sake of simplicity.
         return true;
+    }
+
+    // For hashing.
+    inline bool operator<(const PatternSource &rhs) const {
+        bool res = type < rhs.type;
+
+        if (type == rhs.type) {
+            if (type == PatternSource::Type::RenderTarget) {
+                res = res && *image < *rhs.image;
+            } else {
+                res = res && render_target_id < rhs.render_target_id;
+                res = res && size.x < rhs.size.x;
+                res = res && size.y < rhs.size.y;
+            }
+        }
+
+        return res;
     }
 };
 

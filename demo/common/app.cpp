@@ -24,11 +24,9 @@ App::App(const std::shared_ptr<Driver> &_driver,
 
     // TEST: Draw image.
     if (true) {
-        auto image = std::make_shared<Image>();
         auto image_buffer = ImageBuffer::from_memory(img_input, false);
         if (image_buffer) {
-            image->size = image_buffer->get_size();
-            image->pixels = image_buffer->to_rgba_pixels();
+            auto image = std::make_shared<Image>(image_buffer->get_size(), image_buffer->to_rgba_pixels());
             Vec2F pos = {100, 200};
             canvas->draw_image(image, RectF(pos, pos + image->size.to_f32()));
         }

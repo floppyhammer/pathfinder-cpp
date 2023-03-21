@@ -16,7 +16,8 @@ std::string load_file_as_string(const std::string &file_path);
 
 std::vector<char> load_file_as_bytes(const std::string &file_path);
 
-struct ImageBuffer {
+class ImageBuffer {
+public:
     ~ImageBuffer();
 
     static std::shared_ptr<ImageBuffer> from_memory(const std::vector<char> &bytes, bool flip_y);
@@ -34,7 +35,7 @@ private:
 
     int32_t channel_count;
 
-    unsigned char *data;
+    unsigned char *data{};
 };
 
 } // namespace Pathfinder
