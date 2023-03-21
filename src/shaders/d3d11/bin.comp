@@ -128,10 +128,11 @@ uint pathBackdropOffset) {
     }
 }
 
-// Add "readonly" to fix memory qualifier error in GLES.
-vec4 unpackMicroline(readonly uvec4 packedMicroline, out uint outPathIndex) {
-    outPathIndex = packedMicroline.w;
-    ivec4 signedMicroline = ivec4(packedMicroline);
+// Don't pass iMicrolines as argument here.
+// Otherwise, we'll get "Function call discards 'readonly' access qualifier" error in GLES.
+vec4 unpackMicroline(uint segmentIndex, out uint outPathIndex) {
+    outPathIndex = iMicrolines[segmentIndex].w;
+    ivec4 signedMicroline = ivec4(iMicrolines[segmentIndex]);
     return vec4((signedMicroline.x << 16) >> 16, signedMicroline.x >> 16, (signedMicroline.y << 16) >> 16, signedMicroline.y >> 16)
         + vec4(signedMicroline.z & 0xff, (signedMicroline.z >> 8) & 0xff, (signedMicroline.z >> 16) & 0xff, (signedMicroline.z >> 24) & 0xff) / 256.0;
 }
@@ -143,7 +144,7 @@ void main() {
     }
 
     uint pathIndex;
-    vec4 lineSegment = unpackMicroline(iMicrolines[segmentIndex], pathIndex);
+    vec4 lineSegment = unpackMicroline(segmentIndex, pathIndex);
 
     ivec4 pathTileRect = iMetadata[pathIndex * 3u + 0u];
     uint pathTileOffset = uint(iMetadata[pathIndex * 3u + 1u].x);
