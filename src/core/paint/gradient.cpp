@@ -4,16 +4,17 @@
 
 namespace Pathfinder {
 
+const float COLOR_STOP_OFFSET_TOL = 1e-3;
+
 void Gradient::add(const ColorStop &_stop) {
-    auto end = stops.end();
-    auto begin = stops.begin();
+    auto iter = stops.begin();
 
     // Find a place to insert the new stop.
-    while ((begin != end) && (begin->offset < _stop.offset)) {
-        ++begin;
+    while (iter != stops.end() && (iter->offset < _stop.offset)) {
+        ++iter;
     }
 
-    stops.insert(begin, _stop);
+    stops.insert(iter, _stop);
 }
 
 void Gradient::add_color_stop(const ColorU &color, float offset) {
@@ -22,35 +23,31 @@ void Gradient::add_color_stop(const ColorU &color, float offset) {
 
 ColorU Gradient::sample(float t) const {
     if (stops.empty()) {
-        return {};
+        return ColorU::transparent_black();
     }
 
     t = clamp(t, 0.0f, 1.0f);
 
     size_t last_index = stops.size() - 1;
 
-    auto end = stops.end();
     auto iter = stops.begin();
 
-    while ((iter != stops.end()) && (iter->offset < t)) {
+    while (iter != stops.end() && (iter->offset < t || iter->offset == 0)) {
         ++iter;
     }
 
-    size_t upper_index = std::min(size_t(end - iter), last_index);
+    size_t upper_index = std::min(size_t(iter - stops.begin()), last_index);
 
-    size_t lower_index;
-    if (upper_index > 0) {
-        lower_index = upper_index - 1;
-    } else {
-        lower_index = upper_index;
-    }
+    size_t lower_index = upper_index > 0 ? upper_index - 1 : upper_index;
 
     auto &lower_stop = stops[lower_index];
     auto &upper_stop = stops[upper_index];
 
     float denom = upper_stop.offset - lower_stop.offset;
 
-    if (denom == 0.0) {
+    // Handle stops with the same offset.
+    // No need to consider float precision here.
+    if (denom == 0) {
         return lower_stop.color;
     }
 

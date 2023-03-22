@@ -52,7 +52,9 @@ App::App(const std::shared_ptr<Driver> &_driver,
         canvas->set_stroke_paint(Paint::from_color(ColorU::red()));
         auto gradient = Gradient::linear(LineSegmentF({260.0, 260.0}, {460.0, 460.0}));
         gradient.add_color_stop(ColorU::red(), 0);
-        gradient.add_color_stop(ColorU::blue(), 1);
+        gradient.add_color_stop(ColorU::transparent_black(), 1);
+        gradient.add_color_stop(ColorU::blue(), 0.5);
+        gradient.add_color_stop(ColorU::green(), 0.25);
         canvas->set_stroke_paint(Paint::from_gradient(gradient));
 
         canvas->stroke_path(path);
