@@ -37,10 +37,10 @@ uint64_t GpuMemoryAllocator::allocate_buffer(size_t byte_size, BufferType type, 
         BufferAllocation allocation = free_obj.buffer_allocation;
 
         // Update tag.
+        // TODO: also update GPU debug marker.
         allocation.tag = tag;
 
         bytes_committed += byte_size;
-
         buffers_in_use[id] = allocation;
 
         return id;
@@ -81,6 +81,7 @@ uint64_t GpuMemoryAllocator::allocate_texture(Vec2I size, TextureFormat format, 
         auto allocation = free_obj.texture_allocation;
 
         allocation.tag = tag;
+
         bytes_committed += byte_size;
         textures_in_use[id] = allocation;
 
@@ -122,6 +123,7 @@ uint64_t GpuMemoryAllocator::allocate_framebuffer(Vec2I size, TextureFormat form
         auto allocation = free_obj.framebuffer_allocation;
 
         allocation.tag = tag;
+
         bytes_committed += byte_size;
         framebuffers_in_use[id] = allocation;
 
@@ -132,7 +134,7 @@ uint64_t GpuMemoryAllocator::allocate_framebuffer(Vec2I size, TextureFormat form
 
     if (render_pass_cache.find(format) == render_pass_cache.end()) {
         auto render_pass =
-            driver->create_render_pass(format, AttachmentLoadOp::Clear, "GpuMemoryAllocator render pass");
+            driver->create_render_pass(format, AttachmentLoadOp::Clear, "GpuMemoryAllocator dummy render pass");
         render_pass_cache[format] = render_pass;
     }
 
@@ -219,7 +221,7 @@ void GpuMemoryAllocator::free_framebuffer(uint64_t id) {
 
 std::shared_ptr<Buffer> GpuMemoryAllocator::get_buffer(uint64_t id) {
     if (buffers_in_use.find(id) == buffers_in_use.end()) {
-        Logger::error("Attempted to get nonexistent general buffer!", "GpuMemoryAllocator");
+        Logger::error("Attempted to get unallocated buffer!", "GpuMemoryAllocator");
         return nullptr;
     }
 
@@ -228,7 +230,7 @@ std::shared_ptr<Buffer> GpuMemoryAllocator::get_buffer(uint64_t id) {
 
 std::shared_ptr<Texture> GpuMemoryAllocator::get_texture(uint64_t id) {
     if (textures_in_use.find(id) == textures_in_use.end()) {
-        Logger::error("Attempted to get nonexistent texture!", "GpuMemoryAllocator");
+        Logger::error("Attempted to get unallocated texture!", "GpuMemoryAllocator");
         return nullptr;
     }
 
@@ -237,7 +239,7 @@ std::shared_ptr<Texture> GpuMemoryAllocator::get_texture(uint64_t id) {
 
 std::shared_ptr<Framebuffer> GpuMemoryAllocator::get_framebuffer(uint64_t id) {
     if (framebuffers_in_use.find(id) == framebuffers_in_use.end()) {
-        Logger::error("Attempted to get nonexistent framebuffer!", "GpuMemoryAllocator");
+        Logger::error("Attempted to get unallocated framebuffer!", "GpuMemoryAllocator");
         return nullptr;
     }
 
@@ -266,6 +268,7 @@ void GpuMemoryAllocator::purge_if_needed() {
         switch (free_objects.front().kind) {
             case FreeObjectKind::Buffer: {
                 Logger::info("Purging buffer: " + oldest_free_obj.buffer_allocation.tag, "GpuMemoryAllocator");
+
                 free_objects.erase(free_objects.begin());
                 bytes_allocated -= oldest_free_obj.buffer_allocation.buffer->get_size();
 
@@ -273,6 +276,7 @@ void GpuMemoryAllocator::purge_if_needed() {
             } break;
             case FreeObjectKind::Texture: {
                 Logger::info("Purging texture: " + oldest_free_obj.texture_allocation.tag, "GpuMemoryAllocator");
+
                 free_objects.erase(free_objects.begin());
                 bytes_allocated -= oldest_free_obj.texture_allocation.descriptor.byte_size();
 
@@ -281,6 +285,7 @@ void GpuMemoryAllocator::purge_if_needed() {
             case FreeObjectKind::Framebuffer: {
                 Logger::info("Purging framebuffer: " + oldest_free_obj.framebuffer_allocation.tag,
                              "GpuMemoryAllocator");
+
                 free_objects.erase(free_objects.begin());
                 bytes_allocated -= oldest_free_obj.framebuffer_allocation.descriptor.byte_size();
 

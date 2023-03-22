@@ -15,12 +15,13 @@ class Scene;
 
 class Renderer;
 
+// A builder doesn't involve GPU related code.
 class SceneBuilder {
 public:
     explicit SceneBuilder(Scene* _scene) : scene(_scene) {}
 
     /// Build everything we need for rendering.
-    virtual void build(const std::shared_ptr<Driver>& driver, Renderer* renderer) = 0;
+    virtual void build(Renderer* renderer) = 0;
 
     Scene* get_scene() {
         return scene;

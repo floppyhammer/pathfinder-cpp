@@ -61,6 +61,7 @@ struct FreeObject {
     FramebufferAllocation framebuffer_allocation;
 };
 
+/// GPU memory management.
 // TODO: update GPU debug marker when reusing free objects.
 // Currently, only the tag from the first allocation is set as the debug marker.
 class GpuMemoryAllocator {
@@ -96,14 +97,14 @@ private:
     std::unordered_map<uint64_t, TextureAllocation> textures_in_use;
     std::unordered_map<uint64_t, FramebufferAllocation> framebuffers_in_use;
 
-    std::vector<FreeObject> free_objects;
-
     uint64_t next_buffer_id = 0;
     uint64_t next_texture_id = 0;
     uint64_t next_framebuffer_id = 0;
 
     // Framebuffers are render pass dependent.
     std::unordered_map<TextureFormat, std::shared_ptr<RenderPass>> render_pass_cache;
+
+    std::vector<FreeObject> free_objects;
 
     // Statistic data.
     size_t bytes_committed = 0; // In-use objects.

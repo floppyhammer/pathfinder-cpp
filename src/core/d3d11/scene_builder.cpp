@@ -195,7 +195,7 @@ vector<DrawTileBatchD3D11> build_tile_batches_for_draw_path_display_item(
     return flushed_draw_tile_batches;
 }
 
-void SceneBuilderD3D11::build(const std::shared_ptr<Driver> &driver, Renderer *renderer) {
+void SceneBuilderD3D11::build(Renderer *renderer) {
     built_segments = BuiltSegments::from_scene(*scene);
 
     // Build paint data.

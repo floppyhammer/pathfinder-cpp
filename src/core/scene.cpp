@@ -200,13 +200,13 @@ void Scene::set_bounds(const RectF &new_bounds) {
     epoch.next();
 }
 
-void Scene::build(std::shared_ptr<Driver> &driver, std::shared_ptr<Renderer> &renderer) {
+void Scene::build(std::shared_ptr<Renderer> &renderer) {
     // No need to rebuild the scene if it hasn't changed.
     // Comment this to do benchmark more precisely.
     if (scene_builder && is_dirty) {
         renderer->start_rendering();
 
-        scene_builder->build(driver, renderer.get());
+        scene_builder->build(renderer.get());
 
         // Mark the scene as clean, so we don't need to rebuild it the next frame.
         is_dirty = false;
@@ -216,7 +216,7 @@ void Scene::build(std::shared_ptr<Driver> &driver, std::shared_ptr<Renderer> &re
 void Scene::build_and_render(std::shared_ptr<Renderer> &renderer) {
     renderer->begin_scene();
 
-    build(renderer->driver, renderer);
+    build(renderer);
 
     renderer->draw(scene_builder);
 
