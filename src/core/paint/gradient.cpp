@@ -4,8 +4,6 @@
 
 namespace Pathfinder {
 
-const float COLOR_STOP_OFFSET_TOL = 1e-3;
-
 void Gradient::add(const ColorStop &_stop) {
     auto iter = stops.begin();
 
