@@ -18,6 +18,10 @@ struct BufferDescriptor {
     size_t size;
     MemoryProperty property;
     std::string label;
+
+    inline bool operator==(const BufferDescriptor& b) const {
+        return size == b.size && type == b.type && property == b.property;
+    }
 };
 
 class Buffer {

@@ -28,6 +28,7 @@ const float REUSE_TIME = 0.015;
 
 struct BufferAllocation {
     std::shared_ptr<Buffer> buffer;
+    BufferDescriptor descriptor;
     std::string tag;
 };
 
@@ -44,8 +45,7 @@ struct FramebufferAllocation {
 };
 
 enum class FreeObjectKind {
-    GeneralBuffer,
-    IndexBuffer,
+    Buffer,
     Texture,
     Framebuffer,
     Max,
@@ -54,10 +54,9 @@ enum class FreeObjectKind {
 struct FreeObject {
     std::chrono::time_point<std::chrono::steady_clock> timestamp;
     FreeObjectKind kind = FreeObjectKind::Max;
-    uint64_t id;
+    uint64_t id = std::numeric_limits<uint64_t>::max();
 
-    BufferAllocation general_allocation;
-    BufferAllocation index_allocation;
+    BufferAllocation buffer_allocation;
     TextureAllocation texture_allocation;
     FramebufferAllocation framebuffer_allocation;
 };
@@ -66,19 +65,19 @@ class GpuMemoryAllocator {
 public:
     explicit GpuMemoryAllocator(const std::shared_ptr<Driver>& _driver) : driver(_driver) {}
 
-    uint64_t allocate_general_buffer(size_t byte_size, const std::string& tag);
+    uint64_t allocate_buffer(size_t byte_size, BufferType type, const std::string& tag);
 
     uint64_t allocate_texture(Vec2I size, TextureFormat format, const std::string& tag);
 
     uint64_t allocate_framebuffer(Vec2I size, TextureFormat format, const std::string& tag);
 
-    std::shared_ptr<Buffer> get_general_buffer(uint64_t id);
+    std::shared_ptr<Buffer> get_buffer(uint64_t id);
 
     std::shared_ptr<Texture> get_texture(uint64_t id);
 
     std::shared_ptr<Framebuffer> get_framebuffer(uint64_t id);
 
-    void free_general_buffer(uint64_t id);
+    void free_buffer(uint64_t id);
 
     void free_texture(uint64_t id);
 
@@ -89,19 +88,17 @@ public:
 private:
     std::shared_ptr<Driver> driver;
 
-    std::unordered_map<uint64_t, BufferAllocation> general_buffers_in_use;
-    std::unordered_map<uint64_t, BufferAllocation> index_buffers_in_use;
+    std::unordered_map<uint64_t, BufferAllocation> buffers_in_use;
     std::unordered_map<uint64_t, TextureAllocation> textures_in_use;
     std::unordered_map<uint64_t, FramebufferAllocation> framebuffers_in_use;
 
     std::vector<FreeObject> free_objects;
 
-    uint64_t next_general_buffer_id = 0;
-    uint64_t next_index_buffer_id = 0;
+    uint64_t next_buffer_id = 0;
     uint64_t next_texture_id = 0;
     uint64_t next_framebuffer_id = 0;
 
-    // Framebuffers are pass dependent.
+    // Framebuffers are render pass dependent.
     std::unordered_map<TextureFormat, std::shared_ptr<RenderPass>> render_pass_cache;
 
     // Statistic data.

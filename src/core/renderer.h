@@ -40,6 +40,7 @@ public:
 
 /// In most cases, we have only one renderer set up, while having
 /// multiple scenes prepared for rendering.
+/// All GPU operations happens in the renderer.
 class Renderer {
 public:
     explicit Renderer(const std::shared_ptr<Driver> &_driver);

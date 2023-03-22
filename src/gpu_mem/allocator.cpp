@@ -2,10 +2,12 @@
 
 namespace Pathfinder {
 
-uint64_t GpuMemoryAllocator::allocate_general_buffer(size_t byte_size, const std::string& tag) {
+uint64_t GpuMemoryAllocator::allocate_buffer(size_t byte_size, BufferType type, const std::string& tag) {
     if (byte_size < MAX_BUFFER_SIZE_CLASS) {
         byte_size = upper_power_of_two(byte_size);
     }
+
+    auto descriptor = BufferDescriptor{type, byte_size, MemoryProperty::HostVisibleAndCoherent, tag};
 
     auto now = std::chrono::steady_clock::now();
 
@@ -13,14 +15,18 @@ uint64_t GpuMemoryAllocator::allocate_general_buffer(size_t byte_size, const std
     for (int free_object_index = 0; free_object_index < free_objects.size(); free_object_index++) {
         auto free_obj = free_objects[free_object_index];
 
-        if (free_obj.kind == FreeObjectKind::GeneralBuffer) {
+        bool found_free_obj = false;
+
+        if (free_obj.kind == FreeObjectKind::Buffer && free_obj.buffer_allocation.descriptor == descriptor) {
             std::chrono::duration<double> duration = now - free_obj.timestamp;
 
-            if (free_obj.general_allocation.buffer->get_size() == byte_size && duration.count() >= REUSE_TIME) {
-            } else {
-                continue;
+            // Check if this free buffer can be reused.
+            if (duration.count() >= REUSE_TIME) {
+                found_free_obj = true;
             }
-        } else {
+        }
+
+        if (!found_free_obj) {
             continue;
         }
 
@@ -28,26 +34,26 @@ uint64_t GpuMemoryAllocator::allocate_general_buffer(size_t byte_size, const std
         free_objects.erase(free_objects.begin() + free_object_index);
 
         uint64_t id = free_obj.id;
-        BufferAllocation allocation = free_obj.general_allocation;
+        BufferAllocation allocation = free_obj.buffer_allocation;
 
         // Update tag.
         allocation.tag = tag;
 
         bytes_committed += byte_size;
 
-        general_buffers_in_use[id] = allocation;
+        buffers_in_use[id] = allocation;
 
         return id;
     }
 
     // Create a new buffer.
 
-    auto buffer = driver->create_buffer({BufferType::Storage, byte_size, MemoryProperty::HostVisibleAndCoherent, tag});
+    auto buffer = driver->create_buffer(descriptor);
 
-    auto id = next_general_buffer_id;
-    next_general_buffer_id += 1;
+    auto id = next_buffer_id;
+    next_buffer_id += 1;
 
-    general_buffers_in_use[id] = BufferAllocation{buffer, tag};
+    buffers_in_use[id] = BufferAllocation{buffer, descriptor, tag};
 
     bytes_allocated += byte_size;
     bytes_committed += byte_size;
@@ -144,15 +150,15 @@ uint64_t GpuMemoryAllocator::allocate_framebuffer(Vec2I size, TextureFormat form
     return id;
 }
 
-void GpuMemoryAllocator::free_general_buffer(uint64_t id) {
-    if (general_buffers_in_use.find(id) == general_buffers_in_use.end()) {
-        Logger::error("Attempted to free unallocated general buffer!", "GpuMemoryAllocator");
+void GpuMemoryAllocator::free_buffer(uint64_t id) {
+    if (buffers_in_use.find(id) == buffers_in_use.end()) {
+        Logger::error("Attempted to free unallocated buffer!", "GpuMemoryAllocator");
         return;
     }
 
-    auto allocation = general_buffers_in_use[id];
+    auto allocation = buffers_in_use[id];
 
-    general_buffers_in_use.erase(id);
+    buffers_in_use.erase(id);
 
     bytes_committed -= allocation.buffer->get_size();
 
@@ -160,9 +166,9 @@ void GpuMemoryAllocator::free_general_buffer(uint64_t id) {
 
     FreeObject free_obj;
     free_obj.timestamp = std::chrono::steady_clock::now();
-    free_obj.kind = FreeObjectKind::GeneralBuffer;
+    free_obj.kind = FreeObjectKind::Buffer;
     free_obj.id = id;
-    free_obj.general_allocation = allocation;
+    free_obj.buffer_allocation = allocation;
 
     free_objects.push_back(free_obj);
 }
@@ -231,10 +237,10 @@ void GpuMemoryAllocator::purge_if_needed() {
         }
 
         switch (free_objects.front().kind) {
-            case FreeObjectKind::GeneralBuffer: {
+            case FreeObjectKind::Buffer: {
                 Logger::info("Purging general buffer...", "GpuMemoryAllocator");
                 free_objects.erase(free_objects.begin());
-                bytes_allocated -= oldest_free_obj.general_allocation.buffer->get_size();
+                bytes_allocated -= oldest_free_obj.buffer_allocation.buffer->get_size();
 
                 purge_happened = true;
             } break;
@@ -260,25 +266,25 @@ void GpuMemoryAllocator::purge_if_needed() {
     if (purge_happened) {
         size_t texture_count = textures_in_use.size();
         size_t framebuffer_count = framebuffers_in_use.size();
-        size_t general_buffer_count = general_buffers_in_use.size();
+        size_t buffer_count = buffers_in_use.size();
         size_t free_object_count = free_objects.size();
 
         Logger::info("GPU memory purged, current status: ALLOCATED " + std::to_string(int(bytes_allocated / 1024.f)) +
                          " KB | COMMITTED " + std::to_string(int(bytes_committed / 1024.f)) + " KB | Textures " +
                          std::to_string(texture_count) + " | Framebuffers " + std::to_string(framebuffer_count) +
-                         " | General buffers " + std::to_string(general_buffer_count) + " | Free objects " +
+                         " | Buffers " + std::to_string(buffer_count) + " | Free objects " +
                          std::to_string(free_object_count),
                      "GpuMemoryAllocator");
     }
 }
 
-std::shared_ptr<Buffer> GpuMemoryAllocator::get_general_buffer(uint64_t id) {
-    if (general_buffers_in_use.find(id) == general_buffers_in_use.end()) {
+std::shared_ptr<Buffer> GpuMemoryAllocator::get_buffer(uint64_t id) {
+    if (buffers_in_use.find(id) == buffers_in_use.end()) {
         Logger::error("Attempted to get nonexistent general buffer!", "GpuMemoryAllocator");
         return nullptr;
     }
 
-    return general_buffers_in_use[id].buffer;
+    return buffers_in_use[id].buffer;
 }
 
 std::shared_ptr<Texture> GpuMemoryAllocator::get_texture(uint64_t id) {
