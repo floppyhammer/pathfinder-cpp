@@ -19,7 +19,7 @@ public:
 
     /// Render to a texture.
     explicit Framebuffer(const std::shared_ptr<Texture>& _texture, std::string _label)
-        : texture(_texture), size(_texture->get_size()), label(std::move(_label)) {}
+        : size(_texture->get_size()), texture(_texture), label(std::move(_label)) {}
 
     inline std::shared_ptr<Texture> get_texture() const {
         return texture;

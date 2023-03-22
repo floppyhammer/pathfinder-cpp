@@ -79,9 +79,7 @@ void RendererES3::init(int width, int height) {
 
     app->canvas->set_dst_texture(dst_texture);
 
-    texture_rect = std::make_shared<TextureRect>(driver,
-                                                 nullptr,
-                                                 window_size.to_f32());
+    texture_rect = std::make_shared<TextureRect>(driver, nullptr);
     texture_rect->set_texture(dst_texture);
 }
 
