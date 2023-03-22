@@ -154,7 +154,7 @@ private:
 
     void draw_tiles(uint64_t tiles_d3d11_buffer_id,
                     uint64_t first_tile_map_buffer_id,
-                    const std::shared_ptr<RenderTargetId>& render_target_id,
+                    const std::shared_ptr<RenderTargetId> &render_target_id,
                     const std::shared_ptr<TileBatchTextureInfo> &color_texture_info);
 
     void upload_initial_backdrops(uint64_t backdrops_buffer_id, std::vector<BackdropInfoD3D11> &backdrops);
@@ -180,13 +180,15 @@ private:
 
 private:
     // Unlike D3D9, we only need mask/dest textures instead of mask/dest framebuffers.
-    std::shared_ptr<Texture> mask_texture, dest_texture;
+    std::shared_ptr<Texture> dest_texture;
+    uint64_t mask_texture_id;
 
     std::shared_ptr<ComputePipeline> bound_pipeline, dice_pipeline, bin_pipeline, propagate_pipeline, sort_pipeline,
         fill_pipeline, tile_pipeline;
 
     /// Uniform buffers.
-    std::shared_ptr<Buffer> bin_ub, bound_ub, dice_ub0, dice_ub1, fill_ub, propagate_ub, sort_ub, tile_ub0, tile_ub1;
+    uint64_t bin_ub_id, bound_ub_id, dice_ub0_id, dice_ub1_id, fill_ub_id, propagate_ub_id, sort_ub_id, tile_ub0_id,
+        tile_ub1_id;
 
     std::shared_ptr<DescriptorSet> bound_descriptor_set, dice_descriptor_set, bin_descriptor_set,
         propagate_descriptor_set, sort_descriptor_set, fill_descriptor_set, tile_descriptor_set;

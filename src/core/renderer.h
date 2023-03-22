@@ -94,18 +94,18 @@ protected:
     // Read-only static core resources.
     // -----------------------------------------------
     /// Uniform buffer containing some constants. Shared by D3D9 and D3D10.
-    std::shared_ptr<Buffer> constants_ub{};
+    uint64_t constants_ub_id;
 
     /// Pre-Defined texture used to draw the mask texture. Shared by D3D9 and D3D10.
-    std::shared_ptr<Texture> area_lut_texture;
+    uint64_t area_lut_texture_id;
 
     /// For unused texture binding point.
-    std::shared_ptr<Texture> dummy_texture;
+    uint64_t dummy_texture_id;
     // -----------------------------------------------
 
     // Read-write static core resources.
     // -----------------------------------------------
-    std::shared_ptr<Texture> metadata_texture;
+    uint64_t metadata_texture_id;
     // -----------------------------------------------
 
     // Dynamic resources and associated metadata.

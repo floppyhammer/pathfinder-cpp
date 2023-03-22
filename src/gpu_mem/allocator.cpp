@@ -217,67 +217,6 @@ void GpuMemoryAllocator::free_framebuffer(uint64_t id) {
     free_objects.push_back(free_obj);
 }
 
-void GpuMemoryAllocator::purge_if_needed() {
-    auto now = std::chrono::steady_clock::now();
-
-    bool purge_happened = false;
-
-    while (true) {
-        if (free_objects.empty()) {
-            break;
-        }
-
-        // Has to be copied by value.
-        auto oldest_free_obj = free_objects.front();
-
-        std::chrono::duration<double> duration = now - oldest_free_obj.timestamp;
-        // If the first free object has not decayed, so do the rest free objects.
-        if (duration.count() < DECAY_TIME) {
-            break;
-        }
-
-        switch (free_objects.front().kind) {
-            case FreeObjectKind::Buffer: {
-                Logger::info("Purging general buffer...", "GpuMemoryAllocator");
-                free_objects.erase(free_objects.begin());
-                bytes_allocated -= oldest_free_obj.buffer_allocation.buffer->get_size();
-
-                purge_happened = true;
-            } break;
-            case FreeObjectKind::Texture: {
-                Logger::info("Purging texture...", "GpuMemoryAllocator");
-                free_objects.erase(free_objects.begin());
-                bytes_allocated -= oldest_free_obj.texture_allocation.descriptor.byte_size();
-
-                purge_happened = true;
-            } break;
-            case FreeObjectKind::Framebuffer: {
-                Logger::info("Purging framebuffer...", "GpuMemoryAllocator");
-                free_objects.erase(free_objects.begin());
-                bytes_allocated -= oldest_free_obj.framebuffer_allocation.descriptor.byte_size();
-
-                purge_happened = true;
-            } break;
-            default:
-                break;
-        }
-    }
-
-    if (purge_happened) {
-        size_t texture_count = textures_in_use.size();
-        size_t framebuffer_count = framebuffers_in_use.size();
-        size_t buffer_count = buffers_in_use.size();
-        size_t free_object_count = free_objects.size();
-
-        Logger::info("GPU memory purged, current status: ALLOCATED " + std::to_string(int(bytes_allocated / 1024.f)) +
-                         " KB | COMMITTED " + std::to_string(int(bytes_committed / 1024.f)) + " KB | Textures " +
-                         std::to_string(texture_count) + " | Framebuffers " + std::to_string(framebuffer_count) +
-                         " | Buffers " + std::to_string(buffer_count) + " | Free objects " +
-                         std::to_string(free_object_count),
-                     "GpuMemoryAllocator");
-    }
-}
-
 std::shared_ptr<Buffer> GpuMemoryAllocator::get_buffer(uint64_t id) {
     if (buffers_in_use.find(id) == buffers_in_use.end()) {
         Logger::error("Attempted to get nonexistent general buffer!", "GpuMemoryAllocator");
@@ -303,6 +242,89 @@ std::shared_ptr<Framebuffer> GpuMemoryAllocator::get_framebuffer(uint64_t id) {
     }
 
     return framebuffers_in_use[id].framebuffer;
+}
+
+void GpuMemoryAllocator::purge_if_needed() {
+    auto now = std::chrono::steady_clock::now();
+
+    bool purge_happened = false;
+
+    while (true) {
+        if (free_objects.empty()) {
+            break;
+        }
+
+        // Has to be copied by value.
+        auto oldest_free_obj = free_objects.front();
+
+        std::chrono::duration<double> duration = now - oldest_free_obj.timestamp;
+        // If the first free object has not decayed, so do the rest free objects.
+        if (duration.count() < DECAY_TIME) {
+            break;
+        }
+
+        switch (free_objects.front().kind) {
+            case FreeObjectKind::Buffer: {
+                Logger::info("Purging buffer: " + oldest_free_obj.buffer_allocation.tag, "GpuMemoryAllocator");
+                free_objects.erase(free_objects.begin());
+                bytes_allocated -= oldest_free_obj.buffer_allocation.buffer->get_size();
+
+                purge_happened = true;
+            } break;
+            case FreeObjectKind::Texture: {
+                Logger::info("Purging texture: " + oldest_free_obj.texture_allocation.tag, "GpuMemoryAllocator");
+                free_objects.erase(free_objects.begin());
+                bytes_allocated -= oldest_free_obj.texture_allocation.descriptor.byte_size();
+
+                purge_happened = true;
+            } break;
+            case FreeObjectKind::Framebuffer: {
+                Logger::info("Purging framebuffer: " + oldest_free_obj.framebuffer_allocation.tag,
+                             "GpuMemoryAllocator");
+                free_objects.erase(free_objects.begin());
+                bytes_allocated -= oldest_free_obj.framebuffer_allocation.descriptor.byte_size();
+
+                purge_happened = true;
+            } break;
+            default:
+                break;
+        }
+    }
+
+    if (purge_happened) {
+        print_info();
+    }
+}
+
+void GpuMemoryAllocator::print_info() {
+    size_t texture_count = textures_in_use.size();
+    size_t framebuffer_count = framebuffers_in_use.size();
+    size_t buffer_count = buffers_in_use.size();
+    size_t free_object_count = free_objects.size();
+
+    Logger::info("Current status: ALLOCATED " + std::to_string(int(bytes_allocated / 1024.f)) + " KB | COMMITTED " +
+                     std::to_string(int(bytes_committed / 1024.f)) + " KB | Textures " + std::to_string(texture_count) +
+                     " | Framebuffers " + std::to_string(framebuffer_count) + " | Buffers " +
+                     std::to_string(buffer_count) + " | Free objects " + std::to_string(free_object_count),
+                 "GpuMemoryAllocator");
+
+    for (auto& allocation : textures_in_use) {
+        Logger::info("Texture " + std::to_string(allocation.first) + ": " + allocation.second.tag + " - " +
+                         std::to_string(int(allocation.second.descriptor.byte_size() / 1024.f)) + " KB",
+                     "GpuMemoryAllocator");
+    }
+
+    for (auto& allocation : framebuffers_in_use) {
+        Logger::info("Framebuffer " + std::to_string(allocation.first) + ": " + allocation.second.tag + " - " +
+                         std::to_string(int(allocation.second.descriptor.byte_size() / 1024.f)) + " KB",
+                     "GpuMemoryAllocator");
+    }
+
+    for (auto& allocation : buffers_in_use) {
+        Logger::info("Buffer " + std::to_string(allocation.first) + ": " + allocation.second.tag + " - " +
+                         std::to_string(int(allocation.second.descriptor.size / 1024.f)) + " KB",
+                     "GpuMemoryAllocator");
+    }
 }
 
 } // namespace Pathfinder

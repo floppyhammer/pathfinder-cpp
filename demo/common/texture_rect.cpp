@@ -14,11 +14,8 @@
     #include "../../src/shaders/generated/blit_vert.h"
 #endif
 
-TextureRect::TextureRect(const std::shared_ptr<Driver> &_driver,
-                         const std::shared_ptr<RenderPass> &render_pass,
-                         const Vec2F &_size) {
+TextureRect::TextureRect(const std::shared_ptr<Driver> &_driver, const std::shared_ptr<RenderPass> &render_pass) {
     driver = _driver;
-    size = _size;
 
     // Set up vertex data (and buffer(s)) and configure vertex attributes.
     float vertices[] = {// Positions, UVs.
@@ -79,6 +76,8 @@ void TextureRect::set_texture(const std::shared_ptr<Texture> &new_texture) {
     descriptor_set->add_or_update({
         Descriptor::sampler(1, ShaderStage::Fragment, "uTexture", texture),
     });
+
+    size = texture->get_size().to_f32();
 }
 
 void TextureRect::draw(const std::shared_ptr<CommandBuffer> &cmd_buffer, const Vec2I &framebuffer_size) {

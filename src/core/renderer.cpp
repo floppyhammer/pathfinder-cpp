@@ -14,8 +14,7 @@ Renderer::Renderer(const std::shared_ptr<Driver> &_driver) : driver(_driver) {
     allocator = std::make_shared<GpuMemoryAllocator>(driver);
 
     // Uniform buffer for some constants.
-    constants_ub = driver->create_buffer(
-        {BufferType::Uniform, 8 * sizeof(float), MemoryProperty::HostVisibleAndCoherent, "Constants uniform buffer"});
+    constants_ub_id = allocator->allocate_buffer(8 * sizeof(float), BufferType::Uniform, "Constants uniform buffer");
 
     std::array<float, 6> constants = {MASK_FRAMEBUFFER_WIDTH,
                                       MASK_FRAMEBUFFER_HEIGHT,
@@ -27,21 +26,21 @@ Renderer::Renderer(const std::shared_ptr<Driver> &_driver) : driver(_driver) {
     // Area-Lut texture.
     auto image_buffer = ImageBuffer::from_memory({std::begin(area_lut_png), std::end(area_lut_png)}, false);
 
-    area_lut_texture =
-        driver->create_texture({image_buffer->get_size(), TextureFormat::Rgba8Unorm, "Area-Lut texture"});
+    area_lut_texture_id =
+        allocator->allocate_texture(image_buffer->get_size(), TextureFormat::Rgba8Unorm, "Area-lut texture");
 
     // Dummy texture.
-    dummy_texture = driver->create_texture({{1, 1}, TextureFormat::Rgba8Unorm, "Dummy texture"});
+    dummy_texture_id = allocator->allocate_texture({1, 1}, TextureFormat::Rgba8Unorm, "Dummy texture");
 
-    metadata_texture = driver->create_texture({{TEXTURE_METADATA_TEXTURE_WIDTH, TEXTURE_METADATA_TEXTURE_HEIGHT},
-                                               TextureFormat::Rgba16Float,
-                                               "Metadata texture"});
+    metadata_texture_id = allocator->allocate_texture({TEXTURE_METADATA_TEXTURE_WIDTH, TEXTURE_METADATA_TEXTURE_HEIGHT},
+                                                      TextureFormat::Rgba16Float,
+                                                      "Metadata texture");
 
     auto cmd_buffer = driver->create_command_buffer("Upload constant data");
 
-    cmd_buffer->upload_to_buffer(constants_ub, 0, 6 * sizeof(float), constants.data());
+    cmd_buffer->upload_to_buffer(allocator->get_buffer(constants_ub_id), 0, 6 * sizeof(float), constants.data());
 
-    cmd_buffer->upload_to_texture(area_lut_texture, {}, image_buffer->get_data());
+    cmd_buffer->upload_to_texture(allocator->get_texture(area_lut_texture_id), {}, image_buffer->get_data());
 
     cmd_buffer->submit_and_wait();
 }
@@ -68,7 +67,7 @@ void Renderer::allocate_pattern_texture_page(uint64_t page_id, Vec2I texture_siz
     }
 
     // Allocate texture.
-    auto framebuffer_id = allocator->allocate_framebuffer(texture_size, TextureFormat::Rgba8Unorm, "PatternPage");
+    auto framebuffer_id = allocator->allocate_framebuffer(texture_size, TextureFormat::Rgba8Unorm, "Pattern page");
     pattern_texture_pages[page_id] = std::make_shared<PatternTexturePage>(framebuffer_id, false);
 }
 
@@ -217,7 +216,7 @@ void Renderer::upload_texture_metadata(const std::vector<TextureMetadataEntry> &
 
     auto cmd_buffer = driver->create_command_buffer("Upload to metadata texture");
     cmd_buffer->add_callback(callback);
-    cmd_buffer->upload_to_texture(metadata_texture, region_rect, raw_texels);
+    cmd_buffer->upload_to_texture(allocator->get_texture(metadata_texture_id), region_rect, raw_texels);
     cmd_buffer->submit_and_wait();
 }
 

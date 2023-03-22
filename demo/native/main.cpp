@@ -29,7 +29,7 @@ int main() {
     app.canvas->set_dst_texture(dst_texture);
 
     // Set viewport texture to a texture rect.
-    auto texture_rect = std::make_shared<TextureRect>(driver, swap_chain->get_render_pass(), window_size.to_f32());
+    auto texture_rect = std::make_shared<TextureRect>(driver, swap_chain->get_render_pass());
     texture_rect->set_texture(dst_texture);
 
     // Main loop.

@@ -18,8 +18,7 @@ using namespace Pathfinder;
 class TextureRect {
 public:
     TextureRect(const std::shared_ptr<Driver> &_driver,
-                const std::shared_ptr<RenderPass> &render_pass,
-                const Vec2F &_size);
+                const std::shared_ptr<RenderPass> &render_pass);
 
     void set_texture(const std::shared_ptr<Texture> &new_texture);
 

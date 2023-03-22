@@ -61,6 +61,8 @@ struct FreeObject {
     FramebufferAllocation framebuffer_allocation;
 };
 
+// TODO: update GPU debug marker when reusing free objects.
+// Currently, only the tag from the first allocation is set as the debug marker.
 class GpuMemoryAllocator {
 public:
     explicit GpuMemoryAllocator(const std::shared_ptr<Driver>& _driver) : driver(_driver) {}
@@ -84,6 +86,8 @@ public:
     void free_framebuffer(uint64_t id);
 
     void purge_if_needed();
+
+    void print_info();
 
 private:
     std::shared_ptr<Driver> driver;
