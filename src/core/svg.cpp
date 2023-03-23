@@ -136,7 +136,13 @@ void SvgScene::load_from_memory(std::vector<char> bytes, Canvas &canvas) {
 
     // Check if image loading is successful.
     if (image == nullptr) {
-        Logger::error("NanoSVG loading image failed!", "Canvas");
+        Logger::error("NanoSVG loading image failed!", "SvgScene");
+        return;
+    }
+
+    // Check if image loading is successful.
+    if (image->shapes == nullptr) {
+        Logger::error("NanoSVG loaded image has no shapes!", "SvgScene");
         return;
     }
 

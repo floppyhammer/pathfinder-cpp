@@ -148,7 +148,8 @@ enum class BlendMode {
 inline bool blend_mode_occludes_backdrop(BlendMode blend_mode) {
     switch (blend_mode) {
         case BlendMode::SrcOver:
-        case BlendMode::Clear: {
+        case BlendMode::Clear:
+        default: {
             return true;
         }
         case BlendMode::DestOver:
@@ -178,8 +179,6 @@ inline bool blend_mode_occludes_backdrop(BlendMode blend_mode) {
         case BlendMode::Luminosity: {
             return false;
         }
-        default:
-            abort();
     }
 }
 
@@ -217,6 +216,7 @@ inline int32_t blend_mode_to_composite_ctrl(BlendMode blend_mode) {
         case BlendMode::SrcOut:
         case BlendMode::DestIn:
         case BlendMode::DestAtop:
+        default:
             return COMBINER_CTRL_COMPOSITE_NORMAL;
         case BlendMode::Multiply:
             return COMBINER_CTRL_COMPOSITE_MULTIPLY;
@@ -248,8 +248,6 @@ inline int32_t blend_mode_to_composite_ctrl(BlendMode blend_mode) {
             return COMBINER_CTRL_COMPOSITE_COLOR;
         case BlendMode::Luminosity:
             return COMBINER_CTRL_COMPOSITE_LUMINOSITY;
-        default:
-            return COMBINER_CTRL_COMPOSITE_NORMAL;
     }
 }
 
