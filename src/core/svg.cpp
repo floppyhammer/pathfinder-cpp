@@ -125,14 +125,16 @@ SvgScene::SvgScene() {
     scene = std::make_shared<Scene>(0, RectF());
 }
 
-void SvgScene::load_from_memory(std::vector<char> bytes, Canvas &canvas) {
-    if (bytes.empty()) {
+void SvgScene::load_from_string(std::string svg, Canvas &canvas) {
+    // We use std::string instead of std::vector<char> here, otherwise NanoSVG crashes sometimes.
+
+    if (svg.empty()) {
         Logger::error("SVG input is empty!", "SvgScene");
         return;
     }
 
     // Load as a NanoSVG image.
-    NSVGimage *image = nsvgParse(bytes.data(), "px", 96);
+    NSVGimage *image = nsvgParse((char *)svg.data(), "px", 96);
 
     // Check if image loading is successful.
     if (image == nullptr) {
@@ -141,9 +143,9 @@ void SvgScene::load_from_memory(std::vector<char> bytes, Canvas &canvas) {
     }
 
     // Check if image loading is successful.
-    if (image->shapes == nullptr) {
-        Logger::error("NanoSVG loaded image has no shapes!", "SvgScene");
-        return;
+    if (image->shapes == nullptr || image->width == 0 || image->height == 0) {
+        Logger::error("NanoSVG loaded image is invalid!", "SvgScene");
+        // Don't return here, as we still need to free the allocated NSVGimage.
     }
 
     auto old_scene = canvas.take_scene();

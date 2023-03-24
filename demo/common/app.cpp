@@ -83,7 +83,7 @@ App::App(const std::shared_ptr<Driver> &_driver,
     // TEST: Append SVG scene.
     if (true) {
         SvgScene svg_scene;
-        svg_scene.load_from_memory(svg_input, *canvas);
+        svg_scene.load_from_string(std::string(svg_input.begin(), svg_input.end()), *canvas);
 
         // TEST: Replace scene.
         // canvas->set_scene(svg_scene.get_scene());

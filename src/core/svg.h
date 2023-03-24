@@ -12,11 +12,11 @@ public:
     SvgScene();
 
     /**
-     * @brief Load a SVG file into the scene.
+     * @brief Load SVG string into the scene.
      * @note We need a copy of the input vector as its content will be modified.
      * @param input SVG file content, a copy by value is needed.
      */
-    void load_from_memory(std::vector<char> bytes, Canvas &canvas);
+    void load_from_string(std::string svg, Canvas &canvas);
 
     std::shared_ptr<Scene> get_scene() const;
 
