@@ -14,6 +14,10 @@ option(BUILD_DEMO "Build demo")
 set(VULKAN_SUPPORT ON)
 set(BUILD_DEMO OFF)
 
+if (UNIX AND NOT APPLE)
+    set(LINUX ON)
+endif ()
+
 # No Vulkan support for web.
 if (EMSCRIPTEN)
     message("Pathfinder will build for web")
