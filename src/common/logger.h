@@ -16,6 +16,11 @@
 #else
     #include <cstdio>
 
+    #define RESET "\033[0m"
+    #define RED "\033[31m"
+    #define GREEN "\033[32m"
+    #define YELLOW "\033[33m"
+
     #define PATHFINDER_LOGV(...)            \
         printf("<%s>", PATHFINDER_LOG_TAG); \
         printf(__VA_ARGS__);                \
@@ -28,14 +33,14 @@
         printf("<%s>", PATHFINDER_LOG_TAG); \
         printf(__VA_ARGS__);                \
         printf("\n")
-    #define PATHFINDER_LOGW(...)            \
-        printf("<%s>", PATHFINDER_LOG_TAG); \
-        printf(__VA_ARGS__);                \
-        printf("\n")
-    #define PATHFINDER_LOGE(...)            \
-        printf("<%s>", PATHFINDER_LOG_TAG); \
-        printf(__VA_ARGS__);                \
-        printf("\n")
+    #define PATHFINDER_LOGW(...)                   \
+        printf(YELLOW "<%s>", PATHFINDER_LOG_TAG); \
+        printf(__VA_ARGS__);                       \
+        printf("\n" RESET)
+    #define PATHFINDER_LOGE(...)                \
+        printf(RED "<%s>", PATHFINDER_LOG_TAG); \
+        printf(__VA_ARGS__);                    \
+        printf("\n" RESET)
 #endif
 
 namespace Pathfinder {
