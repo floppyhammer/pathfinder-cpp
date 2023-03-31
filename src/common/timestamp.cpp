@@ -45,7 +45,7 @@ void Timestamp::print() {
     for (int i = 0; i < records.size(); i++) {
         std::ostringstream string_stream;
         string_stream << i << " " << labels[i] << " " << records[i] << " ms";
-        Logger::verbose(string_stream.str(), "Timestamp");
+        Logger::info(string_stream.str(), "Timestamp");
     }
 }
 
