@@ -14,6 +14,7 @@ namespace Pathfinder {
 
 std::string load_file_as_string(const std::string &file_path);
 
+/// Load a file in binary mode.
 std::vector<char> load_file_as_bytes(const std::string &file_path);
 
 class ImageBuffer {

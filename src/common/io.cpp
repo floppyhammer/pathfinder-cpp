@@ -50,7 +50,7 @@ std::vector<char> load_file_as_bytes(const std::string &file_path) {
     //    std::vector<char> bytes((std::istreambuf_iterator<char>(input)), (std::istreambuf_iterator<char>()));
     //    input.close();
 
-    auto file = fopen(file_path.c_str(), "r");
+    auto file = fopen(file_path.c_str(), "rb");
     if (!file) {
         return {};
     }
