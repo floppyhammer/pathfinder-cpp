@@ -1,32 +1,17 @@
 # Build results
-bin
+bin/
 
 # Build files
-cmake-build-debug
-cmake-build-release
-cmake-build-relwithdebinfo
+cmake-build-debug/
+cmake-build-release/
+cmake-build-relwithdebinfo/
 
 # Jetbrains IDEs
-.idea
-
-# NDK outputs
-ndk/obj
+.idea/
 
 # Generated shaders
-src/shaders/generated
+src/shaders/generated/
 
-# Android demo
-demo/android-gles/app/src/main/cpp/demo
-demo/android-gles/app/src/main/cpp/lib
-demo/android-gles/app/src/main/cpp/src
-demo/android-gles/app/src/main/cpp/include
-demo/android-gles/app/src/main/cpp/thrid_party
-demo/android-gles/app/src/main/assets
-
-# Android demo (Vulkan)
-demo/android-vulkan/app/src/main/cpp/demo
-demo/android-vulkan/app/src/main/cpp/lib
-demo/android-vulkan/app/src/main/cpp/src
-demo/android-vulkan/app/src/main/cpp/include
-demo/android-vulkan/app/src/main/cpp/thrid_party
-demo/android-vulkan/app/src/main/assets
+# Android demo assets
+demo/android-gles/app/src/main/assets/
+demo/android-vulkan/app/src/main/assets/
