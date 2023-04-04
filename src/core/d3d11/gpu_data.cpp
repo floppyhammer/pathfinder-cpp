@@ -3,6 +3,7 @@
 #ifdef PATHFINDER_USE_D3D11
 
 namespace Pathfinder {
+
 void init_backdrops(std::vector<BackdropInfoD3D11> &backdrops, const uint32_t path_index, const RectI &tile_rect) {
     // Doing reserve might decrease performance.
     // backdrops.reserve(backdrops.size() + tile_rect.width());
@@ -112,6 +113,7 @@ Range SegmentsD3D11::add_path(const Outline &outline) {
 
     return {first_segment_index, last_segment_index};
 }
+
 } // namespace Pathfinder
 
 #endif

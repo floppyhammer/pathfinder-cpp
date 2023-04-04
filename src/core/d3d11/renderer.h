@@ -15,6 +15,7 @@ namespace Pathfinder {
 
 struct TileBatchInfoD3D11 {
     uint32_t tile_count;
+
     uint64_t z_buffer_id;
     uint64_t tiles_d3d11_buffer_id;
     uint64_t propagate_metadata_buffer_id;
@@ -45,9 +46,9 @@ struct SceneSourceBuffers {
 
     /// Upload segments to buffers.
     void upload(SegmentsD3D11 &segments,
+                const std::shared_ptr<GpuMemoryAllocator> &allocator,
                 const std::shared_ptr<Driver> &driver,
-                const std::shared_ptr<CommandBuffer> &cmd_buffer,
-                const std::shared_ptr<GpuMemoryAllocator> &allocator);
+                const std::shared_ptr<CommandBuffer> &cmd_buffer);
 };
 
 struct SceneBuffers {
@@ -57,9 +58,9 @@ struct SceneBuffers {
     /// Upload draw and clip segments to buffers.
     void upload(SegmentsD3D11 &draw_segments,
                 SegmentsD3D11 &clip_segments,
+                const std::shared_ptr<GpuMemoryAllocator> &allocator,
                 const std::shared_ptr<Pathfinder::Driver> &driver,
-                const std::shared_ptr<CommandBuffer> &cmd_buffer,
-                const std::shared_ptr<GpuMemoryAllocator> &allocator);
+                const std::shared_ptr<CommandBuffer> &cmd_buffer);
 };
 
 struct PropagateTilesInfoD3D11 {

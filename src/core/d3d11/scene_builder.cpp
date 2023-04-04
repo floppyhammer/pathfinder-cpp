@@ -7,9 +7,6 @@
 
 #ifdef PATHFINDER_USE_D3D11
 
-using std::shared_ptr;
-using std::vector;
-
 namespace Pathfinder {
 
 struct PreparedClipPath {
@@ -127,14 +124,14 @@ shared_ptr<GlobalPathId> add_clip_path_to_batch(Scene &scene,
 }
 
 /// Create tile batches.
-vector<DrawTileBatchD3D11> build_tile_batches_for_draw_path_display_item(
+std::vector<DrawTileBatchD3D11> build_tile_batches_for_draw_path_display_item(
     Scene &scene,
     Range draw_path_id_range,
     const std::vector<PaintMetadata> &paint_metadata,
     LastSceneInfo &last_scene,
     uint32_t &next_batch_id,
     const shared_ptr<ClipBatchesD3D11> &clip_batches_d3d11) {
-    vector<DrawTileBatchD3D11> flushed_draw_tile_batches;
+    std::vector<DrawTileBatchD3D11> flushed_draw_tile_batches;
 
     // New draw tile batch.
     shared_ptr<DrawTileBatchD3D11> draw_tile_batch;
@@ -204,14 +201,14 @@ void SceneBuilderD3D11::build(Renderer *renderer) {
     auto last_scene =
         LastSceneInfo{scene->id, scene->epoch, built_segments.draw_segment_ranges, built_segments.clip_segment_ranges};
 
-    shared_ptr<vector<BuiltDrawPath>> built_paths;
+    std::shared_ptr<std::vector<BuiltDrawPath>> built_paths;
 
     finish_building(last_scene, paint_metadata, built_paths);
 }
 
 void SceneBuilderD3D11::build_tile_batches(LastSceneInfo &last_scene,
                                            const std::vector<PaintMetadata> &paint_metadata,
-                                           const shared_ptr<vector<BuiltDrawPath>> &built_paths) {
+                                           const std::shared_ptr<std::vector<BuiltDrawPath>> &built_paths) {
     // Clear batches.
     tile_batches.clear();
 
@@ -255,7 +252,7 @@ void SceneBuilderD3D11::build_tile_batches(LastSceneInfo &last_scene,
 
 void SceneBuilderD3D11::finish_building(LastSceneInfo &last_scene,
                                         const std::vector<PaintMetadata> &paint_metadata,
-                                        const shared_ptr<vector<BuiltDrawPath>> &built_paths) {
+                                        const std::shared_ptr<std::vector<BuiltDrawPath>> &built_paths) {
     build_tile_batches(last_scene, paint_metadata, built_paths);
 }
 

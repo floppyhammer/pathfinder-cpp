@@ -31,6 +31,7 @@
     #endif
 
 namespace Pathfinder {
+
 const size_t FILL_INDIRECT_DRAW_PARAMS_INSTANCE_COUNT_INDEX = 1;
 const size_t FILL_INDIRECT_DRAW_PARAMS_ALPHA_TILE_COUNT_INDEX = 4;
 const size_t FILL_INDIRECT_DRAW_PARAMS_SIZE = 8;
@@ -58,9 +59,9 @@ Vec2I pixel_size_to_tile_size(Vec2I pixel_size) {
 }
 
 void SceneSourceBuffers::upload(SegmentsD3D11 &segments,
+                                const std::shared_ptr<GpuMemoryAllocator> &allocator,
                                 const std::shared_ptr<Driver> &driver,
-                                const std::shared_ptr<CommandBuffer> &cmd_buffer,
-                                const std::shared_ptr<GpuMemoryAllocator> &allocator) {
+                                const std::shared_ptr<CommandBuffer> &cmd_buffer) {
     auto needed_points_capacity = upper_power_of_two(segments.points.size());
     auto needed_point_indices_capacity = upper_power_of_two(segments.indices.size());
 
@@ -108,11 +109,11 @@ void SceneSourceBuffers::upload(SegmentsD3D11 &segments,
 
 void SceneBuffers::upload(SegmentsD3D11 &draw_segments,
                           SegmentsD3D11 &clip_segments,
+                          const std::shared_ptr<GpuMemoryAllocator> &allocator,
                           const std::shared_ptr<Pathfinder::Driver> &driver,
-                          const std::shared_ptr<CommandBuffer> &cmd_buffer,
-                          const std::shared_ptr<GpuMemoryAllocator> &allocator) {
-    draw.upload(draw_segments, driver, cmd_buffer, allocator);
-    clip.upload(clip_segments, driver, cmd_buffer, allocator);
+                          const std::shared_ptr<CommandBuffer> &cmd_buffer) {
+    draw.upload(draw_segments, allocator, driver, cmd_buffer);
+    clip.upload(clip_segments, allocator, driver, cmd_buffer);
 }
 
 RendererD3D11::RendererD3D11(const std::shared_ptr<Pathfinder::Driver> &driver) : Renderer(driver) {
@@ -238,10 +239,10 @@ void RendererD3D11::set_up_pipelines() {
     bound_pipeline = driver->create_compute_pipeline(bound_source, bound_descriptor_set, "Bound pipeline"); // 2
     bin_pipeline = driver->create_compute_pipeline(bin_source, bin_descriptor_set, "Bin pipeline");         // 3
     propagate_pipeline =
-        driver->create_compute_pipeline(propagate_source, propagate_descriptor_set, "Propagate pipeline"); // 4
-    fill_pipeline = driver->create_compute_pipeline(fill_source, fill_descriptor_set, "Fill pipeline");    // 5
-    sort_pipeline = driver->create_compute_pipeline(sort_source, sort_descriptor_set, "Sort pipeline");    // 6
-    tile_pipeline = driver->create_compute_pipeline(tile_source, tile_descriptor_set, "Tile pipeline");    // 7
+        driver->create_compute_pipeline(propagate_source, propagate_descriptor_set, "Propagate pipeline");  // 4
+    fill_pipeline = driver->create_compute_pipeline(fill_source, fill_descriptor_set, "Fill pipeline");     // 5
+    sort_pipeline = driver->create_compute_pipeline(sort_source, sort_descriptor_set, "Sort pipeline");     // 6
+    tile_pipeline = driver->create_compute_pipeline(tile_source, tile_descriptor_set, "Tile pipeline");     // 7
 }
 
 void RendererD3D11::draw(const std::shared_ptr<SceneBuilder> &_scene_builder) {
@@ -287,7 +288,7 @@ void RendererD3D11::set_dest_texture(const std::shared_ptr<Texture> &new_texture
 
 void RendererD3D11::upload_scene(SegmentsD3D11 &draw_segments, SegmentsD3D11 &clip_segments) {
     auto cmd_buffer = driver->create_command_buffer("Upload scene");
-    scene_buffers.upload(draw_segments, clip_segments, driver, cmd_buffer, allocator);
+    scene_buffers.upload(draw_segments, clip_segments, allocator, driver, cmd_buffer);
     cmd_buffer->submit_and_wait();
 }
 
@@ -313,27 +314,24 @@ void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
     auto framebuffer_tile_size0 = framebuffer_tile_size();
 
     // Decide render target.
-    Vec2I target_size;
     std::shared_ptr<Texture> target_texture;
     int clear_op;
+
     // If no specific RenderTarget is given, we render to the destination texture.
     if (render_target_id == nullptr) {
-        target_size = dest_texture->get_size();
         target_texture = dest_texture;
         clear_op = clear_dest_texture ? LOAD_ACTION_CLEAR : LOAD_ACTION_LOAD;
         clear_dest_texture = false;
     } else {
         auto render_target = get_render_target(*render_target_id);
-        auto framebuffer = render_target.framebuffer;
-        target_texture = framebuffer->get_texture();
-
-        target_size = target_texture->get_size();
+        target_texture = render_target.framebuffer->get_texture();
         clear_op = LOAD_ACTION_CLEAR;
     }
 
-    auto cmd_buffer = driver->create_command_buffer("Draw tiles");
+    auto target_size = target_texture->get_size();
 
     std::shared_ptr<Texture> color_texture = allocator->get_texture(dummy_texture_id);
+
     if (color_texture_info) {
         auto color_texture_page = pattern_texture_pages[color_texture_info->page_id];
         if (color_texture_page) {
@@ -351,17 +349,19 @@ void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
     std::array<float, 8> ubo_data0 = {0,
                                       0,
                                       0,
-                                      0, // uClearColor
+                                      0,                     // uClearColor
                                       color_texture_size.x,
-                                      color_texture_size.y, // uColorTextureSize0
+                                      color_texture_size.y,  // uColorTextureSize0
                                       (float)target_size.x,
                                       (float)target_size.y}; // uFramebufferSize
 
     std::array<int32_t, 5> ubo_data1 = {0,
-                                        0, // uZBufferSize
+                                        0,                                 // uZBufferSize
                                         (int32_t)framebuffer_tile_size0.x,
                                         (int32_t)framebuffer_tile_size0.y, // uFramebufferTileSize
                                         clear_op};                         // uLoadAction
+
+    auto cmd_buffer = driver->create_command_buffer("Draw tiles");
 
     cmd_buffer->upload_to_buffer(allocator->get_buffer(tile_ub0_id), 0, 8 * sizeof(float), ubo_data0.data());
     cmd_buffer->upload_to_buffer(allocator->get_buffer(tile_ub1_id), 0, 5 * sizeof(int32_t), ubo_data1.data());
@@ -431,16 +431,16 @@ PropagateMetadataBufferIDsD3D11 RendererD3D11::upload_propagate_metadata(
                                    BufferType::Storage,
                                    "Propagate metadata buffer");
 
+    auto backdrops_storage_id = allocator->allocate_buffer(backdrops.size() * sizeof(BackdropInfoD3D11),
+                                                           BufferType::Storage,
+                                                           "Backdrops buffer");
+
     auto cmd_buffer = driver->create_command_buffer("Upload to propagate metadata buffer");
     cmd_buffer->upload_to_buffer(allocator->get_buffer(propagate_metadata_storage_id),
                                  0,
                                  propagate_metadata.size() * sizeof(PropagateMetadataD3D11),
                                  propagate_metadata.data());
     cmd_buffer->submit_and_wait();
-
-    auto backdrops_storage_id = allocator->allocate_buffer(backdrops.size() * sizeof(BackdropInfoD3D11),
-                                                           BufferType::Storage,
-                                                           "Backdrops buffer");
 
     return {propagate_metadata_storage_id, backdrops_storage_id};
 }

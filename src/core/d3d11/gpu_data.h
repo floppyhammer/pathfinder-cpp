@@ -1,8 +1,6 @@
 #ifndef PATHFINDER_D3D11_GPU_DATA_H
 #define PATHFINDER_D3D11_GPU_DATA_H
 
-//! Data that will be sent directly to GPU.
-
 #include <vector>
 
 #include "../../common/math/rect.h"
@@ -14,7 +12,7 @@
 
 #ifdef PATHFINDER_USE_D3D11
 
-using std::vector;
+//! Data that will be sent directly to GPU.
 
 namespace Pathfinder {
 
@@ -100,17 +98,17 @@ struct TilePathInfoD3D11 {
 /// Information about a batch of tiles to be prepared on GPU.
 struct PrepareTilesInfoD3D11 {
     /// Initial backdrop values for each tile column, packed together.
-    vector<BackdropInfoD3D11> backdrops;
+    std::vector<BackdropInfoD3D11> backdrops;
 
     /// Mapping from path index to metadata needed to compute propagation on GPU.
-    /// This contains indices into the `tiles` vector.
-    vector<PropagateMetadataD3D11> propagate_metadata;
+    /// This contains indices into the `tiles` std::vector.
+    std::vector<PropagateMetadataD3D11> propagate_metadata;
 
     /// Metadata about each path that will be diced (flattened).
-    vector<DiceMetadataD3D11> dice_metadata;
+    std::vector<DiceMetadataD3D11> dice_metadata;
 
     /// Sparse information about all the allocated tiles.
-    vector<TilePathInfoD3D11> tile_path_info;
+    std::vector<TilePathInfoD3D11> tile_path_info;
 
     /// A transform to apply to the segments.
     Transform2 transform;
@@ -136,7 +134,7 @@ struct ClippedPathInfo {
     uint32_t max_clipped_tile_count;
 
     /// The actual clips, if calculated on CPU.
-    shared_ptr<vector<Clip>> clips;
+    shared_ptr<std::vector<Clip>> clips;
 };
 
 /// Information about a batch of tiles to be prepared (post-processed).
@@ -201,8 +199,8 @@ struct SegmentIndicesD3D11 {
 };
 
 struct SegmentsD3D11 {
-    vector<Vec2F> points;
-    vector<SegmentIndicesD3D11> indices;
+    std::vector<Vec2F> points;
+    std::vector<SegmentIndicesD3D11> indices;
 
     /// Add a outline as segments.
     Range add_path(const Outline &outline);

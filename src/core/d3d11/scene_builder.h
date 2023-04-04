@@ -8,9 +8,6 @@
 
 #ifdef PATHFINDER_USE_D3D11
 
-using std::shared_ptr;
-using std::unordered_map;
-
 namespace Pathfinder {
 
 struct BuiltSegments {
@@ -43,8 +40,8 @@ struct BuiltSegments {
 
 struct ClipBatchesD3D11 {
     // Will be submitted in reverse (LIFO) order.
-    vector<TileBatchDataD3D11> prepare_batches;
-    unordered_map<uint32_t, uint32_t> clip_id_to_path_batch_index;
+    std::vector<TileBatchDataD3D11> prepare_batches;
+    std::unordered_map<uint32_t, uint32_t> clip_id_to_path_batch_index;
 };
 
 class SceneBuilderD3D11 : public SceneBuilder {
@@ -63,11 +60,11 @@ public:
 private:
     void finish_building(LastSceneInfo &last_scene,
                          const std::vector<PaintMetadata> &paint_metadata,
-                         const shared_ptr<vector<BuiltDrawPath>> &built_paths);
+                         const std::shared_ptr<std::vector<BuiltDrawPath>> &built_paths);
 
     void build_tile_batches(LastSceneInfo &last_scene,
                             const std::vector<PaintMetadata> &paint_metadata,
-                            const shared_ptr<vector<BuiltDrawPath>> &built_paths);
+                            const std::shared_ptr<std::vector<BuiltDrawPath>> &built_paths);
 };
 
 } // namespace Pathfinder
