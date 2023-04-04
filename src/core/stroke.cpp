@@ -3,14 +3,16 @@
 #include <algorithm>
 #include <utility>
 
+#include "../common/math/basic.h"
+#include "../common/timestamp.h"
+
 namespace Pathfinder {
 
-/// Stroking tolerance.
+// Tweak these constants to improve stroking performance.
+
 const float STROKE_TOL = 0.1f;
 
 const uint32_t SAMPLE_COUNT = 16;
-
-const float EPSILON = 0.001;
 
 ContourStrokeToFill::ContourStrokeToFill(Contour _input, float _radius, LineJoin _join, float _join_miter_limit)
     : input(std::move(_input)), radius(_radius), join(_join), join_miter_limit(_join_miter_limit) {}
@@ -76,14 +78,16 @@ void OutlineStrokeToFill::offset() {
         if (closed) {
             push_stroked_contour(new_contours, stroker, true);
             stroker = ContourStrokeToFill(contour, style.line_width * 0.5f, style.line_join, style.miter_limit);
-        } else { // If not closed (hard case), we need to connect the outer and inner contours into a single contour.
+        }
+        // If not closed (hard case), we need to connect the outer and inner contours into a single contour with caps.
+        else {
             add_cap(stroker.output);
         }
 
         // Scale the contour down, forming an inner contour.
         stroker.offset_backward();
 
-        // If not closed, we need to connect the outer and inner contours.
+        // If not closed (hard case), we need to connect the outer and inner contours into a single contour with caps.
         if (!closed) {
             add_cap(stroker.output);
         }
@@ -92,7 +96,6 @@ void OutlineStrokeToFill::offset() {
     }
 
     RectF new_bounds;
-
     for (auto &p : new_contours) {
         p.update_bounds(new_bounds);
     }

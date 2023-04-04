@@ -81,8 +81,8 @@ struct Vec2 {
         return x * y;
     }
 
-    inline bool is_close(const Vec2 &other, float tol) const {
-        return (*this - other).length() < tol;
+    inline bool approx_eq(const Vec2 &other, float epsilon) const {
+        return (*this - other).length() <= epsilon;
     }
 
     /// Swap y and x.

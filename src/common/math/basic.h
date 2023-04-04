@@ -5,6 +5,9 @@
 
 namespace Pathfinder {
 
+// To handle floating point error.
+const float EPSILON = 0.001;
+
 const float PI = 3.141592653589f;
 
 /// Convert degree to radian.
@@ -34,21 +37,21 @@ inline unsigned long upper_power_of_two(unsigned long v) {
     return v;
 }
 
-template <class T>
-inline T clamp(T value, T min, T max) {
-    return value < min ? min : (value > max ? max : value);
+inline bool approx_eq(float a, float b) {
+    return std::abs(a - b) <= EPSILON;
 }
 
 inline float lerp(float a, float b, float t) {
     return a + (b - a) * t;
 }
 
-inline int alignup_i32(int32_t a, int32_t b) {
-    return (a + b - 1) / b;
+template <class T>
+inline T clamp(T value, T min, T max) {
+    return value < min ? min : (value > max ? max : value);
 }
 
-inline bool is_close(float a, float b, float tol) {
-    return std::abs(a - b) < tol;
+inline int alignup_i32(int32_t a, int32_t b) {
+    return (a + b - 1) / b;
 }
 
 inline static uint64_t fnv_hash(const char* bytes, size_t size) {
