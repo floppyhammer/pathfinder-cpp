@@ -4,7 +4,6 @@
 #include <cstdint>
 #include <vector>
 
-#include "../../../gpu/texture.h"
 #include "../../data/data.h"
 #include "../../data/dense_tile_map.h"
 #include "../../paint/effects.h"

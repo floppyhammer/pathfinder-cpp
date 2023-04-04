@@ -11,7 +11,6 @@ using namespace Pathfinder;
 class App {
 public:
     App(const std::shared_ptr<Pathfinder::Driver> &_driver,
-        const Vec2I &window_size,
         const std::vector<char> &svg_input,
         const std::vector<char> &img_input);
 

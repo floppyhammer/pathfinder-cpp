@@ -23,7 +23,7 @@ int main() {
     auto swap_chain = window->create_swap_chain(driver);
 
     // Create app.
-    App app(driver, window_size, load_file_as_bytes("../assets/features.svg"), load_file_as_bytes("../assets/sea.png"));
+    App app(driver, load_file_as_bytes("../assets/features.svg"), load_file_as_bytes("../assets/sea.png"));
 
     auto texture_rect = std::make_shared<TextureRect>(driver, swap_chain->get_render_pass());
 

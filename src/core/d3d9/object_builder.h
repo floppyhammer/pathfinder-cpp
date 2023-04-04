@@ -39,6 +39,7 @@ public:
      */
     AlphaTileId get_or_allocate_alpha_tile_index(SceneBuilderD3D9 &scene_builder, const Vec2I &tile_coords);
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_D3D9_OBJECT_BUILDER_H

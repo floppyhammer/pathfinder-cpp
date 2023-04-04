@@ -1,7 +1,6 @@
 #ifndef PATHFINDER_SCENE_BUILDER_H
 #define PATHFINDER_SCENE_BUILDER_H
 
-#include "../gpu/texture.h"
 #include "data/built_path.h"
 #include "data/data.h"
 

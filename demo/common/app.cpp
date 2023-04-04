@@ -4,7 +4,6 @@
 const float FRAME_TIME_PERIOD = 5;
 
 App::App(const std::shared_ptr<Driver> &_driver,
-         const Vec2I &window_size,
          const std::vector<char> &svg_input,
          const std::vector<char> &img_input) {
     Logger::set_level(Logger::Level::INFO);

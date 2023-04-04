@@ -8,7 +8,8 @@ This is a C++ port of [Pathfinder 3](https://github.com/servo/pathfinder) with a
 * D3D9 level: `Vulkan` / `OpenGL >=3.3` / `OpenGL ES >=3.0` / `WebGL2`.
 * D3D11 level: `Vulkan` / `OpenGL >=4.3` / `OpenGL ES >=3.1`.
 
-Noteable: D3D11 level is quite limited in OpenGL ES for it not being able to do both image read & write in a single compute
+Noteable: D3D11 level is quite limited in OpenGL ES for it not being able to do both image read & write in a single
+compute
 invocation.
 
 ## Run demo
@@ -26,13 +27,13 @@ invocation.
 
 ### Android
 
-* Copy `assets` into `demo\android-gles\app\src\main` or `demo\android-vulkan\app\src\main`
+* Copy `assets` into `demo/android-gles/app/src/main` or `demo/android-vulkan/app/src/main`
 * Open `demo/android-gles` or `demo/android-vulkan` in Android Studio.
 * Build and run.
 
 ### Web
 
 * Have your emscripten environment set up.
-* Run `wasm/make.ps1` to build the demo.
+* Run `wasm/build.ps1` to build the demo.
 * Run `demo/web/serve.ps1` to serve a local website.
 * Open http://127.0.0.1:8000/.

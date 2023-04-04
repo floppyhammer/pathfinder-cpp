@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "../../common/math/rect.h"
-#include "../../gpu/texture.h"
 #include "../d3d9/data/gpu_data.h"
 #include "../paint/paint.h"
 #include "data.h"

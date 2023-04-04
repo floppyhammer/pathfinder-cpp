@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "../../common/math/transform2.h"
-#include "../../gpu/driver.h"
 #include "effects.h"
 #include "texture_allocator.h"
 

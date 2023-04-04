@@ -11,9 +11,6 @@
 #include "../../common/math/basic.h"
 #include "../../common/math/transform2.h"
 #include "../../common/math/vec2.h"
-#include "../../gpu/driver.h"
-#include "../../gpu/framebuffer.h"
-#include "../../gpu/render_pass.h"
 #include "effects.h"
 
 namespace Pathfinder {

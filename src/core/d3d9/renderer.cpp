@@ -58,13 +58,15 @@ RendererD3D9::RendererD3D9(const std::shared_ptr<Driver> &_driver) : Renderer(_d
                                                           TextureFormat::Rgba16Float,
                                                           "Mask framebuffer");
 
+    auto quad_vertex_data_size = sizeof(QUAD_VERTEX_POSITIONS);
+
     // Quad vertex buffer. Shared by fills and tiles drawing.
-    quad_vertex_buffer_id = allocator->allocate_buffer(12 * sizeof(uint16_t), BufferType::Vertex, "Quad vertex buffer");
+    quad_vertex_buffer_id = allocator->allocate_buffer(quad_vertex_data_size, BufferType::Vertex, "Quad vertex buffer");
 
     auto cmd_buffer = driver->create_command_buffer("Upload quad vertex data");
     cmd_buffer->upload_to_buffer(allocator->get_buffer(quad_vertex_buffer_id),
                                  0,
-                                 12 * sizeof(uint16_t),
+                                 quad_vertex_data_size,
                                  QUAD_VERTEX_POSITIONS);
     cmd_buffer->submit_and_wait();
 }
@@ -516,9 +518,9 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
     Vec2F target_framebuffer_size = target_framebuffer->get_size().to_f32();
 
     auto z_buffer_texture = allocator->get_texture(z_buffer_texture_id);
+    auto color_texture = allocator->get_texture(dummy_texture_id);
 
     // Update uniform buffers.
-    std::shared_ptr<Texture> color_texture = allocator->get_texture(dummy_texture_id);
     {
         // MVP (with only the model matrix).
         auto model_mat = Mat4x4<float>(1.f);
