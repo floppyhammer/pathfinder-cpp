@@ -15,11 +15,11 @@ namespace Pathfinder {
 const uint32_t ATLAS_TEXTURE_LENGTH = 1024;
 
 struct TreeNode {
-    enum Type {
+    enum class Type {
         EmptyLeaf,
         FullLeaf,
         Parent,
-    } type = EmptyLeaf;
+    } type = Type::EmptyLeaf;
 
     // Option: Parent.
     /// Top left, top right, bottom left, and bottom right, in that order.
@@ -44,7 +44,7 @@ struct TextureAtlasAllocator {
     /// Create allocator with custom length.
     static TextureAtlasAllocator with_length(uint32_t length) {
         TreeNode node;
-        node.type = TreeNode::EmptyLeaf;
+        node.type = TreeNode::Type::EmptyLeaf;
         return TextureAtlasAllocator{node, length};
     }
 
@@ -56,7 +56,7 @@ struct TextureAtlasAllocator {
 };
 
 struct TexturePageAllocator {
-    enum Type {
+    enum class Type {
         Atlas,
         Image,
     } type;

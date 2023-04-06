@@ -6,7 +6,7 @@ namespace Pathfinder {
 
 // Invariant: `requested_size` must be a power of two.
 RectI TreeNode::allocate(Vec2I this_origin, uint32_t this_size, uint32_t requested_size) {
-    if (type == TreeNode::FullLeaf) {
+    if (type == TreeNode::Type::FullLeaf) {
         // No room here.
         return RectI();
     }
@@ -16,15 +16,15 @@ RectI TreeNode::allocate(Vec2I this_origin, uint32_t this_size, uint32_t request
     }
 
     // Allocate here or split, as necessary.
-    if (type == TreeNode::EmptyLeaf) {
+    if (type == TreeNode::Type::EmptyLeaf) {
         // Do we have a perfect fit?
         if (this_size == requested_size) {
-            type = TreeNode::FullLeaf;
+            type = TreeNode::Type::FullLeaf;
             return RectI(this_origin, Vec2I(this_size, this_size));
         }
 
         // Split.
-        type = TreeNode::Parent;
+        type = TreeNode::Type::Parent;
 
         for (int i = 0; i < 4; i++) {
             kids[i] = std::make_shared<TreeNode>();
@@ -33,7 +33,7 @@ RectI TreeNode::allocate(Vec2I this_origin, uint32_t this_size, uint32_t request
 
     // Recurse into children.
     switch (type) {
-        case TreeNode::Parent: {
+        case TreeNode::Type::Parent: {
             uint32_t kid_size = this_size / 2;
 
             auto origin = kids[0]->allocate(this_origin, kid_size, requested_size);
@@ -69,7 +69,7 @@ RectI TreeNode::allocate(Vec2I this_origin, uint32_t this_size, uint32_t request
 void TreeNode::free(Vec2I this_origin, uint32_t this_size, Vec2I requested_origin, uint32_t requested_size) {
     if (this_size <= requested_size) {
         if (this_size == requested_size && this_origin == requested_origin) {
-            type = TreeNode::EmptyLeaf;
+            type = TreeNode::Type::EmptyLeaf;
 
             for (int i = 0; i < 4; i++) {
                 kids[i] = nullptr;
@@ -101,7 +101,7 @@ void TreeNode::free(Vec2I this_origin, uint32_t this_size, Vec2I requested_origi
         }
     }
 
-    if (type == TreeNode::Parent) {
+    if (type == TreeNode::Type::Parent) {
         kids[child_index]->free(child_origin, child_size, requested_origin, requested_size);
         merge_if_necessary();
     } else {
@@ -111,7 +111,7 @@ void TreeNode::free(Vec2I this_origin, uint32_t this_size, Vec2I requested_origi
 }
 
 void TreeNode::merge_if_necessary() {
-    if (type == TreeNode::Parent) {
+    if (type == TreeNode::Type::Parent) {
         // Check if all kids are empty leaves.
         bool res = true;
         for (auto &k : kids) {
@@ -119,14 +119,14 @@ void TreeNode::merge_if_necessary() {
                 throw std::runtime_error("Parent tree node should not have null kids!");
             }
 
-            if (k->type != TreeNode::EmptyLeaf) {
+            if (k->type != TreeNode::Type::EmptyLeaf) {
                 res = false;
                 break;
             }
         }
 
         if (res) {
-            type = TreeNode::EmptyLeaf;
+            type = TreeNode::Type::EmptyLeaf;
 
             for (int i = 0; i < 4; i++) {
                 kids[i] = nullptr;
@@ -146,7 +146,7 @@ void TextureAtlasAllocator::free(RectI rect) {
 }
 
 bool TextureAtlasAllocator::is_empty() const {
-    if (root.type == TreeNode::EmptyLeaf) {
+    if (root.type == TreeNode::Type::EmptyLeaf) {
         return true;
     }
     return false;
@@ -243,7 +243,7 @@ void TextureAllocator::free(TextureLocation location) {
     if (pages[location.page]) {
         auto &page_allocator = pages[location.page]->allocator;
 
-        if (page_allocator.type == TexturePageAllocator::Image) {
+        if (page_allocator.type == TexturePageAllocator::Type::Image) {
             assert(location.rect == RectI(Vec2I(), page_allocator.image_size));
         } else {
             auto &atlas_allocator = page_allocator.allocator;
@@ -268,7 +268,7 @@ Vec2I TextureAllocator::page_size(uint32_t page_id) {
     if (pages[page_id]) {
         auto &page_allocator = pages[page_id]->allocator;
 
-        if (page_allocator.type == TexturePageAllocator::Atlas) {
+        if (page_allocator.type == TexturePageAllocator::Type::Atlas) {
             return Vec2I(page_allocator.allocator.size);
         } else {
             return Vec2I(page_allocator.image_size);
