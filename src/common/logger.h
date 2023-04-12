@@ -53,43 +53,43 @@ public:
     }
 
     enum class Level {
-        VERBOSE,
-        DEBUG,
-        INFO,
-        WARN,
-        ERROR,
-    } level = Level::INFO;
+        Verbose,
+        Debug,
+        Info,
+        Warn,
+        Error,
+    } level;
 
     static void set_level(Level _level) {
         get_singleton()->level = _level;
     }
 
     static void verbose(const std::string &label, const std::string &module = "") {
-        if (get_singleton()->level <= Level::VERBOSE) {
+        if (get_singleton()->level <= Level::Verbose) {
             PATHFINDER_LOGV("[VERBOSE][%s] %s", (module.empty() ? "default" : module).c_str(), label.c_str());
         }
     }
 
     static void debug(const std::string &label, const std::string &module = "") {
-        if (get_singleton()->level <= Level::DEBUG) {
+        if (get_singleton()->level <= Level::Debug) {
             PATHFINDER_LOGD("[DEBUG][%s] %s", (module.empty() ? "default" : module).c_str(), label.c_str());
         }
     }
 
     static void info(const std::string &label, const std::string &module = "") {
-        if (get_singleton()->level <= Level::INFO) {
+        if (get_singleton()->level <= Level::Info) {
             PATHFINDER_LOGI("[INFO][%s] %s", (module.empty() ? "default" : module).c_str(), label.c_str());
         }
     }
 
     static void warn(const std::string &label, const std::string &module = "") {
-        if (get_singleton()->level <= Level::WARN) {
+        if (get_singleton()->level <= Level::Warn) {
             PATHFINDER_LOGW("[WARN][%s] %s", (module.empty() ? "default" : module).c_str(), label.c_str());
         }
     }
 
     static void error(const std::string &label, const std::string &module = "") {
-        if (get_singleton()->level <= Level::ERROR) {
+        if (get_singleton()->level <= Level::Error) {
             PATHFINDER_LOGE("[ERROR][%s] %s", (module.empty() ? "default" : module).c_str(), label.c_str());
         }
     }
