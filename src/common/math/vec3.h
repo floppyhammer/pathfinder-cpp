@@ -1,6 +1,8 @@
 #ifndef PATHFINDER_VEC3_H
 #define PATHFINDER_VEC3_H
 
+#include "vec2.h"
+
 namespace Pathfinder {
 
 template <typename T>
@@ -13,9 +15,9 @@ struct Vec3 {
 
     explicit Vec3(T s) : x(s), y(s), z(s){};
 
-    Vec3(T _x, T _y, T _z) : x(_x), y(_y), z(_z){};
+    Vec3(T x, T y, T z) : x(x), y(y), z(z){};
 
-    Vec3(Vec2<T> _vec2, T _z) : x(_vec2.x), y(_vec2.y), z(_z){};
+    Vec3(Vec2<T> v, T z) : x(v.x), y(v.y), z(z){};
 
     Vec2<T> xy() const {
         return {x, y};

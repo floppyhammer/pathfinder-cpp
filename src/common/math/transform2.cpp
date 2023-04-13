@@ -11,9 +11,9 @@ Transform2::Transform2(float xform[6]) {
     vector = {xform[4], xform[5]};
 }
 
-Transform2::Transform2(Mat2x2<float> _matrix, Vec2F _vector) : matrix(_matrix), vector(_vector) {}
+Transform2::Transform2(const Mat2x2<float> &matrix, const Vec2F &vector) : matrix(matrix), vector(vector) {}
 
-Transform2 Transform2::translate(Vec2F _vector) const {
+Transform2 Transform2::translate(const Vec2F &_vector) const {
     return Transform2::from_translation(_vector) * *this;
 }
 

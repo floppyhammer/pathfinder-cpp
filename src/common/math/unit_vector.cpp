@@ -2,9 +2,9 @@
 
 namespace Pathfinder {
 
-UnitVector::UnitVector(float _x, float _y) : x(_x), y(_y) {}
+UnitVector::UnitVector(float x, float y) : x(x), y(y) {}
 
-UnitVector::UnitVector(const Vec2F &_vec2) : x(_vec2.x), y(_vec2.y) {}
+UnitVector::UnitVector(const Vec2F &vec) : x(vec.x), y(vec.y) {}
 
 UnitVector UnitVector::rotate_by(const UnitVector &other) const {
     return {x * other.x - y * other.y, y * other.x + x * other.y};

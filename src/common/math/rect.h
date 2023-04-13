@@ -21,7 +21,7 @@ struct Rect {
     Rect() = default;
 
     // Valid if initialized.
-    Rect(T _left, T _top, T _right, T _bottom) : left(_left), top(_top), right(_right), bottom(_bottom) {}
+    Rect(T left, T top, T right, T bottom) : left(left), top(top), right(right), bottom(bottom) {}
 
     Rect(Vec2<T> left_top, Vec2<T> right_bottom)
         : left(left_top.x), top(left_top.y), right(right_bottom.x), bottom(right_bottom.y) {}
