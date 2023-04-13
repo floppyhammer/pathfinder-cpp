@@ -129,26 +129,6 @@ struct TextureMetadataEntry {
     BlendMode blend_mode = BlendMode::SrcIn;
 };
 
-struct Range {
-    /// The lower bound of the range (inclusive).
-    unsigned long long start = 0;
-
-    /// The upper bound of the range (exclusive).
-    unsigned long long end = 0;
-
-    Range() = default;
-
-    Range(unsigned long long _start, unsigned long long _end) : start(_start), end(_end){};
-
-    unsigned long long length() const {
-        if (end < start) {
-            Logger::error("Smaller END than START in a Range!");
-        }
-
-        return end - start;
-    }
-};
-
 /// Only for draw paths. Not for clip paths.
 struct DrawTilingPathInfo {
     uint32_t paint_id;

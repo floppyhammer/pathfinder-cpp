@@ -5,6 +5,7 @@
 #include <map>
 #include <vector>
 
+#include "../common/math/basic.h"
 #include "data/data.h"
 #include "data/path.h"
 #include "paint/palette.h"
@@ -28,7 +29,7 @@ struct DisplayItem {
 
     RenderTargetId render_target_id{}; // For PushRenderTarget.
 
-    Range range; // For DrawPaths.
+    Range range;                       // For DrawPaths.
 };
 
 /// Used to control RenderTarget changing.

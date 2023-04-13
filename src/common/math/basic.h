@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+#include "../logger.h"
+
 namespace Pathfinder {
 
 // To handle floating point error.
@@ -65,6 +67,27 @@ inline static uint64_t fnv_hash(const char* bytes, size_t size) {
 
     return hash;
 }
+
+struct Range {
+    /// The lower bound of the range (inclusive).
+    unsigned long long start = 0;
+
+    /// The upper bound of the range (exclusive).
+    unsigned long long end = 0;
+
+    Range() = default;
+
+    Range(unsigned long long start, unsigned long long end) : start(start), end(end){};
+
+    unsigned long long length() const {
+        // Detect implicit conversion into zero of possible negative lengths.
+        if (end < start) {
+            Logger::error("Expects END < START in a Range!");
+        }
+
+        return end - start;
+    }
+};
 
 } // namespace Pathfinder
 

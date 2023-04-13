@@ -10,7 +10,7 @@ using namespace Pathfinder;
 
 class App {
 public:
-    App(const std::shared_ptr<Pathfinder::Driver> &_driver,
+    App(const std::shared_ptr<Pathfinder::Driver> &driver,
         const std::vector<char> &svg_input,
         const std::vector<char> &img_input);
 
