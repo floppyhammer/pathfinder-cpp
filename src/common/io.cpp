@@ -45,15 +45,14 @@ std::string load_file_as_string(const std::string &file_path) {
 std::vector<char> load_file_as_bytes(const std::string &file_path) {
     Timestamp timer;
 
-    // Don't use this. This is extremely slow.
-    //    std::ifstream input(file_path, std::ios::binary);
-    //    std::vector<char> bytes((std::istreambuf_iterator<char>(input)), (std::istreambuf_iterator<char>()));
-    //    input.close();
-
-    auto file = fopen(file_path.c_str(), "rb");
-    if (!file) {
+    FILE *file;
+    errno_t err = fopen_s(&file, file_path.c_str(), "rb");
+    if (err != 0) {
+        Logger::error("Failed to load file: " + file_path);
+        fclose(file);
         return {};
     }
+
     fseek(file, 0, SEEK_END);
     long length = ftell(file);
     std::vector<char> bytes(length);

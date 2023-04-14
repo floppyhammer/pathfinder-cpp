@@ -8,6 +8,7 @@
 #include "../src/common/math/rect.h"
 #include "../src/common/math/vec2.h"
 #include "../src/common/math/vec3.h"
+#include "../src/common/timestamp.h"
 #include "../src/core/canvas.h"
 #include "../src/core/svg.h"
 #include "../src/gpu/framebuffer.h"
