@@ -152,6 +152,12 @@ bool TextureAtlasAllocator::is_empty() const {
     return false;
 }
 
+TextureAtlasAllocator TextureAtlasAllocator::with_length(uint32_t length) {
+    TreeNode node;
+    node.type = TreeNode::Type::EmptyLeaf;
+    return TextureAtlasAllocator{node, length};
+}
+
 TextureLocation TextureAllocator::allocate(Vec2I requested_size, AllocationMode mode) {
     // If requested, or if the image is too big, use a separate page.
     if (mode == AllocationMode::OwnPage || requested_size.x > ATLAS_TEXTURE_LENGTH ||

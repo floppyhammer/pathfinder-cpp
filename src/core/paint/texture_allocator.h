@@ -42,11 +42,7 @@ struct TextureAtlasAllocator {
     uint32_t size = ATLAS_TEXTURE_LENGTH;
 
     /// Create allocator with custom length.
-    static TextureAtlasAllocator with_length(uint32_t length) {
-        TreeNode node;
-        node.type = TreeNode::Type::EmptyLeaf;
-        return TextureAtlasAllocator{node, length};
-    }
+    static TextureAtlasAllocator with_length(uint32_t length);
 
     RectI allocate(Vec2I requested_size);
 

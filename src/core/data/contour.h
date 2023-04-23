@@ -33,7 +33,7 @@ public:
 
     Vec2F position_of_last(int index);
 
-    void add_join(float distance, LineJoin join, Vec2F join_point, LineSegmentF next_tangent, float miter_limit);
+    void add_join(float distance, LineJoin join, Vec2F join_point, const LineSegmentF &next_tangent, float miter_limit);
 
     /// Adds a new on-curve point at the given position to this contour.
     void push_endpoint(const Vec2F &to);
@@ -56,7 +56,7 @@ public:
     /// Push a segment as points and flags.
     void push_segment(const Segment &segment, PushSegmentFlags _flags);
 
-    void push_arc_from_unit_chord(Transform2 &transform, LineSegmentF chord, ArcDirection direction);
+    void push_arc_from_unit_chord(const Transform2 &transform, const LineSegmentF &chord_, ArcDirection direction);
 
     /// Use this function to keep bounds up to date when mutating contours.
     /// See `Outline::transform()` for an example of use.

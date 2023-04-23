@@ -204,14 +204,15 @@ bool Contour::might_need_join(LineJoin join) const {
     if (points.size() < 2) {
         return false;
     } else {
-        if (join == LineJoin::Miter || join == LineJoin::Round)
-            return true;
-        else
-            return false;
+        return join == LineJoin::Miter || join == LineJoin::Round;
     }
 }
 
-void Contour::add_join(float distance, LineJoin join, Vec2F join_point, LineSegmentF next_tangent, float miter_limit) {
+void Contour::add_join(float distance,
+                       LineJoin join,
+                       Vec2F join_point,
+                       const LineSegmentF &next_tangent,
+                       float miter_limit) {
     auto p0 = position_of_last(2);
     auto p1 = position_of_last(1);
 
@@ -260,8 +261,11 @@ void Contour::add_join(float distance, LineJoin join, Vec2F join_point, LineSegm
     }
 }
 
-void Contour::push_arc_from_unit_chord(Transform2 &transform, LineSegmentF chord, const ArcDirection direction) {
+void Contour::push_arc_from_unit_chord(const Transform2 &transform,
+                                       const LineSegmentF &chord_,
+                                       const ArcDirection direction) {
     auto direction_transform = Transform2();
+    auto chord = chord_;
     if (direction == ArcDirection::CCW) {
         chord = chord * Vec2F(1.0f, -1.0f);
         direction_transform = Transform2::from_scale(Vec2F(1.0, -1.0));
