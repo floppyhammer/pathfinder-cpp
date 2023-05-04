@@ -23,7 +23,7 @@ struct Vec3 {
         return {x, y};
     }
 
-    inline Vec3 operator*(float s) const {
+    inline Vec3 operator*(T s) const {
         return {x * s, y * s, z * s};
     }
 
