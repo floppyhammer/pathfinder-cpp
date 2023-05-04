@@ -1,7 +1,7 @@
 #ifndef PATHFINDER_TRANSFORM2_H
 #define PATHFINDER_TRANSFORM2_H
 
-#include "mat2x2.h"
+#include "mat2.h"
 #include "rect.h"
 #include "unit_vector.h"
 #include "vec2.h"
@@ -10,7 +10,7 @@ namespace Pathfinder {
 
 struct Transform2 {
 private:
-    Mat2x2<float> matrix;
+    Mat2 matrix;
     Vec2F vector;
 
 public:
@@ -18,22 +18,22 @@ public:
 
     explicit Transform2(float xform[6]);
 
-    Transform2(const Mat2x2<float> &matrix, const Vec2F &vector);
+    Transform2(const Mat2 &matrix, const Vec2F &vector);
 
     static Transform2 from_scale(const Vec2F &scale) {
-        return {Mat2x2<float>::from_scale(scale), Vec2F(0)};
+        return {Mat2::from_scale(scale), Vec2F(0)};
     }
 
     static Transform2 from_rotation(float theta) {
-        return {Mat2x2<float>::from_rotation(theta), Vec2F(0)};
+        return {Mat2::from_rotation(theta), Vec2F(0)};
     }
 
     static Transform2 from_translation(const Vec2F &translation) {
-        return {Mat2x2<float>::identity(), translation};
+        return {Mat2::identity(), translation};
     }
 
     static Transform2 from_rotation_vector(const UnitVector &vector) {
-        return {Mat2x2<float>::from_rotation_vector(vector), Vec2F(0)};
+        return {Mat2::from_rotation_vector(vector), Vec2F(0)};
     }
 
     bool is_identity() const;

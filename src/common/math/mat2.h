@@ -1,39 +1,36 @@
-#ifndef PATHFINDER_MAT2X2_H
-#define PATHFINDER_MAT2X2_H
+#ifndef PATHFINDER_MAT2_H
+#define PATHFINDER_MAT2_H
 
 #include "unit_vector.h"
 
 namespace Pathfinder {
 
 /// A 2x2 matrix, in column-major order.
-/// | x z |
-/// | y w |
-template <typename T>
-struct Mat2x2 {
-    T v[4] = {0}; // x, y, z, w.
+struct Mat2 {
+    float v[4] = {0};
 
-    Mat2x2() = default;
+    Mat2() = default;
 
-    Mat2x2(T m11, T m21, T m12, T m22) {
+    Mat2(float m11, float m21, float m12, float m22) {
         v[0] = m11;
         v[1] = m21;
         v[2] = m12;
         v[3] = m22;
     }
 
-    static Mat2x2 identity() {
-        return Mat2x2<float>::from_scale(Vec2F(1));
+    static Mat2 identity() {
+        return Mat2::from_scale(Vec2F(1));
     }
 
-    static Mat2x2 from_scale(Vec2F scale) {
+    static Mat2 from_scale(Vec2F scale) {
         return {scale.x, 0.0, 0.0, scale.y};
     }
 
-    static Mat2x2 from_rotation(float theta) {
-        return Mat2x2::from_rotation_vector(UnitVector::from_angle(theta));
+    static Mat2 from_rotation(float theta) {
+        return Mat2::from_rotation_vector(UnitVector::from_angle(theta));
     }
 
-    static Mat2x2 from_rotation_vector(const UnitVector &vector) {
+    static Mat2 from_rotation_vector(const UnitVector &vector) {
         return {1.0f * vector.x, 1.0f * vector.y, -1.0f * vector.y, 1.0f * vector.x};
     }
 
@@ -41,11 +38,11 @@ struct Mat2x2 {
         return v[0] * v[3] - v[1] * v[2];
     }
 
-    inline Mat2x2 adjugate() const {
+    inline Mat2 adjugate() const {
         return {v[3] * 1.0f, v[1] * -1.0f, v[2] * -1.0f, v[0] * 1.0f};
     }
 
-    inline Mat2x2 inverse() const {
+    inline Mat2 inverse() const {
         return adjugate() * (1.0f / det());
     }
 
@@ -65,18 +62,18 @@ struct Mat2x2 {
         return v[3];
     }
 
-    inline Mat2x2 operator*(float s) const {
+    inline Mat2 operator*(float s) const {
         return {v[0] * s, v[1] * s, v[2] * s, v[3] * s};
     }
 
-    inline Mat2x2 operator*(const Mat2x2 &other) const {
+    inline Mat2 operator*(const Mat2 &other) const {
         return {v[0] * other.v[0] + v[2] * other.v[1],
                 v[1] * other.v[0] + v[3] * other.v[1],
                 v[0] * other.v[2] + v[2] * other.v[3],
                 v[1] * other.v[2] + v[3] * other.v[3]};
     }
 
-    inline bool operator==(const Mat2x2 &b) const {
+    inline bool operator==(const Mat2 &b) const {
         return v[0] == b.v[0] && v[1] == b.v[1] && v[2] == b.v[2] && v[3] == b.v[3];
     }
 
@@ -87,4 +84,4 @@ struct Mat2x2 {
 
 } // namespace Pathfinder
 
-#endif // PATHFINDER_MAT2X2_H
+#endif // PATHFINDER_MAT2_H

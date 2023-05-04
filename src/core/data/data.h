@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "../../common/color.h"
-#include "../../common/math/mat2x2.h"
+#include "../../common/math/mat2.h"
 #include "../../common/math/rect.h"
 #include "../../common/math/transform2.h"
 #include "../../common/math/vec2.h"

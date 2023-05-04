@@ -4,7 +4,7 @@
 #include "../src/common/global_macros.h"
 #include "../src/common/io.h"
 #include "../src/common/math/basic.h"
-#include "../src/common/math/mat4x4.h"
+#include "../src/common/math/mat4.h"
 #include "../src/common/math/rect.h"
 #include "../src/common/math/vec2.h"
 #include "../src/common/math/vec3.h"

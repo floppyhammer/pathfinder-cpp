@@ -9,8 +9,8 @@
 
 #include "../../common/global_macros.h"
 #include "../../common/logger.h"
-#include "../../common/math/mat2x2.h"
-#include "../../common/math/mat4x4.h"
+#include "../../common/math/mat2.h"
+#include "../../common/math/mat4.h"
 #include "../data.h"
 
 #ifndef PATHFINDER_USE_VULKAN
@@ -40,9 +40,9 @@ public:
 
     void set_vec4(const std::string &name, float x, float y, float z, float w) const;
 
-    void set_mat2(const std::string &name, const Mat2x2<float> &mat) const;
+    void set_mat2(const std::string &name, const Mat2 &mat) const;
 
-    void set_mat4(const std::string &name, const Mat4x4<float> &mat) const;
+    void set_mat4(const std::string &name, const Mat4 &mat) const;
     // ------------------------------------------------------
 
 protected:

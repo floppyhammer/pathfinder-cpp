@@ -42,11 +42,11 @@ void Program::set_vec4(const std::string &name, float x, float y, float z, float
     glUniform4f(glGetUniformLocation(id, name.c_str()), x, y, z, w);
 }
 
-void Program::set_mat2(const std::string &name, const Mat2x2<float> &mat) const {
+void Program::set_mat2(const std::string &name, const Mat2 &mat) const {
     glUniformMatrix2fv(glGetUniformLocation(id, name.c_str()), 1, GL_FALSE, &mat.v[0]);
 }
 
-void Program::set_mat4(const std::string &name, const Mat4x4<float> &mat) const {
+void Program::set_mat4(const std::string &name, const Mat4 &mat) const {
     glUniformMatrix4fv(glGetUniformLocation(id, name.c_str()), 1, GL_FALSE, &mat.v[0]);
 }
 

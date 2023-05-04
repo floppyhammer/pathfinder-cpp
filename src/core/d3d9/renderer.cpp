@@ -2,7 +2,7 @@
 
 #include "../../common/global_macros.h"
 #include "../../common/io.h"
-#include "../../common/math/mat4x4.h"
+#include "../../common/math/mat4.h"
 #include "../../common/math/vec3.h"
 #include "../../common/timestamp.h"
 #include "../../gpu/command_buffer.h"
@@ -523,7 +523,7 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
     // Update uniform buffers.
     {
         // MVP (with only the model matrix).
-        auto model_mat = Mat4x4<float>(1.f);
+        auto model_mat = Mat4(1.f);
         model_mat = model_mat.translate(Vec3F(-1.f, -1.f, 0.f)); // Move to top-left.
         model_mat = model_mat.scale(Vec3F(2.f / target_framebuffer_size.x, 2.f / target_framebuffer_size.y, 1.f));
 

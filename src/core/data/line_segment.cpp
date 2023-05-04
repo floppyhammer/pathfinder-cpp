@@ -4,7 +4,7 @@
 #include <cmath>
 
 #include "../../common/math/basic.h"
-#include "../../common/math/mat2x2.h"
+#include "../../common/math/mat2.h"
 
 namespace Pathfinder {
 
@@ -79,7 +79,7 @@ bool LineSegmentF::intersection_t(const LineSegmentF &other, float &output) cons
     const float EPSILON = 0.0001;
 
     auto p0p1 = vector();
-    auto matrix = Mat2x2<float>(other.vector().x, other.vector().y, -p0p1.x, -p0p1.y);
+    auto matrix = Mat2(other.vector().x, other.vector().y, -p0p1.x, -p0p1.y);
     if (std::abs(matrix.det()) < EPSILON) {
         return false;
     }

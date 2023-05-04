@@ -11,7 +11,7 @@ Transform2::Transform2(float xform[6]) {
     vector = {xform[4], xform[5]};
 }
 
-Transform2::Transform2(const Mat2x2<float> &matrix, const Vec2F &vector) : matrix(matrix), vector(vector) {}
+Transform2::Transform2(const Mat2 &matrix, const Vec2F &vector) : matrix(matrix), vector(vector) {}
 
 Transform2 Transform2::translate(const Vec2F &_vector) const {
     return Transform2::from_translation(_vector) * *this;
@@ -22,7 +22,7 @@ Transform2 Transform2::rotate(float theta) const {
 }
 
 bool Transform2::is_identity() const {
-    return matrix == Mat2x2<float>::from_scale({1, 1}) && vector == Vec2F();
+    return matrix == Mat2::from_scale({1, 1}) && vector == Vec2F();
 }
 
 Transform2 Transform2::inverse() const {

@@ -4,7 +4,7 @@
 
 #include "../../src/common/global_macros.h"
 #include "../../src/common/math/basic.h"
-#include "../../src/common/math/mat4x4.h"
+#include "../../src/common/math/mat4.h"
 
 #ifdef PATHFINDER_USE_VULKAN
     #include "../../src/shaders/generated/blit_frag_spv.h"
@@ -84,7 +84,7 @@ void TextureRect::draw(const std::shared_ptr<CommandBuffer> &cmd_buffer, const V
     // Get MVP matrix.
     // -------------------------------
     // The actual application order of these matrices is reversed.
-    auto model_mat = Mat4x4<float>(1.0f);
+    auto model_mat = Mat4(1.0f);
     model_mat = model_mat.translate(Vec3F(position / framebuffer_size.to_f32() * 2.0f, 0.0f));
     model_mat = model_mat.translate(Vec3F(-1.0, -1.0, 0.0f));
     model_mat = model_mat.scale(Vec3F(scale, 1.0f));
