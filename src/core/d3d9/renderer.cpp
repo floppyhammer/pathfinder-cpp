@@ -494,22 +494,25 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
 
     cmd_buffer->sync_descriptor_set(tile_descriptor_set);
 
-    // If no specific RenderTarget is given.
+    // If no specific RenderTarget is given, we render to the dst framebuffer.
     if (render_target_id == nullptr) {
+        // Check if we should clear the dst framebuffer.
         cmd_buffer->begin_render_pass(clear_dest_texture ? dest_render_pass_clear : dest_render_pass_load,
                                       dest_framebuffer,
                                       ColorF());
 
         target_framebuffer = dest_framebuffer;
 
+        // Disable clear for draw calls after this one.
         clear_dest_texture = false;
     }
-    // Otherwise, we need to render to that render target.
+    // Otherwise, we render to the given render target.
     else {
         auto render_target = get_render_target(*render_target_id);
 
         auto framebuffer = render_target.framebuffer;
 
+        // We always clear a render target.
         cmd_buffer->begin_render_pass(dest_render_pass_clear, framebuffer, ColorF());
 
         target_framebuffer = framebuffer;
