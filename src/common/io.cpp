@@ -49,7 +49,6 @@ std::vector<char> load_file_as_bytes(const std::string &file_path) {
     errno_t err = fopen_s(&file, file_path.c_str(), "rb");
     if (err != 0) {
         Logger::error("Failed to load file: " + file_path);
-        fclose(file);
         return {};
     }
 
