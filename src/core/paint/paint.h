@@ -41,7 +41,7 @@ struct PaintContents {
     Gradient gradient;
     Pattern pattern;
 
-    // For hashing.
+    // For being used as key in ordered maps.
     inline bool operator<(const PaintContents &rhs) const {
         bool res = type < rhs.type;
 

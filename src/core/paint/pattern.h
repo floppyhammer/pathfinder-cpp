@@ -45,7 +45,7 @@ public:
         return pixels_hash;
     }
 
-    // For hashing.
+    // For being used as key in ordered maps.
     inline bool operator<(const Image &rhs) const {
         bool res = size.x < rhs.size.x;
         res = res && size.y < rhs.size.y;
@@ -90,7 +90,7 @@ struct PatternSource {
         return true;
     }
 
-    // For hashing.
+    // For being used as key in ordered maps.
     inline bool operator<(const PatternSource &rhs) const {
         bool res = type < rhs.type;
 
