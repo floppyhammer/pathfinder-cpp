@@ -25,7 +25,7 @@ public:
         return texture;
     }
 
-    /// Get the unique resource ID for the framebuffer, which is only used for hashing.
+    /// Get the unique resource ID for the framebuffer.
     virtual unsigned long long get_unique_id() = 0;
 
     inline Vec2I get_size() const {
