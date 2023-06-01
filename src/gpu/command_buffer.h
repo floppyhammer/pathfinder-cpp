@@ -58,7 +58,7 @@ struct Command {
         struct {
             RenderPass *render_pass;
             Framebuffer *framebuffer;
-            Vec2I extent;
+            RectI viewport;
             ColorF clear_color;
         } begin_render_pass{};
         struct {
@@ -197,7 +197,7 @@ protected:
     /// Callbacks after the commands are submitted and waited for finish.
     std::vector<std::function<void()>> callbacks;
 
-    /// Currently bind pipeline.
+    /// Currently bound pipeline.
     RenderPipeline *render_pipeline{};
     ComputePipeline *compute_pipeline{};
 };

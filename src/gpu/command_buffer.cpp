@@ -14,7 +14,7 @@ void CommandBuffer::begin_render_pass(const std::shared_ptr<RenderPass> &render_
     args.render_pass = render_pass.get();
     args.framebuffer = framebuffer.get();
     args.clear_color = clear_color;
-    args.extent = framebuffer->get_size();
+    args.viewport = {Vec2I(), framebuffer->get_size()};
 
     commands.push(cmd);
 }

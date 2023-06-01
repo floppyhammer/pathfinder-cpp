@@ -19,6 +19,8 @@ void CommandBufferGl::submit() {
 
         switch (cmd.type) {
             case CommandType::BeginRenderPass: {
+                assert(compute_pipeline == nullptr);
+
                 auto &args = cmd.args.begin_render_pass;
                 auto render_pass_gl = static_cast<RenderPassGl *>(args.render_pass);
                 auto framebuffer_gl = static_cast<FramebufferGl *>(args.framebuffer);
@@ -30,13 +32,12 @@ void CommandBufferGl::submit() {
                     glClear(GL_COLOR_BUFFER_BIT);
                 }
 
-                glViewport(0, 0, args.extent.x, args.extent.y);
+                glViewport(args.viewport.min_x(), args.viewport.min_y(), args.viewport.max_x(), args.viewport.max_y());
 
                 gl_check_error("BeginRenderPass");
             } break;
             case CommandType::BindRenderPipeline: {
                 auto &args = cmd.args.bind_render_pipeline;
-
                 auto pipeline_gl = static_cast<RenderPipelineGl *>(args.pipeline);
 
                 auto blend_state = pipeline_gl->get_blend_state();
@@ -58,9 +59,11 @@ void CommandBufferGl::submit() {
                 gl_check_error("BindRenderPipeline");
             } break;
             case CommandType::BindVertexBuffers: {
-                auto pipeline_gl = static_cast<RenderPipelineGl *>(render_pipeline);
+                assert(render_pipeline != nullptr);
 
                 auto &args = cmd.args.bind_vertex_buffers;
+
+                auto pipeline_gl = static_cast<RenderPipelineGl *>(render_pipeline);
 
                 auto buffer_count = args.buffer_count;
                 auto vertex_buffers = args.buffers;
@@ -202,9 +205,12 @@ void CommandBufferGl::submit() {
 
                 gl_check_error("DrawInstanced");
             } break;
-            case CommandType::EndRenderPass:
-            case CommandType::BeginComputePass:
-                break;
+            case CommandType::EndRenderPass: {
+                render_pipeline = nullptr;
+            } break;
+            case CommandType::BeginComputePass: {
+                assert(render_pipeline == nullptr);
+            } break;
             case CommandType::BindComputePipeline: {
                 auto &args = cmd.args.bind_compute_pipeline;
 
@@ -212,7 +218,6 @@ void CommandBufferGl::submit() {
 
                 pipeline_gl->get_program()->use();
 
-                render_pipeline = nullptr;
                 compute_pipeline = args.pipeline;
             } break;
             case CommandType::Dispatch: {
@@ -232,6 +237,7 @@ void CommandBufferGl::submit() {
                 gl_check_error("Dispatch");
             } break;
             case CommandType::EndComputePass: {
+                compute_pipeline = nullptr;
             } break;
             case CommandType::UploadToBuffer: {
                 auto &args = cmd.args.upload_to_buffer;

@@ -4,7 +4,6 @@
 #include <functional>
 
 #include "../../common/logger.h"
-#include "../command_buffer.h"
 #include "buffer.h"
 #include "compute_pipeline.h"
 #include "debug_marker.h"
@@ -197,6 +196,8 @@ void CommandBufferVk::submit() {
 
         switch (cmd.type) {
             case CommandType::BeginRenderPass: {
+                assert(compute_pipeline == nullptr);
+
                 auto &args = cmd.args.begin_render_pass;
                 auto render_pass_vk = static_cast<RenderPassVk *>(args.render_pass);
                 auto framebuffer_vk = static_cast<FramebufferVk *>(args.framebuffer);
@@ -217,9 +218,10 @@ void CommandBufferVk::submit() {
                 render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
                 render_pass_info.renderPass = render_pass_vk->get_vk_render_pass();
                 render_pass_info.framebuffer = framebuffer_vk->get_vk_framebuffer(); // Set target framebuffer.
-                render_pass_info.renderArea.offset = {0, 0};
+                render_pass_info.renderArea.offset = {args.viewport.min_x(), args.viewport.min_y()};
                 // Has to be larger than the area we're going to draw.
-                render_pass_info.renderArea.extent = VkExtent2D{uint32_t(args.extent.x), uint32_t(args.extent.y)};
+                render_pass_info.renderArea.extent =
+                    VkExtent2D{uint32_t(args.viewport.width()), uint32_t(args.viewport.height())};
 
                 // Clear color.
                 std::array<VkClearValue, 1> clearValues{};
@@ -417,6 +419,7 @@ void CommandBufferVk::submit() {
                 }
             } break;
             case CommandType::BeginComputePass: {
+                assert(render_pipeline == nullptr);
             } break;
             case CommandType::BindComputePipeline: {
                 auto &args = cmd.args.bind_compute_pipeline;
