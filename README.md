@@ -8,7 +8,7 @@ This is a C++ port of [Pathfinder 3](https://github.com/servo/pathfinder) with a
 * D3D9 level: `Vulkan` / `OpenGL >=3.3` / `OpenGL ES >=3.0` / `WebGL2`.
 * D3D11 level: `Vulkan` / `OpenGL >=4.3` / `OpenGL ES >=3.1`.
 
-Noteable: D3D11 level is quite limited in OpenGL ES for it not being able to do both image read & write in a single
+Notable: D3D11 level is quite limited in OpenGL ES for it not being able to do both image read & write in a single
 compute
 invocation.
 
