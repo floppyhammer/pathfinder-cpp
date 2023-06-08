@@ -6,6 +6,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#include <cerrno>
 #include <stdexcept>
 
 namespace Pathfinder {
@@ -45,9 +46,8 @@ std::string load_file_as_string(const std::string &file_path) {
 std::vector<char> load_file_as_bytes(const std::string &file_path) {
     Timestamp timer;
 
-    FILE *file;
-    errno_t err = fopen_s(&file, file_path.c_str(), "rb");
-    if (err != 0) {
+    FILE *file = fopen(file_path.c_str(), "rb");
+    if (!file) {
         Logger::error("Failed to load file: " + file_path);
         return {};
     }

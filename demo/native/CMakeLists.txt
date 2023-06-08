@@ -11,10 +11,7 @@ if (WIN32) # Windows
         target_link_libraries(pathfinder_demo_native Vulkan::Vulkan)
     endif ()
 else () # Linux
-    # sudo apt install libglfw3-dev
-    # -lglfw for glfw
-    # -lGL for opengl
-    target_link_libraries(pathfinder_demo_native -lglfw -lpathfinder -lpathfinder_demo_common)
+    target_link_libraries(pathfinder_demo_native glfw pathfinder_demo_common pathfinder)
     if (PATHFINDER_VULKAN_SUPPORT)
         target_link_libraries(pathfinder_demo_native -lvulkan)
     else ()

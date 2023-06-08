@@ -10,7 +10,7 @@
 
 #ifdef PATHFINDER_USE_VULKAN
 
-    #if defined(WIN32) || defined(LINUX)
+    #if defined(WIN32) || defined(__linux__)
 
 namespace Pathfinder {
 

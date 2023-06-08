@@ -9,7 +9,7 @@
 
 #ifndef PATHFINDER_USE_VULKAN
 
-    #if defined(WIN32) || defined(LINUX)
+    #if defined(WIN32) || defined(__linux__)
         #define GLAD_GL_IMPLEMENTATION
         #include <glad/gl.h>
 

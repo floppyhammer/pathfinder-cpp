@@ -9,7 +9,7 @@
 #include "../window.h"
 #include "driver.h"
 
-#if defined(WIN32) || defined(LINUX)
+#if defined(WIN32) || defined(__linux__)
     #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
