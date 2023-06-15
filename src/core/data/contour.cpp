@@ -157,7 +157,7 @@ Segment SegmentsIter::get_next(bool force_closed) {
             // If the start and end point of the contour are already the same,
             // there's no need to add an extra line connecting them.
             // This fixes incorrect line cap.
-            if (!points.front().approx_eq(points.back(), EPSILON)) {
+            if (!points.front().approx_eq(points.back(), FLOAT_EPSILON)) {
                 segment.baseline.set_from(points.back());
                 segment.baseline.set_to(points.front());
                 segment.kind = SegmentKind::Line;

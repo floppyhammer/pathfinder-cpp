@@ -158,7 +158,7 @@ void OutlineStrokeToFill::add_cap(Contour &contour) const {
 
     while (true) {
         p0 = contour.points[p0_index];
-        if ((p1 - p0).square_length() > EPSILON) {
+        if ((p1 - p0).square_length() > FLOAT_EPSILON) {
             break;
         }
         if (p0_index == 0) {
@@ -219,7 +219,7 @@ void Contour::add_join(float distance,
     // The tangent vector at the current end of the contour, which points outward.
     auto prev_tangent = LineSegmentF(p0, p1);
 
-    if (prev_tangent.square_length() < EPSILON || next_tangent.square_length() < EPSILON) {
+    if (prev_tangent.square_length() < FLOAT_EPSILON || next_tangent.square_length() < FLOAT_EPSILON) {
         return;
     }
 
@@ -230,7 +230,7 @@ void Contour::add_join(float distance,
             float prev_tangent_t;
             bool valid = prev_tangent.intersection_t(next_tangent, prev_tangent_t);
             if (valid) {
-                if (prev_tangent_t < -EPSILON) {
+                if (prev_tangent_t < -FLOAT_EPSILON) {
                     return;
                 }
 
@@ -276,7 +276,7 @@ void Contour::push_arc_from_unit_chord(const Transform2 &transform,
 
     for (int segment_index = 0; segment_index < 4; segment_index++) {
         auto sweep_vector = end_vector.rev_rotate_by(vector);
-        const auto last = sweep_vector.x >= -EPSILON && sweep_vector.y >= -EPSILON;
+        const auto last = sweep_vector.x >= -FLOAT_EPSILON && sweep_vector.y >= -FLOAT_EPSILON;
 
         Segment segment;
         if (!last) {

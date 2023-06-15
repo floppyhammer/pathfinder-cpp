@@ -7,18 +7,15 @@
 #include "d3d11/scene_builder.h"
 #include "d3d9/renderer.h"
 #include "d3d9/scene_builder.h"
+#include "path2d.h"
 
 namespace Pathfinder {
 
-enum class PathOp {
-    Fill,
-    Stroke,
-};
-
-/// Canvas state.
-struct State {
+/// Describes how we are going to draw a Path2d.
+struct BrushState {
     Transform2 transform;
 
+    // Stroke.
     float line_width = 0;
     LineCap line_cap = LineCap::Butt;
     LineJoin line_join = LineJoin::Miter;
@@ -28,54 +25,26 @@ struct State {
     std::vector<float> line_dash;
     float line_dash_offset = 0;
 
+    // Paint.
     Paint fill_paint;
     Paint stroke_paint;
 
+    // Shadow.
     ColorU shadow_color;
     float shadow_blur = 0;
     Vec2F shadow_offset;
 
+    // Blend.
     float global_alpha = 1;
     BlendMode global_composite_operation = BlendMode::SrcOver;
 
-    // The clip path is scene-dependent, so remember to clear it when switching scene.
+    // The clip path is scene-dependent, so remember to clear it when switching between scenes.
     std::shared_ptr<uint32_t> clip_path; // Optional
 };
 
-/// Equivalent to SVG path.
-class Path2d {
-public:
-    // Basic geometries.
-    // -----------------------------------------------
-    void close_path();
-
-    void move_to(float x, float y);
-
-    void line_to(float x, float y);
-
-    void quadratic_to(float cx, float cy, float x, float y);
-
-    void cubic_to(float cx, float cy, float cx1, float cy1, float x, float y);
-    // -----------------------------------------------
-
-    // Advanced geometries.
-    // -----------------------------------------------
-    void add_line(const Vec2F &start, const Vec2F &end);
-
-    void add_rect(const RectF &rect, float corner_radius = 0);
-
-    void add_circle(const Vec2F &center, float radius);
-    // -----------------------------------------------
-
-    /// Returns the outline.
-    Outline into_outline();
-
-private:
-    Contour current_contour;
-
-    Outline outline;
-
-    void flush_current_contour();
+enum class PathOp {
+    Fill,
+    Stroke,
 };
 
 /// Normally, we only need one canvas to render multiple scenes.
@@ -87,6 +56,7 @@ public:
     /// You shouldn't call this per frame.
     void clear();
 
+    /// Set the final render target.
     void set_dst_texture(const std::shared_ptr<Texture> &new_dst_texture);
 
     std::shared_ptr<Texture> get_dst_texture();
@@ -94,6 +64,7 @@ public:
     // Canvas state.
     // ------------------------------------------------
     // Line styles
+
     float line_width() const;
 
     void set_line_width(float new_line_width);
@@ -119,6 +90,7 @@ public:
     void set_line_dash_offset(float new_line_dash_offset);
 
     // Fill and stroke styles
+
     Paint fill_paint() const;
 
     void set_fill_paint(const Paint &new_fill_paint);
@@ -140,6 +112,8 @@ public:
     Vec2F shadow_offset() const;
 
     void set_shadow_offset(const Vec2F &new_shadow_offset);
+
+    // Others
 
     Transform2 get_transform() const;
 
@@ -193,7 +167,7 @@ public:
     /// Returns the inner scene, replacing it with a blank scene.
     std::shared_ptr<Scene> take_scene();
 
-    // Canvas state
+    // Brush state
 
     void save_state();
 
@@ -215,9 +189,9 @@ private:
     void push_path(Outline &outline, PathOp path_op, FillRule fill_rule);
 
 private:
-    // State management.
-    State current_state;
-    std::vector<State> saved_states;
+    // Brush state management.
+    BrushState current_state;
+    std::vector<BrushState> saved_states;
 
     std::shared_ptr<Scene> scene;
 

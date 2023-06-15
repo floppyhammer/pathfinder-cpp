@@ -8,7 +8,7 @@
 namespace Pathfinder {
 
 // To handle floating point error.
-const float EPSILON = 0.001;
+const float FLOAT_EPSILON = 0.001;
 
 const float PI = 3.141592653589f;
 
@@ -40,7 +40,7 @@ inline unsigned long upper_power_of_two(unsigned long v) {
 }
 
 inline bool approx_eq(float a, float b) {
-    return std::abs(a - b) <= EPSILON;
+    return std::abs(a - b) <= FLOAT_EPSILON;
 }
 
 inline float lerp(float a, float b, float t) {

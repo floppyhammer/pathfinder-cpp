@@ -4,7 +4,7 @@
 
 namespace Pathfinder {
 
-const float EPSILON = 0.0001;
+const float DASH_EPSILON = 0.0001;
 
 DashState::DashState(const std::vector<float> &_dashes, float _offset) : dashes(_dashes) {
     float total = 0;
@@ -107,7 +107,7 @@ void ContourDash::dash() {
 
         state.distance_left -= distance;
 
-        if (state.distance_left < EPSILON) {
+        if (state.distance_left < DASH_EPSILON) {
             if (state.is_on()) {
                 output.push_contour(state.output);
                 state.output = Contour();

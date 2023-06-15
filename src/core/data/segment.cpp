@@ -153,4 +153,46 @@ bool Segment::is_valid() const {
     }
 }
 
+Segment Segment::quarter_circle_arc() {
+    auto p0 = Vec2F(std::sqrt(2.0f) * 0.5f);
+    auto p1 = Vec2F(-std::sqrt(2.0f) / 6.0f + 4.0f / 3.0f, 7.0f * std::sqrt(2.0f) / 6.0f - 4.0f / 3.0f);
+    auto flip = Vec2F(1.0, -1.0);
+
+    auto p2 = p1 * flip;
+    auto p3 = p0 * flip;
+
+    return {LineSegmentF(p3, p0), LineSegmentF(p2, p1), SegmentKind::Cubic, SegmentFlags::NONE};
+}
+
+Segment Segment::arc_from_cos(float cos_sweep_angle) {
+    const float EPSILON = 0.001;
+
+    // Richard A. DeVeneza, "How to determine the control points of a Bézier curve that
+    // approximates a small arc", 2004.
+    //
+    // https://www.tinaja.com/glib/bezcirc2.pdf
+    if (cos_sweep_angle >= 1.0 - EPSILON) {
+        return Segment::line(LineSegmentF(Vec2F(1.0, 0.0), Vec2F(1.0, 0.0)));
+    }
+
+    auto term = Vec2F(cos_sweep_angle, -cos_sweep_angle);
+
+    auto signs_xy = Vec2F(1.0, -1.0);
+    auto signs_zw = Vec2F(1.0, 1.0);
+
+    auto p3 = ((term + 1.0f) * Vec2F(0.5f)).sqrt() * signs_xy;
+    auto p0 = ((term + 1.0f) * Vec2F(0.5f)).sqrt() * signs_zw;
+
+    auto p0x = p0.x;
+    auto p0y = p0.y;
+
+    auto p1x = 4.0f - p0x;
+    auto p1y = (1.0f - p0x) * (3.0f - p0x) / p0y;
+
+    auto p2 = Vec2F(p1x, -p1y) * (1.0f / 3.0f);
+    auto p1 = Vec2F(p1x, p1y) * (1.0f / 3.0f);
+
+    return Segment::cubic(LineSegmentF(p3, p0), LineSegmentF(p2, p1));
+}
+
 } // namespace Pathfinder

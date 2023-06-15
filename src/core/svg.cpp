@@ -125,16 +125,19 @@ SvgScene::SvgScene() {
     scene = std::make_shared<Scene>(0, RectF());
 }
 
-void SvgScene::load_from_string(std::string svg, Canvas &canvas) {
-    // We use std::string instead of std::vector<char> here, otherwise NanoSVG crashes sometimes.
+void SvgScene::load_from_string(const std::string &svg, Canvas &canvas) {
+    // We use std::string instead of std::vector<char> here, otherwise NanoSVG occasionally crashes.
 
     if (svg.empty()) {
         Logger::error("SVG input is empty!", "SvgScene");
         return;
     }
 
+    // We need a copy of the input SVG data as its content will be modified in nsvgParse.
+    auto svg_copy = svg;
+
     // Load as a NanoSVG image.
-    NSVGimage *image = nsvgParse((char *)svg.data(), "px", 96);
+    NSVGimage *image = nsvgParse((char *)svg_copy.data(), "px", 96);
 
     // Check if image loading is successful.
     if (image == nullptr) {
