@@ -14,6 +14,8 @@ inline GLint to_gl_blend_factor(BlendFactor blend_factor) {
             return GL_ONE;
         case BlendFactor::OneMinusSrcAlpha:
             return GL_ONE_MINUS_SRC_ALPHA;
+        default:
+            abort();
     }
 }
 
@@ -35,6 +37,8 @@ inline GLint to_gl_data_type(DataType data_type) {
             return GL_HALF_FLOAT;
         case DataType::f32:
             return GL_FLOAT;
+        default:
+            abort();
     }
 }
 
@@ -47,7 +51,7 @@ inline GLint to_gl_texture_format(TextureFormat texture_format) {
         case TextureFormat::Rgba16Float:
             return GL_RGBA16F;
         default:
-            return GL_RGBA8;
+            abort();
     }
 }
 
