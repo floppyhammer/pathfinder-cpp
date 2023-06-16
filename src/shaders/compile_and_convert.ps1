@@ -4,6 +4,7 @@ New-Item -Path "generated" -ItemType Directory
 
 New-Variable -Name "GLSLC" -Visibility Public -Value "$env:VULKAN_SDK/Bin/glslc.exe"
 
+# Compile shaders.
 & $GLSLC blit.vert -o generated/blit_vert.spv
 & $GLSLC blit.frag -o generated/blit_frag.spv
 
@@ -32,11 +33,15 @@ Copy-Item "d3d11/*.*" "generated"
 
 Set-Location "generated"
 
+# Generate headers.
 python ../convert_files_to_header.py vert
 python ../convert_files_to_header.py frag
 python ../convert_files_to_header.py comp
 python ../convert_files_to_header.py spv
 python ../convert_files_to_header.py png
+
+# Remove intermediate files.
+Get-ChildItem -Recurse -File | Where { ($_.Extension -ne ".h") } | Remove-Item
 
 # Wait for input.
 Write-Host "All jobs finished."
