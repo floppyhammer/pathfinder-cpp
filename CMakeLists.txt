@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
 # Preset.
-option(PATHFINDER_VULKAN_SUPPORT "Use Vulkan instead of OpenGL" ON)
+option(PATHFINDER_VULKAN_SUPPORT "Use Vulkan instead of OpenGL" OFF)
 option(PATHFINDER_BUILD_DEMO "Build demo" OFF)
 
 # Identify Linux.
