@@ -19,7 +19,7 @@ invocation.
 * Run `src/shaders/compile_and_convert.ps1` to generate embedded shader headers. You should have Vulkan SDK installed
   first.
 
-### Windows / Linux
+### Windows / Linux / Mac
 
 * Pull submodules.
 * Load CMake project `demo/native/CMakeList.txt`.

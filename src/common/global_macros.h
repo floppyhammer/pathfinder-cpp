@@ -21,7 +21,7 @@
 #define PATHFINDER_THREADS 4
 
 // Enable SIMD.
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__) && !defined(__APPLE__)
     #define PATHFINDER_ENABLE_SIMD
 #endif
 

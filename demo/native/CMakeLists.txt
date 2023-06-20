@@ -5,16 +5,18 @@ include_directories(../../include)
 add_executable(pathfinder_demo_native ${SOURCE_FILES} main.cpp)
 
 # Link libraries.
-if (WIN32) # Windows
+if (WIN32)
     target_link_libraries(pathfinder_demo_native glfw pathfinder pathfinder_demo_common)
     if (PATHFINDER_VULKAN_SUPPORT)
         target_link_libraries(pathfinder_demo_native Vulkan::Vulkan)
     endif ()
-else () # Linux
+elseif (LINUX)
     target_link_libraries(pathfinder_demo_native glfw pathfinder_demo_common pathfinder)
     if (PATHFINDER_VULKAN_SUPPORT)
         target_link_libraries(pathfinder_demo_native -lvulkan)
     else ()
         target_link_libraries(pathfinder_demo_native -lGL)
     endif ()
+elseif (APPLE)
+    target_link_libraries(pathfinder_demo_native glfw pathfinder_demo_common pathfinder Vulkan::Vulkan)
 endif ()

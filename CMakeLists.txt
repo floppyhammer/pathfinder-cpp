@@ -17,12 +17,17 @@ if (UNIX AND NOT APPLE)
     set(LINUX ON)
 endif ()
 
+# No GL support for Mac.
+if (APPLE)
+    set(PATHFINDER_VULKAN_SUPPORT ON)
+endif ()
+
 # No Vulkan support for web.
 if (EMSCRIPTEN)
     message("Pathfinder will build for web")
 
     set(PATHFINDER_VULKAN_SUPPORT OFF)
-elseif (WIN32 OR LINUX)
+elseif (WIN32 OR LINUX OR APPLE)
     # Include GLFW headers.
     # Emscripten has its own version of GLFW.
     include_directories(external/glfw/include)
@@ -61,7 +66,7 @@ if (PATHFINDER_BUILD_DEMO)
     # Demo library.
     add_subdirectory(demo/common)
 
-    if (WIN32 OR LINUX)
+    if ((WIN32 OR LINUX OR APPLE) AND NOT EMSCRIPTEN)
         add_subdirectory(external/glfw)
         add_subdirectory(demo/native)
     elseif (EMSCRIPTEN)
