@@ -9,7 +9,7 @@ class Window {
 public:
     explicit Window(Vec2I _size) : size(_size) {}
 
-    static std::shared_ptr<Window> new_impl(DeviceType device_type, Vec2I _size);
+    static std::shared_ptr<Window> new_impl(Vec2I _size);
 
     virtual std::shared_ptr<Driver> create_driver() = 0;
 

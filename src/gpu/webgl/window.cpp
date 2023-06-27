@@ -10,12 +10,8 @@
 
 namespace Pathfinder {
 
-std::shared_ptr<Window> Window::new_impl(DeviceType device_type, Vec2I _size) {
-    if (device_type == DeviceType::WebGl2) {
-        return std::make_shared<WindowWebGl>(_size);
-    }
-
-    abort();
+std::shared_ptr<Window> Window::new_impl(Vec2I _size) {
+    return std::make_shared<WindowWebGl>(_size);
 }
 
 WindowWebGl::WindowWebGl(Vec2I _size) : Window(_size) {

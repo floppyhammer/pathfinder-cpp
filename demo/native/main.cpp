@@ -7,14 +7,8 @@ const int32_t WINDOW_HEIGHT = 720;
 int main() {
     Vec2I window_size = {WINDOW_WIDTH, WINDOW_HEIGHT};
 
-#ifdef PATHFINDER_USE_VULKAN
-    auto device_type = DeviceType::Vulkan;
-#else
-    auto device_type = DeviceType::OpenGl4;
-#endif
-
     // Create a window.
-    auto window = Window::new_impl(device_type, window_size);
+    auto window = Window::new_impl(window_size);
 
     // Create a driver via window.
     auto driver = window->create_driver();

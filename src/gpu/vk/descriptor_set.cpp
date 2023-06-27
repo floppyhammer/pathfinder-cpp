@@ -32,7 +32,7 @@ void DescriptorSetVk::update_vk_descriptor_set(VkDevice _device, VkDescriptorSet
                 case DescriptorType::Image: {
                     pool_size.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
                 } break;
-                case DescriptorType::Max: {
+                default: {
                     abort();
                 }
             }

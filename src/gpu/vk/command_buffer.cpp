@@ -390,8 +390,9 @@ void CommandBufferVk::submit() {
                             case ShaderStage::Compute: {
                                 dst_stage_mask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
                             } break;
-                            case ShaderStage::Max:
-                                break;
+                            default: {
+                                abort();
+                            }
                         }
 
                         VkBufferMemoryBarrier memory_barrier = {};

@@ -13,9 +13,9 @@
 namespace Pathfinder {
 
 struct Descriptor {
-    DescriptorType type = DescriptorType::Max;
+    DescriptorType type{};
 
-    ShaderStage stage = ShaderStage::Max;
+    ShaderStage stage{};
 
     /// Binding point.
     uint32_t binding{};

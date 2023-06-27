@@ -12,12 +12,8 @@
 
 namespace Pathfinder {
 
-std::shared_ptr<Window> Window::new_impl(DeviceType device_type, Vec2I _size) {
-    if (device_type == DeviceType::Vulkan) {
-        return std::make_shared<WindowVk>(_size);
-    }
-
-    abort();
+std::shared_ptr<Window> Window::new_impl(Vec2I _size) {
+    return std::make_shared<WindowVk>(_size);
 }
 
 VkResult create_debug_utils_messenger_ext(VkInstance instance,

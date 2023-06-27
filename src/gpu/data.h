@@ -72,14 +72,6 @@ enum class ShaderStage {
     Fragment,
     VertexAndFragment,
     Compute,
-    Max,
-};
-
-enum class DeviceType {
-    OpenGl3, // Or ES 3.0
-    OpenGl4, // Or ES 3.1
-    Vulkan,
-    WebGl2,
 };
 
 enum class BlendFactor {
@@ -156,7 +148,6 @@ enum class DescriptorType {
     Sampler,
     StorageBuffer,
     Image,
-    Max,
 };
 
 enum class MemoryProperty {
