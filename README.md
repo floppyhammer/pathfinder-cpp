@@ -5,12 +5,11 @@ This is a C++ port of [Pathfinder 3](https://github.com/servo/pathfinder) with a
 ## Requirements
 
 * C++14.
-* D3D9 level: `Vulkan` / `OpenGL >=3.3` / `OpenGL ES >=3.0` / `WebGL2`.
-* D3D11 level: `Vulkan` / `OpenGL >=4.3` / `OpenGL ES >=3.1`.
+* Render workflow: `Vulkan` / `OpenGL 3.3 (or higher)` / `OpenGL ES 3.0 (or higher)` / `WebGL2`.
+* Compute workflow: `Vulkan` / `OpenGL 4.3 (or higher)` / `OpenGL ES 3.1 (or higher)`.
 
-Notable: D3D11 level is quite limited in OpenGL ES for it not being able to do both image read & write in a single
-compute
-invocation.
+Notable: The compute workflow has some limits in an OpenGL ES context because it's impossible to read & write
+the same image in a single compute invocation.
 
 ## Run demo
 
@@ -21,9 +20,8 @@ invocation.
 
 ### Windows / Linux / Mac
 
-* Pull submodules.
-* Load CMake project `demo/native/CMakeList.txt`.
-* Build and run.
+* Initialize submodules.
+* Build and run the CMake project `demo/native/CMakeList.txt`.
 
 ### Android
 
@@ -33,7 +31,7 @@ invocation.
 
 ### Web
 
-* Have your emscripten environment set up.
+* Set up emscripten environment.
 * Run `wasm/build.ps1` to build the demo.
 * Run `demo/web/serve.ps1` to serve a local website.
 * Open http://127.0.0.1:8000/.
