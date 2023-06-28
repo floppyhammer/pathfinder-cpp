@@ -3,15 +3,15 @@
 /// Period to calculate average frame time, in seconds.
 const float FRAME_TIME_PERIOD = 5;
 
-App::App(const std::shared_ptr<Driver> &driver,
+App::App(const std::shared_ptr<Device> &device,
          const std::vector<char> &svg_input,
          const std::vector<char> &img_input) {
     Logger::set_level(Logger::Level::Info);
 
-    this->driver = driver;
+    this->device = device;
 
     // Set up a canvas.
-    canvas = std::make_shared<Canvas>(driver);
+    canvas = std::make_shared<Canvas>(device);
 
     // TEST: Clip path.
     if (false) {

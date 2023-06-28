@@ -6,20 +6,20 @@
 #include <queue>
 
 #include "../command_buffer.h"
-#include "driver.h"
+#include "device.h"
 
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
 
 class CommandBufferVk : public CommandBuffer {
-    friend class DriverVk;
+    friend class DeviceVk;
 
     friend class SwapChainVk;
 
 public:
     /// We have to provide these two to create a valid command buffer.
-    CommandBufferVk(VkCommandBuffer _vk_command_buffer, VkDevice _vk_device, DriverVk *_driver);
+    CommandBufferVk(VkCommandBuffer _vk_command_buffer, VkDevice _vk_device, DeviceVk *_driver);
 
     ~CommandBufferVk();
 
@@ -34,7 +34,7 @@ private:
 
     VkDevice vk_device{};
 
-    DriverVk *driver;
+    DeviceVk *driver;
 };
 
 } // namespace Pathfinder

@@ -4,7 +4,7 @@
 #include <stdexcept>
 
 #include "../../common/logger.h"
-#include "driver.h"
+#include "device.h"
 #include "swap_chain.h"
 
 #ifndef PATHFINDER_USE_VULKAN
@@ -77,11 +77,11 @@ void WindowGl::cleanup() {
         #endif
 }
 
-std::shared_ptr<Driver> WindowGl::create_driver() {
-    return std::make_shared<Pathfinder::DriverGl>();
+std::shared_ptr<Device> WindowGl::create_device() {
+    return std::make_shared<Pathfinder::DeviceGl>();
 }
 
-std::shared_ptr<SwapChain> WindowGl::create_swap_chain(const std::shared_ptr<Driver> &driver) {
+std::shared_ptr<SwapChain> WindowGl::create_swap_chain(const std::shared_ptr<Device> &device) {
     return std::make_shared<SwapChainGl>(size, glfw_window);
 }
 

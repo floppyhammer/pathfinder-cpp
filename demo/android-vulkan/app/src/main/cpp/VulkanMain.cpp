@@ -88,7 +88,7 @@ VulkanRenderInfo render;
 android_app *androidAppCtx = nullptr;
 
 std::shared_ptr<App> pathfinder_app;
-std::shared_ptr<Pathfinder::Driver> driver;
+std::shared_ptr<Pathfinder::Device> device;
 std::shared_ptr<Pathfinder::RenderPass> render_pass;
 std::shared_ptr<Pathfinder::CommandBuffer> cmd_buffer;
 
@@ -791,7 +791,7 @@ bool InitVulkan(android_app *app) {
     // Pathfinder initialization.
     // -----------------------------
     // Wrap a driver.
-    driver = std::make_shared<Pathfinder::DriverVk>(device.device_,
+    driver = std::make_shared<Pathfinder::DeviceVk>(device.device_,
                                                     device.gpuDevice_,
                                                     device.queue_,
                                                     render.cmdPool_);

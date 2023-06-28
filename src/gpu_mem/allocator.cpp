@@ -48,7 +48,7 @@ uint64_t GpuMemoryAllocator::allocate_buffer(size_t byte_size, BufferType type, 
 
     // Create a new buffer.
 
-    auto buffer = driver->create_buffer(descriptor);
+    auto buffer = device->create_buffer(descriptor);
 
     auto id = next_buffer_id;
     next_buffer_id += 1;
@@ -90,7 +90,7 @@ uint64_t GpuMemoryAllocator::allocate_texture(Vec2I size, TextureFormat format, 
 
     // Create a new texture.
 
-    auto texture = driver->create_texture(descriptor);
+    auto texture = device->create_texture(descriptor);
     auto id = next_texture_id;
     next_texture_id += 1;
 
@@ -134,12 +134,12 @@ uint64_t GpuMemoryAllocator::allocate_framebuffer(Vec2I size, TextureFormat form
 
     if (render_pass_cache.find(format) == render_pass_cache.end()) {
         auto render_pass =
-            driver->create_render_pass(format, AttachmentLoadOp::Clear, "GpuMemoryAllocator dummy render pass");
+            device->create_render_pass(format, AttachmentLoadOp::Clear, "GpuMemoryAllocator dummy render pass");
         render_pass_cache[format] = render_pass;
     }
 
-    auto texture = driver->create_texture(descriptor);
-    auto framebuffer = driver->create_framebuffer(render_pass_cache[format], texture, tag);
+    auto texture = device->create_texture(descriptor);
+    auto framebuffer = device->create_framebuffer(render_pass_cache[format], texture, tag);
 
     auto id = next_framebuffer_id;
     next_framebuffer_id += 1;

@@ -4,7 +4,7 @@
 #include <stdexcept>
 
 #include "debug_marker.h"
-#include "driver.h"
+#include "device.h"
 #include "swap_chain.h"
 
 #if defined(WIN32) || defined(__linux__) || defined(__APPLE__)
@@ -58,8 +58,8 @@ WindowVk::WindowVk(Vec2I _window_size) : Window(_window_size) {
     create_command_pool();
 }
 
-std::shared_ptr<Driver> WindowVk::create_driver() {
-    return std::make_shared<DriverVk>(device, physical_device, graphics_queue, command_pool);
+std::shared_ptr<Device> WindowVk::create_device() {
+    return std::make_shared<DeviceVk>(vk_device, physical_device, graphics_queue, command_pool);
 }
 
 void WindowVk::create_command_pool() {
@@ -70,7 +70,7 @@ void WindowVk::create_command_pool() {
     pool_info.queueFamilyIndex = *qf_indices.graphics_family;
     pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // So we can reset command buffers.
 
-    if (vkCreateCommandPool(device, &pool_info, nullptr, &command_pool) != VK_SUCCESS) {
+    if (vkCreateCommandPool(vk_device, &pool_info, nullptr, &command_pool) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create command pool!");
     }
 }
@@ -371,13 +371,13 @@ void WindowVk::create_logical_device() {
     }
 
     // A logical device is created as a connection to a physical device.
-    if (vkCreateDevice(physical_device, &create_info, nullptr, &device) != VK_SUCCESS) {
+    if (vkCreateDevice(physical_device, &create_info, nullptr, &vk_device) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create logical device!");
     }
 
     // Get a queue handle from a device.
-    vkGetDeviceQueue(device, *qf_indices.graphics_family, 0, &graphics_queue);
-    vkGetDeviceQueue(device, *qf_indices.present_family, 0, &present_queue);
+    vkGetDeviceQueue(vk_device, *qf_indices.graphics_family, 0, &graphics_queue);
+    vkGetDeviceQueue(vk_device, *qf_indices.present_family, 0, &present_queue);
 }
 
 VkFormat WindowVk::find_supported_format(const std::vector<VkFormat> &candidates,
@@ -404,10 +404,10 @@ VkFormat WindowVk::find_depth_format() const {
 }
 
 void WindowVk::cleanup() {
-    vkDestroyCommandPool(device, command_pool, nullptr);
+    vkDestroyCommandPool(vk_device, command_pool, nullptr);
 
     // Destroy the logical device.
-    vkDestroyDevice(device, nullptr);
+    vkDestroyDevice(vk_device, nullptr);
 
     if (enable_validation_layers) {
         destroy_debug_utils_messenger_ext(instance, debug_messenger, nullptr);
@@ -422,8 +422,8 @@ void WindowVk::cleanup() {
     glfwTerminate();
 }
 
-std::shared_ptr<SwapChain> WindowVk::create_swap_chain(const std::shared_ptr<Driver> &driver) {
-    auto driver_vk = static_cast<DriverVk *>(driver.get());
+std::shared_ptr<SwapChain> WindowVk::create_swap_chain(const std::shared_ptr<Device> &device) {
+    auto driver_vk = static_cast<DeviceVk *>(device.get());
     return std::make_shared<SwapChainVk>(size, this, driver_vk);
 }
 

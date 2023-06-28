@@ -10,19 +10,19 @@ int main() {
     // Create a window.
     auto window = Window::new_impl(window_size);
 
-    // Create a driver via window.
-    auto driver = window->create_driver();
+    // Create a device via window.
+    auto device = window->create_device();
 
     // Create swap chain via window.
-    auto swap_chain = window->create_swap_chain(driver);
+    auto swap_chain = window->create_swap_chain(device);
 
     // Create app.
-    App app(driver, load_file_as_bytes("../assets/features.svg"), load_file_as_bytes("../assets/sea.png"));
+    App app(device, load_file_as_bytes("../assets/features.svg"), load_file_as_bytes("../assets/sea.png"));
 
-    auto texture_rect = std::make_shared<TextureRect>(driver, swap_chain->get_render_pass());
+    auto texture_rect = std::make_shared<TextureRect>(device, swap_chain->get_render_pass());
 
     {
-        auto dst_texture = driver->create_texture({window_size, TextureFormat::Rgba8Unorm, "dst texture"});
+        auto dst_texture = device->create_texture({window_size, TextureFormat::Rgba8Unorm, "dst texture"});
 
         app.canvas->set_dst_texture(dst_texture);
 
@@ -41,7 +41,7 @@ int main() {
         auto current_window_size = window->get_size();
 
         if (current_window_size != app.canvas->get_size() && current_window_size.area() != 0) {
-            auto dst_texture = driver->create_texture({current_window_size, TextureFormat::Rgba8Unorm, "dst texture"});
+            auto dst_texture = device->create_texture({current_window_size, TextureFormat::Rgba8Unorm, "dst texture"});
 
             app.canvas->set_dst_texture(dst_texture);
             texture_rect->set_texture(dst_texture);

@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <utility>
 
-#include "driver.h"
+#include "device.h"
 
 #ifdef PATHFINDER_USE_VULKAN
 

@@ -1,4 +1,4 @@
-#include "driver.h"
+#include "device.h"
 
 #include <memory>
 
@@ -18,30 +18,30 @@
 
 namespace Pathfinder {
 
-DriverVk::DriverVk(VkDevice _device,
+DeviceVk::DeviceVk(VkDevice _device,
                    VkPhysicalDevice _physical_device,
                    VkQueue _graphics_queue,
                    VkCommandPool _command_pool)
     : device(_device), physical_device(_physical_device), graphics_queue(_graphics_queue), command_pool(_command_pool) {
 }
 
-VkDevice DriverVk::get_device() const {
+VkDevice DeviceVk::get_device() const {
     return device;
 }
 
-VkQueue DriverVk::get_graphics_queue() const {
+VkQueue DeviceVk::get_graphics_queue() const {
     return graphics_queue;
 }
 
-VkCommandPool DriverVk::get_command_pool() const {
+VkCommandPool DeviceVk::get_command_pool() const {
     return command_pool;
 }
 
-std::shared_ptr<DescriptorSet> DriverVk::create_descriptor_set() {
+std::shared_ptr<DescriptorSet> DeviceVk::create_descriptor_set() {
     return std::make_shared<DescriptorSetVk>();
 }
 
-std::shared_ptr<RenderPipeline> DriverVk::create_render_pipeline(
+std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
     const std::vector<char> &vert_source,
     const std::vector<char> &frag_source,
     const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
@@ -253,7 +253,7 @@ std::shared_ptr<RenderPipeline> DriverVk::create_render_pipeline(
     return render_pipeline_vk;
 }
 
-std::shared_ptr<ComputePipeline> DriverVk::create_compute_pipeline(const std::vector<char> &comp_source,
+std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(const std::vector<char> &comp_source,
                                                                    const std::shared_ptr<DescriptorSet> &descriptor_set,
                                                                    const std::string &_label) {
     auto compute_pipeline_vk = std::make_shared<ComputePipelineVk>(device, _label);
@@ -342,17 +342,17 @@ std::shared_ptr<ComputePipeline> DriverVk::create_compute_pipeline(const std::ve
     return compute_pipeline_vk;
 }
 
-std::shared_ptr<RenderPass> DriverVk::create_render_pass(TextureFormat format,
+std::shared_ptr<RenderPass> DeviceVk::create_render_pass(TextureFormat format,
                                                          AttachmentLoadOp load_op,
                                                          const std::string &label) {
     return std::make_shared<RenderPassVk>(device, format, load_op, false, label);
 }
 
-std::shared_ptr<RenderPass> DriverVk::create_swap_chain_render_pass(TextureFormat format, AttachmentLoadOp load_op) {
+std::shared_ptr<RenderPass> DeviceVk::create_swap_chain_render_pass(TextureFormat format, AttachmentLoadOp load_op) {
     return std::make_shared<RenderPassVk>(device, format, load_op, true, "Swap chain render pass");
 }
 
-std::shared_ptr<Framebuffer> DriverVk::create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
+std::shared_ptr<Framebuffer> DeviceVk::create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
                                                           const std::shared_ptr<Texture> &texture,
                                                           const std::string &_label) {
     auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
@@ -367,7 +367,7 @@ std::shared_ptr<Framebuffer> DriverVk::create_framebuffer(const std::shared_ptr<
     return framebuffer_vk;
 }
 
-std::shared_ptr<Buffer> DriverVk::create_buffer(const BufferDescriptor &desc) {
+std::shared_ptr<Buffer> DeviceVk::create_buffer(const BufferDescriptor &desc) {
     auto buffer_vk = std::make_shared<BufferVk>(device, desc);
 
     auto vk_memory_property = to_vk_memory_property(desc.property);
@@ -405,7 +405,7 @@ std::shared_ptr<Buffer> DriverVk::create_buffer(const BufferDescriptor &desc) {
     return buffer_vk;
 }
 
-std::shared_ptr<Texture> DriverVk::create_texture(const TextureDescriptor &desc) {
+std::shared_ptr<Texture> DeviceVk::create_texture(const TextureDescriptor &desc) {
     auto texture_vk = std::make_shared<TextureVk>(device, desc);
 
     create_vk_image(desc.size.x,
@@ -433,7 +433,7 @@ std::shared_ptr<Texture> DriverVk::create_texture(const TextureDescriptor &desc)
     return texture_vk;
 }
 
-std::shared_ptr<CommandBuffer> DriverVk::create_command_buffer(const std::string &_label) {
+std::shared_ptr<CommandBuffer> DeviceVk::create_command_buffer(const std::string &_label) {
     // Allocate a command buffer.
     // ----------------------------------------
     VkCommandBufferAllocateInfo alloc_info{};
@@ -452,7 +452,7 @@ std::shared_ptr<CommandBuffer> DriverVk::create_command_buffer(const std::string
     return command_buffer_vk;
 }
 
-VkShaderModule DriverVk::create_shader_module(const std::vector<char> &code) {
+VkShaderModule DeviceVk::create_shader_module(const std::vector<char> &code) {
     VkShaderModuleCreateInfo create_info{};
     create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     create_info.codeSize = code.size();
@@ -466,7 +466,7 @@ VkShaderModule DriverVk::create_shader_module(const std::vector<char> &code) {
     return shader_module;
 }
 
-void DriverVk::create_vk_image(uint32_t width,
+void DeviceVk::create_vk_image(uint32_t width,
                                uint32_t height,
                                VkFormat format,
                                VkImageTiling tiling,
@@ -516,7 +516,7 @@ void DriverVk::create_vk_image(uint32_t width,
     vkBindImageMemory(device, image, image_memory, 0);
 }
 
-VkImageView DriverVk::create_vk_image_view(VkImage image, VkFormat format, VkImageAspectFlags aspect_flags) const {
+VkImageView DeviceVk::create_vk_image_view(VkImage image, VkFormat format, VkImageAspectFlags aspect_flags) const {
     VkImageViewCreateInfo view_info{};
     view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     view_info.image = image;
@@ -536,7 +536,7 @@ VkImageView DriverVk::create_vk_image_view(VkImage image, VkFormat format, VkIma
     return image_view;
 }
 
-VkSampler DriverVk::create_vk_sampler() const {
+VkSampler DeviceVk::create_vk_sampler() const {
     VkSamplerCreateInfo sampler_info{};
     sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     sampler_info.magFilter = VK_FILTER_LINEAR;
@@ -573,7 +573,7 @@ VkSampler DriverVk::create_vk_sampler() const {
     return sampler;
 }
 
-void DriverVk::create_vk_buffer(VkDeviceSize size,
+void DeviceVk::create_vk_buffer(VkDeviceSize size,
                                 VkBufferUsageFlags usage,
                                 VkMemoryPropertyFlags properties,
                                 VkBuffer &buffer,
@@ -611,7 +611,7 @@ void DriverVk::create_vk_buffer(VkDeviceSize size,
     vkBindBufferMemory(device, buffer, buffer_memory, 0);
 }
 
-uint32_t DriverVk::find_memory_type(uint32_t type_filter, VkMemoryPropertyFlags properties) const {
+uint32_t DeviceVk::find_memory_type(uint32_t type_filter, VkMemoryPropertyFlags properties) const {
     VkPhysicalDeviceMemoryProperties mem_properties;
 
     // Reports memory information for the specified physical device.
@@ -626,7 +626,7 @@ uint32_t DriverVk::find_memory_type(uint32_t type_filter, VkMemoryPropertyFlags 
     throw std::runtime_error("Failed to find suitable memory type!");
 }
 
-VkFormat DriverVk::find_supported_format(const std::vector<VkFormat> &candidates,
+VkFormat DeviceVk::find_supported_format(const std::vector<VkFormat> &candidates,
                                          VkImageTiling tiling,
                                          VkFormatFeatureFlags features) const {
     for (VkFormat format : candidates) {
@@ -643,13 +643,13 @@ VkFormat DriverVk::find_supported_format(const std::vector<VkFormat> &candidates
     throw std::runtime_error("Failed to find supported format!");
 }
 
-VkFormat DriverVk::find_depth_format() const {
+VkFormat DeviceVk::find_depth_format() const {
     return find_supported_format({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
                                  VK_IMAGE_TILING_OPTIMAL,
                                  VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 }
 
-void DriverVk::copy_vk_buffer(VkCommandBuffer cmd_buffer,
+void DeviceVk::copy_vk_buffer(VkCommandBuffer cmd_buffer,
                               VkBuffer src_buffer,
                               VkBuffer dst_buffer,
                               VkDeviceSize size,
@@ -664,7 +664,7 @@ void DriverVk::copy_vk_buffer(VkCommandBuffer cmd_buffer,
     vkCmdCopyBuffer(cmd_buffer, src_buffer, dst_buffer, 1, &copy_region);
 }
 
-void DriverVk::copy_buffer_to_image(VkCommandBuffer cmd_buffer,
+void DeviceVk::copy_buffer_to_image(VkCommandBuffer cmd_buffer,
                                     VkBuffer buffer,
                                     VkImage image,
                                     uint32_t width,
@@ -693,14 +693,14 @@ void DriverVk::copy_buffer_to_image(VkCommandBuffer cmd_buffer,
     vkCmdCopyBufferToImage(cmd_buffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 }
 
-void DriverVk::copy_data_to_mappable_memory(const void *src, VkDeviceMemory buffer_memory, size_t data_size) const {
+void DeviceVk::copy_data_to_mappable_memory(const void *src, VkDeviceMemory buffer_memory, size_t data_size) const {
     void *data;
     vkMapMemory(device, buffer_memory, 0, data_size, 0, &data);
     memcpy(data, src, data_size);
     vkUnmapMemory(device, buffer_memory);
 }
 
-void DriverVk::copy_data_from_mappable_memory(void *dst, VkDeviceMemory buffer_memory, size_t data_size) const {
+void DeviceVk::copy_data_from_mappable_memory(void *dst, VkDeviceMemory buffer_memory, size_t data_size) const {
     void *data;
     vkMapMemory(device, buffer_memory, 0, data_size, 0, &data);
     memcpy(dst, data, data_size);

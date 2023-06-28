@@ -1,12 +1,12 @@
-#ifndef PATHFINDER_GPU_DRIVER_GL_H
-#define PATHFINDER_GPU_DRIVER_GL_H
+#ifndef PATHFINDER_GPU_DEVICE_GL_H
+#define PATHFINDER_GPU_DEVICE_GL_H
 
 #include <vector>
 
 #include "../../common/global_macros.h"
 #include "../../common/logger.h"
 #include "../../common/math/basic.h"
-#include "../driver.h"
+#include "../device.h"
 #include "buffer.h"
 #include "command_buffer.h"
 #include "swap_chain.h"
@@ -16,7 +16,7 @@
 
 namespace Pathfinder {
 
-class DriverGl : public Driver {
+class DeviceGl : public Device {
 public:
     std::shared_ptr<Framebuffer> create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
                                                     const std::shared_ptr<Texture> &texture,
@@ -54,4 +54,4 @@ public:
 
 #endif
 
-#endif // PATHFINDER_GPU_DRIVER_GL_H
+#endif // PATHFINDER_GPU_DEVICE_GL_H

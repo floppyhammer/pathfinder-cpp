@@ -3,7 +3,7 @@
 #include <stdexcept>
 
 #include "../../common/logger.h"
-#include "../gl/driver.h"
+#include "../gl/device.h"
 #include "../gl/swap_chain.h"
 
 #ifdef __EMSCRIPTEN__
@@ -45,11 +45,11 @@ void WindowWebGl::cleanup() {
     glfwTerminate();
 }
 
-std::shared_ptr<Driver> WindowWebGl::create_driver() {
-    return std::make_shared<Pathfinder::DriverGl>();
+std::shared_ptr<Device> WindowWebGl::create_device() {
+    return std::make_shared<Pathfinder::DeviceGl>();
 }
 
-std::shared_ptr<SwapChain> WindowWebGl::create_swap_chain(const std::shared_ptr<Driver> &driver) {
+std::shared_ptr<SwapChain> WindowWebGl::create_swap_chain(const std::shared_ptr<Device> &device) {
     return std::make_shared<SwapChainGl>(size, glfw_window);
 }
 

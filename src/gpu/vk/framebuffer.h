@@ -11,7 +11,7 @@
 namespace Pathfinder {
 
 class FramebufferVk : public Framebuffer {
-    friend class DriverVk;
+    friend class DeviceVk;
 
 public:
     /// Texture framebuffer.

@@ -55,7 +55,7 @@ private:
     std::shared_ptr<RenderPass> dest_render_pass_clear, dest_render_pass_load;
 
 public:
-    explicit RendererD3D9(const std::shared_ptr<Driver> &_driver);
+    explicit RendererD3D9(const std::shared_ptr<Device> &_device);
 
     void set_up_pipelines() override;
 

@@ -10,7 +10,7 @@ using namespace Pathfinder;
 
 class App {
 public:
-    App(const std::shared_ptr<Pathfinder::Driver> &driver,
+    App(const std::shared_ptr<Pathfinder::Device> &device,
         const std::vector<char> &svg_input,
         const std::vector<char> &img_input);
 
@@ -21,7 +21,7 @@ public:
     std::shared_ptr<Canvas> canvas;
 
 private:
-    std::shared_ptr<Driver> driver;
+    std::shared_ptr<Device> device;
 
     std::chrono::time_point<std::chrono::steady_clock> last_time;
     uint32_t frame_count = 0;

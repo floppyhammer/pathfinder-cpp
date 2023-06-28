@@ -9,7 +9,7 @@
 namespace Pathfinder {
 
 class RenderPassVk : public RenderPass {
-    friend class DriverVk;
+    friend class DeviceVk;
 
 public:
     RenderPassVk(VkDevice _device,

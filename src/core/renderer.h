@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-#include "../gpu/driver.h"
+#include "../gpu/device.h"
 #include "../gpu_mem/allocator.h"
 #include "data/data.h"
 #include "scene_builder.h"
@@ -43,7 +43,7 @@ public:
 /// All GPU operations happens in the renderer.
 class Renderer {
 public:
-    explicit Renderer(const std::shared_ptr<Driver> &_driver);
+    explicit Renderer(const std::shared_ptr<Device> &_device);
 
     ~Renderer();
 
@@ -82,7 +82,7 @@ public:
     /// `swap_buffers()`, `present()`, or a similar method that your windowing library offers.
     void end_scene();
 
-    std::shared_ptr<Driver> driver;
+    std::shared_ptr<Device> device;
 
 protected:
     /// If we should clear the dest framebuffer or texture.

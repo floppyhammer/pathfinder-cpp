@@ -69,17 +69,17 @@ void RendererES3::init(int width, int height) {
     auto svg_input = get_asset_file(asset_manager, "features.svg");
     auto img_input = get_asset_file(asset_manager, "sea.png");
 
-    // Wrap a driver.
-    driver = std::make_shared<Pathfinder::DriverGl>();
+    // Wrap a device.
+    device = std::make_shared<Pathfinder::DeviceGl>();
 
-    app = std::make_shared<App>(driver, window_size, svg_input, img_input);
+    app = std::make_shared<App>(device, window_size, svg_input, img_input);
 
-    auto dst_texture = driver->create_texture(
+    auto dst_texture = device->create_texture(
             {window_size, TextureFormat::Rgba8Unorm, "dst texture"});
 
     app->canvas->set_dst_texture(dst_texture);
 
-    texture_rect = std::make_shared<TextureRect>(driver, nullptr);
+    texture_rect = std::make_shared<TextureRect>(device, nullptr);
     texture_rect->set_texture(dst_texture);
 }
 
@@ -101,7 +101,7 @@ void RendererES3::render() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, window_size.x, window_size.y);
 
-    auto cmd_buffer = driver->create_command_buffer("");
+    auto cmd_buffer = device->create_command_buffer("");
 
     texture_rect->draw(cmd_buffer, window_size);
 

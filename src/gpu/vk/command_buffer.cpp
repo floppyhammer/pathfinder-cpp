@@ -8,7 +8,7 @@
 #include "compute_pipeline.h"
 #include "debug_marker.h"
 #include "descriptor_set.h"
-#include "driver.h"
+#include "device.h"
 #include "framebuffer.h"
 #include "render_pass.h"
 #include "render_pipeline.h"
@@ -169,7 +169,7 @@ void transition_image_layout(VkCommandBuffer command_buffer,
     vkCmdPipelineBarrier(command_buffer, src_stage, dst_stage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
-CommandBufferVk::CommandBufferVk(VkCommandBuffer _vk_command_buffer, VkDevice _vk_device, DriverVk *_driver)
+CommandBufferVk::CommandBufferVk(VkCommandBuffer _vk_command_buffer, VkDevice _vk_device, DeviceVk *_driver)
     : vk_command_buffer(_vk_command_buffer), vk_device(_vk_device), driver(_driver) {}
 
 CommandBufferVk::~CommandBufferVk() {}

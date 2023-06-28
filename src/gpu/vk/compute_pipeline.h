@@ -11,7 +11,7 @@
 namespace Pathfinder {
 
 class ComputePipelineVk : public ComputePipeline {
-    friend class DriverVk;
+    friend class DeviceVk;
 
 public:
     ComputePipelineVk(VkDevice _vk_device, std::string _label) : vk_device(_vk_device) {

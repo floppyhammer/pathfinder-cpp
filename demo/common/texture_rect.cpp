@@ -14,8 +14,8 @@
     #include "../../src/shaders/generated/blit_vert.h"
 #endif
 
-TextureRect::TextureRect(const std::shared_ptr<Driver> &_driver, const std::shared_ptr<RenderPass> &render_pass) {
-    driver = _driver;
+TextureRect::TextureRect(const std::shared_ptr<Device> &_device, const std::shared_ptr<RenderPass> &render_pass) {
+    device = _device;
 
     // Set up vertex data (and buffer(s)) and configure vertex attributes.
     float vertices[] = {// Positions, UVs.
@@ -23,14 +23,14 @@ TextureRect::TextureRect(const std::shared_ptr<Driver> &_driver, const std::shar
 
                         0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0};
 
-    vertex_buffer = driver->create_buffer(
+    vertex_buffer = device->create_buffer(
         {BufferType::Vertex, sizeof(vertices), MemoryProperty::DeviceLocal, "TextureRect vertex buffer"});
-    uniform_buffer = driver->create_buffer({BufferType::Uniform,
+    uniform_buffer = device->create_buffer({BufferType::Uniform,
                                             16 * sizeof(float),
                                             MemoryProperty::HostVisibleAndCoherent,
                                             "TextureRect uniform buffer"});
 
-    auto cmd_buffer = driver->create_command_buffer("Upload TextureRect vertex buffer");
+    auto cmd_buffer = device->create_command_buffer("Upload TextureRect vertex buffer");
     cmd_buffer->upload_to_buffer(vertex_buffer, 0, sizeof(vertices), (void *)vertices);
     cmd_buffer->submit_and_wait();
 
@@ -54,13 +54,13 @@ TextureRect::TextureRect(const std::shared_ptr<Driver> &_driver, const std::shar
 
         auto blend_state = BlendState::from_over();
 
-        descriptor_set = driver->create_descriptor_set();
+        descriptor_set = device->create_descriptor_set();
         descriptor_set->add_or_update({
             Descriptor::uniform(0, ShaderStage::Vertex, "bUniform", uniform_buffer),
             Descriptor::sampler(1, ShaderStage::Fragment, "uTexture"),
         });
 
-        pipeline = driver->create_render_pipeline(vert_source,
+        pipeline = device->create_render_pipeline(vert_source,
                                                   frag_source,
                                                   attribute_descriptions,
                                                   blend_state,
@@ -93,7 +93,7 @@ void TextureRect::draw(const std::shared_ptr<CommandBuffer> &cmd_buffer, const V
     auto mvp_mat = model_mat;
     // -------------------------------
 
-    auto one_time_cmd_buffer = driver->create_command_buffer("Upload TextureRect uniform buffer");
+    auto one_time_cmd_buffer = device->create_command_buffer("Upload TextureRect uniform buffer");
     one_time_cmd_buffer->upload_to_buffer(uniform_buffer, 0, 16 * sizeof(float), &mvp_mat);
     one_time_cmd_buffer->sync_descriptor_set(descriptor_set);
     one_time_cmd_buffer->submit_and_wait();

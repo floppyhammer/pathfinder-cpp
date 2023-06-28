@@ -1,5 +1,5 @@
-#ifndef PATHFINDER_GPU_DRIVER_H
-#define PATHFINDER_GPU_DRIVER_H
+#ifndef PATHFINDER_GPU_DEVICE_H
+#define PATHFINDER_GPU_DEVICE_H
 
 #include "../common/logger.h"
 #include "buffer.h"
@@ -14,7 +14,7 @@ namespace Pathfinder {
 
 /// We only need to provide a Driver to Canvas for rendering,
 /// which means Window and SwapChain aren't needed for platforms like Android.
-class Driver {
+class Device {
 public:
     virtual std::shared_ptr<Framebuffer> create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
                                                             const std::shared_ptr<Texture> &texture,
@@ -52,4 +52,4 @@ public:
 
 } // namespace Pathfinder
 
-#endif // PATHFINDER_GPU_DRIVER_H
+#endif // PATHFINDER_GPU_DEVICE_H

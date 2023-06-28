@@ -4,20 +4,20 @@
 #include "../../common/global_macros.h"
 #include "../../common/io.h"
 #include "../data.h"
-#include "../driver.h"
+#include "../device.h"
 #include "render_pass.h"
 
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
 
-class DriverVk : public Driver {
+class DeviceVk : public Device {
     friend class WindowVk;
 
     friend class SwapChainVk;
 
 public:
-    DriverVk(VkDevice device, VkPhysicalDevice physical_device, VkQueue graphics_queue, VkCommandPool command_pool);
+    DeviceVk(VkDevice device, VkPhysicalDevice physical_device, VkQueue graphics_queue, VkCommandPool command_pool);
 
     std::shared_ptr<RenderPass> create_render_pass(TextureFormat format,
                                                    AttachmentLoadOp load_op,
@@ -82,7 +82,7 @@ private:
 
     VkDevice device{};
 
-    // Note that we don't need the present queue in Driver.
+    // Note that we don't need the present queue in a Device.
     VkQueue graphics_queue{};
 
     VkCommandPool command_pool{};

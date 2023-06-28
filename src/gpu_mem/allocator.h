@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "../common/math/basic.h"
-#include "../gpu/driver.h"
+#include "../gpu/device.h"
 
 namespace Pathfinder {
 
@@ -66,7 +66,7 @@ struct FreeObject {
 // Currently, only the tag from the first allocation is set as the debug marker.
 class GpuMemoryAllocator {
 public:
-    explicit GpuMemoryAllocator(const std::shared_ptr<Driver>& _driver) : driver(_driver) {}
+    explicit GpuMemoryAllocator(const std::shared_ptr<Device>& _device) : device(_device) {}
 
     uint64_t allocate_buffer(size_t byte_size, BufferType type, const std::string& tag);
 
@@ -91,7 +91,7 @@ public:
     void print_info();
 
 private:
-    std::shared_ptr<Driver> driver;
+    std::shared_ptr<Device> device;
 
     std::unordered_map<uint64_t, BufferAllocation> buffers_in_use;
     std::unordered_map<uint64_t, TextureAllocation> textures_in_use;

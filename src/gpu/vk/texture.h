@@ -11,10 +11,10 @@
 namespace Pathfinder {
 
 class TextureVk : public Texture {
-    friend class DriverVk;
+    friend class DeviceVk;
 
 public:
-    // Actual construction is done by DriverVk.
+    // Actual construction is done by DeviceVk.
     TextureVk(VkDevice _vk_device, const TextureDescriptor& _desc);
 
     // Actual deconstruction is done by itself.

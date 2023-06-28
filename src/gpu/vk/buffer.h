@@ -12,7 +12,7 @@
 namespace Pathfinder {
 
 class BufferVk : public Buffer {
-    friend class DriverVk;
+    friend class DeviceVk;
 
 public:
     BufferVk(VkDevice _vk_device, const BufferDescriptor& _desc);

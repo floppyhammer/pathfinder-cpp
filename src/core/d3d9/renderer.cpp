@@ -6,7 +6,7 @@
 #include "../../common/math/vec3.h"
 #include "../../common/timestamp.h"
 #include "../../gpu/command_buffer.h"
-#include "../../gpu/driver.h"
+#include "../../gpu/device.h"
 #include "../../gpu/window.h"
 
 #ifdef PATHFINDER_USE_VULKAN
@@ -41,18 +41,18 @@ const size_t CLIP_TILE_INSTANCE_SIZE = 16;
 // 65536
 const size_t MAX_FILLS_PER_BATCH = 0x10000;
 
-RendererD3D9::RendererD3D9(const std::shared_ptr<Driver> &_driver) : Renderer(_driver) {
+RendererD3D9::RendererD3D9(const std::shared_ptr<Device> &_device) : Renderer(_device) {
     mask_render_pass_clear =
-        driver->create_render_pass(TextureFormat::Rgba16Float, AttachmentLoadOp::Clear, "Mask render pass clear");
+        device->create_render_pass(TextureFormat::Rgba16Float, AttachmentLoadOp::Clear, "Mask render pass clear");
 
     mask_render_pass_load =
-        driver->create_render_pass(TextureFormat::Rgba16Float, AttachmentLoadOp::Load, "Mask render pass load");
+        device->create_render_pass(TextureFormat::Rgba16Float, AttachmentLoadOp::Load, "Mask render pass load");
 
     dest_render_pass_clear =
-        driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Clear, "Dest render pass clear");
+        device->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Clear, "Dest render pass clear");
 
     dest_render_pass_load =
-        driver->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Load, "Dest render pass load");
+        device->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Load, "Dest render pass load");
 
     mask_framebuffer_id = allocator->allocate_framebuffer({MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT},
                                                           TextureFormat::Rgba16Float,
@@ -63,7 +63,7 @@ RendererD3D9::RendererD3D9(const std::shared_ptr<Driver> &_driver) : Renderer(_d
     // Quad vertex buffer. Shared by fills and tiles drawing.
     quad_vertex_buffer_id = allocator->allocate_buffer(quad_vertex_data_size, BufferType::Vertex, "Quad vertex buffer");
 
-    auto cmd_buffer = driver->create_command_buffer("Upload quad vertex data");
+    auto cmd_buffer = device->create_command_buffer("Upload quad vertex data");
     cmd_buffer->upload_to_buffer(allocator->get_buffer(quad_vertex_buffer_id),
                                  0,
                                  quad_vertex_data_size,
@@ -72,7 +72,7 @@ RendererD3D9::RendererD3D9(const std::shared_ptr<Driver> &_driver) : Renderer(_d
 }
 
 void RendererD3D9::set_dest_texture(const std::shared_ptr<Texture> &texture) {
-    dest_framebuffer = driver->create_framebuffer(dest_render_pass_clear, texture, "Dest framebuffer");
+    dest_framebuffer = device->create_framebuffer(dest_render_pass_clear, texture, "Dest framebuffer");
 }
 
 std::shared_ptr<Texture> RendererD3D9::get_dest_texture() {
@@ -112,13 +112,13 @@ void RendererD3D9::set_up_pipelines() {
         }
 
         // Set descriptor set.
-        fill_descriptor_set = driver->create_descriptor_set();
+        fill_descriptor_set = device->create_descriptor_set();
         fill_descriptor_set->add_or_update({
             Descriptor::uniform(0, ShaderStage::Vertex, "bConstantSizes", allocator->get_buffer(constants_ub_id)),
             Descriptor::sampler(1, ShaderStage::Fragment, "uAreaLUT", allocator->get_texture(area_lut_texture_id)),
         });
 
-        fill_pipeline = driver->create_render_pipeline(fill_vert_source,
+        fill_pipeline = device->create_render_pipeline(fill_vert_source,
                                                        fill_frag_source,
                                                        attribute_descriptions,
                                                        BlendState::from_equal(),
@@ -167,7 +167,7 @@ void RendererD3D9::set_up_pipelines() {
             allocator->allocate_buffer(8 * sizeof(float), BufferType::Uniform, "Tile varying sizes uniform buffer");
 
         // Set descriptor set.
-        tile_descriptor_set = driver->create_descriptor_set();
+        tile_descriptor_set = device->create_descriptor_set();
         tile_descriptor_set->add_or_update({
             Descriptor::sampler(0, ShaderStage::Vertex, "uTextureMetadata"),
             Descriptor::sampler(1, ShaderStage::Vertex, "uZBuffer"),
@@ -191,7 +191,7 @@ void RendererD3D9::set_up_pipelines() {
             Descriptor::sampler(8, ShaderStage::Fragment, "uGammaLUT", allocator->get_texture(dummy_texture_id)),
         });
 
-        tile_pipeline = driver->create_render_pipeline(tile_vert_source,
+        tile_pipeline = device->create_render_pipeline(tile_vert_source,
                                                        tile_frag_source,
                                                        attribute_descriptions,
                                                        BlendState::from_over(),
@@ -230,7 +230,7 @@ void RendererD3D9::create_tile_clip_copy_pipeline() {
     }
 
     // Create descriptor set.
-    tile_clip_copy_descriptor_set = driver->create_descriptor_set();
+    tile_clip_copy_descriptor_set = device->create_descriptor_set();
     tile_clip_copy_descriptor_set->add_or_update({
         Descriptor::uniform(0, ShaderStage::Vertex, "bConstantSizes", allocator->get_buffer(constants_ub_id)),
         Descriptor::sampler(1,
@@ -240,7 +240,7 @@ void RendererD3D9::create_tile_clip_copy_pipeline() {
     });
 
     // We have to disable blend for tile clip copy.
-    tile_clip_copy_pipeline = driver->create_render_pipeline(tile_clip_copy_vert_source,
+    tile_clip_copy_pipeline = device->create_render_pipeline(tile_clip_copy_vert_source,
                                                              tile_clip_copy_frag_source,
                                                              attribute_descriptions,
                                                              {false},
@@ -278,14 +278,14 @@ void RendererD3D9::create_tile_clip_combine_pipeline() {
     }
 
     // Create descriptor set.
-    tile_clip_combine_descriptor_set = driver->create_descriptor_set();
+    tile_clip_combine_descriptor_set = device->create_descriptor_set();
     tile_clip_combine_descriptor_set->add_or_update({
         Descriptor::uniform(0, ShaderStage::Vertex, "bConstantSizes", allocator->get_buffer(constants_ub_id)),
         Descriptor::sampler(1, ShaderStage::Fragment, "uSrc", nullptr),
     });
 
     // We have to disable blend for tile clip combine.
-    tile_clip_combine_pipeline = driver->create_render_pipeline(vert_source,
+    tile_clip_combine_pipeline = device->create_render_pipeline(vert_source,
                                                                 frag_source,
                                                                 attribute_descriptions,
                                                                 {false},
@@ -303,7 +303,7 @@ void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &_scene_builder) {
 
     // No fills to draw.
     if (!scene_builder->pending_fills.empty()) {
-        auto cmd_buffer = driver->create_command_buffer("Upload & draw fills");
+        auto cmd_buffer = device->create_command_buffer("Upload & draw fills");
 
         // Upload fills to buffer.
         auto fill_vertex_buffer_id = upload_fills(scene_builder->pending_fills, cmd_buffer);
@@ -370,7 +370,7 @@ void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &t
 
         // Different batches will use the same tile vertex buffer, so we need to make sure
         // that a batch is down drawing before processing the next batch.
-        auto cmd_buffer = driver->create_command_buffer("Upload & draw tiles");
+        auto cmd_buffer = device->create_command_buffer("Upload & draw tiles");
 
         // Apply clip paths.
         if (!batch.clips.empty()) {

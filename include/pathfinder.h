@@ -12,9 +12,9 @@
 #include "../src/core/canvas.h"
 #include "../src/core/svg.h"
 #include "../src/gpu/framebuffer.h"
-#include "../src/gpu/gl/driver.h"
+#include "../src/gpu/gl/device.h"
 #include "../src/gpu/swap_chain.h"
-#include "../src/gpu/vk/driver.h"
+#include "../src/gpu/vk/device.h"
 #include "../src/gpu/vk/texture.h"
 
 #endif // PATHFINDER_API_H

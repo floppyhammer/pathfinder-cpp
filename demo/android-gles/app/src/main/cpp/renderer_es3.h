@@ -22,7 +22,7 @@ private:
 
     Vec2I window_size;
 
-    std::shared_ptr <Pathfinder::Driver> driver;
+    std::shared_ptr <Pathfinder::Device> device;
     std::shared_ptr <App> app;
     std::shared_ptr <TextureRect> texture_rect;
 };

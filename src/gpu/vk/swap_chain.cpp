@@ -13,7 +13,7 @@
 
 namespace Pathfinder {
 
-SwapChainVk::SwapChainVk(Vec2I _size, WindowVk *_window, DriverVk *_driver) : SwapChain(_size) {
+SwapChainVk::SwapChainVk(Vec2I _size, WindowVk *_window, DeviceVk *_driver) : SwapChain(_size) {
     window = _window;
     driver = _driver;
 

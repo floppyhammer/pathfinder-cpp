@@ -11,7 +11,7 @@
 namespace Pathfinder {
 
 class RenderPipelineVk : public RenderPipeline {
-    friend class DriverVk;
+    friend class DeviceVk;
 
 public:
     RenderPipelineVk(VkDevice _vk_device,

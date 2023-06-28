@@ -50,7 +50,7 @@ enum class PathOp {
 /// Normally, we only need one canvas to render multiple scenes.
 class Canvas {
 public:
-    explicit Canvas(const std::shared_ptr<Driver> &_driver);
+    explicit Canvas(const std::shared_ptr<Device> &_device);
 
     /// Clears the current canvas.
     /// You shouldn't call this per frame.
@@ -162,7 +162,7 @@ public:
 
     void set_scene(const std::shared_ptr<Scene> &new_scene);
 
-    std::shared_ptr<Driver> get_driver() const;
+    std::shared_ptr<Device> get_device() const;
 
     /// Returns the inner scene, replacing it with a blank scene.
     std::shared_ptr<Scene> take_scene();
@@ -196,7 +196,7 @@ private:
     std::shared_ptr<Scene> scene;
 
     /// Rendering API related.
-    std::shared_ptr<Driver> driver;
+    std::shared_ptr<Device> device;
 
     /// Scene renderer.
     std::shared_ptr<Renderer> renderer;

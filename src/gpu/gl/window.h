@@ -15,9 +15,9 @@ class WindowGl : public Window {
 public:
     explicit WindowGl(Vec2I _window_size);
 
-    std::shared_ptr<Driver> create_driver() override;
+    std::shared_ptr<Device> create_device() override;
 
-    std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Driver> &driver) override;
+    std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Device> &device) override;
 
     void cleanup() override;
 

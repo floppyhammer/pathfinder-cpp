@@ -12,7 +12,7 @@
 namespace Pathfinder {
 
 class DescriptorSetVk : public DescriptorSet {
-    friend class DriverVk;
+    friend class DeviceVk;
 
 public:
     DescriptorSetVk() = default;

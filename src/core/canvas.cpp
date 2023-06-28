@@ -27,8 +27,7 @@ struct ShadowBlurRenderTargetInfo {
  * @param current_state Canvas state.
  * @param outline_bounds Original path bounds.
  */
-ShadowBlurRenderTargetInfo push_shadow_blur_render_targets(const std::shared_ptr<Driver> &driver,
-                                                           Scene &scene,
+ShadowBlurRenderTargetInfo push_shadow_blur_render_targets(Scene &scene,
                                                            BrushState &current_state,
                                                            RectF outline_bounds) {
     ShadowBlurRenderTargetInfo shadow_blur_info;
@@ -119,12 +118,12 @@ void composite_shadow_blur_render_targets(Scene &scene, const ShadowBlurRenderTa
     scene.push_draw_path(path_y);
 }
 
-Canvas::Canvas(const std::shared_ptr<Driver> &_driver) : driver(_driver) {
+Canvas::Canvas(const std::shared_ptr<Device> &_device) : device(_device) {
     // Create the renderer.
 #ifndef PATHFINDER_USE_D3D11
-    renderer = std::make_shared<RendererD3D9>(driver);
+    renderer = std::make_shared<RendererD3D9>(device);
 #else
-    renderer = std::make_shared<RendererD3D11>(driver);
+    renderer = std::make_shared<RendererD3D11>(device);
 #endif
 
     // Set up pipelines.
@@ -153,7 +152,7 @@ void Canvas::push_path(Outline &outline, PathOp path_op, FillRule fill_rule) {
         // Set shadow offset.
         shadow_outline.transform(Transform2::from_translation(current_state.shadow_offset));
 
-        auto shadow_blur_info = push_shadow_blur_render_targets(driver, *scene, current_state, shadow_outline.bounds);
+        auto shadow_blur_info = push_shadow_blur_render_targets(*scene, current_state, shadow_outline.bounds);
 
         shadow_outline.transform(Transform2::from_translation(-shadow_blur_info.bounds.origin().to_f32()));
 
@@ -443,8 +442,8 @@ std::shared_ptr<Scene> Canvas::get_scene() const {
     return scene;
 }
 
-std::shared_ptr<Driver> Canvas::get_driver() const {
-    return driver;
+std::shared_ptr<Device> Canvas::get_device() const {
+    return device;
 }
 
 void Canvas::set_dst_texture(const std::shared_ptr<Texture> &new_dst_texture) {
