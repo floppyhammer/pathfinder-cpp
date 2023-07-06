@@ -14,12 +14,13 @@ class TextureVk : public Texture {
     friend class DeviceVk;
 
 public:
-    // Actual construction is done by DeviceVk.
+    // This constructor is only a wrapper, actual GPU resource allocation is done by DeviceVk.
     TextureVk(VkDevice _vk_device, const TextureDescriptor& _desc);
 
-    // Actual deconstruction is done by itself.
+    // Releasing GPU resources is done by itself.
     ~TextureVk();
 
+    // Wrapping an external Vulkan image.
     static std::shared_ptr<TextureVk> from_wrapping(const TextureDescriptor& _desc,
                                                     VkImage image,
                                                     VkDeviceMemory image_memory,
@@ -33,13 +34,9 @@ public:
 
     VkSampler get_sampler() const;
 
-    inline TextureLayout get_layout() const {
-        return layout;
-    }
+    TextureLayout get_layout() const;
 
-    inline void set_layout(TextureLayout new_layout) {
-        layout = new_layout;
-    }
+    void set_layout(TextureLayout new_layout);
 
 private:
     /// Handle.

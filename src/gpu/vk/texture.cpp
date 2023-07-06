@@ -59,6 +59,14 @@ VkSampler TextureVk::get_sampler() const {
     return vk_sampler;
 }
 
+TextureLayout TextureVk::get_layout() const {
+    return layout;
+}
+
+void TextureVk::set_layout(TextureLayout new_layout) {
+    layout = new_layout;
+}
+
 } // namespace Pathfinder
 
 #endif
