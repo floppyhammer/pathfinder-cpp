@@ -7,7 +7,7 @@ uint64_t GpuMemoryAllocator::allocate_buffer(size_t byte_size, BufferType type, 
         byte_size = upper_power_of_two(byte_size);
     }
 
-    auto descriptor = BufferDescriptor{type, byte_size, MemoryProperty::HostVisibleAndCoherent, tag};
+    auto descriptor = BufferDescriptor{type, byte_size, MemoryProperty::HostVisibleAndCoherent};
 
     auto now = std::chrono::steady_clock::now();
 
@@ -36,9 +36,9 @@ uint64_t GpuMemoryAllocator::allocate_buffer(size_t byte_size, BufferType type, 
         uint64_t id = free_obj.id;
         BufferAllocation allocation = free_obj.buffer_allocation;
 
-        // Update tag.
-        // TODO: also update GPU debug marker.
+        // Update tag. Also update GPU debug marker.
         allocation.tag = tag;
+        allocation.buffer->set_label(tag);
 
         bytes_committed += byte_size;
         buffers_in_use[id] = allocation;
@@ -48,7 +48,7 @@ uint64_t GpuMemoryAllocator::allocate_buffer(size_t byte_size, BufferType type, 
 
     // Create a new buffer.
 
-    auto buffer = device->create_buffer(descriptor);
+    auto buffer = device->create_buffer(descriptor, tag);
 
     auto id = next_buffer_id;
     next_buffer_id += 1;
@@ -62,7 +62,7 @@ uint64_t GpuMemoryAllocator::allocate_buffer(size_t byte_size, BufferType type, 
 }
 
 uint64_t GpuMemoryAllocator::allocate_texture(Vec2I size, TextureFormat format, const std::string& tag) {
-    auto descriptor = TextureDescriptor{size, format, tag};
+    auto descriptor = TextureDescriptor{size, format};
 
     auto byte_size = descriptor.byte_size();
 
@@ -80,7 +80,9 @@ uint64_t GpuMemoryAllocator::allocate_texture(Vec2I size, TextureFormat format, 
         uint64_t id = free_obj.id;
         auto allocation = free_obj.texture_allocation;
 
+        // Update tag. Also update GPU debug marker.
         allocation.tag = tag;
+        allocation.texture->set_label(tag);
 
         bytes_committed += byte_size;
         textures_in_use[id] = allocation;
@@ -90,7 +92,7 @@ uint64_t GpuMemoryAllocator::allocate_texture(Vec2I size, TextureFormat format, 
 
     // Create a new texture.
 
-    auto texture = device->create_texture(descriptor);
+    auto texture = device->create_texture(descriptor, tag);
     auto id = next_texture_id;
     next_texture_id += 1;
 
@@ -103,7 +105,7 @@ uint64_t GpuMemoryAllocator::allocate_texture(Vec2I size, TextureFormat format, 
 }
 
 uint64_t GpuMemoryAllocator::allocate_framebuffer(Vec2I size, TextureFormat format, const std::string& tag) {
-    auto descriptor = TextureDescriptor{size, format, tag};
+    auto descriptor = TextureDescriptor{size, format};
 
     auto byte_size = descriptor.byte_size();
 
@@ -122,7 +124,9 @@ uint64_t GpuMemoryAllocator::allocate_framebuffer(Vec2I size, TextureFormat form
         uint64_t id = free_obj.id;
         auto allocation = free_obj.framebuffer_allocation;
 
+        // Update tag. Also update GPU debug marker.
         allocation.tag = tag;
+        allocation.framebuffer->set_label(tag);
 
         bytes_committed += byte_size;
         framebuffers_in_use[id] = allocation;
@@ -138,7 +142,7 @@ uint64_t GpuMemoryAllocator::allocate_framebuffer(Vec2I size, TextureFormat form
         render_pass_cache[format] = render_pass;
     }
 
-    auto texture = device->create_texture(descriptor);
+    auto texture = device->create_texture(descriptor, tag);
     auto framebuffer = device->create_framebuffer(render_pass_cache[format], texture, tag);
 
     auto id = next_framebuffer_id;

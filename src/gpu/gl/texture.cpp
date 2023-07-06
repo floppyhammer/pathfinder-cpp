@@ -47,7 +47,7 @@ TextureGl::TextureGl(const TextureDescriptor& _desc) : Texture(_desc) {
 
     gl_check_error("create_texture");
 
-    DebugMarker::label_texture(texture_id, _desc.label);
+    DebugMarker::label_texture(texture_id, label);
 }
 
 TextureGl::~TextureGl() {
@@ -56,6 +56,12 @@ TextureGl::~TextureGl() {
 
 uint32_t TextureGl::get_texture_id() const {
     return texture_id;
+}
+
+void TextureGl::set_label(const std::string& _label) {
+    Texture::set_label(_label);
+
+    DebugMarker::label_texture(texture_id, _label);
 }
 
 } // namespace Pathfinder

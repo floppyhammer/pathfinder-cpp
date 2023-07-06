@@ -14,15 +14,21 @@ namespace Pathfinder {
 std::shared_ptr<Framebuffer> DeviceGl::create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
                                                           const std::shared_ptr<Texture> &texture,
                                                           const std::string &label) {
-    return std::make_shared<FramebufferGl>(texture, label);
+    auto framebuffer_gl = std::make_shared<FramebufferGl>(texture);
+    framebuffer_gl->set_label(label);
+    return framebuffer_gl;
 }
 
-std::shared_ptr<Buffer> DeviceGl::create_buffer(const BufferDescriptor &desc) {
-    return std::make_shared<BufferGl>(desc);
+std::shared_ptr<Buffer> DeviceGl::create_buffer(const BufferDescriptor &desc, const std::string &label) {
+    auto buffer_gl = std::make_shared<BufferGl>(desc);
+    buffer_gl->set_label(label);
+    return buffer_gl;
 }
 
-std::shared_ptr<Texture> DeviceGl::create_texture(const TextureDescriptor &desc) {
-    return std::make_shared<TextureGl>(desc);
+std::shared_ptr<Texture> DeviceGl::create_texture(const TextureDescriptor &desc, const std::string &label) {
+    auto texture_gl = std::make_shared<TextureGl>(desc);
+    texture_gl->set_label(label);
+    return texture_gl;
 }
 
 std::shared_ptr<CommandBuffer> DeviceGl::create_command_buffer(const std::string &label) {

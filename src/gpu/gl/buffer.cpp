@@ -40,8 +40,6 @@ BufferGl::BufferGl(const BufferDescriptor &_desc) : Buffer(_desc) {
     glBindBuffer(target, 0);
 
     gl_check_error("create_buffer");
-
-    DebugMarker::label_buffer(id, _desc.label);
 }
 
 BufferGl::~BufferGl() {
@@ -101,6 +99,12 @@ void BufferGl::download_via_mapping(size_t data_size, size_t offset, void *data)
 
 uint32_t BufferGl::get_handle() const {
     return id;
+}
+
+void BufferGl::set_label(const std::string &_label) {
+    Buffer::set_label(_label);
+
+    DebugMarker::label_buffer(id, _label);
 }
 
 } // namespace Pathfinder

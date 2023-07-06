@@ -23,12 +23,11 @@ TextureRect::TextureRect(const std::shared_ptr<Device> &_device, const std::shar
 
                         0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0};
 
-    vertex_buffer = device->create_buffer(
-        {BufferType::Vertex, sizeof(vertices), MemoryProperty::DeviceLocal, "TextureRect vertex buffer"});
-    uniform_buffer = device->create_buffer({BufferType::Uniform,
-                                            16 * sizeof(float),
-                                            MemoryProperty::HostVisibleAndCoherent,
-                                            "TextureRect uniform buffer"});
+    vertex_buffer = device->create_buffer({BufferType::Vertex, sizeof(vertices), MemoryProperty::DeviceLocal},
+                                          "TextureRect vertex buffer");
+    uniform_buffer =
+        device->create_buffer({BufferType::Uniform, 16 * sizeof(float), MemoryProperty::HostVisibleAndCoherent},
+                              "TextureRect uniform buffer");
 
     auto cmd_buffer = device->create_command_buffer("Upload TextureRect vertex buffer");
     cmd_buffer->upload_to_buffer(vertex_buffer, 0, sizeof(vertices), (void *)vertices);

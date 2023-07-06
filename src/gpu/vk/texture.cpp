@@ -67,6 +67,14 @@ void TextureVk::set_layout(TextureLayout new_layout) {
     layout = new_layout;
 }
 
+void TextureVk::set_label(const std::string& _label) {
+    assert(vk_device != nullptr && vk_image != nullptr);
+
+    Texture::set_label(_label);
+
+    DebugMarker::get_singleton()->set_object_name(vk_device, (uint64_t)vk_image, VK_OBJECT_TYPE_IMAGE, label);
+}
+
 } // namespace Pathfinder
 
 #endif

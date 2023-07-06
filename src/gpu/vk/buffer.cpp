@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <utility>
 
+#include "debug_marker.h"
 #include "device.h"
 
 #ifdef PATHFINDER_USE_VULKAN
@@ -57,6 +58,14 @@ void BufferVk::download_via_mapping(size_t data_size, size_t offset, void* data)
 
     memcpy(data, mapped_data, data_size);
     vkUnmapMemory(vk_device, vk_device_memory);
+}
+
+void BufferVk::set_label(const std::string& _label) {
+    assert(vk_device != nullptr && vk_buffer != nullptr);
+
+    Buffer::set_label(_label);
+
+    DebugMarker::get_singleton()->set_object_name(vk_device, (uint64_t)vk_buffer, VK_OBJECT_TYPE_BUFFER, label);
 }
 
 } // namespace Pathfinder

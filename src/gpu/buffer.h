@@ -17,7 +17,6 @@ struct BufferDescriptor {
     BufferType type;
     size_t size;
     MemoryProperty property;
-    std::string label;
 
     inline bool operator==(const BufferDescriptor& b) const {
         return size == b.size && type == b.type && property == b.property;
@@ -44,8 +43,13 @@ public:
 
     virtual void download_via_mapping(size_t data_size, size_t offset, void* data) = 0;
 
+    // Sometimes, we need to update label for a buffer as we reuse it for another purpose.
+    virtual void set_label(const std::string& _label){};
+
 protected:
     BufferDescriptor desc;
+
+    std::string label;
 };
 
 } // namespace Pathfinder

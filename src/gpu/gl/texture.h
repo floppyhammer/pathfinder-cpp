@@ -20,6 +20,8 @@ public:
 
     uint32_t get_texture_id() const;
 
+    void set_label(const std::string& _label) override;
+
 private:
     uint32_t texture_id = 0;
 };

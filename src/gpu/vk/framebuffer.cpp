@@ -4,15 +4,16 @@
 #include <cassert>
 #include <utility>
 
+#include "debug_marker.h"
+
 #ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
 
 FramebufferVk::FramebufferVk(VkDevice _vk_device,
                              VkRenderPass _vk_render_pass,
-                             const std::shared_ptr<Texture> &_texture,
-                             std::string _label)
-    : Framebuffer(_texture, std::move(_label)) {
+                             const std::shared_ptr<Texture> &_texture)
+    : Framebuffer(_texture) {
     vk_device = _vk_device;
 
     auto texture_vk = static_cast<TextureVk *>(texture.get());
@@ -64,6 +65,15 @@ VkFramebuffer FramebufferVk::get_vk_framebuffer() const {
 
 unsigned long long FramebufferVk::get_unique_id() {
     return reinterpret_cast<unsigned long long>(vk_framebuffer);
+}
+
+void FramebufferVk::set_label(const std::string &_label) {
+    Framebuffer::set_label(_label);
+
+    DebugMarker::get_singleton()->set_object_name(vk_device,
+                                                  (uint64_t)vk_framebuffer,
+                                                  VK_OBJECT_TYPE_FRAMEBUFFER,
+                                                  _label);
 }
 
 } // namespace Pathfinder

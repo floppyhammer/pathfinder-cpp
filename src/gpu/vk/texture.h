@@ -38,6 +38,8 @@ public:
 
     void set_layout(TextureLayout new_layout);
 
+    void set_label(const std::string& _label) override;
+
 private:
     /// Handle.
     VkImage vk_image{};

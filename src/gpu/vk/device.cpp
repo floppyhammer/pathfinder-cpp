@@ -357,17 +357,14 @@ std::shared_ptr<Framebuffer> DeviceVk::create_framebuffer(const std::shared_ptr<
                                                           const std::string &_label) {
     auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
 
-    auto framebuffer_vk = std::make_shared<FramebufferVk>(device, render_pass_vk->vk_render_pass, texture, _label);
+    auto framebuffer_vk = std::make_shared<FramebufferVk>(device, render_pass_vk->vk_render_pass, texture);
 
-    DebugMarker::get_singleton()->set_object_name(device,
-                                                  (uint64_t)framebuffer_vk->vk_framebuffer,
-                                                  VK_OBJECT_TYPE_FRAMEBUFFER,
-                                                  _label);
+    framebuffer_vk->set_label(_label);
 
     return framebuffer_vk;
 }
 
-std::shared_ptr<Buffer> DeviceVk::create_buffer(const BufferDescriptor &desc) {
+std::shared_ptr<Buffer> DeviceVk::create_buffer(const BufferDescriptor &desc, const std::string &label) {
     auto buffer_vk = std::make_shared<BufferVk>(device, desc);
 
     auto vk_memory_property = to_vk_memory_property(desc.property);
@@ -397,15 +394,12 @@ std::shared_ptr<Buffer> DeviceVk::create_buffer(const BufferDescriptor &desc) {
         } break;
     }
 
-    DebugMarker::get_singleton()->set_object_name(device,
-                                                  (uint64_t)buffer_vk->vk_buffer,
-                                                  VK_OBJECT_TYPE_BUFFER,
-                                                  desc.label);
+    buffer_vk->set_label(label);
 
     return buffer_vk;
 }
 
-std::shared_ptr<Texture> DeviceVk::create_texture(const TextureDescriptor &desc) {
+std::shared_ptr<Texture> DeviceVk::create_texture(const TextureDescriptor &desc, const std::string &label) {
     auto texture_vk = std::make_shared<TextureVk>(device, desc);
 
     create_vk_image(desc.size.x,
@@ -425,10 +419,7 @@ std::shared_ptr<Texture> DeviceVk::create_texture(const TextureDescriptor &desc)
     // Create sampler.
     texture_vk->vk_sampler = create_vk_sampler();
 
-    DebugMarker::get_singleton()->set_object_name(device,
-                                                  (uint64_t)texture_vk->vk_image,
-                                                  VK_OBJECT_TYPE_IMAGE,
-                                                  desc.label);
+    texture_vk->set_label(label);
 
     return texture_vk;
 }

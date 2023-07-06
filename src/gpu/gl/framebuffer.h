@@ -13,7 +13,7 @@ namespace Pathfinder {
 class FramebufferGl : public Framebuffer {
 public:
     /// Texture framebuffer.
-    explicit FramebufferGl(const std::shared_ptr<Texture> &_texture, std::string _label);
+    explicit FramebufferGl(const std::shared_ptr<Texture>& _texture);
 
     /// Swap chain framebuffer.
     explicit FramebufferGl(Vec2I _size);
@@ -23,6 +23,8 @@ public:
     uint32_t get_gl_framebuffer() const;
 
     unsigned long long get_unique_id() override;
+
+    void set_label(const std::string& _label) override;
 
 private:
     uint32_t gl_framebuffer;

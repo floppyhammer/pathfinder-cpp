@@ -15,8 +15,7 @@ FramebufferGl::FramebufferGl(Vec2I _size) : Framebuffer(_size) {
     label = "Screen framebuffer";
 }
 
-FramebufferGl::FramebufferGl(const std::shared_ptr<Texture> &_texture, std::string _label)
-    : Framebuffer(_texture, std::move(_label)) {
+FramebufferGl::FramebufferGl(const std::shared_ptr<Texture> &_texture) : Framebuffer(_texture) {
     auto texture_gl = static_cast<TextureGl *>(texture.get());
 
     // Set up framebuffer.
@@ -30,8 +29,6 @@ FramebufferGl::FramebufferGl(const std::shared_ptr<Texture> &_texture, std::stri
     }
 
     gl_check_error("create_framebuffer");
-
-    DebugMarker::label_framebuffer(gl_framebuffer, label);
 }
 
 FramebufferGl::~FramebufferGl() {
@@ -44,6 +41,12 @@ uint32_t FramebufferGl::get_gl_framebuffer() const {
 
 unsigned long long FramebufferGl::get_unique_id() {
     return gl_framebuffer;
+}
+
+void FramebufferGl::set_label(const std::string &_label) {
+    Framebuffer::set_label(_label);
+
+    DebugMarker::label_framebuffer(gl_framebuffer, label);
 }
 
 } // namespace Pathfinder

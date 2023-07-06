@@ -18,8 +18,7 @@ public:
     explicit Framebuffer(Vec2I _size) : size(_size) {}
 
     /// Render to a texture.
-    explicit Framebuffer(const std::shared_ptr<Texture>& _texture, std::string _label)
-        : size(_texture->get_size()), texture(_texture), label(std::move(_label)) {}
+    explicit Framebuffer(const std::shared_ptr<Texture>& _texture) : size(_texture->get_size()), texture(_texture) {}
 
     inline std::shared_ptr<Texture> get_texture() const {
         return texture;
@@ -33,6 +32,11 @@ public:
             return texture->get_size();
         }
         return size;
+    }
+
+    // Sometimes, we need to update label for a framebuffer as we reuse it for another purpose.
+    virtual void set_label(const std::string& _label) {
+        label = _label;
     }
 
 protected:

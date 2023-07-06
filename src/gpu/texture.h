@@ -12,13 +12,12 @@ namespace Pathfinder {
 struct TextureDescriptor {
     Vec2I size;
     TextureFormat format;
-    std::string label;
 
     size_t byte_size() const {
         return size.area() * get_pixel_size(format);
     }
 
-    inline bool operator==(const TextureDescriptor &b) const {
+    inline bool operator==(const TextureDescriptor& b) const {
         return size == b.size && format == b.format;
     }
 };
@@ -35,10 +34,17 @@ public:
         return desc.format;
     }
 
+    // Sometimes, we need to update label for a texture as we reuse it for another purpose.
+    virtual void set_label(const std::string& _label) {
+        label = _label;
+    }
+
 protected:
     TextureDescriptor desc;
 
     bool resource_ownership = true;
+
+    std::string label;
 };
 
 } // namespace Pathfinder

@@ -101,6 +101,8 @@ inline VkImageLayout to_vk_layout(TextureLayout layout) {
             return VK_IMAGE_LAYOUT_GENERAL;
         case TextureLayout::ColorAttachment:
             return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        default:
+            abort();
     }
 }
 
@@ -133,6 +135,8 @@ inline VkBlendFactor to_vk_blend_factor(BlendFactor factor) {
             return VK_BLEND_FACTOR_ONE;
         case BlendFactor::OneMinusSrcAlpha:
             return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        default:
+            abort();
     }
 }
 
@@ -143,6 +147,8 @@ inline VkMemoryPropertyFlagBits to_vk_memory_property(MemoryProperty property) {
                                                          VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
         case MemoryProperty::DeviceLocal:
             return VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+        default:
+            abort();
     }
 }
 
@@ -152,6 +158,8 @@ inline VkAttachmentLoadOp to_vk_attachment_load_op(AttachmentLoadOp load_op) {
             return VK_ATTACHMENT_LOAD_OP_CLEAR;
         case AttachmentLoadOp::Load:
             return VK_ATTACHMENT_LOAD_OP_LOAD;
+        default:
+            abort();
     }
 }
 

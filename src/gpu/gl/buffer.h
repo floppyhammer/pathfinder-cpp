@@ -22,6 +22,8 @@ public:
 
     uint32_t get_handle() const;
 
+    void set_label(const std::string& _label) override;
+
 private:
     uint32_t id = 0;
 };

@@ -23,6 +23,8 @@ public:
 
     void download_via_mapping(size_t data_size, size_t offset, void* data) override;
 
+    void set_label(const std::string& _label) override;
+
     VkBuffer get_vk_buffer();
 
     VkDeviceMemory get_vk_device_memory();

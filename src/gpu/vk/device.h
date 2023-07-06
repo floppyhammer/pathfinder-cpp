@@ -29,26 +29,26 @@ public:
                                                     const std::shared_ptr<Texture> &texture,
                                                     const std::string &_label) override;
 
-    std::shared_ptr<Buffer> create_buffer(const BufferDescriptor &desc) override;
+    std::shared_ptr<Buffer> create_buffer(const BufferDescriptor &desc, const std::string &label) override;
 
-    std::shared_ptr<Texture> create_texture(const TextureDescriptor &desc) override;
+    std::shared_ptr<Texture> create_texture(const TextureDescriptor &desc, const std::string &label) override;
 
-    std::shared_ptr<CommandBuffer> create_command_buffer(const std::string &_label) override;
+    std::shared_ptr<CommandBuffer> create_command_buffer(const std::string &label) override;
 
     std::shared_ptr<DescriptorSet> create_descriptor_set() override;
 
     std::shared_ptr<RenderPipeline> create_render_pipeline(
         const std::vector<char> &vert_source,
         const std::vector<char> &frag_source,
-        const std::vector<VertexInputAttributeDescription> &p_attribute_descriptions,
+        const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
         BlendState blend_state,
         const std::shared_ptr<DescriptorSet> &descriptor_set,
         const std::shared_ptr<RenderPass> &render_pass,
-        const std::string &_label) override;
+        const std::string &label) override;
 
     std::shared_ptr<ComputePipeline> create_compute_pipeline(const std::vector<char> &comp_source,
                                                              const std::shared_ptr<DescriptorSet> &descriptor_set,
-                                                             const std::string &_label) override;
+                                                             const std::string &label) override;
 
 public:
     VkDevice get_device() const;
