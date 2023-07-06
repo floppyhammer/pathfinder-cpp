@@ -47,7 +47,7 @@ struct SceneSourceBuffers {
     /// Upload segments to buffers.
     void upload(SegmentsD3D11 &segments,
                 const std::shared_ptr<GpuMemoryAllocator> &allocator,
-                const std::shared_ptr<Driver> &driver,
+                const std::shared_ptr<Device> &device,
                 const std::shared_ptr<CommandBuffer> &cmd_buffer);
 };
 
@@ -59,7 +59,7 @@ struct SceneBuffers {
     void upload(SegmentsD3D11 &draw_segments,
                 SegmentsD3D11 &clip_segments,
                 const std::shared_ptr<GpuMemoryAllocator> &allocator,
-                const std::shared_ptr<Pathfinder::Driver> &driver,
+                const std::shared_ptr<Pathfinder::Device> &device,
                 const std::shared_ptr<CommandBuffer> &cmd_buffer);
 };
 
@@ -81,7 +81,7 @@ struct ClipBufferIDs {
 
 class RendererD3D11 : public Renderer {
 public:
-    explicit RendererD3D11(const std::shared_ptr<Pathfinder::Driver> &driver);
+    explicit RendererD3D11(const std::shared_ptr<Pathfinder::Device> &device);
 
     void set_up_pipelines() override;
 

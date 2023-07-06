@@ -60,7 +60,7 @@ Vec2I pixel_size_to_tile_size(Vec2I pixel_size) {
 
 void SceneSourceBuffers::upload(SegmentsD3D11 &segments,
                                 const std::shared_ptr<GpuMemoryAllocator> &allocator,
-                                const std::shared_ptr<Driver> &driver,
+                                const std::shared_ptr<Device> &device,
                                 const std::shared_ptr<CommandBuffer> &cmd_buffer) {
     auto needed_points_capacity = upper_power_of_two(segments.points.size());
     auto needed_point_indices_capacity = upper_power_of_two(segments.indices.size());
@@ -110,13 +110,13 @@ void SceneSourceBuffers::upload(SegmentsD3D11 &segments,
 void SceneBuffers::upload(SegmentsD3D11 &draw_segments,
                           SegmentsD3D11 &clip_segments,
                           const std::shared_ptr<GpuMemoryAllocator> &allocator,
-                          const std::shared_ptr<Pathfinder::Driver> &driver,
+                          const std::shared_ptr<Pathfinder::Device> &device,
                           const std::shared_ptr<CommandBuffer> &cmd_buffer) {
-    draw.upload(draw_segments, allocator, driver, cmd_buffer);
-    clip.upload(clip_segments, allocator, driver, cmd_buffer);
+    draw.upload(draw_segments, allocator, device, cmd_buffer);
+    clip.upload(clip_segments, allocator, device, cmd_buffer);
 }
 
-RendererD3D11::RendererD3D11(const std::shared_ptr<Pathfinder::Driver> &driver) : Renderer(driver) {
+RendererD3D11::RendererD3D11(const std::shared_ptr<Pathfinder::Device> &device) : Renderer(device) {
     allocated_microline_count = INITIAL_ALLOCATED_MICROLINE_COUNT;
     allocated_fill_count = INITIAL_ALLOCATED_FILL_COUNT;
 
@@ -156,7 +156,7 @@ void RendererD3D11::set_up_pipelines() {
     const auto tile_source = std::vector<char>(std::begin(tile_comp), std::end(tile_comp));
     #endif
 
-    dice_descriptor_set = driver->create_descriptor_set();
+    dice_descriptor_set = device->create_descriptor_set();
     dice_descriptor_set->add_or_update({
         Descriptor::storage(0, ShaderStage::Compute),
         Descriptor::storage(1, ShaderStage::Compute),
@@ -167,14 +167,14 @@ void RendererD3D11::set_up_pipelines() {
         Descriptor::uniform(6, ShaderStage::Compute, "bUniform1", allocator->get_buffer(dice_ub1_id)),
     });
 
-    bound_descriptor_set = driver->create_descriptor_set();
+    bound_descriptor_set = device->create_descriptor_set();
     bound_descriptor_set->add_or_update({
         Descriptor::storage(0, ShaderStage::Compute),
         Descriptor::storage(1, ShaderStage::Compute),
         Descriptor::uniform(2, ShaderStage::Compute, "bUniform", allocator->get_buffer(bound_ub_id)),
     });
 
-    bin_descriptor_set = driver->create_descriptor_set();
+    bin_descriptor_set = device->create_descriptor_set();
     bin_descriptor_set->add_or_update({
         Descriptor::storage(0, ShaderStage::Compute),
         Descriptor::storage(1, ShaderStage::Compute),
@@ -185,7 +185,7 @@ void RendererD3D11::set_up_pipelines() {
         Descriptor::uniform(6, ShaderStage::Compute, "bUniform", allocator->get_buffer(bin_ub_id)),
     });
 
-    propagate_descriptor_set = driver->create_descriptor_set();
+    propagate_descriptor_set = device->create_descriptor_set();
     propagate_descriptor_set->add_or_update({
         Descriptor::storage(0, ShaderStage::Compute),
         Descriptor::storage(1, ShaderStage::Compute),
@@ -198,7 +198,7 @@ void RendererD3D11::set_up_pipelines() {
         Descriptor::uniform(8, ShaderStage::Compute, "bUniform", allocator->get_buffer(propagate_ub_id)),
     });
 
-    sort_descriptor_set = driver->create_descriptor_set();
+    sort_descriptor_set = device->create_descriptor_set();
     sort_descriptor_set->add_or_update({
         Descriptor::storage(0, ShaderStage::Compute),
         Descriptor::storage(1, ShaderStage::Compute),
@@ -206,7 +206,7 @@ void RendererD3D11::set_up_pipelines() {
         Descriptor::uniform(3, ShaderStage::Compute, "bUniform", allocator->get_buffer(sort_ub_id)),
     });
 
-    fill_descriptor_set = driver->create_descriptor_set();
+    fill_descriptor_set = device->create_descriptor_set();
     fill_descriptor_set->add_or_update({
         Descriptor::storage(0, ShaderStage::Compute), // Read only.
         Descriptor::storage(1, ShaderStage::Compute), // Read only.
@@ -216,7 +216,7 @@ void RendererD3D11::set_up_pipelines() {
         Descriptor::uniform(5, ShaderStage::Compute, "bUniform", allocator->get_buffer(fill_ub_id)),
     });
 
-    tile_descriptor_set = driver->create_descriptor_set();
+    tile_descriptor_set = device->create_descriptor_set();
     tile_descriptor_set->add_or_update({
         Descriptor::storage(0, ShaderStage::Compute),
         Descriptor::storage(1, ShaderStage::Compute),
@@ -235,14 +235,14 @@ void RendererD3D11::set_up_pipelines() {
     });
 
     // These pipelines will be called by order.
-    dice_pipeline = driver->create_compute_pipeline(dice_source, dice_descriptor_set, "Dice pipeline");     // 1
-    bound_pipeline = driver->create_compute_pipeline(bound_source, bound_descriptor_set, "Bound pipeline"); // 2
-    bin_pipeline = driver->create_compute_pipeline(bin_source, bin_descriptor_set, "Bin pipeline");         // 3
+    dice_pipeline = device->create_compute_pipeline(dice_source, dice_descriptor_set, "Dice pipeline");     // 1
+    bound_pipeline = device->create_compute_pipeline(bound_source, bound_descriptor_set, "Bound pipeline"); // 2
+    bin_pipeline = device->create_compute_pipeline(bin_source, bin_descriptor_set, "Bin pipeline");         // 3
     propagate_pipeline =
-        driver->create_compute_pipeline(propagate_source, propagate_descriptor_set, "Propagate pipeline");  // 4
-    fill_pipeline = driver->create_compute_pipeline(fill_source, fill_descriptor_set, "Fill pipeline");     // 5
-    sort_pipeline = driver->create_compute_pipeline(sort_source, sort_descriptor_set, "Sort pipeline");     // 6
-    tile_pipeline = driver->create_compute_pipeline(tile_source, tile_descriptor_set, "Tile pipeline");     // 7
+        device->create_compute_pipeline(propagate_source, propagate_descriptor_set, "Propagate pipeline");  // 4
+    fill_pipeline = device->create_compute_pipeline(fill_source, fill_descriptor_set, "Fill pipeline");     // 5
+    sort_pipeline = device->create_compute_pipeline(sort_source, sort_descriptor_set, "Sort pipeline");     // 6
+    tile_pipeline = device->create_compute_pipeline(tile_source, tile_descriptor_set, "Tile pipeline");     // 7
 }
 
 void RendererD3D11::draw(const std::shared_ptr<SceneBuilder> &_scene_builder) {
@@ -287,8 +287,8 @@ void RendererD3D11::set_dest_texture(const std::shared_ptr<Texture> &new_texture
 }
 
 void RendererD3D11::upload_scene(SegmentsD3D11 &draw_segments, SegmentsD3D11 &clip_segments) {
-    auto cmd_buffer = driver->create_command_buffer("Upload scene");
-    scene_buffers.upload(draw_segments, clip_segments, allocator, driver, cmd_buffer);
+    auto cmd_buffer = device->create_command_buffer("Upload scene");
+    scene_buffers.upload(draw_segments, clip_segments, allocator, device, cmd_buffer);
     cmd_buffer->submit_and_wait();
 }
 
@@ -361,7 +361,7 @@ void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
                                         (int32_t)framebuffer_tile_size0.y, // uFramebufferTileSize
                                         clear_op};                         // uLoadAction
 
-    auto cmd_buffer = driver->create_command_buffer("Draw tiles");
+    auto cmd_buffer = device->create_command_buffer("Draw tiles");
 
     cmd_buffer->upload_to_buffer(allocator->get_buffer(tile_ub0_id), 0, 8 * sizeof(float), ubo_data0.data());
     cmd_buffer->upload_to_buffer(allocator->get_buffer(tile_ub1_id), 0, 5 * sizeof(int32_t), ubo_data1.data());
@@ -399,7 +399,7 @@ Vec2I RendererD3D11::tile_size() const {
 }
 
 uint64_t RendererD3D11::allocate_z_buffer() {
-    // This includes the fill indirect draw params because some drivers limit the number of
+    // This includes the fill indirect draw params because some devices limit the number of
     // SSBOs to 8 (#373).
     // Add FILL_INDIRECT_DRAW_PARAMS_SIZE in case tile size is zero.
     auto size = tile_size().area() + FILL_INDIRECT_DRAW_PARAMS_SIZE;
@@ -435,7 +435,7 @@ PropagateMetadataBufferIDsD3D11 RendererD3D11::upload_propagate_metadata(
                                                            BufferType::Storage,
                                                            "Backdrops buffer");
 
-    auto cmd_buffer = driver->create_command_buffer("Upload to propagate metadata buffer");
+    auto cmd_buffer = device->create_command_buffer("Upload to propagate metadata buffer");
     cmd_buffer->upload_to_buffer(allocator->get_buffer(propagate_metadata_storage_id),
                                  0,
                                  propagate_metadata.size() * sizeof(PropagateMetadataD3D11),
@@ -448,7 +448,7 @@ PropagateMetadataBufferIDsD3D11 RendererD3D11::upload_propagate_metadata(
 void RendererD3D11::upload_initial_backdrops(uint64_t backdrops_buffer_id, std::vector<BackdropInfoD3D11> &backdrops) {
     auto backdrops_buffer = allocator->get_buffer(backdrops_buffer_id);
 
-    auto cmd_buffer = driver->create_command_buffer("Upload initial backdrops");
+    auto cmd_buffer = device->create_command_buffer("Upload initial backdrops");
     cmd_buffer->upload_to_buffer(backdrops_buffer, 0, backdrops.size() * sizeof(BackdropInfoD3D11), backdrops.data());
     cmd_buffer->submit_and_wait();
 }
@@ -587,7 +587,7 @@ std::shared_ptr<MicrolinesBufferIDsD3D11> RendererD3D11::dice_segments(std::vect
 
     uint32_t indirect_compute_params[8] = {0, 0, 0, 0, point_indices_count, 0, 0, 0};
 
-    auto cmd_buffer = driver->create_command_buffer("Dice segments");
+    auto cmd_buffer = device->create_command_buffer("Dice segments");
 
     // Upload dice indirect draw params, which will be read later.
     cmd_buffer->upload_to_buffer(indirect_draw_params_buffer,
@@ -685,7 +685,7 @@ void RendererD3D11::bound(uint64_t tiles_d3d11_buffer_id,
                                                           BufferType::Storage,
                                                           "Path info buffer");
 
-    auto cmd_buffer = driver->create_command_buffer("Bound");
+    auto cmd_buffer = device->create_command_buffer("Bound");
 
     // Upload buffer data.
     auto tile_path_info_buffer = allocator->get_buffer(path_info_buffer_id);
@@ -734,7 +734,7 @@ std::shared_ptr<FillBufferInfoD3D11> RendererD3D11::bin_segments(
 
     uint32_t indirect_draw_params[FILL_INDIRECT_DRAW_PARAMS_SIZE] = {6, 0, 0, 0, 0, microlines_storage.count, 0, 0};
 
-    auto cmd_buffer = driver->create_command_buffer("Bin segments");
+    auto cmd_buffer = device->create_command_buffer("Bin segments");
 
     auto z_buffer = allocator->get_buffer(z_buffer_id);
 
@@ -742,7 +742,7 @@ std::shared_ptr<FillBufferInfoD3D11> RendererD3D11::bin_segments(
     {
         // Upload fill indirect draw params to header of the Z-buffer.
         // This is in the Z-buffer, not its own buffer, to work around the 8 SSBO limitation on
-        // some drivers (#373).
+        // some devices (#373).
         cmd_buffer->upload_to_buffer(z_buffer,
                                      0,
                                      FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
@@ -817,7 +817,7 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
     auto z_buffer = allocator->get_buffer(z_buffer_id);
     auto alpha_tiles_buffer = allocator->get_buffer(alpha_tiles_buffer_id);
 
-    auto cmd_buffer = driver->create_command_buffer("Propagate tiles");
+    auto cmd_buffer = device->create_command_buffer("Propagate tiles");
 
     // Upload data to buffers.
     // TODO(pcwalton): Zero out the Z-buffer on GPU?
@@ -921,7 +921,7 @@ void RendererD3D11::draw_fills(FillBufferInfoD3D11 &fill_storage_info,
     // This setup is a workaround for the annoying 64K limit of compute invocation in OpenGL.
     uint32_t _alpha_tile_count = alpha_tile_range.end - alpha_tile_range.start;
 
-    auto cmd_buffer = driver->create_command_buffer("Draw fills");
+    auto cmd_buffer = device->create_command_buffer("Draw fills");
 
     // Update uniform buffer.
     auto framebuffer_tile_size0 = framebuffer_tile_size();
@@ -967,7 +967,7 @@ void RendererD3D11::sort_tiles(uint64_t tiles_d3d11_buffer_id,
 
     auto tile_count = framebuffer_tile_size().area();
 
-    auto cmd_buffer = driver->create_command_buffer("Sort tiles");
+    auto cmd_buffer = device->create_command_buffer("Sort tiles");
 
     // Update uniform buffer.
     cmd_buffer->upload_to_buffer(allocator->get_buffer(sort_ub_id), 0, sizeof(int32_t), &tile_count);
