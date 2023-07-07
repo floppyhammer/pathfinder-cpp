@@ -53,9 +53,10 @@ void WindowGl::init() {
     }
 
     if (GLAD_GL_EXT_debug_label) {
-        Logger::info("EXT_debug_label enabled.", "WindowGl");
+        Logger::info("Debug markers enabled.", "WindowGl");
     } else {
-        Logger::info("EXT_debug_label disabled. Try to run from RenderDoc!", "WindowGl");
+        Logger::info("Debug markers disabled. Try running from inside a OpenGL graphics debugger (e.g. RenderDoc).",
+                     "WindowGl");
     }
 
         #endif

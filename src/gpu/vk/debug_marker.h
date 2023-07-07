@@ -124,9 +124,8 @@ public:
         active = (vkDebugUtilsSetObjectTag != VK_NULL_HANDLE);
 
         if (!active) {
-            Logger::warn(
-                "Debug markers are disabled. Try running from inside a Vulkan graphics debugger (e.g. RenderDoc).",
-                "Debug Marker");
+            Logger::warn("Debug markers disabled. Try running from inside a Vulkan graphics debugger (e.g. RenderDoc).",
+                         "DebugMarker");
         }
     }
 };

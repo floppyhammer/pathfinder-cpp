@@ -21,20 +21,19 @@ public:
     /// We have to provide these two to create a valid command buffer.
     CommandBufferVk(VkCommandBuffer _vk_command_buffer, VkDevice _vk_device, DeviceVk *_driver);
 
-    ~CommandBufferVk();
-
     void submit() override;
 
+    /// Submit and wait for implementation to finish. At last, free the command buffer.
     void submit_and_wait() override;
 
-    VkCommandBuffer get_vk_command_buffer() const;
+    VkCommandBuffer get_vk_handle() const;
 
 private:
     VkCommandBuffer vk_command_buffer{};
 
     VkDevice vk_device{};
 
-    DeviceVk *driver;
+    DeviceVk *driver{};
 };
 
 } // namespace Pathfinder

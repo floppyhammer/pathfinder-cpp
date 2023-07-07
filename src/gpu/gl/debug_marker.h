@@ -1,5 +1,5 @@
-#ifndef PATHFINDER_GPU_VALIDATION_H
-#define PATHFINDER_GPU_VALIDATION_H
+#ifndef PATHFINDER_GPU_GL_DEBUG_MARKER_H
+#define PATHFINDER_GPU_GL_DEBUG_MARKER_H
 
 #include <iostream>
 #include <sstream>
@@ -86,4 +86,4 @@ inline void gl_print_string(const char *name, GLenum s) {
 
 #endif
 
-#endif // PATHFINDER_GPU_VALIDATION_H
+#endif // PATHFINDER_GPU_GL_DEBUG_MARKER_H

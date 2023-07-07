@@ -172,9 +172,7 @@ void transition_image_layout(VkCommandBuffer command_buffer,
 CommandBufferVk::CommandBufferVk(VkCommandBuffer _vk_command_buffer, VkDevice _vk_device, DeviceVk *_driver)
     : vk_command_buffer(_vk_command_buffer), vk_device(_vk_device), driver(_driver) {}
 
-CommandBufferVk::~CommandBufferVk() {}
-
-VkCommandBuffer CommandBufferVk::get_vk_command_buffer() const {
+VkCommandBuffer CommandBufferVk::get_vk_handle() const {
     return vk_command_buffer;
 }
 
@@ -634,6 +632,8 @@ void CommandBufferVk::submit_and_wait() {
     callbacks.clear();
 
     vkFreeCommandBuffers(vk_device, driver->get_command_pool(), 1, &vk_command_buffer);
+
+    vk_command_buffer = nullptr;
 }
 
 } // namespace Pathfinder
