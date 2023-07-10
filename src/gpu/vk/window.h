@@ -9,8 +9,9 @@
 #include "../window.h"
 #include "device.h"
 
-#if defined(WIN32) || defined(__linux__) || defined(__APPLE__)
-    #ifdef PATHFINDER_USE_VULKAN
+#ifdef PATHFINDER_USE_VULKAN
+    // We don't need a Window on Android and Web.
+    #if defined(WIN32) || defined(__linux__) || defined(__APPLE__)
 
 namespace Pathfinder {
 
@@ -52,19 +53,7 @@ public:
 
     VkPresentModeKHR choose_swap_present_mode(const std::vector<VkPresentModeKHR> &available_present_modes);
 
-    static std::vector<const char *> get_required_extensions() {
-        uint32_t glfw_extension_count = 0;
-        const char **glfw_extensions;
-        glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
-
-        std::vector<const char *> extensions(glfw_extensions, glfw_extensions + glfw_extension_count);
-
-        if (enable_validation_layers) {
-            extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-        }
-
-        return extensions;
-    }
+    static std::vector<const char *> get_required_extensions();
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
                                                          VkDebugUtilsMessageTypeFlagsEXT message_type,
@@ -75,30 +64,7 @@ public:
         return VK_FALSE;
     }
 
-    static bool check_validation_layer_support() {
-        uint32_t layer_count;
-        vkEnumerateInstanceLayerProperties(&layer_count, nullptr);
-
-        std::vector<VkLayerProperties> available_layers(layer_count);
-        vkEnumerateInstanceLayerProperties(&layer_count, available_layers.data());
-
-        for (const char *layer_name : VALIDATION_LAYERS) {
-            bool layer_found = false;
-
-            for (const auto &layer_properties : available_layers) {
-                if (strcmp(layer_name, layer_properties.layerName) == 0) {
-                    layer_found = true;
-                    break;
-                }
-            }
-
-            if (!layer_found) {
-                return false;
-            }
-        }
-
-        return true;
-    }
+    static bool check_validation_layer_support();
 
     QueueFamilyIndices find_queue_families(VkPhysicalDevice _physical_device) const;
 

@@ -7,9 +7,8 @@
 #include "debug_marker.h"
 #include "window.h"
 
-#if defined(WIN32) || defined(__linux__) || defined(__APPLE__)
-
-    #ifdef PATHFINDER_USE_VULKAN
+#ifdef PATHFINDER_USE_VULKAN
+    #if defined(WIN32) || defined(__linux__) || defined(__APPLE__)
 
 namespace Pathfinder {
 
