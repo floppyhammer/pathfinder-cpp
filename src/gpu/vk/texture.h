@@ -54,6 +54,7 @@ private:
     VkSampler vk_sampler{};
 
     /// For releasing resources in destructor.
+    /// This is null for wrapped external textures.
     VkDevice vk_device{};
 
     /// The initial layout must be undefined.

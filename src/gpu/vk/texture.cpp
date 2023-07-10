@@ -37,7 +37,9 @@ std::shared_ptr<TextureVk> TextureVk::from_wrapping(const TextureDescriptor& _de
                                                     TextureLayout layout) {
     auto texture_vk = std::make_shared<TextureVk>(nullptr, _desc);
 
+    // We're not responsible for management of wrapped textures.
     texture_vk->resource_ownership = false;
+
     texture_vk->vk_image = image;
     texture_vk->vk_image_memory = image_memory;
     texture_vk->vk_image_view = image_view;
@@ -68,7 +70,10 @@ void TextureVk::set_layout(TextureLayout new_layout) {
 }
 
 void TextureVk::set_label(const std::string& _label) {
-    assert(vk_device != nullptr && vk_image != nullptr);
+    if (vk_device == nullptr) {
+        Logger::warn("Attempted to set label for a wrapped texture!");
+        return;
+    }
 
     Texture::set_label(_label);
 
