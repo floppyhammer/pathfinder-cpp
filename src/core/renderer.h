@@ -25,7 +25,7 @@ struct RenderTarget {
 
 void upload_texture_metadata(const std::shared_ptr<Texture> &metadata_texture,
                              const std::vector<TextureMetadataEntry> &metadata,
-                             const std::shared_ptr<Driver> &driver);
+                             const std::shared_ptr<Device> &device);
 
 /// Pattern GPU textures.
 class PatternTexturePage {

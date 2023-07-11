@@ -23,7 +23,7 @@ class SwapChainVk : public SwapChain {
     friend class DeviceVk;
 
 public:
-    SwapChainVk(Vec2I _size, WindowVk *_window, DeviceVk *_driver);
+    SwapChainVk(Vec2I _size, WindowVk *_window, DeviceVk *_device);
 
     std::shared_ptr<RenderPass> get_render_pass() override;
 
@@ -38,7 +38,7 @@ private:
     std::vector<std::shared_ptr<Framebuffer>> framebuffers;
 
     WindowVk *window{};
-    DeviceVk *driver{};
+    DeviceVk *device_vk{};
 
     VkSwapchainKHR swapchain{};
 

@@ -19,8 +19,6 @@
 
 namespace Pathfinder {
 
-class Driver;
-
 enum class CommandType {
     // Render pass.
 

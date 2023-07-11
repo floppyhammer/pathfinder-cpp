@@ -12,7 +12,7 @@
 namespace Pathfinder {
 
 class SwapChainGl : public SwapChain {
-    friend class DriverGl;
+    friend class DeviceGl;
 
 public:
     #ifndef __ANDROID__

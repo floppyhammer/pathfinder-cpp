@@ -45,19 +45,19 @@ int main() {
 
     auto window = Window::new_impl(DeviceType::WebGl2, window_size);
 
-    auto driver = window->create_driver();
+    auto device = window->create_device();
 
-    auto swap_chain = window->create_swap_chain(driver);
+    auto swap_chain = window->create_swap_chain(device);
 
     // Create app.
-    app = new App(driver, window_size, {}, {});
+    app = new App(device, window_size, {}, {});
 
-    auto dst_texture = driver->create_texture({window_size, TextureFormat::Rgba8Unorm, "dst texture"});
+    auto dst_texture = device->create_texture({window_size, TextureFormat::Rgba8Unorm, "dst texture"});
 
     app->canvas->set_dst_texture(dst_texture);
 
     // Set viewport texture to a texture rect.
-    texture_rect = new TextureRect(driver, swap_chain->get_render_pass(), window_size.to_f32());
+    texture_rect = new TextureRect(device, swap_chain->get_render_pass(), window_size.to_f32());
     texture_rect->set_texture(dst_texture);
 
     emscripten_set_main_loop_arg(render, swap_chain.get(), 0, 1);

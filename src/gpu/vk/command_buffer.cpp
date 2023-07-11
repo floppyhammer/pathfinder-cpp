@@ -169,8 +169,8 @@ void transition_image_layout(VkCommandBuffer command_buffer,
     vkCmdPipelineBarrier(command_buffer, src_stage, dst_stage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
-CommandBufferVk::CommandBufferVk(VkCommandBuffer _vk_command_buffer, VkDevice _vk_device, DeviceVk *_driver)
-    : vk_command_buffer(_vk_command_buffer), vk_device(_vk_device), driver(_driver) {}
+CommandBufferVk::CommandBufferVk(VkCommandBuffer _vk_command_buffer, DeviceVk *_device)
+    : vk_command_buffer(_vk_command_buffer), vk_device(_device->get_device()), device_vk(_device) {}
 
 VkCommandBuffer CommandBufferVk::get_vk_handle() const {
     return vk_command_buffer;
@@ -280,7 +280,7 @@ void CommandBufferVk::submit() {
                 if (render_pipeline) {
                     auto render_pipeline_vk = static_cast<RenderPipelineVk *>(render_pipeline);
 
-                    descriptor_set_vk->update_vk_descriptor_set(driver->get_device(),
+                    descriptor_set_vk->update_vk_descriptor_set(vk_device,
                                                                 render_pipeline_vk->get_descriptor_set_layout());
 
                     // Bind uniform buffers and samplers.
@@ -295,7 +295,7 @@ void CommandBufferVk::submit() {
                 } else if (compute_pipeline) {
                     auto compute_pipeline_vk = static_cast<ComputePipelineVk *>(compute_pipeline);
 
-                    descriptor_set_vk->update_vk_descriptor_set(driver->get_device(),
+                    descriptor_set_vk->update_vk_descriptor_set(vk_device,
                                                                 compute_pipeline_vk->get_descriptor_set_layout());
 
                     // Bind uniform buffers and samplers.
@@ -447,21 +447,21 @@ void CommandBufferVk::submit() {
                 VkBuffer staging_buffer;
                 VkDeviceMemory staging_buffer_memory;
 
-                driver->create_vk_buffer(args.data_size,
-                                         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                         staging_buffer,
-                                         staging_buffer_memory);
+                device_vk->create_vk_buffer(args.data_size,
+                                            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                            staging_buffer,
+                                            staging_buffer_memory);
 
-                driver->copy_data_to_mappable_memory(args.data, staging_buffer_memory, args.data_size);
+                device_vk->copy_data_to_mappable_memory(args.data, staging_buffer_memory, args.data_size);
                 // ---------------------------------
 
-                driver->copy_vk_buffer(vk_command_buffer,
-                                       staging_buffer,
-                                       buffer_vk->get_vk_buffer(),
-                                       args.data_size,
-                                       0,
-                                       args.offset);
+                device_vk->copy_vk_buffer(vk_command_buffer,
+                                          staging_buffer,
+                                          buffer_vk->get_vk_buffer(),
+                                          args.data_size,
+                                          0,
+                                          args.offset);
 
                 // Callback to clean up staging resources.
                 auto callback = [this, staging_buffer, staging_buffer_memory] {
@@ -503,19 +503,22 @@ void CommandBufferVk::submit() {
                 VkBuffer staging_buffer;
                 VkDeviceMemory staging_buffer_memory;
 
-                driver->create_vk_buffer(args.data_size,
-                                         VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                         staging_buffer,
-                                         staging_buffer_memory);
+                device_vk->create_vk_buffer(args.data_size,
+                                            VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                            staging_buffer,
+                                            staging_buffer_memory);
                 // ---------------------------------
 
-                driver->copy_vk_buffer(vk_command_buffer, buffer_vk->get_vk_buffer(), staging_buffer, args.data_size);
+                device_vk->copy_vk_buffer(vk_command_buffer,
+                                          buffer_vk->get_vk_buffer(),
+                                          staging_buffer,
+                                          args.data_size);
 
                 // Callback to clean up staging resources.
                 auto callback = [this, staging_buffer, staging_buffer_memory, args] {
                     // Wait for the data transfer to complete before memory mapping.
-                    driver->copy_data_from_mappable_memory(args.data, staging_buffer_memory, args.data_size);
+                    device_vk->copy_data_from_mappable_memory(args.data, staging_buffer_memory, args.data_size);
 
                     vkDestroyBuffer(vk_device, staging_buffer, nullptr);
                     vkFreeMemory(vk_device, staging_buffer_memory, nullptr);
@@ -535,14 +538,14 @@ void CommandBufferVk::submit() {
                 VkBuffer staging_buffer;
                 VkDeviceMemory staging_buffer_memory;
 
-                driver->create_vk_buffer(data_size,
-                                         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                         staging_buffer,
-                                         staging_buffer_memory);
+                device_vk->create_vk_buffer(data_size,
+                                            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                            staging_buffer,
+                                            staging_buffer_memory);
 
                 // Copy the pixel data to the staging buffer.
-                driver->copy_data_to_mappable_memory(args.data, staging_buffer_memory, data_size);
+                device_vk->copy_data_to_mappable_memory(args.data, staging_buffer_memory, data_size);
 
                 // Transition the image layout to transfer dst.
                 transition_image_layout(vk_command_buffer,
@@ -620,10 +623,10 @@ void CommandBufferVk::submit_and_wait() {
     submit_info.commandBufferCount = 1;
     submit_info.pCommandBuffers = &vk_command_buffer;
 
-    vkQueueSubmit(driver->get_graphics_queue(), 1, &submit_info, VK_NULL_HANDLE);
+    vkQueueSubmit(device_vk->get_graphics_queue(), 1, &submit_info, VK_NULL_HANDLE);
 
     // Wait for the queue to finish commands.
-    vkQueueWaitIdle(driver->get_graphics_queue());
+    vkQueueWaitIdle(device_vk->get_graphics_queue());
 
     for (auto &callback : callbacks) {
         callback();
@@ -631,7 +634,7 @@ void CommandBufferVk::submit_and_wait() {
 
     callbacks.clear();
 
-    vkFreeCommandBuffers(vk_device, driver->get_command_pool(), 1, &vk_command_buffer);
+    vkFreeCommandBuffers(vk_device, device_vk->get_command_pool(), 1, &vk_command_buffer);
 
     vk_command_buffer = nullptr;
 }

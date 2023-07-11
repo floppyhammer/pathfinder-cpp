@@ -12,9 +12,9 @@
 
 namespace Pathfinder {
 
-SwapChainVk::SwapChainVk(Vec2I _size, WindowVk *_window, DeviceVk *_driver) : SwapChain(_size) {
+SwapChainVk::SwapChainVk(Vec2I _size, WindowVk *_window, DeviceVk *_device) : SwapChain(_size) {
     window = _window;
-    driver = _driver;
+    device_vk = _device;
 
     // Swap chain related resources.
     init_swapchain();
@@ -31,13 +31,13 @@ std::shared_ptr<Framebuffer> SwapChainVk::get_framebuffer() {
 }
 
 std::shared_ptr<CommandBuffer> SwapChainVk::get_command_buffer() {
-    auto command_buffer_vk = std::make_shared<CommandBufferVk>(command_buffers[image_index], driver->device, driver);
+    auto command_buffer_vk = std::make_shared<CommandBufferVk>(command_buffers[image_index], device_vk);
     command_buffer_vk->label = "Main";
     return command_buffer_vk;
 }
 
 bool SwapChainVk::acquire_image() {
-    auto device = driver->get_device();
+    auto device = device_vk->get_device();
 
     if (window->is_minimized()) {
         return false;
@@ -91,8 +91,8 @@ void SwapChainVk::recreate_swapchain() {
 }
 
 void SwapChainVk::cleanup_swapchain() {
-    auto device = driver->get_device();
-    auto command_pool = driver->get_command_pool();
+    auto device = device_vk->get_device();
+    auto command_pool = device_vk->get_command_pool();
 
     // Wait on the host for the completion of outstanding queue operations for all queues on a given logical device.
     vkDeviceWaitIdle(device);
@@ -113,7 +113,7 @@ void SwapChainVk::cleanup_swapchain() {
 }
 
 void SwapChainVk::cleanup() {
-    auto device = driver->get_device();
+    auto device = device_vk->get_device();
 
     // Clean up swap chain related resources.
     cleanup_swapchain();
@@ -127,7 +127,7 @@ void SwapChainVk::cleanup() {
 }
 
 void SwapChainVk::create_swapchain() {
-    auto device = driver->get_device();
+    auto device = device_vk->get_device();
 
     SwapchainSupportDetails swapchain_support = window->query_swapchain_support(window->physical_device);
 
@@ -191,17 +191,17 @@ void SwapChainVk::create_image_views() {
 
     for (uint32_t i = 0; i < swapchain_images.size(); i++) {
         swapchain_image_views[i] =
-            driver->create_vk_image_view(swapchain_images[i], swapchain_image_format, VK_IMAGE_ASPECT_COLOR_BIT);
+            device_vk->create_vk_image_view(swapchain_images[i], swapchain_image_format, VK_IMAGE_ASPECT_COLOR_BIT);
     }
 }
 
 void SwapChainVk::create_render_pass() {
     render_pass =
-        driver->create_swap_chain_render_pass(vk_to_texture_format(swapchain_image_format), AttachmentLoadOp::Clear);
+        device_vk->create_swap_chain_render_pass(vk_to_texture_format(swapchain_image_format), AttachmentLoadOp::Clear);
 }
 
 void SwapChainVk::create_framebuffers() {
-    auto device = driver->get_device();
+    auto device = device_vk->get_device();
 
     framebuffers.clear();
 
@@ -219,7 +219,7 @@ void SwapChainVk::create_framebuffers() {
 }
 
 void SwapChainVk::create_sync_objects() {
-    auto device = driver->get_device();
+    auto device = device_vk->get_device();
 
     image_available_semaphores.resize(MAX_FRAMES_IN_FLIGHT);
     render_finished_semaphores.resize(MAX_FRAMES_IN_FLIGHT);
@@ -243,8 +243,8 @@ void SwapChainVk::create_sync_objects() {
 }
 
 void SwapChainVk::create_command_buffers() {
-    auto device = driver->get_device();
-    auto command_pool = driver->get_command_pool();
+    auto device = device_vk->get_device();
+    auto command_pool = device_vk->get_command_pool();
 
     command_buffers.resize(framebuffers.size());
 
@@ -261,8 +261,8 @@ void SwapChainVk::create_command_buffers() {
 }
 
 void SwapChainVk::flush() {
-    auto device = driver->get_device();
-    auto graphics_queue = driver->get_graphics_queue();
+    auto device = device_vk->get_device();
+    auto graphics_queue = device_vk->get_graphics_queue();
     auto present_queue = window->get_present_queue();
 
     if (images_in_flight[image_index] != VK_NULL_HANDLE) {

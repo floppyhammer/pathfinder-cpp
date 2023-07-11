@@ -19,7 +19,7 @@ class CommandBufferVk : public CommandBuffer {
 
 public:
     /// We have to provide these two to create a valid command buffer.
-    CommandBufferVk(VkCommandBuffer _vk_command_buffer, VkDevice _vk_device, DeviceVk *_driver);
+    CommandBufferVk(VkCommandBuffer _vk_command_buffer, DeviceVk *_device);
 
     void submit() override;
 
@@ -33,7 +33,7 @@ private:
 
     VkDevice vk_device{};
 
-    DeviceVk *driver{};
+    DeviceVk *device_vk{};
 };
 
 } // namespace Pathfinder

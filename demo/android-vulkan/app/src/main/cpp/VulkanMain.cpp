@@ -790,8 +790,8 @@ bool InitVulkan(android_app *app) {
 
     // Pathfinder initialization.
     // -----------------------------
-    // Wrap a driver.
-    driver = std::make_shared<Pathfinder::DeviceVk>(device.device_,
+    // Wrap a device.
+    device = std::make_shared<Pathfinder::DeviceVk>(device.device_,
                                                     device.gpuDevice_,
                                                     device.queue_,
                                                     render.cmdPool_);
@@ -799,12 +799,12 @@ bool InitVulkan(android_app *app) {
     auto window_size = Vec2I{(int) swapchain.displaySize_.width,
                              (int) swapchain.displaySize_.height};
 
-    pathfinder_app = std::make_shared<App>(driver,
+    pathfinder_app = std::make_shared<App>(device,
                                            window_size,
                                            load_asset("features.svg"),
                                            load_asset("sea.png"));
 
-    auto dst_texture = driver->create_texture(
+    auto dst_texture = device->create_texture(
             {window_size, TextureFormat::Rgba8Unorm, "dst texture"});
 
     pathfinder_app->canvas->set_dst_texture(dst_texture);

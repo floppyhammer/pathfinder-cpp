@@ -462,8 +462,8 @@ void WindowVk::cleanup() {
 }
 
 std::shared_ptr<SwapChain> WindowVk::create_swap_chain(const std::shared_ptr<Device> &device) {
-    auto driver_vk = static_cast<DeviceVk *>(device.get());
-    return std::make_shared<SwapChainVk>(size, this, driver_vk);
+    auto device_vk = static_cast<DeviceVk *>(device.get());
+    return std::make_shared<SwapChainVk>(size, this, device_vk);
 }
 
 } // namespace Pathfinder

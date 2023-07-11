@@ -437,7 +437,7 @@ std::shared_ptr<CommandBuffer> DeviceVk::create_command_buffer(const std::string
     vkAllocateCommandBuffers(device, &alloc_info, &command_buffer);
     // ----------------------------------------
 
-    auto command_buffer_vk = std::make_shared<CommandBufferVk>(command_buffer, device, this);
+    auto command_buffer_vk = std::make_shared<CommandBufferVk>(command_buffer, this);
     command_buffer_vk->label = _label;
 
     return command_buffer_vk;

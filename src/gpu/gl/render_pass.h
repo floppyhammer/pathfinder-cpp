@@ -8,7 +8,7 @@
 namespace Pathfinder {
 
 class RenderPassGl : public RenderPass {
-    friend class DriverGl;
+    friend class DeviceGl;
 
 public:
     explicit RenderPassGl(AttachmentLoadOp _load_op) : load_op(_load_op) {}
