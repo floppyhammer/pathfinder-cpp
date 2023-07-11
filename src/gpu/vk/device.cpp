@@ -119,11 +119,13 @@ std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
     VkPipelineVertexInputStateCreateInfo vertex_input_info{};
     vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-    int32_t lastBinding = -1;
+    int32_t last_binding = -1;
     std::vector<VkVertexInputBindingDescription> binding_descriptions;
     for (auto &d : attribute_descriptions) {
-        if (d.binding == lastBinding) continue;
-        lastBinding = d.binding;
+        if (d.binding == last_binding) {
+            continue;
+        }
+        last_binding = d.binding;
 
         VkVertexInputBindingDescription binding_description{};
         binding_description.binding = d.binding;
@@ -215,27 +217,27 @@ std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
     color_blending.blendConstants[2] = 0.0f;
     color_blending.blendConstants[3] = 0.0f;
 
-    VkGraphicsPipelineCreateInfo pipelineInfo{};
-    pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    pipelineInfo.stageCount = 2;
-    pipelineInfo.pStages = shader_stages;
-    pipelineInfo.pVertexInputState = &vertex_input_info;
-    pipelineInfo.pInputAssemblyState = &input_assembly;
-    pipelineInfo.pViewportState = &viewport_state;
-    pipelineInfo.pRasterizationState = &rasterizer;
-    pipelineInfo.pMultisampleState = &multisampling;
-    pipelineInfo.pColorBlendState = &color_blending;
-    pipelineInfo.layout = render_pipeline_vk->vk_layout;
-    pipelineInfo.renderPass = render_pass_vk->vk_render_pass;
-    pipelineInfo.subpass = 0;
-    pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-    pipelineInfo.pDynamicState = &dynamic; // Make viewport and scissor dynamic.
+    VkGraphicsPipelineCreateInfo pipeline_info{};
+    pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    pipeline_info.stageCount = 2;
+    pipeline_info.pStages = shader_stages;
+    pipeline_info.pVertexInputState = &vertex_input_info;
+    pipeline_info.pInputAssemblyState = &input_assembly;
+    pipeline_info.pViewportState = &viewport_state;
+    pipeline_info.pRasterizationState = &rasterizer;
+    pipeline_info.pMultisampleState = &multisampling;
+    pipeline_info.pColorBlendState = &color_blending;
+    pipeline_info.layout = render_pipeline_vk->vk_layout;
+    pipeline_info.renderPass = render_pass_vk->vk_render_pass;
+    pipeline_info.subpass = 0;
+    pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
+    pipeline_info.pDynamicState = &dynamic; // Make viewport and scissor dynamic.
 
     // Create pipeline.
     if (vkCreateGraphicsPipelines(device,
                                   VK_NULL_HANDLE,
                                   1,
-                                  &pipelineInfo,
+                                  &pipeline_info,
                                   nullptr,
                                   &render_pipeline_vk->vk_pipeline) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create graphics pipeline!");
