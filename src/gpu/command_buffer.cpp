@@ -16,7 +16,7 @@ void CommandBuffer::begin_render_pass(const std::shared_ptr<RenderPass> &render_
     args.clear_color = clear_color;
     args.viewport = {Vec2I(), framebuffer->get_size()};
 
-    commands.push(cmd);
+    commands.push_back(cmd);
 }
 
 void CommandBuffer::bind_render_pipeline(const std::shared_ptr<RenderPipeline> &pipeline) {
@@ -26,7 +26,7 @@ void CommandBuffer::bind_render_pipeline(const std::shared_ptr<RenderPipeline> &
     auto &args = cmd.args.bind_render_pipeline;
     args.pipeline = pipeline.get();
 
-    commands.push(cmd);
+    commands.push_back(cmd);
 }
 
 void CommandBuffer::bind_vertex_buffers(std::vector<std::shared_ptr<Buffer>> vertex_buffers) {
@@ -41,7 +41,7 @@ void CommandBuffer::bind_vertex_buffers(std::vector<std::shared_ptr<Buffer>> ver
         args.buffers[buffer_index] = vertex_buffers[buffer_index].get();
     }
 
-    commands.push(cmd);
+    commands.push_back(cmd);
 }
 
 void CommandBuffer::bind_descriptor_set(const std::shared_ptr<DescriptorSet> &descriptor_set) {
@@ -51,7 +51,7 @@ void CommandBuffer::bind_descriptor_set(const std::shared_ptr<DescriptorSet> &de
     auto &args = cmd.args.bind_descriptor_set;
     args.descriptor_set = descriptor_set.get();
 
-    commands.push(cmd);
+    commands.push_back(cmd);
 }
 
 void CommandBuffer::bind_compute_pipeline(const std::shared_ptr<ComputePipeline> &pipeline) {
@@ -61,7 +61,7 @@ void CommandBuffer::bind_compute_pipeline(const std::shared_ptr<ComputePipeline>
     auto &args = cmd.args.bind_compute_pipeline;
     args.pipeline = pipeline.get();
 
-    commands.push(cmd);
+    commands.push_back(cmd);
 }
 
 void CommandBuffer::draw(uint32_t first_vertex, uint32_t vertex_count) {
@@ -72,7 +72,7 @@ void CommandBuffer::draw(uint32_t first_vertex, uint32_t vertex_count) {
     args.first_vertex = first_vertex;
     args.vertex_count = vertex_count;
 
-    commands.push(cmd);
+    commands.push_back(cmd);
 }
 
 void CommandBuffer::draw_instanced(uint32_t vertex_count, uint32_t instance_count) {
@@ -83,31 +83,21 @@ void CommandBuffer::draw_instanced(uint32_t vertex_count, uint32_t instance_coun
     args.vertex_count = vertex_count;
     args.instance_count = instance_count;
 
-    commands.push(cmd);
+    commands.push_back(cmd);
 }
 
 void CommandBuffer::end_render_pass() {
     Command cmd;
     cmd.type = CommandType::EndRenderPass;
 
-    commands.push(cmd);
-}
-
-void CommandBuffer::sync_descriptor_set(const std::shared_ptr<DescriptorSet> &descriptor_set) {
-    Command cmd;
-    cmd.type = CommandType::SyncDescriptorSet;
-
-    auto &args = cmd.args.sync_descriptor_set;
-    args.descriptor_set = descriptor_set.get();
-
-    commands.push(cmd);
+    commands.push_back(cmd);
 }
 
 void CommandBuffer::begin_compute_pass() {
     Command cmd;
     cmd.type = CommandType::BeginComputePass;
 
-    commands.push(cmd);
+    commands.push_back(cmd);
 }
 
 void CommandBuffer::dispatch(uint32_t group_size_x, uint32_t group_size_y, uint32_t group_size_z) {
@@ -124,14 +114,14 @@ void CommandBuffer::dispatch(uint32_t group_size_x, uint32_t group_size_y, uint3
     args.group_size_y = group_size_y;
     args.group_size_z = group_size_z;
 
-    commands.push(cmd);
+    commands.push_back(cmd);
 }
 
 void CommandBuffer::end_compute_pass() {
     Command cmd;
     cmd.type = CommandType::EndComputePass;
 
-    commands.push(cmd);
+    commands.push_back(cmd);
 }
 
 void CommandBuffer::upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
@@ -163,7 +153,7 @@ void CommandBuffer::upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
     args.data_size = data_size;
     args.data = data;
 
-    commands.push(cmd);
+    commands.push_back(cmd);
 }
 
 void CommandBuffer::upload_to_texture(const std::shared_ptr<Texture> &texture, RectI _region, const void *data) {
@@ -194,7 +184,7 @@ void CommandBuffer::upload_to_texture(const std::shared_ptr<Texture> &texture, R
     args.height = region.height();
     args.data = data;
 
-    commands.push(cmd);
+    commands.push_back(cmd);
 }
 
 void CommandBuffer::read_buffer(const std::shared_ptr<Buffer> &buffer,
@@ -223,7 +213,7 @@ void CommandBuffer::read_buffer(const std::shared_ptr<Buffer> &buffer,
             args.data_size = data_size;
             args.data = data;
 
-            commands.push(cmd);
+            commands.push_back(cmd);
         } break;
         default: {
             Logger::error("Cannot read data from non-storage buffers!", "CommandBuffer");

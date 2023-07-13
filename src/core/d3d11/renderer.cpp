@@ -378,8 +378,6 @@ void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
         Descriptor::image(7, ShaderStage::Compute, "uDestImage", target_texture),
     });
 
-    cmd_buffer->sync_descriptor_set(tile_descriptor_set);
-
     cmd_buffer->begin_compute_pass();
 
     cmd_buffer->bind_compute_pipeline(tile_pipeline);
@@ -637,8 +635,6 @@ std::shared_ptr<MicrolinesBufferIDsD3D11> RendererD3D11::dice_segments(std::vect
         Descriptor::storage(4, ShaderStage::Compute, microlines_buffer),
     });
 
-    cmd_buffer->sync_descriptor_set(dice_descriptor_set);
-
     cmd_buffer->begin_compute_pass();
 
     cmd_buffer->bind_compute_pipeline(dice_pipeline);
@@ -706,8 +702,6 @@ void RendererD3D11::bound(uint64_t tiles_d3d11_buffer_id,
         Descriptor::storage(1, ShaderStage::Compute, allocator->get_buffer(tiles_d3d11_buffer_id)),
     });
 
-    cmd_buffer->sync_descriptor_set(bound_descriptor_set);
-
     cmd_buffer->begin_compute_pass();
 
     cmd_buffer->bind_compute_pipeline(bound_pipeline);
@@ -770,8 +764,6 @@ std::shared_ptr<FillBufferInfoD3D11> RendererD3D11::bin_segments(
         // Read and write.
         Descriptor::storage(5, ShaderStage::Compute, allocator->get_buffer(propagate_metadata_buffer_ids.backdrops)),
     });
-
-    cmd_buffer->sync_descriptor_set(bin_descriptor_set);
 
     cmd_buffer->begin_compute_pass();
 
@@ -879,8 +871,6 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
         }
     }
 
-    cmd_buffer->sync_descriptor_set(propagate_descriptor_set);
-
     cmd_buffer->begin_compute_pass();
 
     cmd_buffer->bind_compute_pipeline(propagate_pipeline);
@@ -943,8 +933,6 @@ void RendererD3D11::draw_fills(FillBufferInfoD3D11 &fill_storage_info,
         Descriptor::storage(2, ShaderStage::Compute, alpha_tiles_buffer),
     });
 
-    cmd_buffer->sync_descriptor_set(fill_descriptor_set);
-
     cmd_buffer->begin_compute_pass();
 
     cmd_buffer->bind_compute_pipeline(fill_pipeline);
@@ -981,8 +969,6 @@ void RendererD3D11::sort_tiles(uint64_t tiles_d3d11_buffer_id,
         // Read only.
         Descriptor::storage(2, ShaderStage::Compute, z_buffer),
     });
-
-    cmd_buffer->sync_descriptor_set(sort_descriptor_set);
 
     cmd_buffer->begin_compute_pass();
 

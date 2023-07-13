@@ -30,9 +30,6 @@ enum class CommandType {
     DrawInstanced,
     EndRenderPass,
 
-    // This shouldn't happen during a render pass.
-    SyncDescriptorSet,
-
     // Compute pass.
 
     BeginComputePass,
@@ -72,9 +69,6 @@ struct Command {
         struct {
             DescriptorSet *descriptor_set;
         } bind_descriptor_set;
-        struct {
-            DescriptorSet *descriptor_set;
-        } sync_descriptor_set;
         struct {
             uint32_t first_vertex;
             uint32_t vertex_count;
@@ -142,8 +136,6 @@ public:
 
     void end_render_pass();
 
-    void sync_descriptor_set(const std::shared_ptr<DescriptorSet> &descriptor_set);
-
     // COMPUTE PASS
 
     void begin_compute_pass();
@@ -186,7 +178,7 @@ protected:
     /// Debug label.
     std::string label;
 
-    std::queue<Command> commands;
+    std::deque<Command> commands;
 
     bool one_time = false;
 

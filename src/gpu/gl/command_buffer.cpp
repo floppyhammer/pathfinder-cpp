@@ -268,13 +268,11 @@ void CommandBufferGl::finish() {
 
                 gl_check_error("UploadToTexture");
             } break;
-            // Unnecessary for OpenGL.
-            case CommandType::SyncDescriptorSet:
             case CommandType::Max:
                 break;
         }
 
-        commands.pop();
+        commands.pop_front();
     }
 }
 

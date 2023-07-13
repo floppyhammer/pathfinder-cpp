@@ -92,10 +92,7 @@ void TextureRect::draw(const std::shared_ptr<CommandBuffer> &cmd_buffer, const V
     auto mvp_mat = model_mat;
     // -------------------------------
 
-    auto one_time_cmd_buffer = device->create_command_buffer("Upload TextureRect uniform buffer");
-    one_time_cmd_buffer->upload_to_buffer(uniform_buffer, 0, 16 * sizeof(float), &mvp_mat);
-    one_time_cmd_buffer->sync_descriptor_set(descriptor_set);
-    one_time_cmd_buffer->submit_and_wait();
+    cmd_buffer->upload_to_buffer(uniform_buffer, 0, 16 * sizeof(float), &mvp_mat);
 
     cmd_buffer->bind_render_pipeline(pipeline);
 

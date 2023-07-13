@@ -29,6 +29,9 @@ public:
     VkCommandBuffer get_vk_handle() const;
 
 private:
+    void sync_descriptor_set(DescriptorSet *descriptor_set);
+
+private:
     VkCommandBuffer vk_command_buffer{};
 
     VkDevice vk_device{};

@@ -402,8 +402,6 @@ void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &t
 void RendererD3D9::draw_fills(uint64_t fill_vertex_buffer_id,
                               uint32_t fills_count,
                               const std::shared_ptr<CommandBuffer> &cmd_buffer) {
-    cmd_buffer->sync_descriptor_set(fill_descriptor_set);
-
     cmd_buffer->begin_render_pass(mask_render_pass_clear, allocator->get_framebuffer(mask_framebuffer_id), ColorF());
 
     cmd_buffer->bind_render_pipeline(fill_pipeline);
@@ -444,8 +442,6 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info,
     // Copy out tiles.
     // TODO(pcwalton): Don't do this on GL4.
     {
-        cmd_buffer->sync_descriptor_set(tile_clip_copy_descriptor_set);
-
         cmd_buffer->begin_render_pass(mask_render_pass_clear, mask_temp_framebuffer, ColorF());
 
         cmd_buffer->bind_render_pipeline(tile_clip_copy_pipeline);
@@ -465,8 +461,6 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info,
         tile_clip_combine_descriptor_set->add_or_update({
             Descriptor::sampler(1, ShaderStage::Fragment, "uSrc", mask_temp_framebuffer->get_texture()),
         });
-
-        cmd_buffer->sync_descriptor_set(tile_clip_combine_descriptor_set);
 
         cmd_buffer->begin_render_pass(mask_render_pass_load, allocator->get_framebuffer(mask_framebuffer_id), ColorF());
 
@@ -491,8 +485,6 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
                               uint64_t z_buffer_texture_id,
                               const std::shared_ptr<CommandBuffer> &cmd_buffer) {
     std::shared_ptr<Framebuffer> target_framebuffer;
-
-    cmd_buffer->sync_descriptor_set(tile_descriptor_set);
 
     // If no specific RenderTarget is given, we render to the dst framebuffer.
     if (render_target_id == nullptr) {

@@ -189,12 +189,21 @@ void CommandBufferVk::finish() {
     // Start a new debug marker region
     DebugMarker::get_singleton()->begin_region(vk_command_buffer, label, ColorF(1.0f, 0.78f, 0.05f, 1.0f));
 
-    while (!commands.empty()) {
-        auto &cmd = commands.front();
+    for (auto cmd_iter = commands.begin(); cmd_iter < commands.end(); cmd_iter++) {
+        auto &cmd = *cmd_iter;
 
         switch (cmd.type) {
             case CommandType::BeginRenderPass: {
                 assert(compute_pipeline == nullptr);
+
+                for (auto cmd_iter2 = cmd_iter; cmd_iter2 < commands.end(); cmd_iter2++) {
+                    if (cmd_iter2->type == CommandType::BindDescriptorSet) {
+                        sync_descriptor_set(cmd_iter2->args.bind_descriptor_set.descriptor_set);
+                    }
+                    if (cmd_iter2->type == CommandType::EndRenderPass) {
+                        break;
+                    }
+                }
 
                 auto &args = cmd.args.begin_render_pass;
                 auto render_pass_vk = static_cast<RenderPassVk *>(args.render_pass);
@@ -325,100 +334,17 @@ void CommandBufferVk::finish() {
 
                 render_pipeline = nullptr;
             } break;
-            case CommandType::SyncDescriptorSet: {
-                auto &args = cmd.args.sync_descriptor_set;
-                auto descriptor_set_vk = static_cast<DescriptorSetVk *>(args.descriptor_set);
-
-                // Make all image layouts ready.
-                for (auto &d : descriptor_set_vk->get_descriptors()) {
-                    if (d.second.texture) {
-                        if (d.second.type == DescriptorType::Sampler) {
-                            auto texture = d.second.texture.get();
-                            auto texture_vk = static_cast<TextureVk *>(texture);
-
-                            transition_image_layout(vk_command_buffer,
-                                                    texture_vk->get_image(),
-                                                    to_vk_layout(texture_vk->get_layout()),
-                                                    to_vk_layout(TextureLayout::ShaderReadOnly));
-
-                            texture_vk->set_layout(TextureLayout::ShaderReadOnly);
-                        } else if (d.second.type == DescriptorType::Image) {
-                            auto texture = d.second.texture.get();
-                            auto texture_vk = static_cast<TextureVk *>(texture);
-
-                            transition_image_layout(vk_command_buffer,
-                                                    texture_vk->get_image(),
-                                                    to_vk_layout(texture_vk->get_layout()),
-                                                    to_vk_layout(TextureLayout::General));
-
-                            texture_vk->set_layout(TextureLayout::General);
-                        }
-                    }
-
-                    if (d.second.buffer) {
-                        auto buffer_vk = static_cast<BufferVk *>(d.second.buffer.get());
-
-                        int32_t dst_access_mask{};
-                        switch (buffer_vk->get_type()) {
-                            case BufferType::Vertex: {
-                                Logger::error("Why do we have a vertex buffer in a descriptor set?", "CommandBuffer");
-                            } break;
-                            case BufferType::Uniform: {
-                                dst_access_mask = VK_ACCESS_SHADER_READ_BIT;
-                            } break;
-                            case BufferType::Storage: {
-                                dst_access_mask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                            } break;
-                            case BufferType::Index:
-                                abort();
-                        }
-
-                        int32_t dst_stage_mask{};
-                        switch (d.second.stage) {
-                            case ShaderStage::Vertex: {
-                                dst_stage_mask = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
-                            } break;
-                            case ShaderStage::Fragment: {
-                                dst_stage_mask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-                            } break;
-                            case ShaderStage::VertexAndFragment: {
-                                dst_stage_mask =
-                                    VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-                            } break;
-                            case ShaderStage::Compute: {
-                                dst_stage_mask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-                            } break;
-                            default: {
-                                abort();
-                            }
-                        }
-
-                        VkBufferMemoryBarrier memory_barrier = {};
-                        memory_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-                        memory_barrier.pNext = nullptr;
-                        memory_barrier.size = buffer_vk->get_size();
-                        memory_barrier.buffer = buffer_vk->get_vk_buffer();
-                        memory_barrier.offset = 0;
-                        memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                        memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                        memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                        memory_barrier.dstAccessMask = dst_access_mask;
-
-                        vkCmdPipelineBarrier(vk_command_buffer,
-                                             VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                             dst_stage_mask,
-                                             0,
-                                             0,
-                                             nullptr,
-                                             1,
-                                             &memory_barrier,
-                                             0,
-                                             nullptr);
-                    }
-                }
-            } break;
             case CommandType::BeginComputePass: {
                 assert(render_pipeline == nullptr);
+
+                for (auto cmd_iter2 = cmd_iter; cmd_iter2 < commands.end(); cmd_iter2++) {
+                    if (cmd_iter2->type == CommandType::BindDescriptorSet) {
+                        sync_descriptor_set(cmd_iter2->args.bind_descriptor_set.descriptor_set);
+                    }
+                    if (cmd_iter2->type == CommandType::EndComputePass) {
+                        break;
+                    }
+                }
             } break;
             case CommandType::BindComputePipeline: {
                 auto &args = cmd.args.bind_compute_pipeline;
@@ -602,15 +528,106 @@ void CommandBufferVk::finish() {
             case CommandType::Max:
                 break;
         }
-
-        commands.pop();
     }
+
+    commands.clear();
 
     DebugMarker::get_singleton()->end_region(vk_command_buffer);
 
     // End recording the command buffer.
     if (vkEndCommandBuffer(vk_command_buffer) != VK_SUCCESS) {
         throw std::runtime_error("Failed to record command buffer!");
+    }
+}
+
+void CommandBufferVk::sync_descriptor_set(DescriptorSet *descriptor_set) {
+    auto descriptor_set_vk = static_cast<DescriptorSetVk *>(descriptor_set);
+
+    // Make all image layouts ready.
+    for (auto &d : descriptor_set_vk->get_descriptors()) {
+        if (d.second.texture) {
+            if (d.second.type == DescriptorType::Sampler) {
+                auto texture = d.second.texture.get();
+                auto texture_vk = static_cast<TextureVk *>(texture);
+
+                transition_image_layout(vk_command_buffer,
+                                        texture_vk->get_image(),
+                                        to_vk_layout(texture_vk->get_layout()),
+                                        to_vk_layout(TextureLayout::ShaderReadOnly));
+
+                texture_vk->set_layout(TextureLayout::ShaderReadOnly);
+            } else if (d.second.type == DescriptorType::Image) {
+                auto texture = d.second.texture.get();
+                auto texture_vk = static_cast<TextureVk *>(texture);
+
+                transition_image_layout(vk_command_buffer,
+                                        texture_vk->get_image(),
+                                        to_vk_layout(texture_vk->get_layout()),
+                                        to_vk_layout(TextureLayout::General));
+
+                texture_vk->set_layout(TextureLayout::General);
+            }
+        }
+
+        if (d.second.buffer) {
+            auto buffer_vk = static_cast<BufferVk *>(d.second.buffer.get());
+
+            int32_t dst_access_mask{};
+            switch (buffer_vk->get_type()) {
+                case BufferType::Vertex: {
+                    Logger::error("Why do we have a vertex buffer in a descriptor set?", "CommandBuffer");
+                } break;
+                case BufferType::Uniform: {
+                    dst_access_mask = VK_ACCESS_SHADER_READ_BIT;
+                } break;
+                case BufferType::Storage: {
+                    dst_access_mask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                } break;
+                case BufferType::Index:
+                    abort();
+            }
+
+            int32_t dst_stage_mask{};
+            switch (d.second.stage) {
+                case ShaderStage::Vertex: {
+                    dst_stage_mask = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
+                } break;
+                case ShaderStage::Fragment: {
+                    dst_stage_mask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+                } break;
+                case ShaderStage::VertexAndFragment: {
+                    dst_stage_mask = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+                } break;
+                case ShaderStage::Compute: {
+                    dst_stage_mask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+                } break;
+                default: {
+                    abort();
+                }
+            }
+
+            VkBufferMemoryBarrier memory_barrier = {};
+            memory_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+            memory_barrier.pNext = nullptr;
+            memory_barrier.size = buffer_vk->get_size();
+            memory_barrier.buffer = buffer_vk->get_vk_buffer();
+            memory_barrier.offset = 0;
+            memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            memory_barrier.dstAccessMask = dst_access_mask;
+
+            vkCmdPipelineBarrier(vk_command_buffer,
+                                 VK_PIPELINE_STAGE_TRANSFER_BIT,
+                                 dst_stage_mask,
+                                 0,
+                                 0,
+                                 nullptr,
+                                 1,
+                                 &memory_barrier,
+                                 0,
+                                 nullptr);
+        }
     }
 }
 
