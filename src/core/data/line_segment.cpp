@@ -105,4 +105,8 @@ bool LineSegmentF::is_valid() const {
     return true;
 }
 
+LineSegmentF LineSegmentF::apply_transform(const Transform2 &transform) const {
+    return {transform * from(), transform * to()};
+}
+
 } // namespace Pathfinder

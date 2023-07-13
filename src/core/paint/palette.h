@@ -57,7 +57,7 @@ public:
     std::vector<PaintMetadata> build_paint_info(Renderer *renderer);
 
     /// Append another palette to this append_palette, merging paints and render targets.
-    MergedPaletteInfo append_palette(const Palette &palette);
+    MergedPaletteInfo append_palette(const Palette &palette, const Transform2 &transform);
 
 private:
     std::vector<Paint> paints;

@@ -90,7 +90,7 @@ void Scene::append_scene(const Scene &scene, const Transform2 &transform) {
         return;
     }
 
-    auto merged_palette_info = palette.append_palette(scene.palette);
+    auto merged_palette_info = palette.append_palette(scene.palette, transform);
 
     // Merge clip paths.
     vector<size_t> clip_path_mapping;

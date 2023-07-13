@@ -88,7 +88,7 @@ App::App(const std::shared_ptr<Device> &device,
         // canvas->set_scene(svg_scene.get_scene());
 
         // TEST: Append scene.
-        canvas->get_scene()->append_scene(*svg_scene.get_scene(), Transform2());
+        canvas->get_scene()->append_scene(*svg_scene.get_scene(), Transform2::from_scale({1.0, 1.0}));
     }
 
     // Timer.

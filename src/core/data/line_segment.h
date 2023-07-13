@@ -2,6 +2,7 @@
 #define PATHFINDER_LINE_SEGMENT_H
 
 #include "../../common/f32x4.h"
+#include "../../common/math/transform2.h"
 #include "../../common/math/vec2.h"
 
 namespace Pathfinder {
@@ -56,6 +57,8 @@ struct LineSegmentF {
     inline Vec2F sample(float t) const {
         return from() + vector() * t;
     }
+
+    LineSegmentF apply_transform(const Transform2 &transform) const;
 
     /// Element-wise clamping.
     LineSegmentF clamp(float min, float max) const;
