@@ -35,7 +35,7 @@ void render(void* _swap_chain) {
         cmd_buffer->end_render_pass();
     }
 
-    cmd_buffer->submit();
+    cmd_buffer->finish();
 
     swap_chain->flush();
 }

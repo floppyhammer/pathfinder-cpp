@@ -13,7 +13,7 @@ namespace Pathfinder {
 
 class CommandBufferGl : public CommandBuffer {
 public:
-    void submit() override;
+    void finish() override;
 
     void submit_and_wait() override;
 };

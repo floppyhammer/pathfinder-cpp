@@ -63,7 +63,7 @@ int main() {
             cmd_buffer->end_render_pass();
         }
 
-        cmd_buffer->submit();
+        cmd_buffer->finish();
 
         swap_chain->flush();
     }

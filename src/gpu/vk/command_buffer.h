@@ -21,7 +21,7 @@ public:
     /// We have to provide these two to create a valid command buffer.
     CommandBufferVk(VkCommandBuffer _vk_command_buffer, DeviceVk *_device);
 
-    void submit() override;
+    void finish() override;
 
     /// Submit and wait for implementation to finish. At last, free the command buffer.
     void submit_and_wait() override;

@@ -174,7 +174,7 @@ public:
 
     // SUBMIT
 
-    virtual void submit() = 0;
+    virtual void finish() = 0;
 
     virtual void submit_and_wait() = 0;
 

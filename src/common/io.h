@@ -34,7 +34,7 @@ public:
 private:
     Vec2I size;
 
-    int32_t channel_count;
+    int32_t channel_count{};
 
     unsigned char *data{};
 };

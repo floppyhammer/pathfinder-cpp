@@ -105,5 +105,5 @@ void RendererES3::render() {
 
     texture_rect->draw(cmd_buffer, window_size);
 
-    cmd_buffer->submit();
+    cmd_buffer->finish();
 }

@@ -176,7 +176,7 @@ VkCommandBuffer CommandBufferVk::get_vk_handle() const {
     return vk_command_buffer;
 }
 
-void CommandBufferVk::submit() {
+void CommandBufferVk::finish() {
     // Begin recording.
     VkCommandBufferBeginInfo begin_info{};
     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -615,7 +615,7 @@ void CommandBufferVk::submit() {
 }
 
 void CommandBufferVk::submit_and_wait() {
-    submit();
+    finish();
 
     // Submit the command buffer to the graphics queue.
     VkSubmitInfo submit_info{};

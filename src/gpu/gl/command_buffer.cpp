@@ -13,7 +13,7 @@
 
 namespace Pathfinder {
 
-void CommandBufferGl::submit() {
+void CommandBufferGl::finish() {
     while (!commands.empty()) {
         auto &cmd = commands.front();
 
@@ -279,7 +279,7 @@ void CommandBufferGl::submit() {
 }
 
 void CommandBufferGl::submit_and_wait() {
-    submit();
+    finish();
 
     // Release allocated memory if there's any.
     for (auto &callback : callbacks) {
