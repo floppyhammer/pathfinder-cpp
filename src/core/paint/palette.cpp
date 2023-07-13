@@ -445,7 +445,7 @@ void Palette::free_unused_images(PaintTextureManager &texture_manager, const std
     }
 }
 
-MergedPaletteInfo Palette::append_palette(const Palette &palette) {
+MergedPaletteInfo Palette::append_palette(const Palette &palette, const Transform2 &transform) {
     // Merge render targets.
     std::map<RenderTargetId, RenderTargetId> render_target_mapping;
     for (uint32_t old_render_target_index = 0; old_render_target_index < palette.render_targets_desc.size();
@@ -476,7 +476,7 @@ MergedPaletteInfo Palette::append_palette(const Palette &palette) {
                     auto new_pattern = Pattern::from_render_target(contents.pattern.source.render_target_id,
                                                                    contents.pattern.source.size);
                     //                            new_pattern.set_filter(pattern.filter());
-                    new_pattern.apply_transform(contents.pattern.transform);
+                    new_pattern.apply_transform(transform * contents.pattern.transform);
                     new_pattern.set_repeat_x(contents.pattern.repeat_x());
                     new_pattern.set_repeat_y(contents.pattern.repeat_y());
                     new_pattern.set_smoothing_enabled(contents.pattern.smoothing_enabled());
@@ -487,6 +487,7 @@ MergedPaletteInfo Palette::append_palette(const Palette &palette) {
                     new_paint_id = push_paint(paint);
                 }
             } else {
+                contents.gradient.geometry.apply_transform(transform);
                 new_paint_id = push_paint(paint);
             }
         } else {

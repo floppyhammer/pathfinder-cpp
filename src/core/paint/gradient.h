@@ -57,6 +57,14 @@ struct GradientGeometry {
     /// A radial gradient that radiates outward from a line connecting two circles (or from one
     /// circle).
     GradientRadial radial;
+
+    void apply_transform(const Transform2 &transform) {
+        if (type == Type::Linear) {
+            linear = linear.apply_transform(transform);
+        } else {
+            radial.transform = transform * radial.transform;
+        }
+    }
 };
 
 /// What should be rendered outside the color stops.
