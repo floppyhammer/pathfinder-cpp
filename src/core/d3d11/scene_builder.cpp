@@ -47,6 +47,8 @@ std::shared_ptr<BuiltDrawPath> prepare_draw_path_for_gpu_binning(Scene &scene,
     TilingPathInfo path_info{};
     path_info.type = TilingPathInfo::Type::Draw;
     path_info.info.paint_id = paint_id;
+    path_info.info.blend_mode = draw_path.blend_mode;
+    path_info.info.fill_rule = draw_path.fill_rule;
 
     auto built_path =
         BuiltPath(draw_path_id, path_bounds, effective_view_box, draw_path.fill_rule, draw_path.clip_path, path_info);
