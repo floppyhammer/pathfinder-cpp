@@ -251,8 +251,8 @@ void SwapChainVk::create_command_buffers() {
     // Allocate command buffers.
     VkCommandBufferAllocateInfo alloc_info{};
     alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    alloc_info.commandPool = command_pool;
     alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    alloc_info.commandPool = command_pool;
     alloc_info.commandBufferCount = (uint32_t)command_buffers.size();
 
     if (vkAllocateCommandBuffers(device, &alloc_info, command_buffers.data()) != VK_SUCCESS) {

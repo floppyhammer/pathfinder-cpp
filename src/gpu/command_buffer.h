@@ -97,7 +97,6 @@ struct Command {
             uint32_t offset_y;
             uint32_t width;
             uint32_t height;
-            uint32_t data_size;
             const void *data;
         } upload_to_texture;
         struct {
