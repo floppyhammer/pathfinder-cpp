@@ -17,8 +17,6 @@ TextureVk::~TextureVk() {
         return;
     }
 
-    vkDestroySampler(vk_device, vk_sampler, nullptr);
-
     // Should be right before destroying the image itself.
     vkDestroyImageView(vk_device, vk_image_view, nullptr);
 
@@ -33,7 +31,6 @@ std::shared_ptr<TextureVk> TextureVk::from_wrapping(const TextureDescriptor& _de
                                                     VkImage image,
                                                     VkDeviceMemory image_memory,
                                                     VkImageView image_view,
-                                                    VkSampler sampler,
                                                     TextureLayout layout) {
     auto texture_vk = std::make_shared<TextureVk>(nullptr, _desc);
 
@@ -43,7 +40,6 @@ std::shared_ptr<TextureVk> TextureVk::from_wrapping(const TextureDescriptor& _de
     texture_vk->vk_image = image;
     texture_vk->vk_image_memory = image_memory;
     texture_vk->vk_image_view = image_view;
-    texture_vk->vk_sampler = sampler;
     texture_vk->layout = layout;
 
     return texture_vk;
@@ -55,10 +51,6 @@ VkImage TextureVk::get_image() const {
 
 VkImageView TextureVk::get_image_view() const {
     return vk_image_view;
-}
-
-VkSampler TextureVk::get_sampler() const {
-    return vk_sampler;
 }
 
 TextureLayout TextureVk::get_layout() const {

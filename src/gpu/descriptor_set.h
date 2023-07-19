@@ -26,6 +26,7 @@ struct Descriptor {
     /// Only one of these is used.
     std::shared_ptr<Buffer> buffer;
     std::shared_ptr<Texture> texture;
+    std::shared_ptr<Sampler> sampler;
 
     static Descriptor uniform(uint32_t binding,
                               ShaderStage stage,
@@ -35,14 +36,15 @@ struct Descriptor {
             throw std::runtime_error(std::string("Mismatched buffer type when creating a descriptor!"));
         }
 
-        return {DescriptorType::UniformBuffer, stage, binding, binding_name, buffer, nullptr};
+        return {DescriptorType::UniformBuffer, stage, binding, binding_name, buffer, nullptr, nullptr};
     }
 
-    static Descriptor sampler(uint32_t binding,
+    static Descriptor sampled(uint32_t binding,
                               ShaderStage stage,
                               const std::string& binding_name,
-                              const std::shared_ptr<Texture>& texture = nullptr) {
-        return {DescriptorType::Sampler, stage, binding, binding_name, nullptr, texture};
+                              const std::shared_ptr<Texture>& texture = nullptr,
+                              const std::shared_ptr<Sampler>& sampler = nullptr) {
+        return {DescriptorType::Sampler, stage, binding, binding_name, nullptr, texture, sampler};
     }
 
     static Descriptor storage(uint32_t binding, ShaderStage stage, const std::shared_ptr<Buffer>& buffer = nullptr) {
@@ -50,7 +52,7 @@ struct Descriptor {
             throw std::runtime_error(std::string("Mismatched buffer type when creating a descriptor!"));
         }
 
-        return {DescriptorType::StorageBuffer, stage, binding, "", buffer, nullptr};
+        return {DescriptorType::StorageBuffer, stage, binding, "", buffer, nullptr, nullptr};
     }
 
     static Descriptor image(uint32_t binding,

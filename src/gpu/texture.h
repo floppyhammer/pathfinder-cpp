@@ -22,6 +22,30 @@ struct TextureDescriptor {
     }
 };
 
+struct SamplerDescriptor {
+    SamplerFilter mag_filter;
+    SamplerFilter min_filter;
+    SamplerAddressMode address_mode_u;
+    SamplerAddressMode address_mode_v;
+
+    inline bool operator==(const SamplerDescriptor& rhs) const {
+        return mag_filter == rhs.mag_filter && min_filter == rhs.min_filter && address_mode_u == rhs.address_mode_u &&
+               address_mode_v == rhs.address_mode_v;
+    }
+};
+
+class Sampler {
+public:
+    Sampler(SamplerDescriptor _descriptor) : descriptor(_descriptor) {}
+
+    SamplerDescriptor get_descriptor() const {
+        return descriptor;
+    }
+
+protected:
+    SamplerDescriptor descriptor;
+};
+
 class Texture {
 public:
     explicit Texture(TextureDescriptor _desc) : desc(std::move(_desc)) {}

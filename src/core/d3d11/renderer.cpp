@@ -138,6 +138,8 @@ RendererD3D11::RendererD3D11(const std::shared_ptr<Pathfinder::Device> &device) 
 }
 
 void RendererD3D11::set_up_pipelines() {
+    auto default_sampler = get_default_sampler();
+
     #ifdef PATHFINDER_USE_VULKAN
     const auto dice_source = std::vector<char>(std::begin(dice_comp_spv), std::end(dice_comp_spv));
     const auto bound_source = std::vector<char>(std::begin(bound_comp_spv), std::end(bound_comp_spv));
@@ -212,7 +214,11 @@ void RendererD3D11::set_up_pipelines() {
         Descriptor::storage(1, ShaderStage::Compute), // Read only.
         Descriptor::storage(2, ShaderStage::Compute), // Read only.
         Descriptor::image(3, ShaderStage::Compute, "uDest", allocator->get_texture(mask_texture_id)),
-        Descriptor::sampler(4, ShaderStage::Compute, "uAreaLUT", allocator->get_texture(area_lut_texture_id)),
+        Descriptor::sampled(4,
+                            ShaderStage::Compute,
+                            "uAreaLUT",
+                            allocator->get_texture(area_lut_texture_id),
+                            default_sampler),
         Descriptor::uniform(5, ShaderStage::Compute, "bUniform", allocator->get_buffer(fill_ub_id)),
     });
 
@@ -220,14 +226,19 @@ void RendererD3D11::set_up_pipelines() {
     tile_descriptor_set->add_or_update({
         Descriptor::storage(0, ShaderStage::Compute),
         Descriptor::storage(1, ShaderStage::Compute),
-        Descriptor::sampler(2, ShaderStage::Compute, "uTextureMetadata"),
-        Descriptor::sampler(3, ShaderStage::Compute, "uZBuffer"),
-        Descriptor::sampler(4, ShaderStage::Compute, "uColorTexture0"),
-        Descriptor::sampler(5, ShaderStage::Compute, "uMaskTexture0", allocator->get_texture(mask_texture_id)),
-        Descriptor::sampler(6,
+        Descriptor::sampled(2, ShaderStage::Compute, "uTextureMetadata"),
+        Descriptor::sampled(3, ShaderStage::Compute, "uZBuffer"),
+        Descriptor::sampled(4, ShaderStage::Compute, "uColorTexture0"),
+        Descriptor::sampled(5,
+                            ShaderStage::Compute,
+                            "uMaskTexture0",
+                            allocator->get_texture(mask_texture_id),
+                            default_sampler),
+        Descriptor::sampled(6,
                             ShaderStage::Compute,
                             "uGammaLUT",
-                            allocator->get_texture(dummy_texture_id)), // Unused binding.
+                            allocator->get_texture(dummy_texture_id),
+                            default_sampler), // Unused binding.
         Descriptor::image(7, ShaderStage::Compute, "uDestImage"),
         Descriptor::uniform(8, ShaderStage::Compute, "bConstantsUniform", allocator->get_buffer(constants_ub_id)),
         Descriptor::uniform(9, ShaderStage::Compute, "bUniform0", allocator->get_buffer(tile_ub0_id)),
@@ -332,10 +343,14 @@ void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
 
     std::shared_ptr<Texture> color_texture = allocator->get_texture(dummy_texture_id);
 
+    auto default_sampler = get_default_sampler();
+    auto color_texture_sampler = default_sampler;
+
     if (color_texture_info) {
         auto color_texture_page = pattern_texture_pages[color_texture_info->page_id];
         if (color_texture_page) {
             color_texture = allocator->get_framebuffer(color_texture_page->framebuffer_id)->get_texture();
+            color_texture_sampler = get_or_create_sampler(color_texture_info->sampling_flags);
 
             if (color_texture == nullptr) {
                 Logger::error("Failed to obtain color texture!", "RendererD3D11");
@@ -372,9 +387,17 @@ void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
         Descriptor::storage(0, ShaderStage::Compute, allocator->get_buffer(tiles_d3d11_buffer_id)),
         // Read only.
         Descriptor::storage(1, ShaderStage::Compute, allocator->get_buffer(first_tile_map_buffer_id)),
-        Descriptor::sampler(2, ShaderStage::Compute, "uTextureMetadata", allocator->get_texture(metadata_texture_id)),
-        Descriptor::sampler(3, ShaderStage::Compute, "uZBuffer", allocator->get_texture(dummy_texture_id)),
-        Descriptor::sampler(4, ShaderStage::Compute, "uColorTexture0", color_texture),
+        Descriptor::sampled(2,
+                            ShaderStage::Compute,
+                            "uTextureMetadata",
+                            allocator->get_texture(metadata_texture_id),
+                            default_sampler),
+        Descriptor::sampled(3,
+                            ShaderStage::Compute,
+                            "uZBuffer",
+                            allocator->get_texture(dummy_texture_id),
+                            default_sampler),
+        Descriptor::sampled(4, ShaderStage::Compute, "uColorTexture0", color_texture, color_texture_sampler),
         Descriptor::image(7, ShaderStage::Compute, "uDestImage", target_texture),
     });
 

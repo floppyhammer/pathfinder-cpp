@@ -112,11 +112,12 @@ void DescriptorSetVk::update_vk_descriptor_set(VkDevice _device, VkDescriptorSet
                 }
 
                 auto texture_vk = static_cast<TextureVk *>(descriptor.texture.get());
+                auto sampler_vk = static_cast<SamplerVk *>(descriptor.sampler.get());
 
                 image_info.imageView = texture_vk->get_image_view();
 
                 if (descriptor.type == DescriptorType::Sampler) {
-                    image_info.sampler = texture_vk->get_sampler();
+                    image_info.sampler = sampler_vk->get_sampler();
                     image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                     descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                 } else if (descriptor.type == DescriptorType::Image) {
