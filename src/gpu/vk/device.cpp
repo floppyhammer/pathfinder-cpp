@@ -418,12 +418,46 @@ std::shared_ptr<Texture> DeviceVk::create_texture(const TextureDescriptor &desc,
     texture_vk->vk_image_view =
         create_vk_image_view(texture_vk->vk_image, to_vk_texture_format(desc.format), VK_IMAGE_ASPECT_COLOR_BIT);
 
-    // Create sampler.
-    texture_vk->vk_sampler = create_vk_sampler();
-
     texture_vk->set_label(label);
 
     return texture_vk;
+}
+
+std::shared_ptr<Sampler> DeviceVk::create_sampler(SamplerDescriptor descriptor) {
+    VkSamplerCreateInfo sampler_info{};
+    sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    sampler_info.magFilter = to_vk_sampler_filter(descriptor.mag_filter);
+    sampler_info.minFilter = to_vk_sampler_filter(descriptor.min_filter);
+
+    // Noteable: It has to be CLAMP_TO_EDGE. Artifacts will show for both REPEAT and MIRRORED_REPEAT.
+    sampler_info.addressModeU = to_vk_sampler_address_mode(descriptor.address_mode_u);
+    sampler_info.addressModeV = to_vk_sampler_address_mode(descriptor.address_mode_v);
+    sampler_info.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+
+    // Has to be disabled to prevent artifacts.
+    sampler_info.anisotropyEnable = VK_FALSE;
+
+    // The borderColor field specifies which color is returned when sampling beyond the image with clamp to border
+    // addressing mode.
+    sampler_info.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+
+    sampler_info.unnormalizedCoordinates = VK_FALSE;
+
+    sampler_info.compareEnable = VK_FALSE;
+    sampler_info.compareOp = VK_COMPARE_OP_ALWAYS;
+
+    // All of these fields apply to mipmapping.
+    sampler_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    sampler_info.mipLodBias = 0.0f;
+    sampler_info.minLod = 0.0f;
+    sampler_info.maxLod = 0.0f;
+
+    VkSampler sampler;
+    if (vkCreateSampler(device, &sampler_info, nullptr, &sampler) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to create texture sampler!");
+    }
+
+    return std::make_shared<SamplerVk>(descriptor, sampler, device);
 }
 
 std::shared_ptr<CommandBuffer> DeviceVk::create_command_buffer(const std::string &_label) {

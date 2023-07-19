@@ -164,7 +164,29 @@ void CommandBufferGl::finish() {
                                 glUniform1i(glGetUniformLocation(program_id, binding_name.c_str()), binding_point);
                             }
                             glActiveTexture(GL_TEXTURE0 + binding_point);
+
+                            auto sampler_descriptor = descriptor.sampler->get_descriptor();
+
                             glBindTexture(GL_TEXTURE_2D, texture_gl->get_texture_id());
+
+                            // Set texture sampler.
+                            // --------------------------------------------------------------
+                            // Set wrapping parameters.
+                            glTexParameteri(GL_TEXTURE_2D,
+                                            GL_TEXTURE_WRAP_S,
+                                            to_gl_sampler_address_mode(sampler_descriptor.address_mode_u));
+                            glTexParameteri(GL_TEXTURE_2D,
+                                            GL_TEXTURE_WRAP_T,
+                                            to_gl_sampler_address_mode(sampler_descriptor.address_mode_v));
+
+                            // Set filtering parameters.
+                            glTexParameteri(GL_TEXTURE_2D,
+                                            GL_TEXTURE_MIN_FILTER,
+                                            to_gl_sampler_filter(sampler_descriptor.min_filter));
+                            glTexParameteri(GL_TEXTURE_2D,
+                                            GL_TEXTURE_MAG_FILTER,
+                                            to_gl_sampler_filter(sampler_descriptor.mag_filter));
+                            // --------------------------------------------------------------
                         } break;
     #ifdef PATHFINDER_USE_D3D11
                         case DescriptorType::StorageBuffer: {

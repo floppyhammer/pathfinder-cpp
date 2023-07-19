@@ -37,6 +37,8 @@ private:
     std::shared_ptr<Buffer> vertex_buffer, uniform_buffer;
 
     std::shared_ptr<DescriptorSet> descriptor_set;
+
+    std::shared_ptr<Sampler> sampler;
 };
 
 #endif // PATHFINDER_DEMO_TEXTURE_RECT_H

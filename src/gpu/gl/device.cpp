@@ -31,6 +31,10 @@ std::shared_ptr<Texture> DeviceGl::create_texture(const TextureDescriptor &desc,
     return texture_gl;
 }
 
+std::shared_ptr<Sampler> DeviceGl::create_sampler(SamplerDescriptor descriptor) {
+    return std::make_shared<Sampler>(descriptor);
+}
+
 std::shared_ptr<CommandBuffer> DeviceGl::create_command_buffer(const std::string &label) {
     return std::make_shared<CommandBufferGl>();
 }

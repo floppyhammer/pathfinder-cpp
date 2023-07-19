@@ -74,6 +74,32 @@ inline VkDescriptorType to_vk_descriptor_type(DescriptorType descriptor_type) {
     }
 }
 
+inline VkFilter to_vk_sampler_filter(SamplerFilter filter) {
+    switch (filter) {
+        case SamplerFilter::Nearest:
+            return VK_FILTER_NEAREST;
+        case SamplerFilter::Linear:
+            return VK_FILTER_LINEAR;
+        default:
+            abort();
+    }
+}
+
+inline VkSamplerAddressMode to_vk_sampler_address_mode(SamplerAddressMode address_mode) {
+    switch (address_mode) {
+        case SamplerAddressMode::Repeat:
+            return VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        case SamplerAddressMode::MirroredRepeat:
+            return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+        case SamplerAddressMode::ClampToEdge:
+            return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        case SamplerAddressMode::ClampToBorder:
+            return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+        default:
+            abort();
+    }
+}
+
 const std::array<VkFormat, 32> vk_formats = {
     VK_FORMAT_R8_SINT,    VK_FORMAT_R8G8_SINT,     VK_FORMAT_R8G8B8_SINT,      VK_FORMAT_R8G8B8A8_SINT,
     VK_FORMAT_R8_UINT,    VK_FORMAT_R8G8_UINT,     VK_FORMAT_R8G8B8_UINT,      VK_FORMAT_R8G8B8A8_UINT,

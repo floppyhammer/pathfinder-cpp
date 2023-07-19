@@ -25,14 +25,11 @@ public:
                                                     VkImage image,
                                                     VkDeviceMemory image_memory,
                                                     VkImageView image_view,
-                                                    VkSampler sampler,
                                                     TextureLayout layout);
 
     VkImage get_image() const;
 
     VkImageView get_image_view() const;
-
-    VkSampler get_sampler() const;
 
     TextureLayout get_layout() const;
 
@@ -50,15 +47,33 @@ private:
     /// Thin wrapper over image.
     VkImageView vk_image_view{};
 
-    /// How image should be filtered.
-    VkSampler vk_sampler{};
-
     /// For releasing resources in destructor.
     /// This is null for wrapped external textures.
     VkDevice vk_device{};
 
     /// The initial layout must be undefined.
     TextureLayout layout = TextureLayout::Undefined;
+};
+
+class SamplerVk : public Sampler {
+public:
+    SamplerVk(SamplerDescriptor descriptor, VkSampler _vk_sampler, VkDevice _vk_device) : Sampler(descriptor) {
+        vk_sampler = _vk_sampler;
+        vk_device = _vk_device;
+    }
+
+    ~SamplerVk() {
+        vkDestroySampler(vk_device, vk_sampler, nullptr);
+    }
+
+    VkSampler get_sampler() const {
+        return vk_sampler;
+    }
+
+private:
+    VkSampler vk_sampler{};
+
+    VkDevice vk_device{};
 };
 
 } // namespace Pathfinder

@@ -129,6 +129,51 @@ void Renderer::end_scene() {
     allocator->purge_if_needed();
 }
 
+std::shared_ptr<Sampler> Renderer::get_or_create_sampler(TextureSamplingFlags sampling_flags) {
+    SamplerDescriptor descriptor{};
+
+    if (sampling_flags.contains(TextureSamplingFlags::REPEAT_U)) {
+        descriptor.address_mode_u = SamplerAddressMode::Repeat;
+    } else {
+        descriptor.address_mode_u = SamplerAddressMode::ClampToEdge;
+    }
+    if (sampling_flags.contains(TextureSamplingFlags::REPEAT_V)) {
+        descriptor.address_mode_v = SamplerAddressMode::Repeat;
+    } else {
+        descriptor.address_mode_v = SamplerAddressMode::ClampToEdge;
+    }
+    if (sampling_flags.contains(TextureSamplingFlags::NEAREST_MAG)) {
+        descriptor.mag_filter = SamplerFilter::Nearest;
+    } else {
+        descriptor.mag_filter = SamplerFilter::Linear;
+    }
+    if (sampling_flags.contains(TextureSamplingFlags::NEAREST_MIN)) {
+        descriptor.min_filter = SamplerFilter::Nearest;
+    } else {
+        descriptor.min_filter = SamplerFilter::Linear;
+    }
+
+    for (auto &s : samplers) {
+        if (s->get_descriptor() == descriptor) {
+            return s;
+        }
+    }
+
+    auto new_sampler = device->create_sampler(descriptor);
+    samplers.push_back(new_sampler);
+
+    return new_sampler;
+}
+
+std::shared_ptr<Sampler> Renderer::get_default_sampler() {
+    TextureSamplingFlags flags;
+
+    // Note: It has to be CLAMP_TO_EDGE. Artifacts will show for both REPEAT and MIRRORED_REPEAT.
+    flags.value = 0;
+
+    return get_or_create_sampler(TextureSamplingFlags{});
+}
+
 void Renderer::upload_texture_metadata(const std::vector<TextureMetadataEntry> &metadata) {
     auto padded_texel_size =
         alignup_i32((int32_t)metadata.size(), TEXTURE_METADATA_ENTRIES_PER_ROW) * TEXTURE_METADATA_TEXTURE_WIDTH * 4;

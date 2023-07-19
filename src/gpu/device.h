@@ -24,6 +24,8 @@ public:
 
     virtual std::shared_ptr<Texture> create_texture(const TextureDescriptor &desc, const std::string &label) = 0;
 
+    virtual std::shared_ptr<Sampler> create_sampler(SamplerDescriptor descriptor) = 0;
+
     virtual std::shared_ptr<CommandBuffer> create_command_buffer(const std::string &label) = 0;
 
     virtual std::shared_ptr<DescriptorSet> create_descriptor_set() = 0;

@@ -55,6 +55,32 @@ inline GLint to_gl_texture_format(TextureFormat texture_format) {
     }
 }
 
+inline GLint to_gl_sampler_filter(SamplerFilter filter) {
+    switch (filter) {
+        case SamplerFilter::Nearest:
+            return GL_NEAREST;
+        case SamplerFilter::Linear:
+            return GL_LINEAR;
+        default:
+            abort();
+    }
+}
+
+inline GLint to_gl_sampler_address_mode(SamplerAddressMode address_mode) {
+    switch (address_mode) {
+        case SamplerAddressMode::Repeat:
+            return GL_REPEAT;
+        case SamplerAddressMode::MirroredRepeat:
+            return GL_MIRRORED_REPEAT;
+        case SamplerAddressMode::ClampToEdge:
+            return GL_CLAMP_TO_EDGE;
+        case SamplerAddressMode::ClampToBorder:
+            return GL_CLAMP_TO_BORDER;
+        default:
+            abort();
+    }
+}
+
 } // namespace Pathfinder
 
 #endif

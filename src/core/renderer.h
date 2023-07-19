@@ -82,6 +82,10 @@ public:
     /// `swap_buffers()`, `present()`, or a similar method that your windowing library offers.
     void end_scene();
 
+    std::shared_ptr<Sampler> get_or_create_sampler(TextureSamplingFlags sampling_flags);
+
+    std::shared_ptr<Sampler> get_default_sampler();
+
     std::shared_ptr<Device> device;
 
 protected:
@@ -113,6 +117,8 @@ protected:
     std::vector<TextureLocation> render_target_locations;
     std::vector<std::shared_ptr<PatternTexturePage>> pattern_texture_pages;
     // -----------------------------------------------
+
+    std::vector<std::shared_ptr<Sampler>> samplers;
 };
 
 } // namespace Pathfinder

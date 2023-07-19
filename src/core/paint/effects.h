@@ -70,7 +70,7 @@ struct PaintFilter {
 
     RadialGradient gradient_filter; // For RadialGradient type.
 
-    PatternFilter pattern_filter; // For PatternFilter type.
+    PatternFilter pattern_filter;   // For PatternFilter type.
 };
 
 /// Blend modes that can be applied to individual paths.
@@ -290,12 +290,16 @@ inline bool is_blend_mode_destructive(BlendMode blend_mode) {
 }
 
 struct TextureSamplingFlags {
-    uint8_t value = 0;
-
     static const uint8_t REPEAT_U = 0x01;
     static const uint8_t REPEAT_V = 0x02;
     static const uint8_t NEAREST_MIN = 0x04;
     static const uint8_t NEAREST_MAG = 0x08;
+
+    uint8_t value = 0;
+
+    bool contains(uint8_t flags) const {
+        return value & flags;
+    }
 };
 
 } // namespace Pathfinder

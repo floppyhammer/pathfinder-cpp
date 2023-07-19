@@ -211,6 +211,18 @@ inline DataType texture_format_to_data_type(TextureFormat format) {
     }
 }
 
+enum class SamplerAddressMode {
+    Repeat,
+    MirroredRepeat,
+    ClampToEdge,
+    ClampToBorder,
+};
+
+enum class SamplerFilter {
+    Nearest,
+    Linear,
+};
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_GPU_DATA_H

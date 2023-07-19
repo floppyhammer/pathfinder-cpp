@@ -29,6 +29,8 @@ TextureRect::TextureRect(const std::shared_ptr<Device> &_device, const std::shar
         device->create_buffer({BufferType::Uniform, 16 * sizeof(float), MemoryProperty::HostVisibleAndCoherent},
                               "TextureRect uniform buffer");
 
+    sampler = device->create_sampler(SamplerDescriptor{});
+
     auto cmd_buffer = device->create_command_buffer("Upload TextureRect vertex buffer");
     cmd_buffer->upload_to_buffer(vertex_buffer, 0, sizeof(vertices), (void *)vertices);
     cmd_buffer->submit_and_wait();
@@ -56,7 +58,7 @@ TextureRect::TextureRect(const std::shared_ptr<Device> &_device, const std::shar
         descriptor_set = device->create_descriptor_set();
         descriptor_set->add_or_update({
             Descriptor::uniform(0, ShaderStage::Vertex, "bUniform", uniform_buffer),
-            Descriptor::sampler(1, ShaderStage::Fragment, "uTexture"),
+            Descriptor::sampled(1, ShaderStage::Fragment, "uTexture"),
         });
 
         pipeline = device->create_render_pipeline(vert_source,
@@ -73,7 +75,7 @@ void TextureRect::set_texture(const std::shared_ptr<Texture> &new_texture) {
     texture = new_texture;
 
     descriptor_set->add_or_update({
-        Descriptor::sampler(1, ShaderStage::Fragment, "uTexture", texture),
+        Descriptor::sampled(1, ShaderStage::Fragment, "uTexture", texture, sampler),
     });
 
     size = texture->get_size().to_f32();

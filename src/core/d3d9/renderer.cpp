@@ -115,7 +115,11 @@ void RendererD3D9::set_up_pipelines() {
         fill_descriptor_set = device->create_descriptor_set();
         fill_descriptor_set->add_or_update({
             Descriptor::uniform(0, ShaderStage::Vertex, "bConstantSizes", allocator->get_buffer(constants_ub_id)),
-            Descriptor::sampler(1, ShaderStage::Fragment, "uAreaLUT", allocator->get_texture(area_lut_texture_id)),
+            Descriptor::sampled(1,
+                                ShaderStage::Fragment,
+                                "uAreaLUT",
+                                allocator->get_texture(area_lut_texture_id),
+                                get_default_sampler()),
         });
 
         fill_pipeline = device->create_render_pipeline(fill_vert_source,
@@ -169,8 +173,8 @@ void RendererD3D9::set_up_pipelines() {
         // Set descriptor set.
         tile_descriptor_set = device->create_descriptor_set();
         tile_descriptor_set->add_or_update({
-            Descriptor::sampler(0, ShaderStage::Vertex, "uTextureMetadata"),
-            Descriptor::sampler(1, ShaderStage::Vertex, "uZBuffer"),
+            Descriptor::sampled(0, ShaderStage::Vertex, "uTextureMetadata"),
+            Descriptor::sampled(1, ShaderStage::Vertex, "uZBuffer"),
             Descriptor::uniform(2, ShaderStage::Vertex, "bTransform", allocator->get_buffer(tile_transform_ub_id)),
             Descriptor::uniform(3,
                                 ShaderStage::VertexAndFragment,
@@ -180,15 +184,24 @@ void RendererD3D9::set_up_pipelines() {
                                 ShaderStage::VertexAndFragment,
                                 "bConstantSizes",
                                 allocator->get_buffer(constants_ub_id)),
-            Descriptor::sampler(5, ShaderStage::Fragment, "uColorTexture0"),
-            Descriptor::sampler(6,
+            Descriptor::sampled(5, ShaderStage::Fragment, "uColorTexture0"),
+            Descriptor::sampled(6,
                                 ShaderStage::Fragment,
                                 "uMaskTexture0",
-                                allocator->get_framebuffer(mask_framebuffer_id)->get_texture()),
+                                allocator->get_framebuffer(mask_framebuffer_id)->get_texture(),
+                                get_default_sampler()),
             // Unused binding.
-            Descriptor::sampler(7, ShaderStage::Fragment, "uDestTexture", allocator->get_texture(dummy_texture_id)),
+            Descriptor::sampled(7,
+                                ShaderStage::Fragment,
+                                "uDestTexture",
+                                allocator->get_texture(dummy_texture_id),
+                                get_default_sampler()),
             // Unused binding.
-            Descriptor::sampler(8, ShaderStage::Fragment, "uGammaLUT", allocator->get_texture(dummy_texture_id)),
+            Descriptor::sampled(8,
+                                ShaderStage::Fragment,
+                                "uGammaLUT",
+                                allocator->get_texture(dummy_texture_id),
+                                get_default_sampler()),
         });
 
         tile_pipeline = device->create_render_pipeline(tile_vert_source,
@@ -233,10 +246,11 @@ void RendererD3D9::create_tile_clip_copy_pipeline() {
     tile_clip_copy_descriptor_set = device->create_descriptor_set();
     tile_clip_copy_descriptor_set->add_or_update({
         Descriptor::uniform(0, ShaderStage::Vertex, "bConstantSizes", allocator->get_buffer(constants_ub_id)),
-        Descriptor::sampler(1,
+        Descriptor::sampled(1,
                             ShaderStage::Fragment,
                             "uSrc",
-                            allocator->get_framebuffer(mask_framebuffer_id)->get_texture()),
+                            allocator->get_framebuffer(mask_framebuffer_id)->get_texture(),
+                            get_default_sampler()),
     });
 
     // We have to disable blend for tile clip copy.
@@ -281,7 +295,7 @@ void RendererD3D9::create_tile_clip_combine_pipeline() {
     tile_clip_combine_descriptor_set = device->create_descriptor_set();
     tile_clip_combine_descriptor_set->add_or_update({
         Descriptor::uniform(0, ShaderStage::Vertex, "bConstantSizes", allocator->get_buffer(constants_ub_id)),
-        Descriptor::sampler(1, ShaderStage::Fragment, "uSrc", nullptr),
+        Descriptor::sampled(1, ShaderStage::Fragment, "uSrc", nullptr, nullptr),
     });
 
     // We have to disable blend for tile clip combine.
@@ -459,7 +473,11 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info,
     // Combine clip tiles.
     {
         tile_clip_combine_descriptor_set->add_or_update({
-            Descriptor::sampler(1, ShaderStage::Fragment, "uSrc", mask_temp_framebuffer->get_texture()),
+            Descriptor::sampled(1,
+                                ShaderStage::Fragment,
+                                "uSrc",
+                                mask_temp_framebuffer->get_texture(),
+                                get_default_sampler()),
         });
 
         cmd_buffer->begin_render_pass(mask_render_pass_load, allocator->get_framebuffer(mask_framebuffer_id), ColorF());
@@ -515,6 +533,9 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
     auto z_buffer_texture = allocator->get_texture(z_buffer_texture_id);
     auto color_texture = allocator->get_texture(dummy_texture_id);
 
+    auto default_sampler = get_default_sampler();
+    auto color_texture_sampler = default_sampler;
+
     // Update uniform buffers.
     {
         // MVP (with only the model matrix).
@@ -534,6 +555,7 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
             auto color_texture_page = pattern_texture_pages[color_texture_info->page_id];
             if (color_texture_page) {
                 color_texture = allocator->get_framebuffer(color_texture_page->framebuffer_id)->get_texture();
+                color_texture_sampler = get_or_create_sampler(color_texture_info->sampling_flags);
 
                 if (color_texture == nullptr) {
                     Logger::error("Failed to obtain color texture!", "RendererD3D9");
@@ -557,9 +579,13 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
 
     // Update descriptor set.
     tile_descriptor_set->add_or_update({
-        Descriptor::sampler(0, ShaderStage::Vertex, "uTextureMetadata", allocator->get_texture(metadata_texture_id)),
-        Descriptor::sampler(1, ShaderStage::Vertex, "uZBuffer", z_buffer_texture),
-        Descriptor::sampler(5, ShaderStage::Fragment, "uColorTexture0", color_texture),
+        Descriptor::sampled(0,
+                            ShaderStage::Vertex,
+                            "uTextureMetadata",
+                            allocator->get_texture(metadata_texture_id),
+                            default_sampler),
+        Descriptor::sampled(1, ShaderStage::Vertex, "uZBuffer", z_buffer_texture, default_sampler),
+        Descriptor::sampled(5, ShaderStage::Fragment, "uColorTexture0", color_texture, color_texture_sampler),
     });
 
     cmd_buffer->bind_render_pipeline(tile_pipeline);
