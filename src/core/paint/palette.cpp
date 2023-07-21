@@ -289,13 +289,14 @@ PaintLocationsInfo Palette::assign_paint_locations(const std::shared_ptr<PaintTe
                         // Leave a pixel of border on the side.
                         auto allocation_mode = AllocationMode::OwnPage;
                         location = allocator.allocate(image->size + border * 2, allocation_mode);
+                        location.rect = location.rect.contract(border);
                         cached_images[image_hash] = location;
                     }
 
                     image_texel_info.push_back(ImageTexelInfo{
                         TextureLocation{
                             location.page,
-                            location.rect.contract(border),
+                            location.rect,
                         },
                         std::make_shared<std::vector<ColorU>>(image->pixels),
                     });
