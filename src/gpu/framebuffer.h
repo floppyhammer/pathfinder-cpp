@@ -20,6 +20,8 @@ public:
     /// Render to a texture.
     explicit Framebuffer(const std::shared_ptr<Texture>& _texture) : size(_texture->get_size()), texture(_texture) {}
 
+    virtual ~Framebuffer() = default;
+
     inline std::shared_ptr<Texture> get_texture() const {
         return texture;
     }

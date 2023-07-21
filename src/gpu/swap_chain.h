@@ -12,6 +12,8 @@ class SwapChain {
 public:
     explicit SwapChain(Vec2I _size) : size(_size) {}
 
+    virtual ~SwapChain() = default;
+
     /// Swap chain framebuffer size.
     Vec2I size;
 

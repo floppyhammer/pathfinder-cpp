@@ -17,6 +17,8 @@ public:
                    std::string _label)
         : attribute_descriptions(_attribute_descriptions), blend_state(_blend_state), label(std::move(_label)){};
 
+    virtual ~RenderPipeline() = default;
+
     inline const std::vector<VertexInputAttributeDescription>& get_attribute_descriptions() const {
         return attribute_descriptions;
     }

@@ -22,8 +22,8 @@ void CommandBufferGl::finish() {
                 assert(compute_pipeline == nullptr);
 
                 auto &args = cmd.args.begin_render_pass;
-                auto render_pass_gl = static_cast<RenderPassGl *>(args.render_pass);
-                auto framebuffer_gl = static_cast<FramebufferGl *>(args.framebuffer);
+                auto render_pass_gl = dynamic_cast<RenderPassGl *>(args.render_pass);
+                auto framebuffer_gl = dynamic_cast<FramebufferGl *>(args.framebuffer);
 
                 glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_gl->get_gl_framebuffer());
 
@@ -38,7 +38,7 @@ void CommandBufferGl::finish() {
             } break;
             case CommandType::BindRenderPipeline: {
                 auto &args = cmd.args.bind_render_pipeline;
-                auto pipeline_gl = static_cast<RenderPipelineGl *>(args.pipeline);
+                auto pipeline_gl = dynamic_cast<RenderPipelineGl *>(args.pipeline);
 
                 auto blend_state = pipeline_gl->get_blend_state();
 
@@ -63,7 +63,7 @@ void CommandBufferGl::finish() {
 
                 auto &args = cmd.args.bind_vertex_buffers;
 
-                auto pipeline_gl = static_cast<RenderPipelineGl *>(render_pipeline);
+                auto pipeline_gl = dynamic_cast<RenderPipelineGl *>(render_pipeline);
 
                 auto buffer_count = args.buffer_count;
                 auto vertex_buffers = args.buffers;
@@ -72,7 +72,8 @@ void CommandBufferGl::finish() {
 
                 auto &attribute_descriptions = pipeline_gl->get_attribute_descriptions();
 
-                auto last_vbo = 0;
+                uint32_t last_vbo = 0;
+
                 for (int location = 0; location < attribute_descriptions.size(); location++) {
                     auto &attrib = attribute_descriptions[location];
 
@@ -81,7 +82,7 @@ void CommandBufferGl::finish() {
                         return;
                     }
 
-                    auto buffer = static_cast<BufferGl *>(vertex_buffers[attrib.binding]);
+                    auto buffer = dynamic_cast<BufferGl *>(vertex_buffers[attrib.binding]);
                     auto vbo = buffer->get_handle();
 
                     if (location == 0) {
@@ -105,7 +106,7 @@ void CommandBufferGl::finish() {
                             glVertexAttribIPointer(location,
                                                    attrib.size,
                                                    to_gl_data_type(attrib.type),
-                                                   attrib.stride,
+                                                   (GLsizei)attrib.stride,
                                                    (void *)attrib.offset);
                         } break;
                         case DataType::f16:
@@ -114,7 +115,7 @@ void CommandBufferGl::finish() {
                                                   attrib.size,
                                                   to_gl_data_type(attrib.type),
                                                   GL_FALSE,
-                                                  attrib.stride,
+                                                  (GLsizei)attrib.stride,
                                                   (void *)attrib.offset);
                         } break;
                     }
@@ -135,10 +136,10 @@ void CommandBufferGl::finish() {
 
                 uint32_t program_id;
                 if (render_pipeline != nullptr) {
-                    auto pipeline_gl = static_cast<RenderPipelineGl *>(render_pipeline);
+                    auto pipeline_gl = dynamic_cast<RenderPipelineGl *>(render_pipeline);
                     program_id = pipeline_gl->get_program()->get_id();
                 } else {
-                    auto pipeline_gl = static_cast<ComputePipelineGl *>(compute_pipeline);
+                    auto pipeline_gl = dynamic_cast<ComputePipelineGl *>(compute_pipeline);
                     program_id = pipeline_gl->get_program()->get_id();
                 }
 
@@ -151,17 +152,18 @@ void CommandBufferGl::finish() {
 
                     switch (descriptor.type) {
                         case DescriptorType::UniformBuffer: {
-                            auto buffer_gl = static_cast<BufferGl *>(descriptor.buffer.get());
+                            auto buffer_gl = dynamic_cast<BufferGl *>(descriptor.buffer.get());
 
                             unsigned int ubo_index = glGetUniformBlockIndex(program_id, binding_name.c_str());
                             glUniformBlockBinding(program_id, ubo_index, binding_point);
                             glBindBufferBase(GL_UNIFORM_BUFFER, binding_point, buffer_gl->get_handle());
                         } break;
                         case DescriptorType::Sampler: {
-                            auto texture_gl = static_cast<TextureGl *>(descriptor.texture.get());
+                            auto texture_gl = dynamic_cast<TextureGl *>(descriptor.texture.get());
 
                             if (!binding_name.empty()) {
-                                glUniform1i(glGetUniformLocation(program_id, binding_name.c_str()), binding_point);
+                                glUniform1i(glGetUniformLocation(program_id, binding_name.c_str()),
+                                            (GLint)binding_point);
                             }
                             glActiveTexture(GL_TEXTURE0 + binding_point);
 
@@ -236,16 +238,16 @@ void CommandBufferGl::finish() {
             case CommandType::BindComputePipeline: {
                 auto &args = cmd.args.bind_compute_pipeline;
 
-                auto pipeline_gl = static_cast<ComputePipelineGl *>(args.pipeline);
+                auto pipeline_gl = dynamic_cast<ComputePipelineGl *>(args.pipeline);
 
                 pipeline_gl->get_program()->use();
 
                 compute_pipeline = args.pipeline;
             } break;
             case CommandType::Dispatch: {
+    #ifdef PATHFINDER_USE_D3D11
                 auto &args = cmd.args.dispatch;
 
-    #ifdef PATHFINDER_USE_D3D11
                 // Max global (total) work group counts x:2147483647 y:65535 z:65535.
                 // Max local (in one shader) work group sizes x:1536 y:1024 z:64.
                 glDispatchCompute(args.group_size_x, args.group_size_y, args.group_size_z);
@@ -254,9 +256,9 @@ void CommandBufferGl::finish() {
         #ifdef PATHFINDER_DEBUG
                 glFinish();
         #endif
-    #endif
 
                 gl_check_error("Dispatch");
+    #endif
             } break;
             case CommandType::EndComputePass: {
                 compute_pipeline = nullptr;
@@ -274,15 +276,15 @@ void CommandBufferGl::finish() {
             case CommandType::WriteTexture: {
                 auto &args = cmd.args.write_texture;
 
-                auto texture_gl = static_cast<TextureGl *>(args.texture);
+                auto texture_gl = dynamic_cast<TextureGl *>(args.texture);
 
                 glBindTexture(GL_TEXTURE_2D, texture_gl->get_texture_id());
                 glTexSubImage2D(GL_TEXTURE_2D,
                                 0,
-                                args.offset_x,
-                                args.offset_y,
-                                args.width,
-                                args.height,
+                                (GLint)args.offset_x,
+                                (GLint)args.offset_y,
+                                (GLint)args.width,
+                                (GLint)args.height,
                                 GL_RGBA,
                                 to_gl_data_type(texture_format_to_data_type(args.texture->get_format())),
                                 args.data);

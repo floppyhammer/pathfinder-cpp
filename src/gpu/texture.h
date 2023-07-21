@@ -36,7 +36,9 @@ struct SamplerDescriptor {
 
 class Sampler {
 public:
-    Sampler(SamplerDescriptor _descriptor) : descriptor(_descriptor) {}
+    explicit Sampler(SamplerDescriptor _descriptor) : descriptor(_descriptor) {}
+
+    virtual ~Sampler() = default;
 
     SamplerDescriptor get_descriptor() const {
         return descriptor;
@@ -48,7 +50,9 @@ protected:
 
 class Texture {
 public:
-    explicit Texture(TextureDescriptor _desc) : desc(std::move(_desc)) {}
+    explicit Texture(TextureDescriptor _desc) : desc(_desc) {}
+
+    virtual ~Texture() = default;
 
     inline Vec2I get_size() const {
         return desc.size;

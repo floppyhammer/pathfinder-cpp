@@ -70,6 +70,8 @@ struct Descriptor {
  */
 class DescriptorSet {
 public:
+    virtual ~DescriptorSet() = default;
+
     inline void add_or_update(const std::vector<Descriptor>& _descriptors) {
         for (auto& d : _descriptors) {
             descriptors[d.binding] = d;

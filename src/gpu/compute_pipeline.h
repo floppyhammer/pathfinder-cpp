@@ -9,6 +9,9 @@
 namespace Pathfinder {
 
 class ComputePipeline {
+public:
+    virtual ~ComputePipeline() = default;
+
 protected:
     std::string label;
 };

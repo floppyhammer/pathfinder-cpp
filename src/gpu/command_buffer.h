@@ -113,6 +113,8 @@ struct Command {
 /// Or maybe a later generated command buffer will be executed first.
 class CommandBuffer {
 public:
+    virtual ~CommandBuffer() = default;
+
     // RENDER PASS
 
     void begin_render_pass(const std::shared_ptr<RenderPass> &render_pass,

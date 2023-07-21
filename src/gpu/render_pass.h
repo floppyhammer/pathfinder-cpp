@@ -7,6 +7,9 @@
 namespace Pathfinder {
 
 class RenderPass {
+public:
+    virtual ~RenderPass() = default;
+
 protected:
     /// Debug label.
     std::string label;

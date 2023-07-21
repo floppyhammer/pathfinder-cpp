@@ -3,7 +3,6 @@
 #include <cassert>
 #include <functional>
 
-#include "../../common/logger.h"
 #include "buffer.h"
 #include "compute_pipeline.h"
 #include "debug_marker.h"
@@ -206,12 +205,12 @@ void CommandBufferVk::finish() {
                 }
 
                 auto &args = cmd.args.begin_render_pass;
-                auto render_pass_vk = static_cast<RenderPassVk *>(args.render_pass);
-                auto framebuffer_vk = static_cast<FramebufferVk *>(args.framebuffer);
+                auto render_pass_vk = dynamic_cast<RenderPassVk *>(args.render_pass);
+                auto framebuffer_vk = dynamic_cast<FramebufferVk *>(args.framebuffer);
 
                 // Transition non-swap-chain-framebuffer image.
                 if (framebuffer_vk->get_texture()) {
-                    auto texture_vk = static_cast<TextureVk *>(framebuffer_vk->get_texture().get());
+                    auto texture_vk = dynamic_cast<TextureVk *>(framebuffer_vk->get_texture().get());
 
                     transition_image_layout(vk_command_buffer,
                                             texture_vk->get_image(),
@@ -246,8 +245,8 @@ void CommandBufferVk::finish() {
                 VkViewport viewport{};
                 viewport.x = 0.0f;
                 viewport.y = 0.0f;
-                viewport.width = framebuffer_size.x;
-                viewport.height = framebuffer_size.y;
+                viewport.width = (float)framebuffer_size.x;
+                viewport.height = (float)framebuffer_size.y;
                 viewport.minDepth = 0.0f;
                 viewport.maxDepth = 1.0f;
                 vkCmdSetViewport(vk_command_buffer, 0, 1, &viewport);
@@ -259,7 +258,7 @@ void CommandBufferVk::finish() {
             } break;
             case CommandType::BindRenderPipeline: {
                 auto &args = cmd.args.bind_render_pipeline;
-                auto pipeline_vk = static_cast<RenderPipelineVk *>(args.pipeline);
+                auto pipeline_vk = dynamic_cast<RenderPipelineVk *>(args.pipeline);
 
                 render_pipeline = pipeline_vk;
 
@@ -270,7 +269,7 @@ void CommandBufferVk::finish() {
                 std::vector<VkBuffer> vertex_buffers;
                 std::vector<VkDeviceSize> offsets;
                 for (uint32_t i = 0; i < args.buffer_count; i++) {
-                    auto buffer_vk = static_cast<BufferVk *>(args.buffers[i]);
+                    auto buffer_vk = dynamic_cast<BufferVk *>(args.buffers[i]);
                     vertex_buffers.push_back(buffer_vk->get_vk_buffer());
                     offsets.push_back(0);
                 }
@@ -284,10 +283,10 @@ void CommandBufferVk::finish() {
             } break;
             case CommandType::BindDescriptorSet: {
                 auto &args = cmd.args.bind_descriptor_set;
-                auto descriptor_set_vk = static_cast<DescriptorSetVk *>(args.descriptor_set);
+                auto descriptor_set_vk = dynamic_cast<DescriptorSetVk *>(args.descriptor_set);
 
                 if (render_pipeline) {
-                    auto render_pipeline_vk = static_cast<RenderPipelineVk *>(render_pipeline);
+                    auto render_pipeline_vk = dynamic_cast<RenderPipelineVk *>(render_pipeline);
 
                     descriptor_set_vk->update_vk_descriptor_set(vk_device,
                                                                 render_pipeline_vk->get_descriptor_set_layout());
@@ -302,7 +301,7 @@ void CommandBufferVk::finish() {
                                             0,
                                             nullptr);
                 } else if (compute_pipeline) {
-                    auto compute_pipeline_vk = static_cast<ComputePipelineVk *>(compute_pipeline);
+                    auto compute_pipeline_vk = dynamic_cast<ComputePipelineVk *>(compute_pipeline);
 
                     descriptor_set_vk->update_vk_descriptor_set(vk_device,
                                                                 compute_pipeline_vk->get_descriptor_set_layout());
@@ -349,7 +348,7 @@ void CommandBufferVk::finish() {
             case CommandType::BindComputePipeline: {
                 auto &args = cmd.args.bind_compute_pipeline;
 
-                auto pipeline_vk = static_cast<ComputePipelineVk *>(args.pipeline);
+                auto pipeline_vk = dynamic_cast<ComputePipelineVk *>(args.pipeline);
 
                 compute_pipeline = pipeline_vk;
 
@@ -366,7 +365,7 @@ void CommandBufferVk::finish() {
             } break;
             case CommandType::WriteBuffer: {
                 auto &args = cmd.args.write_buffer;
-                auto buffer_vk = static_cast<BufferVk *>(args.buffer);
+                auto buffer_vk = dynamic_cast<BufferVk *>(args.buffer);
 
                 // Create a host visible buffer and copy data to it by memory mapping.
                 // ---------------------------------
@@ -399,7 +398,7 @@ void CommandBufferVk::finish() {
             // Only for storage buffer.
             case CommandType::ReadBuffer: {
                 auto &args = cmd.args.read_buffer;
-                auto buffer_vk = static_cast<BufferVk *>(args.buffer);
+                auto buffer_vk = dynamic_cast<BufferVk *>(args.buffer);
 
                 // Add a barrier.
                 VkBufferMemoryBarrier memory_barrier = {};
@@ -454,7 +453,7 @@ void CommandBufferVk::finish() {
             case CommandType::WriteTexture: {
                 auto &args = cmd.args.write_texture;
 
-                auto texture_vk = static_cast<TextureVk *>(args.texture);
+                auto texture_vk = dynamic_cast<TextureVk *>(args.texture);
 
                 // Image region size in bytes.
                 auto pixel_size = get_pixel_size(texture_vk->get_format()); // Bytes of one pixel.
@@ -519,7 +518,7 @@ void CommandBufferVk::finish() {
                 }
 
                 // Callback to clean up staging resources.
-                auto callback = [this, staging_buffer, staging_buffer_memory, texture_vk] {
+                auto callback = [this, staging_buffer, staging_buffer_memory] {
                     vkDestroyBuffer(vk_device, staging_buffer, nullptr);
                     vkFreeMemory(vk_device, staging_buffer_memory, nullptr);
                 };
@@ -541,14 +540,14 @@ void CommandBufferVk::finish() {
 }
 
 void CommandBufferVk::sync_descriptor_set(DescriptorSet *descriptor_set) {
-    auto descriptor_set_vk = static_cast<DescriptorSetVk *>(descriptor_set);
+    auto descriptor_set_vk = dynamic_cast<DescriptorSetVk *>(descriptor_set);
 
     // Make all image layouts ready.
     for (auto &d : descriptor_set_vk->get_descriptors()) {
         if (d.second.texture) {
             if (d.second.type == DescriptorType::Sampler) {
                 auto texture = d.second.texture.get();
-                auto texture_vk = static_cast<TextureVk *>(texture);
+                auto texture_vk = dynamic_cast<TextureVk *>(texture);
 
                 transition_image_layout(vk_command_buffer,
                                         texture_vk->get_image(),
@@ -558,7 +557,7 @@ void CommandBufferVk::sync_descriptor_set(DescriptorSet *descriptor_set) {
                 texture_vk->set_layout(TextureLayout::ShaderReadOnly);
             } else if (d.second.type == DescriptorType::Image) {
                 auto texture = d.second.texture.get();
-                auto texture_vk = static_cast<TextureVk *>(texture);
+                auto texture_vk = dynamic_cast<TextureVk *>(texture);
 
                 transition_image_layout(vk_command_buffer,
                                         texture_vk->get_image(),
@@ -570,7 +569,7 @@ void CommandBufferVk::sync_descriptor_set(DescriptorSet *descriptor_set) {
         }
 
         if (d.second.buffer) {
-            auto buffer_vk = static_cast<BufferVk *>(d.second.buffer.get());
+            auto buffer_vk = dynamic_cast<BufferVk *>(d.second.buffer.get());
 
             int32_t dst_access_mask{};
             switch (buffer_vk->get_type()) {

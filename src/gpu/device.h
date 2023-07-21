@@ -16,6 +16,8 @@ namespace Pathfinder {
 /// which means Window and SwapChain aren't needed for platforms like Android.
 class Device {
 public:
+    virtual ~Device() = default;
+
     virtual std::shared_ptr<Framebuffer> create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
                                                             const std::shared_ptr<Texture> &texture,
                                                             const std::string &label) = 0;

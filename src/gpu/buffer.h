@@ -25,7 +25,9 @@ struct BufferDescriptor {
 
 class Buffer {
 public:
-    explicit Buffer(BufferDescriptor _desc) : desc(std::move(_desc)) {}
+    explicit Buffer(BufferDescriptor _desc) : desc(_desc) {}
+
+    virtual ~Buffer() = default;
 
     size_t get_size() const {
         return desc.size;
