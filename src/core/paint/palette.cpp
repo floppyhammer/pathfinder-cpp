@@ -150,8 +150,13 @@ std::vector<PaintMetadata> Palette::build_paint_info(Renderer *renderer) {
         }
 
         // Image texels.
+        std::set<uint32_t> uploaded_image_pages;
         for (auto &texel_info : paint_locations_info.image_texel_info) {
-            renderer->upload_texel_data(*texel_info.texels, texel_info.location);
+            // Skip repeated image pages.
+            if (uploaded_image_pages.find(texel_info.location.page) == uploaded_image_pages.end()) {
+                renderer->upload_texel_data(*texel_info.texels, texel_info.location);
+                uploaded_image_pages.insert(texel_info.location.page);
+            }
         }
     }
 
