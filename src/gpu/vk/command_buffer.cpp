@@ -364,8 +364,8 @@ void CommandBufferVk::finish() {
             case CommandType::EndComputePass: {
                 compute_pipeline = nullptr;
             } break;
-            case CommandType::UploadToBuffer: {
-                auto &args = cmd.args.upload_to_buffer;
+            case CommandType::WriteBuffer: {
+                auto &args = cmd.args.write_buffer;
                 auto buffer_vk = static_cast<BufferVk *>(args.buffer);
 
                 // Create a host visible buffer and copy data to it by memory mapping.
@@ -451,8 +451,8 @@ void CommandBufferVk::finish() {
                 };
                 add_callback(callback);
             } break;
-            case CommandType::UploadToTexture: {
-                auto &args = cmd.args.upload_to_texture;
+            case CommandType::WriteTexture: {
+                auto &args = cmd.args.write_texture;
 
                 auto texture_vk = static_cast<TextureVk *>(args.texture);
 

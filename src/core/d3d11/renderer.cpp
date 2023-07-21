@@ -95,15 +95,15 @@ void SceneSourceBuffers::upload(SegmentsD3D11 &segments,
 
     // Upload data.
     if (needed_points_capacity != 0 && needed_point_indices_capacity != 0) {
-        cmd_buffer->upload_to_buffer(allocator->get_buffer(*points_buffer),
-                                     0,
-                                     segments.points.size() * sizeof(Vec2F),
-                                     segments.points.data());
+        cmd_buffer->write_buffer(allocator->get_buffer(*points_buffer),
+                                 0,
+                                 segments.points.size() * sizeof(Vec2F),
+                                 segments.points.data());
 
-        cmd_buffer->upload_to_buffer(allocator->get_buffer(*point_indices_buffer),
-                                     0,
-                                     segments.indices.size() * sizeof(SegmentIndicesD3D11),
-                                     segments.indices.data());
+        cmd_buffer->write_buffer(allocator->get_buffer(*point_indices_buffer),
+                                 0,
+                                 segments.indices.size() * sizeof(SegmentIndicesD3D11),
+                                 segments.indices.data());
     }
 }
 
@@ -378,8 +378,8 @@ void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
 
     auto cmd_buffer = device->create_command_buffer("Draw tiles");
 
-    cmd_buffer->upload_to_buffer(allocator->get_buffer(tile_ub0_id), 0, 8 * sizeof(float), ubo_data0.data());
-    cmd_buffer->upload_to_buffer(allocator->get_buffer(tile_ub1_id), 0, 5 * sizeof(int32_t), ubo_data1.data());
+    cmd_buffer->write_buffer(allocator->get_buffer(tile_ub0_id), 0, 8 * sizeof(float), ubo_data0.data());
+    cmd_buffer->write_buffer(allocator->get_buffer(tile_ub1_id), 0, 5 * sizeof(int32_t), ubo_data1.data());
 
     // Update descriptor set.
     tile_descriptor_set->add_or_update({
@@ -457,10 +457,10 @@ PropagateMetadataBufferIDsD3D11 RendererD3D11::upload_propagate_metadata(
                                                            "Backdrops buffer");
 
     auto cmd_buffer = device->create_command_buffer("Upload to propagate metadata buffer");
-    cmd_buffer->upload_to_buffer(allocator->get_buffer(propagate_metadata_storage_id),
-                                 0,
-                                 propagate_metadata.size() * sizeof(PropagateMetadataD3D11),
-                                 propagate_metadata.data());
+    cmd_buffer->write_buffer(allocator->get_buffer(propagate_metadata_storage_id),
+                             0,
+                             propagate_metadata.size() * sizeof(PropagateMetadataD3D11),
+                             propagate_metadata.data());
     cmd_buffer->submit_and_wait();
 
     return {propagate_metadata_storage_id, backdrops_storage_id};
@@ -470,7 +470,7 @@ void RendererD3D11::upload_initial_backdrops(uint64_t backdrops_buffer_id, std::
     auto backdrops_buffer = allocator->get_buffer(backdrops_buffer_id);
 
     auto cmd_buffer = device->create_command_buffer("Upload initial backdrops");
-    cmd_buffer->upload_to_buffer(backdrops_buffer, 0, backdrops.size() * sizeof(BackdropInfoD3D11), backdrops.data());
+    cmd_buffer->write_buffer(backdrops_buffer, 0, backdrops.size() * sizeof(BackdropInfoD3D11), backdrops.data());
     cmd_buffer->submit_and_wait();
 }
 
@@ -611,16 +611,16 @@ std::shared_ptr<MicrolinesBufferIDsD3D11> RendererD3D11::dice_segments(std::vect
     auto cmd_buffer = device->create_command_buffer("Dice segments");
 
     // Upload dice indirect draw params, which will be read later.
-    cmd_buffer->upload_to_buffer(indirect_draw_params_buffer,
-                                 0,
-                                 FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
-                                 indirect_compute_params);
+    cmd_buffer->write_buffer(indirect_draw_params_buffer,
+                             0,
+                             FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
+                             indirect_compute_params);
 
     // Upload dice metadata.
-    cmd_buffer->upload_to_buffer(dice_metadata_buffer,
-                                 0,
-                                 dice_metadata.size() * sizeof(DiceMetadataD3D11),
-                                 dice_metadata.data());
+    cmd_buffer->write_buffer(dice_metadata_buffer,
+                             0,
+                             dice_metadata.size() * sizeof(DiceMetadataD3D11),
+                             dice_metadata.data());
 
     // Update uniform buffers.
     // Note that a row of mat2 occupies 4 floats just like a mat4.
@@ -634,12 +634,12 @@ std::shared_ptr<MicrolinesBufferIDsD3D11> RendererD3D11::dice_segments(std::vect
                                        0,
                                        transform.get_position().x,
                                        transform.get_position().y};
-    cmd_buffer->upload_to_buffer(allocator->get_buffer(dice_ub0_id), 0, 10 * sizeof(float), ubo_data0.data());
+    cmd_buffer->write_buffer(allocator->get_buffer(dice_ub0_id), 0, 10 * sizeof(float), ubo_data0.data());
 
     std::array<int32_t, 3> ubo_data1 = {static_cast<int32_t>(dice_metadata.size()),
                                         static_cast<int32_t>(batch_segment_count),
                                         static_cast<int32_t>(allocated_microline_count)};
-    cmd_buffer->upload_to_buffer(allocator->get_buffer(dice_ub1_id), 0, 3 * sizeof(int32_t), ubo_data1.data());
+    cmd_buffer->write_buffer(allocator->get_buffer(dice_ub1_id), 0, 3 * sizeof(int32_t), ubo_data1.data());
 
     auto points_buffer = allocator->get_buffer(points_buffer_id);
     auto point_indices_buffer = allocator->get_buffer(point_indices_buffer_id);
@@ -708,14 +708,14 @@ void RendererD3D11::bound(uint64_t tiles_d3d11_buffer_id,
 
     // Upload buffer data.
     auto tile_path_info_buffer = allocator->get_buffer(path_info_buffer_id);
-    cmd_buffer->upload_to_buffer(tile_path_info_buffer,
-                                 0,
-                                 tile_path_info.size() * sizeof(TilePathInfoD3D11),
-                                 tile_path_info.data());
+    cmd_buffer->write_buffer(tile_path_info_buffer,
+                             0,
+                             tile_path_info.size() * sizeof(TilePathInfoD3D11),
+                             tile_path_info.data());
 
     // Update uniform buffers.
     std::array<int32_t, 2> ubo_data = {static_cast<int32_t>(tile_path_info.size()), static_cast<int32_t>(tile_count)};
-    cmd_buffer->upload_to_buffer(allocator->get_buffer(bound_ub_id), 0, 2 * sizeof(int32_t), ubo_data.data());
+    cmd_buffer->write_buffer(allocator->get_buffer(bound_ub_id), 0, 2 * sizeof(int32_t), ubo_data.data());
 
     // Update the descriptor set.
     bound_descriptor_set->add_or_update({
@@ -760,14 +760,11 @@ std::shared_ptr<FillBufferInfoD3D11> RendererD3D11::bin_segments(
         // Upload fill indirect draw params to header of the Z-buffer.
         // This is in the Z-buffer, not its own buffer, to work around the 8 SSBO limitation on
         // some devices (#373).
-        cmd_buffer->upload_to_buffer(z_buffer,
-                                     0,
-                                     FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
-                                     indirect_draw_params);
+        cmd_buffer->write_buffer(z_buffer, 0, FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t), indirect_draw_params);
 
         // Update uniform buffers.
         std::array<int32_t, 2> ubo_data = {(int32_t)microlines_storage.count, (int32_t)allocated_fill_count};
-        cmd_buffer->upload_to_buffer(allocator->get_buffer(bin_ub_id), 0, 2 * sizeof(int32_t), ubo_data.data());
+        cmd_buffer->write_buffer(allocator->get_buffer(bin_ub_id), 0, 2 * sizeof(int32_t), ubo_data.data());
     }
 
     // Update the descriptor set.
@@ -841,15 +838,15 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
     auto z_buffer_data = std::vector<int32_t>(tile_area, 0);
 
     // Fill zeros in the Z buffer. Note the offset for the fill indirect params.
-    cmd_buffer->upload_to_buffer(z_buffer,
-                                 FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
-                                 tile_area * sizeof(int32_t),
-                                 z_buffer_data.data());
+    cmd_buffer->write_buffer(z_buffer,
+                             FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
+                             tile_area * sizeof(int32_t),
+                             z_buffer_data.data());
 
     // TODO(pcwalton): Initialize the first tiles buffer on GPU?
     auto first_tile_map_buffer = allocator->get_buffer(first_tile_map_buffer_id);
     auto first_tile_map = std::vector<FirstTileD3D11>(tile_area, FirstTileD3D11());
-    cmd_buffer->upload_to_buffer(first_tile_map_buffer, 0, tile_area * sizeof(FirstTileD3D11), first_tile_map.data());
+    cmd_buffer->write_buffer(first_tile_map_buffer, 0, tile_area * sizeof(FirstTileD3D11), first_tile_map.data());
 
     // Update uniform buffers.
     auto framebuffer_tile_size0 = framebuffer_tile_size();
@@ -857,7 +854,7 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
                                        (int32_t)framebuffer_tile_size0.y,
                                        (int32_t)column_count,
                                        (int32_t)alpha_tile_count};
-    cmd_buffer->upload_to_buffer(allocator->get_buffer(propagate_ub_id), 0, 4 * sizeof(int32_t), ubo_data.data());
+    cmd_buffer->write_buffer(allocator->get_buffer(propagate_ub_id), 0, 4 * sizeof(int32_t), ubo_data.data());
 
     // Update the descriptor set.
     {
@@ -940,7 +937,7 @@ void RendererD3D11::draw_fills(FillBufferInfoD3D11 &fill_storage_info,
     auto framebuffer_tile_size0 = framebuffer_tile_size();
     std::array<int32_t, 2> ubo_data = {static_cast<int32_t>(alpha_tile_range.start),
                                        static_cast<int32_t>(alpha_tile_range.end)};
-    cmd_buffer->upload_to_buffer(allocator->get_buffer(fill_ub_id), 0, 2 * sizeof(int32_t), ubo_data.data());
+    cmd_buffer->write_buffer(allocator->get_buffer(fill_ub_id), 0, 2 * sizeof(int32_t), ubo_data.data());
 
     auto fill_vertex_buffer = allocator->get_buffer(fill_storage_info.fill_vertex_buffer_id);
     auto tiles_d3d11_buffer = allocator->get_buffer(tiles_d3d11_buffer_id);
@@ -981,7 +978,7 @@ void RendererD3D11::sort_tiles(uint64_t tiles_d3d11_buffer_id,
     auto cmd_buffer = device->create_command_buffer("Sort tiles");
 
     // Update uniform buffer.
-    cmd_buffer->upload_to_buffer(allocator->get_buffer(sort_ub_id), 0, sizeof(int32_t), &tile_count);
+    cmd_buffer->write_buffer(allocator->get_buffer(sort_ub_id), 0, sizeof(int32_t), &tile_count);
 
     // Update the descriptor set.
     sort_descriptor_set->add_or_update({

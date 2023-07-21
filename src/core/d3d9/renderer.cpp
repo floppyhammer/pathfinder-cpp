@@ -64,10 +64,10 @@ RendererD3D9::RendererD3D9(const std::shared_ptr<Device> &_device) : Renderer(_d
     quad_vertex_buffer_id = allocator->allocate_buffer(quad_vertex_data_size, BufferType::Vertex, "Quad vertex buffer");
 
     auto cmd_buffer = device->create_command_buffer("Upload quad vertex data");
-    cmd_buffer->upload_to_buffer(allocator->get_buffer(quad_vertex_buffer_id),
-                                 0,
-                                 quad_vertex_data_size,
-                                 QUAD_VERTEX_POSITIONS);
+    cmd_buffer->write_buffer(allocator->get_buffer(quad_vertex_buffer_id),
+                             0,
+                             quad_vertex_data_size,
+                             QUAD_VERTEX_POSITIONS);
     cmd_buffer->submit_and_wait();
 }
 
@@ -339,7 +339,7 @@ uint64_t RendererD3D9::upload_fills(const std::vector<Fill> &fills, const std::s
 
     auto fill_vertex_buffer_id = allocator->allocate_buffer(byte_size, BufferType::Vertex, "Fill vertex buffer");
 
-    cmd_buffer->upload_to_buffer(allocator->get_buffer(fill_vertex_buffer_id), 0, byte_size, (void *)fills.data());
+    cmd_buffer->write_buffer(allocator->get_buffer(fill_vertex_buffer_id), 0, byte_size, (void *)fills.data());
 
     return fill_vertex_buffer_id;
 }
@@ -353,7 +353,7 @@ uint64_t RendererD3D9::upload_z_buffer(const DenseTileMap<uint32_t> &z_buffer_ma
         allocator->allocate_texture(z_buffer_map.rect.size(), TextureFormat::Rgba8Unorm, "Z buffer texture");
 
     auto z_buffer_texture = allocator->get_texture(z_buffer_texture_id);
-    cmd_buffer->upload_to_texture(z_buffer_texture, {}, z_buffer_map.data.data());
+    cmd_buffer->write_texture(z_buffer_texture, {}, z_buffer_map.data.data());
 
     return z_buffer_texture_id;
 }
@@ -364,7 +364,7 @@ uint64_t RendererD3D9::upload_tiles(const std::vector<TileObjectPrimitive> &tile
 
     auto tile_vertex_buffer_id = allocator->allocate_buffer(byte_size, BufferType::Vertex, "Tile vertex buffer");
 
-    cmd_buffer->upload_to_buffer(allocator->get_buffer(tile_vertex_buffer_id), 0, byte_size, (void *)tiles.data());
+    cmd_buffer->write_buffer(allocator->get_buffer(tile_vertex_buffer_id), 0, byte_size, (void *)tiles.data());
 
     return tile_vertex_buffer_id;
 }
@@ -439,7 +439,7 @@ ClipBufferInfo RendererD3D9::upload_clip_tiles(const std::vector<Clip> &clips,
 
     auto clip_buffer_id = allocator->allocate_buffer(byte_size, BufferType::Vertex, "Clip buffer");
 
-    cmd_buffer->upload_to_buffer(allocator->get_buffer(clip_buffer_id), 0, byte_size, (void *)clips.data());
+    cmd_buffer->write_buffer(allocator->get_buffer(clip_buffer_id), 0, byte_size, (void *)clips.data());
 
     return {clip_buffer_id, clip_count};
 }
@@ -570,11 +570,11 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
 
         // We don't need to preserve the data until the upload commands are implemented because
         // these uniform buffers are host-visible/coherent.
-        cmd_buffer->upload_to_buffer(allocator->get_buffer(tile_transform_ub_id), 0, 16 * sizeof(float), &model_mat);
-        cmd_buffer->upload_to_buffer(allocator->get_buffer(tile_varying_sizes_ub_id),
-                                     0,
-                                     6 * sizeof(float),
-                                     ubo_data.data());
+        cmd_buffer->write_buffer(allocator->get_buffer(tile_transform_ub_id), 0, 16 * sizeof(float), &model_mat);
+        cmd_buffer->write_buffer(allocator->get_buffer(tile_varying_sizes_ub_id),
+                                 0,
+                                 6 * sizeof(float),
+                                 ubo_data.data());
     }
 
     // Update descriptor set.

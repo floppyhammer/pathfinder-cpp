@@ -261,8 +261,8 @@ void CommandBufferGl::finish() {
             case CommandType::EndComputePass: {
                 compute_pipeline = nullptr;
             } break;
-            case CommandType::UploadToBuffer: {
-                auto &args = cmd.args.upload_to_buffer;
+            case CommandType::WriteBuffer: {
+                auto &args = cmd.args.write_buffer;
 
                 args.buffer->upload_via_mapping(args.data_size, args.offset, args.data);
             } break;
@@ -271,8 +271,8 @@ void CommandBufferGl::finish() {
 
                 args.buffer->download_via_mapping(args.data_size, args.offset, args.data);
             } break;
-            case CommandType::UploadToTexture: {
-                auto &args = cmd.args.upload_to_texture;
+            case CommandType::WriteTexture: {
+                auto &args = cmd.args.write_texture;
 
                 auto texture_gl = static_cast<TextureGl *>(args.texture);
 

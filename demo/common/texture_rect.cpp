@@ -32,7 +32,7 @@ TextureRect::TextureRect(const std::shared_ptr<Device> &_device, const std::shar
     sampler = device->create_sampler(SamplerDescriptor{});
 
     auto cmd_buffer = device->create_command_buffer("Upload TextureRect vertex buffer");
-    cmd_buffer->upload_to_buffer(vertex_buffer, 0, sizeof(vertices), (void *)vertices);
+    cmd_buffer->write_buffer(vertex_buffer, 0, sizeof(vertices), (void *)vertices);
     cmd_buffer->submit_and_wait();
 
     // Pipeline.
@@ -94,7 +94,7 @@ void TextureRect::draw(const std::shared_ptr<CommandBuffer> &cmd_buffer, const V
     auto mvp_mat = model_mat;
     // -------------------------------
 
-    cmd_buffer->upload_to_buffer(uniform_buffer, 0, 16 * sizeof(float), &mvp_mat);
+    cmd_buffer->write_buffer(uniform_buffer, 0, 16 * sizeof(float), &mvp_mat);
 
     cmd_buffer->bind_render_pipeline(pipeline);
 

@@ -38,9 +38,9 @@ Renderer::Renderer(const std::shared_ptr<Device> &_device) : device(_device) {
 
     auto cmd_buffer = device->create_command_buffer("Upload constant data");
 
-    cmd_buffer->upload_to_buffer(allocator->get_buffer(constants_ub_id), 0, 6 * sizeof(float), constants.data());
+    cmd_buffer->write_buffer(allocator->get_buffer(constants_ub_id), 0, 6 * sizeof(float), constants.data());
 
-    cmd_buffer->upload_to_texture(allocator->get_texture(area_lut_texture_id), {}, image_buffer->get_data());
+    cmd_buffer->write_texture(allocator->get_texture(area_lut_texture_id), {}, image_buffer->get_data());
 
     cmd_buffer->submit_and_wait();
 }
@@ -113,7 +113,7 @@ void Renderer::upload_texel_data(std::vector<ColorU> &texels, TextureLocation lo
     auto texture = framebuffer->get_texture();
 
     auto cmd_buffer = device->create_command_buffer("Upload data of the pattern texture pages");
-    cmd_buffer->upload_to_texture(texture, location.rect, texels.data());
+    cmd_buffer->write_texture(texture, location.rect, texels.data());
     cmd_buffer->submit_and_wait();
 
     texture_page->must_preserve_contents = true;
@@ -261,7 +261,7 @@ void Renderer::upload_texture_metadata(const std::vector<TextureMetadataEntry> &
 
     auto cmd_buffer = device->create_command_buffer("Upload to metadata texture");
     cmd_buffer->add_callback(callback);
-    cmd_buffer->upload_to_texture(allocator->get_texture(metadata_texture_id), region_rect, raw_texels);
+    cmd_buffer->write_texture(allocator->get_texture(metadata_texture_id), region_rect, raw_texels);
     cmd_buffer->submit_and_wait();
 }
 

@@ -124,17 +124,17 @@ void CommandBuffer::end_compute_pass() {
     commands.push_back(cmd);
 }
 
-void CommandBuffer::upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
-                                     uint32_t offset,
-                                     uint32_t data_size,
-                                     void *data) {
+void CommandBuffer::write_buffer(const std::shared_ptr<Buffer> &buffer,
+                                 uint32_t offset,
+                                 uint32_t data_size,
+                                 void *data) {
     if (data_size == 0 || data == nullptr) {
-        Logger::error("Tried to upload invalid data to buffer!");
+        Logger::error("Tried to write buffer with invalid data!", "CommandBuffer");
         return;
     }
 
     if (buffer == nullptr) {
-        Logger::error("Tried to upload data to NULL buffer!");
+        Logger::error("Tried to write invalid buffer!", "CommandBuffer");
         return;
     }
 
@@ -145,9 +145,9 @@ void CommandBuffer::upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
     }
 
     Command cmd;
-    cmd.type = CommandType::UploadToBuffer;
+    cmd.type = CommandType::WriteBuffer;
 
-    auto &args = cmd.args.upload_to_buffer;
+    auto &args = cmd.args.write_buffer;
     args.buffer = buffer.get();
     args.offset = offset;
     args.data_size = data_size;
@@ -156,27 +156,22 @@ void CommandBuffer::upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
     commands.push_back(cmd);
 }
 
-void CommandBuffer::upload_to_texture(const std::shared_ptr<Texture> &texture, RectI _region, const void *data) {
+void CommandBuffer::write_texture(const std::shared_ptr<Texture> &texture, RectI _region, const void *data) {
     auto whole_region = RectI({0, 0}, {texture->get_size()});
 
     // Invalid region represents the whole texture.
     auto region = _region.is_valid() ? _region : whole_region;
 
     // Check if the region is a subset of the whole texture region.
-    if (!region.union_rect(whole_region).is_valid()) {
-        Logger::error("Invalid texture region when uploading data to texture!", "CommandBuffer");
-        return;
-    }
-
-    // If there's no data to upload.
-    if (region.area() == 0) {
+    if (!region.union_rect(whole_region).is_valid() || region.area() == 0) {
+        Logger::error("Tried to write invalid region of a texture!", "CommandBuffer");
         return;
     }
 
     Command cmd;
-    cmd.type = CommandType::UploadToTexture;
+    cmd.type = CommandType::WriteTexture;
 
-    auto &args = cmd.args.upload_to_texture;
+    auto &args = cmd.args.write_texture;
     args.texture = texture.get();
     args.offset_x = region.left;
     args.offset_y = region.top;

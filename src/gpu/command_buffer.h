@@ -39,8 +39,8 @@ enum class CommandType {
 
     // Data transfer.
 
-    UploadToBuffer,
-    UploadToTexture,
+    WriteBuffer,
+    WriteTexture,
     ReadBuffer,
 
     Max,
@@ -90,7 +90,7 @@ struct Command {
             uint32_t offset;
             uint32_t data_size;
             void *data;
-        } upload_to_buffer;
+        } write_buffer;
         struct {
             Texture *texture;
             uint32_t offset_x;
@@ -98,7 +98,7 @@ struct Command {
             uint32_t width;
             uint32_t height;
             const void *data;
-        } upload_to_texture;
+        } write_texture;
         struct {
             Buffer *buffer;
             uint32_t offset;
@@ -154,12 +154,9 @@ public:
      * @param data_size Size of the data we are uploading, not the size of the buffer.
      * @param data
      */
-    virtual void upload_to_buffer(const std::shared_ptr<Buffer> &buffer,
-                                  uint32_t offset,
-                                  uint32_t data_size,
-                                  void *data);
+    virtual void write_buffer(const std::shared_ptr<Buffer> &buffer, uint32_t offset, uint32_t data_size, void *data);
 
-    void upload_to_texture(const std::shared_ptr<Texture> &texture, RectI region, const void *data);
+    void write_texture(const std::shared_ptr<Texture> &texture, RectI region, const void *data);
 
     void read_buffer(const std::shared_ptr<Buffer> &buffer, uint32_t offset, uint32_t data_size, void *data);
 
