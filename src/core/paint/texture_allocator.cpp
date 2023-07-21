@@ -250,7 +250,8 @@ void TextureAllocator::free(TextureLocation location) {
         auto &page_allocator = pages[location.page]->allocator;
 
         if (page_allocator.type == TexturePageAllocator::Type::Image) {
-            assert(location.rect == RectI(Vec2I(), page_allocator.image_size));
+            // It's possible that location.rect != RectI(Vec2I(), page_allocator.image_size).
+            // In such a case (e.g. adding 1 pixel border), we only use a portion of the image page.
         } else {
             auto &atlas_allocator = page_allocator.allocator;
             atlas_allocator.free(location.rect);
