@@ -32,7 +32,7 @@ std::shared_ptr<TextureVk> TextureVk::from_wrapping(const TextureDescriptor& _de
                                                     VkDeviceMemory image_memory,
                                                     VkImageView image_view,
                                                     TextureLayout layout) {
-    auto texture_vk = std::make_shared<TextureVk>(nullptr, _desc);
+    auto texture_vk = std::shared_ptr<TextureVk>(new TextureVk(nullptr, _desc));
 
     // We're not responsible for management of wrapped textures.
     texture_vk->resource_ownership = false;

@@ -14,12 +14,6 @@ class RenderPipelineVk : public RenderPipeline {
     friend class DeviceVk;
 
 public:
-    RenderPipelineVk(VkDevice _vk_device,
-                     const std::vector<VertexInputAttributeDescription> &_attribute_descriptions,
-                     BlendState _blend_state,
-                     std::string _label)
-        : RenderPipeline(_attribute_descriptions, _blend_state, std::move(_label)), vk_device(_vk_device) {}
-
     ~RenderPipelineVk() {
         vkDestroyDescriptorSetLayout(vk_device, vk_descriptor_set_layout, nullptr);
         vkDestroyPipeline(vk_device, vk_pipeline, nullptr);
@@ -37,6 +31,13 @@ public:
     inline VkDescriptorSetLayout get_descriptor_set_layout() const {
         return vk_descriptor_set_layout;
     }
+
+private:
+    RenderPipelineVk(VkDevice _vk_device,
+                     const std::vector<VertexInputAttributeDescription> &_attribute_descriptions,
+                     BlendState _blend_state,
+                     std::string _label)
+        : RenderPipeline(_attribute_descriptions, _blend_state, std::move(_label)), vk_device(_vk_device) {}
 
 private:
     VkPipeline vk_pipeline{};

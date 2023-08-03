@@ -15,13 +15,14 @@ class DescriptorSetVk : public DescriptorSet {
     friend class DeviceVk;
 
 public:
-    DescriptorSetVk() = default;
-
     ~DescriptorSetVk();
 
     void update_vk_descriptor_set(VkDevice _device, VkDescriptorSetLayout descriptor_set_layout);
 
     VkDescriptorSet &get_vk_descriptor_set();
+
+private:
+    DescriptorSetVk() = default;
 
 private:
     VkDescriptorPool descriptor_pool{};

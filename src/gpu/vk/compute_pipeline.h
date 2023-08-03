@@ -14,10 +14,6 @@ class ComputePipelineVk : public ComputePipeline {
     friend class DeviceVk;
 
 public:
-    ComputePipelineVk(VkDevice _vk_device, std::string _label) : vk_device(_vk_device) {
-        label = std::move(_label);
-    }
-
     ~ComputePipelineVk() {
         vkDestroyDescriptorSetLayout(vk_device, vk_descriptor_set_layout, nullptr);
         vkDestroyPipeline(vk_device, vk_pipeline, nullptr);
@@ -34,6 +30,11 @@ public:
 
     inline VkDescriptorSetLayout get_descriptor_set_layout() const {
         return vk_descriptor_set_layout;
+    }
+
+private:
+    ComputePipelineVk(VkDevice _vk_device, std::string _label) : vk_device(_vk_device) {
+        label = std::move(_label);
     }
 
 private:

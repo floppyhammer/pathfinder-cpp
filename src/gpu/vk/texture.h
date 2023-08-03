@@ -14,9 +14,6 @@ class TextureVk : public Texture {
     friend class DeviceVk;
 
 public:
-    // This constructor is only a wrapper, actual GPU resource allocation is done by DeviceVk.
-    TextureVk(VkDevice _vk_device, const TextureDescriptor& _desc);
-
     // Releasing GPU resources is done by itself.
     ~TextureVk();
 
@@ -38,6 +35,10 @@ public:
     void set_label(const std::string& _label) override;
 
 private:
+    // This constructor is only a wrapper, actual GPU resource allocation is done by DeviceVk.
+    TextureVk(VkDevice _vk_device, const TextureDescriptor& _desc);
+
+private:
     /// Handle.
     VkImage vk_image{};
 
@@ -56,18 +57,21 @@ private:
 };
 
 class SamplerVk : public Sampler {
-public:
-    SamplerVk(SamplerDescriptor descriptor, VkSampler _vk_sampler, VkDevice _vk_device) : Sampler(descriptor) {
-        vk_sampler = _vk_sampler;
-        vk_device = _vk_device;
-    }
+    friend class DeviceVk;
 
+public:
     ~SamplerVk() {
         vkDestroySampler(vk_device, vk_sampler, nullptr);
     }
 
     VkSampler get_sampler() const {
         return vk_sampler;
+    }
+
+private:
+    SamplerVk(SamplerDescriptor descriptor, VkSampler _vk_sampler, VkDevice _vk_device) : Sampler(descriptor) {
+        vk_sampler = _vk_sampler;
+        vk_device = _vk_device;
     }
 
 private:

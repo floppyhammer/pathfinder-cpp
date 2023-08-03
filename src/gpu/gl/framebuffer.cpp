@@ -23,7 +23,7 @@ FramebufferGl::FramebufferGl(const std::shared_ptr<Texture> &_texture) : Framebu
     glBindFramebuffer(GL_FRAMEBUFFER, gl_framebuffer);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_gl->get_texture_id(), 0);
 
-    // Always check whether our framebuffer is OK.
+    // Check whether the framebuffer is OK.
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         Logger::error("Framebuffer is not OK!", "FramebufferGl");
     }
@@ -32,7 +32,9 @@ FramebufferGl::FramebufferGl(const std::shared_ptr<Texture> &_texture) : Framebu
 }
 
 FramebufferGl::~FramebufferGl() {
-    glDeleteFramebuffers(1, &gl_framebuffer);
+    if (gl_framebuffer != 0) {
+        glDeleteFramebuffers(1, &gl_framebuffer);
+    }
 }
 
 uint32_t FramebufferGl::get_gl_framebuffer() const {

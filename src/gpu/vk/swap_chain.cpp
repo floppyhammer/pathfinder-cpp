@@ -31,7 +31,8 @@ std::shared_ptr<Framebuffer> SwapChainVk::get_framebuffer() {
 }
 
 std::shared_ptr<CommandBuffer> SwapChainVk::get_command_buffer() {
-    auto command_buffer_vk = std::make_shared<CommandBufferVk>(command_buffers[image_index], device_vk);
+    auto command_buffer_vk =
+        std::shared_ptr<CommandBufferVk>(new CommandBufferVk(command_buffers[image_index], device_vk));
     command_buffer_vk->label = "Main";
     return command_buffer_vk;
 }
@@ -209,10 +210,8 @@ void SwapChainVk::create_framebuffers() {
         auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
 
         // No texture for swap chain framebuffer.
-        auto framebuffer_vk = std::make_shared<FramebufferVk>(device,
-                                                              render_pass_vk->get_vk_render_pass(),
-                                                              size,
-                                                              swapchain_image_views[i]);
+        auto framebuffer_vk = std::shared_ptr<FramebufferVk>(
+            new FramebufferVk(device, render_pass_vk->get_vk_render_pass(), size, swapchain_image_views[i]));
 
         framebuffers.push_back(framebuffer_vk);
     }

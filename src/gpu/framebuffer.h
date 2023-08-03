@@ -14,12 +14,6 @@ namespace Pathfinder {
  */
 class Framebuffer {
 public:
-    /// Render to screen or swap chain.
-    explicit Framebuffer(Vec2I _size) : size(_size) {}
-
-    /// Render to a texture.
-    explicit Framebuffer(const std::shared_ptr<Texture>& _texture) : size(_texture->get_size()), texture(_texture) {}
-
     virtual ~Framebuffer() = default;
 
     inline std::shared_ptr<Texture> get_texture() const {
@@ -40,6 +34,13 @@ public:
     virtual void set_label(const std::string& _label) {
         label = _label;
     }
+
+protected:
+    /// Render to screen or swap chain.
+    explicit Framebuffer(Vec2I _size) : size(_size) {}
+
+    /// Render to a texture.
+    explicit Framebuffer(const std::shared_ptr<Texture>& _texture) : size(_texture->get_size()), texture(_texture) {}
 
 protected:
     Vec2I size;

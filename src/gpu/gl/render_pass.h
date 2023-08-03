@@ -9,13 +9,15 @@ namespace Pathfinder {
 
 class RenderPassGl : public RenderPass {
     friend class DeviceGl;
+    friend class SwapChainGl;
 
 public:
-    explicit RenderPassGl(AttachmentLoadOp _load_op) : load_op(_load_op) {}
-
     inline AttachmentLoadOp get_attachment_load_op() const {
         return load_op;
     }
+
+private:
+    explicit RenderPassGl(AttachmentLoadOp _load_op) : load_op(_load_op) {}
 
 private:
     AttachmentLoadOp load_op;

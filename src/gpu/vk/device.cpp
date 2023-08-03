@@ -38,7 +38,7 @@ VkCommandPool DeviceVk::get_command_pool() const {
 }
 
 std::shared_ptr<DescriptorSet> DeviceVk::create_descriptor_set() {
-    return std::make_shared<DescriptorSetVk>();
+    return std::shared_ptr<DescriptorSetVk>(new DescriptorSetVk());
 }
 
 std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
@@ -51,7 +51,8 @@ std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
     const std::string &_label) {
     auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
 
-    auto render_pipeline_vk = std::make_shared<RenderPipelineVk>(device, attribute_descriptions, blend_state, _label);
+    auto render_pipeline_vk =
+        std::shared_ptr<RenderPipelineVk>(new RenderPipelineVk(device, attribute_descriptions, blend_state, _label));
 
     // Create descriptor set layout.
     {
@@ -258,7 +259,7 @@ std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
 std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(const std::vector<char> &comp_source,
                                                                    const std::shared_ptr<DescriptorSet> &descriptor_set,
                                                                    const std::string &_label) {
-    auto compute_pipeline_vk = std::make_shared<ComputePipelineVk>(device, _label);
+    auto compute_pipeline_vk = std::shared_ptr<ComputePipelineVk>(new ComputePipelineVk(device, _label));
 
     // Create descriptor set layout.
     {
@@ -347,11 +348,11 @@ std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(const std::ve
 std::shared_ptr<RenderPass> DeviceVk::create_render_pass(TextureFormat format,
                                                          AttachmentLoadOp load_op,
                                                          const std::string &label) {
-    return std::make_shared<RenderPassVk>(device, format, load_op, false, label);
+    return std::shared_ptr<RenderPassVk>(new RenderPassVk(device, format, load_op, false, label));
 }
 
 std::shared_ptr<RenderPass> DeviceVk::create_swap_chain_render_pass(TextureFormat format, AttachmentLoadOp load_op) {
-    return std::make_shared<RenderPassVk>(device, format, load_op, true, "Swap chain render pass");
+    return std::shared_ptr<RenderPassVk>(new RenderPassVk(device, format, load_op, true, "Swap chain render pass"));
 }
 
 std::shared_ptr<Framebuffer> DeviceVk::create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
@@ -359,7 +360,8 @@ std::shared_ptr<Framebuffer> DeviceVk::create_framebuffer(const std::shared_ptr<
                                                           const std::string &_label) {
     auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
 
-    auto framebuffer_vk = std::make_shared<FramebufferVk>(device, render_pass_vk->vk_render_pass, texture);
+    auto framebuffer_vk =
+        std::shared_ptr<FramebufferVk>(new FramebufferVk(device, render_pass_vk->vk_render_pass, texture));
 
     framebuffer_vk->set_label(_label);
 
@@ -367,7 +369,7 @@ std::shared_ptr<Framebuffer> DeviceVk::create_framebuffer(const std::shared_ptr<
 }
 
 std::shared_ptr<Buffer> DeviceVk::create_buffer(const BufferDescriptor &desc, const std::string &label) {
-    auto buffer_vk = std::make_shared<BufferVk>(device, desc);
+    auto buffer_vk = std::shared_ptr<BufferVk>(new BufferVk(device, desc));
 
     auto vk_memory_property = to_vk_memory_property(desc.property);
 
@@ -394,6 +396,8 @@ std::shared_ptr<Buffer> DeviceVk::create_buffer(const BufferDescriptor &desc, co
                              buffer_vk->vk_buffer,
                              buffer_vk->vk_device_memory);
         } break;
+        default:
+            abort();
     }
 
     buffer_vk->set_label(label);
@@ -402,7 +406,7 @@ std::shared_ptr<Buffer> DeviceVk::create_buffer(const BufferDescriptor &desc, co
 }
 
 std::shared_ptr<Texture> DeviceVk::create_texture(const TextureDescriptor &desc, const std::string &label) {
-    auto texture_vk = std::make_shared<TextureVk>(device, desc);
+    auto texture_vk = std::shared_ptr<TextureVk>(new TextureVk(device, desc));
 
     create_vk_image(desc.size.x,
                     desc.size.y,
@@ -457,7 +461,7 @@ std::shared_ptr<Sampler> DeviceVk::create_sampler(SamplerDescriptor descriptor) 
         throw std::runtime_error("Failed to create texture sampler!");
     }
 
-    return std::make_shared<SamplerVk>(descriptor, sampler, device);
+    return std::shared_ptr<SamplerVk>(new SamplerVk(descriptor, sampler, device));
 }
 
 std::shared_ptr<CommandBuffer> DeviceVk::create_command_buffer(const std::string &_label) {
@@ -473,7 +477,7 @@ std::shared_ptr<CommandBuffer> DeviceVk::create_command_buffer(const std::string
     vkAllocateCommandBuffers(device, &alloc_info, &command_buffer);
     // ----------------------------------------
 
-    auto command_buffer_vk = std::make_shared<CommandBufferVk>(command_buffer, this);
+    auto command_buffer_vk = std::shared_ptr<CommandBufferVk>(new CommandBufferVk(command_buffer, this));
     command_buffer_vk->label = _label;
 
     return command_buffer_vk;

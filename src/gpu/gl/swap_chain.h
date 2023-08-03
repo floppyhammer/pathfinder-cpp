@@ -20,11 +20,11 @@ public:
     SwapChainGl(Vec2I _size, GLFWwindow *_window) : SwapChain(_size) {
         window = _window;
 
-        framebuffer = std::make_shared<FramebufferGl>(size);
+        framebuffer = std::shared_ptr<FramebufferGl>(new FramebufferGl(size));
 
-        command_buffer = std::make_shared<CommandBufferGl>();
+        command_buffer = std::shared_ptr<CommandBufferGl>(new CommandBufferGl());
 
-        render_pass = std::make_shared<RenderPassGl>(AttachmentLoadOp::Clear);
+        render_pass = std::shared_ptr<RenderPassGl>(new RenderPassGl(AttachmentLoadOp::Clear));
     }
 
     #endif

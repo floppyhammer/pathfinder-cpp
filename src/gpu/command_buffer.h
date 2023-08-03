@@ -173,6 +173,9 @@ public:
     }
 
 protected:
+    CommandBuffer() = default;
+
+protected:
     /// Debug label.
     std::string label;
 

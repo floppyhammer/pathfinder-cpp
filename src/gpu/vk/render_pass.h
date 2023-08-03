@@ -12,15 +12,16 @@ class RenderPassVk : public RenderPass {
     friend class DeviceVk;
 
 public:
+    ~RenderPassVk();
+
+    VkRenderPass get_vk_render_pass();
+
+private:
     RenderPassVk(VkDevice _device,
                  TextureFormat texture_format,
                  AttachmentLoadOp load_op,
                  bool is_swap_chain_pass,
                  const std::string &label);
-
-    ~RenderPassVk();
-
-    VkRenderPass get_vk_render_pass();
 
 private:
     VkRenderPass vk_render_pass{};

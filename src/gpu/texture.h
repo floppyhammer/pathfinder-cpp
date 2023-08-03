@@ -35,14 +35,17 @@ struct SamplerDescriptor {
 };
 
 class Sampler {
-public:
-    explicit Sampler(SamplerDescriptor _descriptor) : descriptor(_descriptor) {}
+    friend class DeviceGl;
 
+public:
     virtual ~Sampler() = default;
 
     SamplerDescriptor get_descriptor() const {
         return descriptor;
     }
+
+protected:
+    explicit Sampler(SamplerDescriptor _descriptor) : descriptor(_descriptor) {}
 
 protected:
     SamplerDescriptor descriptor;

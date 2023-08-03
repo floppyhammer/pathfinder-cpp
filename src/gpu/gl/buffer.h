@@ -11,9 +11,9 @@
 namespace Pathfinder {
 
 class BufferGl : public Buffer {
-public:
-    explicit BufferGl(const BufferDescriptor& _desc);
+    friend class DeviceGl;
 
+public:
     ~BufferGl();
 
     void upload_via_mapping(size_t data_size, size_t offset, void* data) override;
@@ -23,6 +23,9 @@ public:
     uint32_t get_handle() const;
 
     void set_label(const std::string& _label) override;
+
+private:
+    explicit BufferGl(const BufferDescriptor& _desc);
 
 private:
     uint32_t id = 0;

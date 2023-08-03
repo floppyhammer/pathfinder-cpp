@@ -11,6 +11,9 @@ public:
     virtual ~RenderPass() = default;
 
 protected:
+    RenderPass() = default;
+
+protected:
     /// Debug label.
     std::string label;
 };

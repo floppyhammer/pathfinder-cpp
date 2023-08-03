@@ -11,13 +11,16 @@
 namespace Pathfinder {
 
 class ComputePipelineGl : public ComputePipeline {
-public:
-    explicit ComputePipelineGl(const std::vector<char> &comp_source) {
-        program = std::make_shared<ComputeProgram>(comp_source);
-    }
+    friend class DeviceGl;
 
+public:
     inline std::shared_ptr<Program> get_program() {
         return program;
+    }
+
+private:
+    explicit ComputePipelineGl(const std::vector<char> &comp_source) {
+        program = std::make_shared<ComputeProgram>(comp_source);
     }
 
 private:

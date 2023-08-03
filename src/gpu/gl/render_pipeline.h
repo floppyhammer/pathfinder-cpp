@@ -13,7 +13,22 @@
 namespace Pathfinder {
 
 class RenderPipelineGl : public RenderPipeline {
+    friend class DeviceGl;
+
 public:
+    ~RenderPipelineGl() {
+        glDeleteVertexArrays(1, &vao);
+    };
+
+    inline std::shared_ptr<Program> get_program() {
+        return program;
+    }
+
+    inline uint32_t get_vao() const {
+        return vao;
+    }
+
+private:
     RenderPipelineGl(const std::vector<char> &vert_source,
                      const std::vector<char> &frag_source,
                      const std::vector<VertexInputAttributeDescription> &_attribute_descriptions,
@@ -29,18 +44,6 @@ public:
         DebugMarker::label_program(program->get_id(), label + " program");
         DebugMarker::label_vao(vao, label + " VAO");
     };
-
-    ~RenderPipelineGl() {
-        glDeleteVertexArrays(1, &vao);
-    };
-
-    inline std::shared_ptr<Program> get_program() {
-        return program;
-    }
-
-    inline uint32_t get_vao() const {
-        return vao;
-    }
 
 private:
     std::shared_ptr<RasterProgram> program;

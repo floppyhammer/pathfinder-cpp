@@ -12,10 +12,16 @@
 namespace Pathfinder {
 
 class CommandBufferGl : public CommandBuffer {
+    friend class DeviceGl;
+    friend class SwapChainGl;
+
 public:
     void finish() override;
 
     void submit_and_wait() override;
+
+private:
+    CommandBufferGl() = default;
 };
 
 } // namespace Pathfinder

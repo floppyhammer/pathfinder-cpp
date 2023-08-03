@@ -69,6 +69,8 @@ struct Descriptor {
  * Otherwise, it's a `set`.
  */
 class DescriptorSet {
+    friend class DeviceGl;
+
 public:
     virtual ~DescriptorSet() = default;
 
@@ -81,6 +83,9 @@ public:
     inline const std::unordered_map<uint32_t, Descriptor>& get_descriptors() const {
         return descriptors;
     }
+
+protected:
+    DescriptorSet() = default;
 
 protected:
     /// Binding point is used as the hashing key.
