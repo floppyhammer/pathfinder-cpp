@@ -3,13 +3,14 @@
 /// Period to calculate average frame time, in seconds.
 const float FRAME_TIME_PERIOD = 5;
 
-App::App(const std::shared_ptr<Device> &device,
-         const std::shared_ptr<Queue> &queue,
+App::App(const std::shared_ptr<Device> &_device,
+         const std::shared_ptr<Queue> &_queue,
          const std::vector<char> &svg_input,
          const std::vector<char> &img_input) {
     Logger::set_level(Logger::Level::Info);
 
-    this->device = device;
+    device = _device;
+    queue = _queue;
 
     // Set up a canvas.
     canvas = std::make_shared<Canvas>(device, queue);

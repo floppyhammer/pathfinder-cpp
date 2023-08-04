@@ -21,9 +21,10 @@ public:
 
     std::shared_ptr<Canvas> canvas;
 
-private:
     std::shared_ptr<Device> device;
+    std::shared_ptr<Queue> queue;
 
+private:
     std::chrono::time_point<std::chrono::steady_clock> last_time;
     uint32_t frame_count = 0;
 };
