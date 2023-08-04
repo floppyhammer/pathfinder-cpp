@@ -74,8 +74,9 @@ inline GLint to_gl_sampler_address_mode(SamplerAddressMode address_mode) {
             return GL_MIRRORED_REPEAT;
         case SamplerAddressMode::ClampToEdge:
             return GL_CLAMP_TO_EDGE;
-        case SamplerAddressMode::ClampToBorder:
-            return GL_CLAMP_TO_BORDER;
+            // Not available in GLES until 3.2.
+            //        case SamplerAddressMode::ClampToBorder:
+            //            return GL_CLAMP_TO_BORDER;
         default:
             abort();
     }

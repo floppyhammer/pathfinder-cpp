@@ -87,10 +87,10 @@ VulkanRenderInfo render;
 // Android Native App pointer...
 android_app *androidAppCtx = nullptr;
 
-std::shared_ptr<App> pathfinder_app;
-std::shared_ptr<Pathfinder::Device> device;
-std::shared_ptr<Pathfinder::RenderPass> render_pass;
-std::shared_ptr<Pathfinder::CommandBuffer> cmd_buffer;
+std::shared_ptr<App> pf_app;
+std::shared_ptr<Pathfinder::DeviceVk> pf_device;
+std::shared_ptr<Pathfinder::QueueVk> pf_queue;
+std::shared_ptr<Pathfinder::Sampler> pf_sampler;
 
 /*
  * setImageLayout():
@@ -791,23 +791,30 @@ bool InitVulkan(android_app *app) {
     // Pathfinder initialization.
     // -----------------------------
     // Wrap a device.
-    device = std::make_shared<Pathfinder::DeviceVk>(device.device_,
-                                                    device.gpuDevice_,
-                                                    device.queue_,
-                                                    render.cmdPool_);
+    pf_device = std::make_shared<Pathfinder::DeviceVk>(device.device_,
+                                                       device.gpuDevice_,
+                                                       device.queue_,
+                                                       render.cmdPool_);
+
+    // Wrap a queue.
+    pf_queue = std::make_shared<Pathfinder::QueueVk>(device.device_,
+                                                     device.queue_,
+                                                     device.queue_);
+
+    pf_sampler = pf_device->create_sampler(SamplerDescriptor{});
+
+    pf_app = std::make_shared<App>(pf_device,
+                                   pf_queue,
+                                   load_asset("features.svg"),
+                                   load_asset("sea.png"));
 
     auto window_size = Vec2I{(int) swapchain.displaySize_.width,
                              (int) swapchain.displaySize_.height};
 
-    pathfinder_app = std::make_shared<App>(device,
-                                           window_size,
-                                           load_asset("features.svg"),
-                                           load_asset("sea.png"));
+    auto dst_texture = pf_device->create_texture(
+            {window_size, TextureFormat::Rgba8Unorm}, "dst texture");
 
-    auto dst_texture = device->create_texture(
-            {window_size, TextureFormat::Rgba8Unorm, "dst texture"});
-
-    pathfinder_app->canvas->set_dst_texture(dst_texture);
+    pf_app->canvas->set_dst_texture(dst_texture);
 
     auto *texture_vk = static_cast<Pathfinder::TextureVk *>(dst_texture.get());
 
@@ -856,7 +863,7 @@ bool InitVulkan(android_app *app) {
         };
 
         VkDescriptorImageInfo imageInfo{
-                .sampler = texture_vk->get_sampler(),
+                .sampler = static_cast<Pathfinder::SamplerVk *>(pf_sampler.get())->get_sampler(),
                 .imageView = texture_vk->get_image_view(),
                 .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
         };
@@ -984,7 +991,7 @@ bool VulkanDrawFrame(void) {
                                   &nextIndex));
     CALL_VK(vkResetFences(device.device_, 1, &render.fence_));
 
-    pathfinder_app->update();
+    pf_app->update();
 
     VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     VkSubmitInfo submit_info = {.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,

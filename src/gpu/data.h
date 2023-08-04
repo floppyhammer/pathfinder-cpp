@@ -215,7 +215,7 @@ enum class SamplerAddressMode {
     Repeat,
     MirroredRepeat,
     ClampToEdge,
-    ClampToBorder,
+    ClampToBorder, // Not available in GLES until 3.2.
 };
 
 enum class SamplerFilter {

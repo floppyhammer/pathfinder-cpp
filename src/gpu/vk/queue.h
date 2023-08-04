@@ -16,6 +16,12 @@ class QueueVk : public Queue {
     friend class WindowVk;
 
 public:
+    QueueVk(VkDevice _device, VkQueue _graphics_queue, VkQueue _present_queue) {
+        device = _device;
+        graphics_queue = _graphics_queue;
+        present_queue = _present_queue;
+    }
+
     void submit_and_wait(std::shared_ptr<CommandEncoder> encoder) override {
         if (encoder->submitted) {
             Logger::error("Attempted to submit an encoder that's already been submitted!");
@@ -68,13 +74,6 @@ public:
 
         encoder_of_last_frame = encoder;
     };
-
-private:
-    QueueVk(VkDevice _device, VkQueue _graphics_queue, VkQueue _present_queue) {
-        device = _device;
-        graphics_queue = _graphics_queue;
-        present_queue = _present_queue;
-    }
 
 private:
     VkDevice device{};

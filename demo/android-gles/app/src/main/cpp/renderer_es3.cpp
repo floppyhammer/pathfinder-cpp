@@ -72,14 +72,16 @@ void RendererES3::init(int width, int height) {
     // Wrap a device.
     device = std::make_shared<Pathfinder::DeviceGl>();
 
-    app = std::make_shared<App>(device, window_size, svg_input, img_input);
+    queue = std::make_shared<Pathfinder::QueueGl>();
+
+    app = std::make_shared<App>(device, queue, svg_input, img_input);
 
     auto dst_texture = device->create_texture(
-            {window_size, TextureFormat::Rgba8Unorm, "dst texture"});
+            {window_size, TextureFormat::Rgba8Unorm}, "dst texture");
 
     app->canvas->set_dst_texture(dst_texture);
 
-    texture_rect = std::make_shared<TextureRect>(device, nullptr);
+    texture_rect = std::make_shared<TextureRect>(device, queue, nullptr);
     texture_rect->set_texture(dst_texture);
 }
 
@@ -101,9 +103,9 @@ void RendererES3::render() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, window_size.x, window_size.y);
 
-    auto cmd_buffer = device->create_command_buffer("");
+    auto encoder = device->create_command_encoder("");
 
-    texture_rect->draw(cmd_buffer, window_size);
+    texture_rect->draw(encoder, window_size);
 
-    cmd_buffer->finish();
+    queue->submit_and_wait(encoder);
 }
