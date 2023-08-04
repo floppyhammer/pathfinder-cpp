@@ -118,12 +118,12 @@ void composite_shadow_blur_render_targets(Scene &scene, const ShadowBlurRenderTa
     scene.push_draw_path(path_y);
 }
 
-Canvas::Canvas(const std::shared_ptr<Device> &_device) : device(_device) {
+Canvas::Canvas(const std::shared_ptr<Device> &_device, const std::shared_ptr<Queue> &_queue) : device(_device) {
     // Create the renderer.
 #ifndef PATHFINDER_USE_D3D11
-    renderer = std::make_shared<RendererD3D9>(device);
+    renderer = std::make_shared<RendererD3D9>(device, _queue);
 #else
-    renderer = std::make_shared<RendererD3D11>(device);
+    renderer = std::make_shared<RendererD3D11>(device, _queue);
 #endif
 
     // Set up pipelines.

@@ -5,7 +5,7 @@
 #include "../../common/math/mat4.h"
 #include "../../common/math/vec3.h"
 #include "../../common/timestamp.h"
-#include "../../gpu/command_buffer.h"
+#include "../../gpu/command_encoder.h"
 #include "../../gpu/device.h"
 #include "../../gpu/window.h"
 
@@ -41,7 +41,8 @@ const size_t CLIP_TILE_INSTANCE_SIZE = 16;
 // 65536
 const size_t MAX_FILLS_PER_BATCH = 0x10000;
 
-RendererD3D9::RendererD3D9(const std::shared_ptr<Device> &_device) : Renderer(_device) {
+RendererD3D9::RendererD3D9(const std::shared_ptr<Device> &_device, const std::shared_ptr<Queue> &_queue)
+    : Renderer(_device, _queue) {
     mask_render_pass_clear =
         device->create_render_pass(TextureFormat::Rgba16Float, AttachmentLoadOp::Clear, "Mask render pass clear");
 
@@ -63,12 +64,13 @@ RendererD3D9::RendererD3D9(const std::shared_ptr<Device> &_device) : Renderer(_d
     // Quad vertex buffer. Shared by fills and tiles drawing.
     quad_vertex_buffer_id = allocator->allocate_buffer(quad_vertex_data_size, BufferType::Vertex, "Quad vertex buffer");
 
-    auto cmd_buffer = device->create_command_buffer("Upload quad vertex data");
-    cmd_buffer->write_buffer(allocator->get_buffer(quad_vertex_buffer_id),
-                             0,
-                             quad_vertex_data_size,
-                             QUAD_VERTEX_POSITIONS);
-    cmd_buffer->submit_and_wait();
+    auto encoder = device->create_command_encoder("Upload quad vertex data");
+    encoder->write_buffer(allocator->get_buffer(quad_vertex_buffer_id),
+                          0,
+                          quad_vertex_data_size,
+                          QUAD_VERTEX_POSITIONS);
+
+    queue->submit_and_wait(encoder);
 }
 
 void RendererD3D9::set_dest_texture(const std::shared_ptr<Texture> &texture) {
@@ -317,15 +319,15 @@ void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &_scene_builder) {
 
     // No fills to draw.
     if (!scene_builder->pending_fills.empty()) {
-        auto cmd_buffer = device->create_command_buffer("Upload & draw fills");
+        auto encoder = device->create_command_encoder("Upload & draw fills");
 
         // Upload fills to buffer.
-        auto fill_vertex_buffer_id = upload_fills(scene_builder->pending_fills, cmd_buffer);
+        auto fill_vertex_buffer_id = upload_fills(scene_builder->pending_fills, encoder);
 
         // We can do fill drawing as soon as the fill vertex buffer is ready.
-        draw_fills(fill_vertex_buffer_id, scene_builder->pending_fills.size(), cmd_buffer);
+        draw_fills(fill_vertex_buffer_id, scene_builder->pending_fills.size(), encoder);
 
-        cmd_buffer->submit_and_wait();
+        queue->submit_and_wait(encoder);
 
         allocator->free_buffer(fill_vertex_buffer_id);
     }
@@ -334,18 +336,18 @@ void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &_scene_builder) {
     upload_and_draw_tiles(scene_builder->tile_batches);
 }
 
-uint64_t RendererD3D9::upload_fills(const std::vector<Fill> &fills, const std::shared_ptr<CommandBuffer> &cmd_buffer) {
+uint64_t RendererD3D9::upload_fills(const std::vector<Fill> &fills, const std::shared_ptr<CommandEncoder> &encoder) {
     auto byte_size = sizeof(Fill) * fills.size();
 
     auto fill_vertex_buffer_id = allocator->allocate_buffer(byte_size, BufferType::Vertex, "Fill vertex buffer");
 
-    cmd_buffer->write_buffer(allocator->get_buffer(fill_vertex_buffer_id), 0, byte_size, (void *)fills.data());
+    encoder->write_buffer(allocator->get_buffer(fill_vertex_buffer_id), 0, byte_size, (void *)fills.data());
 
     return fill_vertex_buffer_id;
 }
 
 uint64_t RendererD3D9::upload_z_buffer(const DenseTileMap<uint32_t> &z_buffer_map,
-                                       const std::shared_ptr<CommandBuffer> &cmd_buffer) {
+                                       const std::shared_ptr<CommandEncoder> &encoder) {
     // Prepare the Z buffer texture.
     // Its size is always the same as the dst framebuffer size.
     // Its size should depend on the batch's dst framebuffer, but it's easier to cache it this way.
@@ -353,18 +355,18 @@ uint64_t RendererD3D9::upload_z_buffer(const DenseTileMap<uint32_t> &z_buffer_ma
         allocator->allocate_texture(z_buffer_map.rect.size(), TextureFormat::Rgba8Unorm, "Z buffer texture");
 
     auto z_buffer_texture = allocator->get_texture(z_buffer_texture_id);
-    cmd_buffer->write_texture(z_buffer_texture, {}, z_buffer_map.data.data());
+    encoder->write_texture(z_buffer_texture, {}, z_buffer_map.data.data());
 
     return z_buffer_texture_id;
 }
 
 uint64_t RendererD3D9::upload_tiles(const std::vector<TileObjectPrimitive> &tiles,
-                                    const std::shared_ptr<CommandBuffer> &cmd_buffer) {
+                                    const std::shared_ptr<CommandEncoder> &encoder) {
     auto byte_size = sizeof(TileObjectPrimitive) * tiles.size();
 
     auto tile_vertex_buffer_id = allocator->allocate_buffer(byte_size, BufferType::Vertex, "Tile vertex buffer");
 
-    cmd_buffer->write_buffer(allocator->get_buffer(tile_vertex_buffer_id), 0, byte_size, (void *)tiles.data());
+    encoder->write_buffer(allocator->get_buffer(tile_vertex_buffer_id), 0, byte_size, (void *)tiles.data());
 
     return tile_vertex_buffer_id;
 }
@@ -384,29 +386,29 @@ void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &t
 
         // Different batches will use the same tile vertex buffer, so we need to make sure
         // that a batch is down drawing before processing the next batch.
-        auto cmd_buffer = device->create_command_buffer("Upload & draw tiles");
+        auto encoder = device->create_command_encoder("Upload & draw tiles");
 
         // Apply clip paths.
         if (!batch.clips.empty()) {
-            auto clip_buffer_info = upload_clip_tiles(batch.clips, cmd_buffer);
-            clip_tiles(clip_buffer_info, cmd_buffer);
+            auto clip_buffer_info = upload_clip_tiles(batch.clips, encoder);
+            clip_tiles(clip_buffer_info, encoder);
             // Although the command buffer is not submitted yet,
             // it's safe to free it here since the GPU resources are not actually freed.
             allocator->free_buffer(clip_buffer_info.clip_buffer_id);
         }
 
-        auto tile_vertex_buffer_id = upload_tiles(batch.tiles, cmd_buffer);
+        auto tile_vertex_buffer_id = upload_tiles(batch.tiles, encoder);
 
-        auto z_buffer_texture_id = upload_z_buffer(batch.z_buffer_data, cmd_buffer);
+        auto z_buffer_texture_id = upload_z_buffer(batch.z_buffer_data, encoder);
 
         draw_tiles(tile_vertex_buffer_id,
                    tile_count,
                    batch.render_target_id,
                    batch.color_texture_info,
                    z_buffer_texture_id,
-                   cmd_buffer);
+                   encoder);
 
-        cmd_buffer->submit_and_wait();
+        queue->submit_and_wait(encoder);
 
         allocator->free_texture(z_buffer_texture_id);
         allocator->free_buffer(tile_vertex_buffer_id);
@@ -415,37 +417,36 @@ void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &t
 
 void RendererD3D9::draw_fills(uint64_t fill_vertex_buffer_id,
                               uint32_t fills_count,
-                              const std::shared_ptr<CommandBuffer> &cmd_buffer) {
-    cmd_buffer->begin_render_pass(mask_render_pass_clear, allocator->get_framebuffer(mask_framebuffer_id), ColorF());
+                              const std::shared_ptr<CommandEncoder> &encoder) {
+    encoder->begin_render_pass(mask_render_pass_clear, allocator->get_framebuffer(mask_framebuffer_id), ColorF());
 
-    cmd_buffer->bind_render_pipeline(fill_pipeline);
+    encoder->bind_render_pipeline(fill_pipeline);
 
-    cmd_buffer->bind_vertex_buffers(
+    encoder->bind_vertex_buffers(
         {allocator->get_buffer(quad_vertex_buffer_id), allocator->get_buffer(fill_vertex_buffer_id)});
 
-    cmd_buffer->bind_descriptor_set(fill_descriptor_set);
+    encoder->bind_descriptor_set(fill_descriptor_set);
 
-    cmd_buffer->draw_instanced(6, fills_count);
+    encoder->draw_instanced(6, fills_count);
 
-    cmd_buffer->end_render_pass();
+    encoder->end_render_pass();
 }
 
 // Uploads clip tiles from CPU to GPU.
 ClipBufferInfo RendererD3D9::upload_clip_tiles(const std::vector<Clip> &clips,
-                                               const std::shared_ptr<CommandBuffer> &cmd_buffer) {
+                                               const std::shared_ptr<CommandEncoder> &encoder) {
     uint32_t clip_count = clips.size();
 
     auto byte_size = sizeof(Clip) * clip_count;
 
     auto clip_buffer_id = allocator->allocate_buffer(byte_size, BufferType::Vertex, "Clip buffer");
 
-    cmd_buffer->write_buffer(allocator->get_buffer(clip_buffer_id), 0, byte_size, (void *)clips.data());
+    encoder->write_buffer(allocator->get_buffer(clip_buffer_id), 0, byte_size, (void *)clips.data());
 
     return {clip_buffer_id, clip_count};
 }
 
-void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info,
-                              const std::shared_ptr<CommandBuffer> &cmd_buffer) {
+void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std::shared_ptr<CommandEncoder> &encoder) {
     // Temp mask framebuffer for clipping.
     auto temp_mask_framebuffer_id = allocator->allocate_framebuffer({MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT},
                                                                     TextureFormat::Rgba16Float,
@@ -456,18 +457,18 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info,
     // Copy out tiles.
     // TODO(pcwalton): Don't do this on GL4.
     {
-        cmd_buffer->begin_render_pass(mask_render_pass_clear, mask_temp_framebuffer, ColorF());
+        encoder->begin_render_pass(mask_render_pass_clear, mask_temp_framebuffer, ColorF());
 
-        cmd_buffer->bind_render_pipeline(tile_clip_copy_pipeline);
+        encoder->bind_render_pipeline(tile_clip_copy_pipeline);
 
-        cmd_buffer->bind_vertex_buffers({allocator->get_buffer(quad_vertex_buffer_id), clip_vertex_buffer});
+        encoder->bind_vertex_buffers({allocator->get_buffer(quad_vertex_buffer_id), clip_vertex_buffer});
 
-        cmd_buffer->bind_descriptor_set(tile_clip_copy_descriptor_set);
+        encoder->bind_descriptor_set(tile_clip_copy_descriptor_set);
 
         // Each clip introduces two instances.
-        cmd_buffer->draw_instanced(6, clip_buffer_info.clip_count * 2);
+        encoder->draw_instanced(6, clip_buffer_info.clip_count * 2);
 
-        cmd_buffer->end_render_pass();
+        encoder->end_render_pass();
     }
 
     // Combine clip tiles.
@@ -480,17 +481,17 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info,
                                 get_default_sampler()),
         });
 
-        cmd_buffer->begin_render_pass(mask_render_pass_load, allocator->get_framebuffer(mask_framebuffer_id), ColorF());
+        encoder->begin_render_pass(mask_render_pass_load, allocator->get_framebuffer(mask_framebuffer_id), ColorF());
 
-        cmd_buffer->bind_render_pipeline(tile_clip_combine_pipeline);
+        encoder->bind_render_pipeline(tile_clip_combine_pipeline);
 
-        cmd_buffer->bind_vertex_buffers({allocator->get_buffer(quad_vertex_buffer_id), clip_vertex_buffer});
+        encoder->bind_vertex_buffers({allocator->get_buffer(quad_vertex_buffer_id), clip_vertex_buffer});
 
-        cmd_buffer->bind_descriptor_set(tile_clip_combine_descriptor_set);
+        encoder->bind_descriptor_set(tile_clip_combine_descriptor_set);
 
-        cmd_buffer->draw_instanced(6, clip_buffer_info.clip_count);
+        encoder->draw_instanced(6, clip_buffer_info.clip_count);
 
-        cmd_buffer->end_render_pass();
+        encoder->end_render_pass();
     }
 
     allocator->free_framebuffer(temp_mask_framebuffer_id);
@@ -501,15 +502,15 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
                               const std::shared_ptr<RenderTargetId> &render_target_id,
                               const std::shared_ptr<TileBatchTextureInfo> &color_texture_info,
                               uint64_t z_buffer_texture_id,
-                              const std::shared_ptr<CommandBuffer> &cmd_buffer) {
+                              const std::shared_ptr<CommandEncoder> &encoder) {
     std::shared_ptr<Framebuffer> target_framebuffer;
 
     // If no specific RenderTarget is given, we render to the dst framebuffer.
     if (render_target_id == nullptr) {
         // Check if we should clear the dst framebuffer.
-        cmd_buffer->begin_render_pass(clear_dest_texture ? dest_render_pass_clear : dest_render_pass_load,
-                                      dest_framebuffer,
-                                      ColorF());
+        encoder->begin_render_pass(clear_dest_texture ? dest_render_pass_clear : dest_render_pass_load,
+                                   dest_framebuffer,
+                                   ColorF());
 
         target_framebuffer = dest_framebuffer;
 
@@ -523,7 +524,7 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
         auto framebuffer = render_target.framebuffer;
 
         // We always clear a render target.
-        cmd_buffer->begin_render_pass(dest_render_pass_clear, framebuffer, ColorF());
+        encoder->begin_render_pass(dest_render_pass_clear, framebuffer, ColorF());
 
         target_framebuffer = framebuffer;
     }
@@ -570,11 +571,8 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
 
         // We don't need to preserve the data until the upload commands are implemented because
         // these uniform buffers are host-visible/coherent.
-        cmd_buffer->write_buffer(allocator->get_buffer(tile_transform_ub_id), 0, 16 * sizeof(float), &model_mat);
-        cmd_buffer->write_buffer(allocator->get_buffer(tile_varying_sizes_ub_id),
-                                 0,
-                                 6 * sizeof(float),
-                                 ubo_data.data());
+        encoder->write_buffer(allocator->get_buffer(tile_transform_ub_id), 0, 16 * sizeof(float), &model_mat);
+        encoder->write_buffer(allocator->get_buffer(tile_varying_sizes_ub_id), 0, 6 * sizeof(float), ubo_data.data());
     }
 
     // Update descriptor set.
@@ -588,16 +586,16 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
         Descriptor::sampled(5, ShaderStage::Fragment, "uColorTexture0", color_texture, color_texture_sampler),
     });
 
-    cmd_buffer->bind_render_pipeline(tile_pipeline);
+    encoder->bind_render_pipeline(tile_pipeline);
 
-    cmd_buffer->bind_vertex_buffers(
+    encoder->bind_vertex_buffers(
         {allocator->get_buffer(quad_vertex_buffer_id), allocator->get_buffer(tile_vertex_buffer_id)});
 
-    cmd_buffer->bind_descriptor_set(tile_descriptor_set);
+    encoder->bind_descriptor_set(tile_descriptor_set);
 
-    cmd_buffer->draw_instanced(6, tiles_count);
+    encoder->draw_instanced(6, tiles_count);
 
-    cmd_buffer->end_render_pass();
+    encoder->end_render_pass();
 }
 
 } // namespace Pathfinder

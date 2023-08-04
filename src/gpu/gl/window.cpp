@@ -5,6 +5,7 @@
 
 #include "../../common/logger.h"
 #include "device.h"
+#include "queue.h"
 #include "swap_chain.h"
 
 #ifndef PATHFINDER_USE_VULKAN
@@ -78,8 +79,12 @@ void WindowGl::cleanup() {
         #endif
 }
 
-std::shared_ptr<Device> WindowGl::create_device() {
-    return std::make_shared<Pathfinder::DeviceGl>();
+std::shared_ptr<Device> WindowGl::request_device() {
+    return std::make_shared<DeviceGl>();
+}
+
+std::shared_ptr<Queue> WindowGl::create_queue() {
+    return std::shared_ptr<Queue>(new QueueGl());
 }
 
 std::shared_ptr<SwapChain> WindowGl::create_swap_chain(const std::shared_ptr<Device> &device) {

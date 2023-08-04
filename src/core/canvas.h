@@ -50,7 +50,7 @@ enum class PathOp {
 /// Normally, we only need one canvas to render multiple scenes.
 class Canvas {
 public:
-    explicit Canvas(const std::shared_ptr<Device> &_device);
+    explicit Canvas(const std::shared_ptr<Device> &_device, const std::shared_ptr<Queue> &_queue);
 
     /// Clears the current canvas.
     /// You shouldn't call this per frame.

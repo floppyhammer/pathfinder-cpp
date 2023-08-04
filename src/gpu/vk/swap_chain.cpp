@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <memory>
 
-#include "command_buffer.h"
+#include "command_encoder.h"
 #include "debug_marker.h"
 #include "window.h"
 
@@ -30,19 +30,12 @@ std::shared_ptr<Framebuffer> SwapChainVk::get_framebuffer() {
     return framebuffers[image_index];
 }
 
-std::shared_ptr<CommandBuffer> SwapChainVk::get_command_buffer() {
-    auto command_buffer_vk =
-        std::shared_ptr<CommandBufferVk>(new CommandBufferVk(command_buffers[image_index], device_vk));
-    command_buffer_vk->label = "Main";
-    return command_buffer_vk;
-}
-
 bool SwapChainVk::acquire_image() {
-    auto device = device_vk->get_device();
-
     if (window->is_minimized()) {
         return false;
     }
+
+    auto device = device_vk->get_device();
 
     // Wait for the frame to be finished.
     vkWaitForFences(device, 1, &in_flight_fences[current_frame], VK_TRUE, UINT64_MAX);
@@ -76,9 +69,6 @@ void SwapChainVk::init_swapchain() {
     create_render_pass();
 
     create_framebuffers();
-
-    // Create a command buffer for each swap chain image.
-    create_command_buffers();
 }
 
 void SwapChainVk::recreate_swapchain() {
@@ -93,13 +83,9 @@ void SwapChainVk::recreate_swapchain() {
 
 void SwapChainVk::cleanup_swapchain() {
     auto device = device_vk->get_device();
-    auto command_pool = device_vk->get_command_pool();
 
     // Wait on the host for the completion of outstanding queue operations for all queues on a given logical device.
     vkDeviceWaitIdle(device);
-
-    // Only command buffers are freed but not the pool.
-    vkFreeCommandBuffers(device, command_pool, static_cast<uint32_t>(command_buffers.size()), command_buffers.data());
 
     // We don't actually have to do this.
     framebuffers.clear();
@@ -223,6 +209,7 @@ void SwapChainVk::create_sync_objects() {
     image_available_semaphores.resize(MAX_FRAMES_IN_FLIGHT);
     render_finished_semaphores.resize(MAX_FRAMES_IN_FLIGHT);
     in_flight_fences.resize(MAX_FRAMES_IN_FLIGHT);
+
     images_in_flight.resize(swapchain_images.size(), VK_NULL_HANDLE);
 
     VkSemaphoreCreateInfo semaphore_info{};
@@ -241,28 +228,11 @@ void SwapChainVk::create_sync_objects() {
     }
 }
 
-void SwapChainVk::create_command_buffers() {
-    auto device = device_vk->get_device();
-    auto command_pool = device_vk->get_command_pool();
-
-    command_buffers.resize(framebuffers.size());
-
-    // Allocate command buffers.
-    VkCommandBufferAllocateInfo alloc_info{};
-    alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    alloc_info.commandPool = command_pool;
-    alloc_info.commandBufferCount = (uint32_t)command_buffers.size();
-
-    if (vkAllocateCommandBuffers(device, &alloc_info, command_buffers.data()) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to allocate command buffers!");
-    }
-}
-
-void SwapChainVk::flush() {
+void SwapChainVk::flush(const std::shared_ptr<CommandEncoder> &encoder) {
     auto device = device_vk->get_device();
     auto graphics_queue = device_vk->get_graphics_queue();
     auto present_queue = window->get_present_queue();
+    auto encoder_vk = (CommandEncoderVk *)encoder.get();
 
     if (images_in_flight[image_index] != VK_NULL_HANDLE) {
         vkWaitForFences(device, 1, &images_in_flight[image_index], VK_TRUE, UINT64_MAX);
@@ -281,7 +251,7 @@ void SwapChainVk::flush() {
     submit_info.pWaitDstStageMask = wait_stages;
 
     submit_info.commandBufferCount = 1;
-    submit_info.pCommandBuffers = &command_buffers[image_index];
+    submit_info.pCommandBuffers = &encoder_vk->vk_command_buffer;
 
     // The semaphores to signal after all commands in the buffer are finished.
     VkSemaphore signal_semaphores[] = {render_finished_semaphores[current_frame]};
@@ -295,6 +265,15 @@ void SwapChainVk::flush() {
     }
     // -------------------------------------
 
+    encoder->submitted = true;
+}
+
+void SwapChainVk::SwapChainVk::present() {
+    auto present_queue = window->get_present_queue();
+
+    // Wait until the image to present has finished rendering.
+    VkSemaphore signal_semaphores[] = {render_finished_semaphores[current_frame]};
+
     // Queue an image for presentation after queueing all rendering commands
     // and transitioning the image to the correct layout.
     // -------------------------------------
@@ -305,11 +284,11 @@ void SwapChainVk::flush() {
     present_info.waitSemaphoreCount = 1;
     present_info.pWaitSemaphores = signal_semaphores;
 
-    VkSwapchainKHR swapChains[] = {swapchain};
+    VkSwapchainKHR swapchains[] = {swapchain};
     present_info.swapchainCount = 1;
-    present_info.pSwapchains = swapChains;
+    present_info.pSwapchains = swapchains;
 
-    // Array of each swap chain’s presentable images.
+    // Array of each swap chain's presentable images.
     present_info.pImageIndices = &image_index;
 
     VkResult result = vkQueuePresentKHR(present_queue, &present_info);

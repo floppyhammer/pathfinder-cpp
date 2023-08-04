@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "../swap_chain.h"
-#include "command_buffer.h"
+#include "command_encoder.h"
 #include "framebuffer.h"
 #include "window.h"
 
@@ -21,6 +21,7 @@ const int MAX_FRAMES_IN_FLIGHT = 2;
 
 class SwapChainVk : public SwapChain {
     friend class DeviceVk;
+    friend class QueueVk;
 
 public:
     SwapChainVk(Vec2I _size, WindowVk *_window, DeviceVk *_device);
@@ -29,18 +30,16 @@ public:
 
     std::shared_ptr<Framebuffer> get_framebuffer() override;
 
-    std::shared_ptr<CommandBuffer> get_command_buffer() override;
-
     bool acquire_image() override;
 
 private:
-    std::shared_ptr<RenderPass> render_pass;
-    std::vector<std::shared_ptr<Framebuffer>> framebuffers;
-
     WindowVk *window{};
     DeviceVk *device_vk{};
 
     VkSwapchainKHR swapchain{};
+
+    std::shared_ptr<RenderPass> render_pass;
+    std::vector<std::shared_ptr<Framebuffer>> framebuffers;
 
     /// Swap chain images are allocated differently than normal images.
     /// Number of images doesn't necessarily equal to MAX_FRAMES_IN_FLIGHT (One is expected, the other is what we
@@ -53,8 +52,6 @@ private:
     /// The format for the swap chain images.
     /// Default will be VK_FORMAT_B8G8R8A8_SRGB.
     VkFormat swapchain_image_format{};
-
-    std::vector<VkCommandBuffer> command_buffers;
 
     /// Each frame should have its own set of semaphores, so a list is used.
     std::vector<VkSemaphore> image_available_semaphores;
@@ -110,13 +107,9 @@ private:
 
     void create_sync_objects();
 
-    /**
-     * Allocate command buffers in the pool.
-     * @dependency Command pool.
-     */
-    void create_command_buffers();
+    void flush(const std::shared_ptr<CommandEncoder> &encoder);
 
-    void flush() override;
+    void present() override;
 
     void cleanup() override;
 };

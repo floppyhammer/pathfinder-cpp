@@ -1,4 +1,4 @@
-#include "command_buffer.h"
+#include "command_encoder.h"
 
 #include <cassert>
 #include <functional>
@@ -168,21 +168,31 @@ void transition_image_layout(VkCommandBuffer command_buffer,
     vkCmdPipelineBarrier(command_buffer, src_stage, dst_stage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
-CommandBufferVk::CommandBufferVk(VkCommandBuffer _vk_command_buffer, DeviceVk *_device)
+CommandEncoderVk::CommandEncoderVk(VkCommandBuffer _vk_command_buffer, DeviceVk *_device)
     : vk_command_buffer(_vk_command_buffer), vk_device(_device->get_device()), device_vk(_device) {}
 
-VkCommandBuffer CommandBufferVk::get_vk_handle() const {
+void CommandEncoderVk::free() {
+    vkFreeCommandBuffers(vk_device, device_vk->get_command_pool(), 1, &vk_command_buffer);
+    vk_command_buffer = VK_NULL_HANDLE;
+}
+
+VkCommandBuffer CommandEncoderVk::get_vk_handle() const {
     return vk_command_buffer;
 }
 
-void CommandBufferVk::finish() {
+void CommandEncoderVk::finish() {
+    if (finished) {
+        Logger::error("Attempted to finished an encoder that's been finished previously!");
+        return;
+    }
+
     // Begin recording.
     VkCommandBufferBeginInfo begin_info{};
     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     begin_info.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 
     if (vkBeginCommandBuffer(vk_command_buffer, &begin_info) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to begin recording command buffer!");
+        throw std::runtime_error("Failed to begin recording vk command buffer!");
     }
 
     // Start a new debug marker region
@@ -535,11 +545,13 @@ void CommandBufferVk::finish() {
 
     // End recording the command buffer.
     if (vkEndCommandBuffer(vk_command_buffer) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to record command buffer!");
+        throw std::runtime_error("Failed to end vk command buffer!");
     }
+
+    finished = true;
 }
 
-void CommandBufferVk::sync_descriptor_set(DescriptorSet *descriptor_set) {
+void CommandEncoderVk::sync_descriptor_set(DescriptorSet *descriptor_set) {
     auto descriptor_set_vk = dynamic_cast<DescriptorSetVk *>(descriptor_set);
 
     // Make all image layouts ready.
@@ -628,31 +640,6 @@ void CommandBufferVk::sync_descriptor_set(DescriptorSet *descriptor_set) {
                                  nullptr);
         }
     }
-}
-
-void CommandBufferVk::submit_and_wait() {
-    finish();
-
-    // Submit the command buffer to the graphics queue.
-    VkSubmitInfo submit_info{};
-    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submit_info.commandBufferCount = 1;
-    submit_info.pCommandBuffers = &vk_command_buffer;
-
-    vkQueueSubmit(device_vk->get_graphics_queue(), 1, &submit_info, VK_NULL_HANDLE);
-
-    // Wait for the queue to finish commands.
-    vkQueueWaitIdle(device_vk->get_graphics_queue());
-
-    for (auto &callback : callbacks) {
-        callback();
-    }
-
-    callbacks.clear();
-
-    vkFreeCommandBuffers(vk_device, device_vk->get_command_pool(), 1, &vk_command_buffer);
-
-    vk_command_buffer = nullptr;
 }
 
 } // namespace Pathfinder

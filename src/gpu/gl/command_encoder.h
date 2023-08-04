@@ -5,23 +5,20 @@
 #include <memory>
 #include <queue>
 
-#include "../command_buffer.h"
+#include "../command_encoder.h"
 
 #ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
 
-class CommandBufferGl : public CommandBuffer {
+class CommandEncoderGl : public CommandEncoder {
     friend class DeviceGl;
     friend class SwapChainGl;
 
-public:
-    void finish() override;
-
-    void submit_and_wait() override;
-
 private:
-    CommandBufferGl() = default;
+    CommandEncoderGl() = default;
+
+    void finish() override;
 };
 
 } // namespace Pathfinder

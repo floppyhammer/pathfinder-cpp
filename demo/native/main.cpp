@@ -11,15 +11,17 @@ int main() {
     auto window = Window::new_impl(window_size);
 
     // Create a device via window.
-    auto device = window->create_device();
+    auto device = window->request_device();
+
+    auto queue = window->create_queue();
 
     // Create swap chain via window.
     auto swap_chain = window->create_swap_chain(device);
 
     // Create app.
-    App app(device, load_file_as_bytes("../assets/features.svg"), load_file_as_bytes("../assets/sea.png"));
+    App app(device, queue, load_file_as_bytes("../assets/features.svg"), load_file_as_bytes("../assets/sea.png"));
 
-    auto texture_rect = std::make_shared<TextureRect>(device, swap_chain->get_render_pass());
+    auto texture_rect = std::make_shared<TextureRect>(device, queue, swap_chain->get_render_pass());
 
     {
         auto dst_texture = device->create_texture({window_size, TextureFormat::Rgba8Unorm}, "dst texture");
@@ -49,23 +51,23 @@ int main() {
 
         app.update();
 
-        auto cmd_buffer = swap_chain->get_command_buffer();
+        auto encoder = device->create_command_encoder("Main encoder");
 
         auto framebuffer = swap_chain->get_framebuffer();
 
         // Swap chain render pass.
         {
-            cmd_buffer->begin_render_pass(swap_chain->get_render_pass(), framebuffer, ColorF(0.2, 0.2, 0.2, 1.0));
+            encoder->begin_render_pass(swap_chain->get_render_pass(), framebuffer, ColorF(0.2, 0.2, 0.2, 1.0));
 
             // Draw canvas to screen.
-            texture_rect->draw(cmd_buffer, framebuffer->get_size());
+            texture_rect->draw(encoder, framebuffer->get_size());
 
-            cmd_buffer->end_render_pass();
+            encoder->end_render_pass();
         }
 
-        cmd_buffer->finish();
+        queue->submit(encoder, swap_chain);
 
-        swap_chain->flush();
+        swap_chain->present();
     }
 
     swap_chain->cleanup();

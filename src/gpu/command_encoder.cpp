@@ -1,12 +1,11 @@
-#include "command_buffer.h"
-
 #include "../common/logger.h"
+#include "command_encoder.h"
 
 namespace Pathfinder {
 
-void CommandBuffer::begin_render_pass(const std::shared_ptr<RenderPass> &render_pass,
-                                      const std::shared_ptr<Framebuffer> &framebuffer,
-                                      ColorF clear_color) {
+void CommandEncoder::begin_render_pass(const std::shared_ptr<RenderPass> &render_pass,
+                                       const std::shared_ptr<Framebuffer> &framebuffer,
+                                       ColorF clear_color) {
     Command cmd;
     cmd.type = CommandType::BeginRenderPass;
 
@@ -19,7 +18,7 @@ void CommandBuffer::begin_render_pass(const std::shared_ptr<RenderPass> &render_
     commands.push_back(cmd);
 }
 
-void CommandBuffer::bind_render_pipeline(const std::shared_ptr<RenderPipeline> &pipeline) {
+void CommandEncoder::bind_render_pipeline(const std::shared_ptr<RenderPipeline> &pipeline) {
     Command cmd;
     cmd.type = CommandType::BindRenderPipeline;
 
@@ -29,7 +28,7 @@ void CommandBuffer::bind_render_pipeline(const std::shared_ptr<RenderPipeline> &
     commands.push_back(cmd);
 }
 
-void CommandBuffer::bind_vertex_buffers(std::vector<std::shared_ptr<Buffer>> vertex_buffers) {
+void CommandEncoder::bind_vertex_buffers(std::vector<std::shared_ptr<Buffer>> vertex_buffers) {
     Command cmd;
     cmd.type = CommandType::BindVertexBuffers;
 
@@ -44,7 +43,7 @@ void CommandBuffer::bind_vertex_buffers(std::vector<std::shared_ptr<Buffer>> ver
     commands.push_back(cmd);
 }
 
-void CommandBuffer::bind_descriptor_set(const std::shared_ptr<DescriptorSet> &descriptor_set) {
+void CommandEncoder::bind_descriptor_set(const std::shared_ptr<DescriptorSet> &descriptor_set) {
     Command cmd;
     cmd.type = CommandType::BindDescriptorSet;
 
@@ -54,7 +53,7 @@ void CommandBuffer::bind_descriptor_set(const std::shared_ptr<DescriptorSet> &de
     commands.push_back(cmd);
 }
 
-void CommandBuffer::bind_compute_pipeline(const std::shared_ptr<ComputePipeline> &pipeline) {
+void CommandEncoder::bind_compute_pipeline(const std::shared_ptr<ComputePipeline> &pipeline) {
     Command cmd;
     cmd.type = CommandType::BindComputePipeline;
 
@@ -64,7 +63,7 @@ void CommandBuffer::bind_compute_pipeline(const std::shared_ptr<ComputePipeline>
     commands.push_back(cmd);
 }
 
-void CommandBuffer::draw(uint32_t first_vertex, uint32_t vertex_count) {
+void CommandEncoder::draw(uint32_t first_vertex, uint32_t vertex_count) {
     Command cmd;
     cmd.type = CommandType::Draw;
 
@@ -75,7 +74,7 @@ void CommandBuffer::draw(uint32_t first_vertex, uint32_t vertex_count) {
     commands.push_back(cmd);
 }
 
-void CommandBuffer::draw_instanced(uint32_t vertex_count, uint32_t instance_count) {
+void CommandEncoder::draw_instanced(uint32_t vertex_count, uint32_t instance_count) {
     Command cmd;
     cmd.type = CommandType::DrawInstanced;
 
@@ -86,23 +85,23 @@ void CommandBuffer::draw_instanced(uint32_t vertex_count, uint32_t instance_coun
     commands.push_back(cmd);
 }
 
-void CommandBuffer::end_render_pass() {
+void CommandEncoder::end_render_pass() {
     Command cmd;
     cmd.type = CommandType::EndRenderPass;
 
     commands.push_back(cmd);
 }
 
-void CommandBuffer::begin_compute_pass() {
+void CommandEncoder::begin_compute_pass() {
     Command cmd;
     cmd.type = CommandType::BeginComputePass;
 
     commands.push_back(cmd);
 }
 
-void CommandBuffer::dispatch(uint32_t group_size_x, uint32_t group_size_y, uint32_t group_size_z) {
+void CommandEncoder::dispatch(uint32_t group_size_x, uint32_t group_size_y, uint32_t group_size_z) {
     if (group_size_x == 0 || group_size_y == 0 || group_size_z == 0) {
-        Logger::error("Compute group size cannot be zero!", "CommandBuffer");
+        Logger::error("Compute group size cannot be zero!", "CommandEncoder");
         return;
     }
 
@@ -117,24 +116,24 @@ void CommandBuffer::dispatch(uint32_t group_size_x, uint32_t group_size_y, uint3
     commands.push_back(cmd);
 }
 
-void CommandBuffer::end_compute_pass() {
+void CommandEncoder::end_compute_pass() {
     Command cmd;
     cmd.type = CommandType::EndComputePass;
 
     commands.push_back(cmd);
 }
 
-void CommandBuffer::write_buffer(const std::shared_ptr<Buffer> &buffer,
-                                 uint32_t offset,
-                                 uint32_t data_size,
-                                 void *data) {
+void CommandEncoder::write_buffer(const std::shared_ptr<Buffer> &buffer,
+                                  uint32_t offset,
+                                  uint32_t data_size,
+                                  void *data) {
     if (data_size == 0 || data == nullptr) {
-        Logger::error("Tried to write buffer with invalid data!", "CommandBuffer");
+        Logger::error("Tried to write buffer with invalid data!", "CommandEncoder");
         return;
     }
 
     if (buffer == nullptr) {
-        Logger::error("Tried to write invalid buffer!", "CommandBuffer");
+        Logger::error("Tried to write invalid buffer!", "CommandEncoder");
         return;
     }
 
@@ -156,7 +155,7 @@ void CommandBuffer::write_buffer(const std::shared_ptr<Buffer> &buffer,
     commands.push_back(cmd);
 }
 
-void CommandBuffer::write_texture(const std::shared_ptr<Texture> &texture, RectI _region, const void *data) {
+void CommandEncoder::write_texture(const std::shared_ptr<Texture> &texture, RectI _region, const void *data) {
     auto whole_region = RectI({0, 0}, {texture->get_size()});
 
     // Invalid region represents the whole texture.
@@ -164,7 +163,7 @@ void CommandBuffer::write_texture(const std::shared_ptr<Texture> &texture, RectI
 
     // Check if the region is a subset of the whole texture region.
     if (!region.union_rect(whole_region).is_valid() || region.area() == 0) {
-        Logger::error("Tried to write invalid region of a texture!", "CommandBuffer");
+        Logger::error("Tried to write invalid region of a texture!", "CommandEncoder");
         return;
     }
 
@@ -182,10 +181,10 @@ void CommandBuffer::write_texture(const std::shared_ptr<Texture> &texture, RectI
     commands.push_back(cmd);
 }
 
-void CommandBuffer::read_buffer(const std::shared_ptr<Buffer> &buffer,
-                                uint32_t offset,
-                                uint32_t data_size,
-                                void *data) {
+void CommandEncoder::read_buffer(const std::shared_ptr<Buffer> &buffer,
+                                 uint32_t offset,
+                                 uint32_t data_size,
+                                 void *data) {
     switch (buffer->get_type()) {
         case BufferType::Storage: {
             if (data_size == 0 || data == nullptr) {
@@ -211,7 +210,7 @@ void CommandBuffer::read_buffer(const std::shared_ptr<Buffer> &buffer,
             commands.push_back(cmd);
         } break;
         default: {
-            Logger::error("Cannot read data from non-storage buffers!", "CommandBuffer");
+            Logger::error("Cannot read data from non-storage buffers!", "CommandEncoder");
         } break;
     }
 }

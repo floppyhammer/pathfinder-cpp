@@ -1,4 +1,4 @@
-#include "command_buffer.h"
+#include "command_encoder.h"
 
 #include <cassert>
 
@@ -13,7 +13,7 @@
 
 namespace Pathfinder {
 
-void CommandBufferGl::finish() {
+void CommandEncoderGl::finish() {
     while (!commands.empty()) {
         auto &cmd = commands.front();
 
@@ -298,17 +298,6 @@ void CommandBufferGl::finish() {
 
         commands.pop_front();
     }
-}
-
-void CommandBufferGl::submit_and_wait() {
-    finish();
-
-    // Release allocated memory if there's any.
-    for (auto &callback : callbacks) {
-        callback();
-    }
-
-    callbacks.clear();
 }
 
 } // namespace Pathfinder

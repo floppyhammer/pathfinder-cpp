@@ -35,7 +35,7 @@ public:
 
     std::shared_ptr<Sampler> create_sampler(SamplerDescriptor descriptor) override;
 
-    std::shared_ptr<CommandBuffer> create_command_buffer(const std::string &label) override;
+    std::shared_ptr<CommandEncoder> create_command_encoder(const std::string &label) override;
 
     std::shared_ptr<DescriptorSet> create_descriptor_set() override;
 

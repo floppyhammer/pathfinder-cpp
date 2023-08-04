@@ -43,7 +43,9 @@ class WindowVk : public Window {
 public:
     explicit WindowVk(Vec2I _size);
 
-    std::shared_ptr<Device> create_device() override;
+    std::shared_ptr<Device> request_device() override;
+
+    std::shared_ptr<Queue> create_queue() override;
 
     std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Device> &device) override;
 

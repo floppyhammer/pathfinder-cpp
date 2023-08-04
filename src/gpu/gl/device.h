@@ -8,7 +8,7 @@
 #include "../../common/math/basic.h"
 #include "../device.h"
 #include "buffer.h"
-#include "command_buffer.h"
+#include "command_encoder.h"
 #include "swap_chain.h"
 #include "texture.h"
 
@@ -28,7 +28,7 @@ public:
 
     std::shared_ptr<Sampler> create_sampler(SamplerDescriptor descriptor) override;
 
-    std::shared_ptr<CommandBuffer> create_command_buffer(const std::string &label) override;
+    std::shared_ptr<CommandEncoder> create_command_encoder(const std::string &label) override;
 
     std::shared_ptr<RenderPass> create_render_pass(TextureFormat format,
                                                    AttachmentLoadOp load_op,

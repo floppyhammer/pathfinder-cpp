@@ -4,6 +4,7 @@
 const float FRAME_TIME_PERIOD = 5;
 
 App::App(const std::shared_ptr<Device> &device,
+         const std::shared_ptr<Queue> &queue,
          const std::vector<char> &svg_input,
          const std::vector<char> &img_input) {
     Logger::set_level(Logger::Level::Info);
@@ -11,7 +12,7 @@ App::App(const std::shared_ptr<Device> &device,
     this->device = device;
 
     // Set up a canvas.
-    canvas = std::make_shared<Canvas>(device);
+    canvas = std::make_shared<Canvas>(device, queue);
 
     // TEST: Clip path.
     if (false) {

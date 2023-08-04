@@ -5,6 +5,7 @@
 
 #include "debug_marker.h"
 #include "device.h"
+#include "queue.h"
 #include "swap_chain.h"
 
 #ifdef PATHFINDER_USE_VULKAN
@@ -58,8 +59,14 @@ WindowVk::WindowVk(Vec2I _window_size) : Window(_window_size) {
     create_command_pool();
 }
 
-std::shared_ptr<Device> WindowVk::create_device() {
-    return std::make_shared<DeviceVk>(vk_device, physical_device, graphics_queue, command_pool);
+std::shared_ptr<Device> WindowVk::request_device() {
+    auto device = std::make_shared<DeviceVk>(vk_device, physical_device, graphics_queue, command_pool);
+    return device;
+}
+
+std::shared_ptr<Queue> WindowVk::create_queue() {
+    auto queue = std::shared_ptr<QueueVk>(new QueueVk(vk_device, graphics_queue, present_queue));
+    return queue;
 }
 
 void WindowVk::create_command_pool() {

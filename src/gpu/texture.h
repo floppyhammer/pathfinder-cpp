@@ -53,8 +53,6 @@ protected:
 
 class Texture {
 public:
-    explicit Texture(TextureDescriptor _desc) : desc(_desc) {}
-
     virtual ~Texture() = default;
 
     inline Vec2I get_size() const {
@@ -69,6 +67,9 @@ public:
     virtual void set_label(const std::string& _label) {
         label = _label;
     }
+
+protected:
+    explicit Texture(TextureDescriptor _desc) : desc(_desc) {}
 
 protected:
     TextureDescriptor desc;

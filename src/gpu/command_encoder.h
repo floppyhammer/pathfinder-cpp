@@ -111,9 +111,13 @@ struct Command {
 /// Don't do any modifications to command arguments until the buffer is submitted.
 /// Maybe this command buffer will not be executed at all.
 /// Or maybe a later generated command buffer will be executed first.
-class CommandBuffer {
+class CommandEncoder {
+    friend class QueueVk;
+    friend class QueueGl;
+    friend class SwapChainVk;
+
 public:
-    virtual ~CommandBuffer() = default;
+    virtual ~CommandEncoder() = default;
 
     // RENDER PASS
 
@@ -162,18 +166,14 @@ public:
 
     void read_buffer(const std::shared_ptr<Buffer> &buffer, uint32_t offset, uint32_t data_size, void *data);
 
-    // SUBMIT
-
-    virtual void finish() = 0;
-
-    virtual void submit_and_wait() = 0;
-
     inline void add_callback(const std::function<void()> &callback) {
         callbacks.push_back(callback);
     }
 
 protected:
-    CommandBuffer() = default;
+    CommandEncoder() = default;
+
+    virtual void finish() = 0;
 
 protected:
     /// Debug label.
@@ -181,8 +181,10 @@ protected:
 
     std::deque<Command> commands;
 
-    bool one_time = false;
+    /// Finished recording.
+    bool finished = false;
 
+    /// Submitted by a queue.
     bool submitted = false;
 
     /// Callbacks after the commands are submitted and waited for finish.

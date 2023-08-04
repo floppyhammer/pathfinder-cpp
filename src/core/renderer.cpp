@@ -10,7 +10,8 @@
 
 namespace Pathfinder {
 
-Renderer::Renderer(const std::shared_ptr<Device> &_device) : device(_device) {
+Renderer::Renderer(const std::shared_ptr<Device> &_device, const std::shared_ptr<Queue> &_queue)
+    : device(_device), queue(_queue) {
     allocator = std::make_shared<GpuMemoryAllocator>(device);
 
     // Uniform buffer for some constants.
@@ -36,13 +37,13 @@ Renderer::Renderer(const std::shared_ptr<Device> &_device) : device(_device) {
                                                       TextureFormat::Rgba16Float,
                                                       "Metadata texture");
 
-    auto cmd_buffer = device->create_command_buffer("Upload constant data");
+    auto encoder = device->create_command_encoder("Upload constant data");
 
-    cmd_buffer->write_buffer(allocator->get_buffer(constants_ub_id), 0, 6 * sizeof(float), constants.data());
+    encoder->write_buffer(allocator->get_buffer(constants_ub_id), 0, 6 * sizeof(float), constants.data());
 
-    cmd_buffer->write_texture(allocator->get_texture(area_lut_texture_id), {}, image_buffer->get_data());
+    encoder->write_texture(allocator->get_texture(area_lut_texture_id), {}, image_buffer->get_data());
 
-    cmd_buffer->submit_and_wait();
+    queue->submit_and_wait(encoder);
 }
 
 Renderer::~Renderer() {
@@ -112,9 +113,9 @@ void Renderer::upload_texel_data(std::vector<ColorU> &texels, TextureLocation lo
     auto framebuffer = allocator->get_framebuffer(texture_page->framebuffer_id);
     auto texture = framebuffer->get_texture();
 
-    auto cmd_buffer = device->create_command_buffer("Upload data of the pattern texture pages");
-    cmd_buffer->write_texture(texture, location.rect, texels.data());
-    cmd_buffer->submit_and_wait();
+    auto encoder = device->create_command_encoder("Upload data of the pattern texture pages");
+    encoder->write_texture(texture, location.rect, texels.data());
+    queue->submit_and_wait(encoder);
 
     texture_page->must_preserve_contents = true;
 }
@@ -259,10 +260,10 @@ void Renderer::upload_texture_metadata(const std::vector<TextureMetadataEntry> &
     // Callback to clean up staging resources.
     auto callback = [raw_texels] { delete[] raw_texels; };
 
-    auto cmd_buffer = device->create_command_buffer("Upload to metadata texture");
-    cmd_buffer->add_callback(callback);
-    cmd_buffer->write_texture(allocator->get_texture(metadata_texture_id), region_rect, raw_texels);
-    cmd_buffer->submit_and_wait();
+    auto encoder = device->create_command_encoder("Upload to metadata texture");
+    encoder->add_callback(callback);
+    encoder->write_texture(allocator->get_texture(metadata_texture_id), region_rect, raw_texels);
+    queue->submit_and_wait(encoder);
 }
 
 } // namespace Pathfinder

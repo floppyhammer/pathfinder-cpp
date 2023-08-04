@@ -55,7 +55,7 @@ private:
     std::shared_ptr<RenderPass> dest_render_pass_clear, dest_render_pass_load;
 
 public:
-    explicit RendererD3D9(const std::shared_ptr<Device> &_device);
+    explicit RendererD3D9(const std::shared_ptr<Device> &_device, const std::shared_ptr<Queue> &_queue);
 
     void set_up_pipelines() override;
 
@@ -74,19 +74,19 @@ private:
     void upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &tile_batches);
 
     /// Upload fills data to GPU.
-    uint64_t upload_fills(const std::vector<Fill> &fills, const std::shared_ptr<CommandBuffer> &cmd_buffer);
+    uint64_t upload_fills(const std::vector<Fill> &fills, const std::shared_ptr<CommandEncoder> &cmd_buffer);
 
-    ClipBufferInfo upload_clip_tiles(const std::vector<Clip> &clips, const std::shared_ptr<CommandBuffer> &cmd_buffer);
+    ClipBufferInfo upload_clip_tiles(const std::vector<Clip> &clips, const std::shared_ptr<CommandEncoder> &cmd_buffer);
 
     /// Apply clip paths.
-    void clip_tiles(const ClipBufferInfo &clip_buffer_info, const std::shared_ptr<CommandBuffer> &cmd_buffer);
+    void clip_tiles(const ClipBufferInfo &clip_buffer_info, const std::shared_ptr<CommandEncoder> &cmd_buffer);
 
     uint64_t upload_z_buffer(const DenseTileMap<uint32_t> &z_buffer_map,
-                             const std::shared_ptr<CommandBuffer> &cmd_buffer);
+                             const std::shared_ptr<CommandEncoder> &cmd_buffer);
 
     /// Upload tiles data to GPU.
     uint64_t upload_tiles(const std::vector<TileObjectPrimitive> &tiles,
-                          const std::shared_ptr<CommandBuffer> &cmd_buffer);
+                          const std::shared_ptr<CommandEncoder> &cmd_buffer);
 
     /// Draw tiles.
     void draw_tiles(uint64_t tile_vertex_buffer_id,
@@ -94,12 +94,12 @@ private:
                     const std::shared_ptr<RenderTargetId> &render_target_id,
                     const std::shared_ptr<TileBatchTextureInfo> &color_texture_info,
                     uint64_t z_buffer_texture_id,
-                    const std::shared_ptr<CommandBuffer> &cmd_buffer);
+                    const std::shared_ptr<CommandEncoder> &cmd_buffer);
 
     /// Draw the mask texture. Use Renderer::buffered_fills.
     void draw_fills(uint64_t fill_vertex_buffer_id,
                     uint32_t fills_count,
-                    const std::shared_ptr<CommandBuffer> &cmd_buffer);
+                    const std::shared_ptr<CommandEncoder> &cmd_buffer);
 };
 
 } // namespace Pathfinder

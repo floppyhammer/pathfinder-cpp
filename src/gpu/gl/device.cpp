@@ -35,8 +35,8 @@ std::shared_ptr<Sampler> DeviceGl::create_sampler(SamplerDescriptor descriptor) 
     return std::shared_ptr<Sampler>(new Sampler(descriptor));
 }
 
-std::shared_ptr<CommandBuffer> DeviceGl::create_command_buffer(const std::string &label) {
-    return std::shared_ptr<CommandBufferGl>(new CommandBufferGl());
+std::shared_ptr<CommandEncoder> DeviceGl::create_command_encoder(const std::string &label) {
+    return std::shared_ptr<CommandEncoderGl>(new CommandEncoderGl());
 }
 
 std::shared_ptr<RenderPass> DeviceGl::create_render_pass(TextureFormat format,

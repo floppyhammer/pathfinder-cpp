@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include "../../src/gpu/command_buffer.h"
+#include "../../src/gpu/command_encoder.h"
 #include "../../src/gpu/descriptor_set.h"
 #include "../../src/gpu/framebuffer.h"
 #include "../../src/gpu/render_pipeline.h"
@@ -17,11 +17,13 @@ using namespace Pathfinder;
  */
 class TextureRect {
 public:
-    TextureRect(const std::shared_ptr<Device> &_device, const std::shared_ptr<RenderPass> &render_pass);
+    TextureRect(const std::shared_ptr<Device> &_device,
+                const std::shared_ptr<Queue> &_queue,
+                const std::shared_ptr<RenderPass> &render_pass);
 
     void set_texture(const std::shared_ptr<Texture> &new_texture);
 
-    void draw(const std::shared_ptr<CommandBuffer> &cmd_buffer, const Vec2I &framebuffer_size);
+    void draw(const std::shared_ptr<CommandEncoder> &cmd_buffer, const Vec2I &framebuffer_size);
 
 private:
     Vec2F position;
@@ -29,6 +31,8 @@ private:
     Vec2F scale{1};
 
     std::shared_ptr<Device> device;
+
+    std::shared_ptr<Queue> queue;
 
     std::shared_ptr<Texture> texture;
 

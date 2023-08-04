@@ -2,6 +2,7 @@
 #define PATHFINDER_GPU_WINDOW_H
 
 #include "device.h"
+#include "queue.h"
 
 namespace Pathfinder {
 
@@ -11,7 +12,9 @@ public:
 
     static std::shared_ptr<Window> new_impl(Vec2I _size);
 
-    virtual std::shared_ptr<Device> create_device() = 0;
+    virtual std::shared_ptr<Device> request_device() = 0;
+
+    virtual std::shared_ptr<Queue> create_queue() = 0;
 
     virtual std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Device> &device) = 0;
 

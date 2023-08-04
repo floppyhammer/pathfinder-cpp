@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include "../gpu/device.h"
+#include "../gpu/queue.h"
 #include "../gpu_mem/allocator.h"
 #include "data/data.h"
 #include "scene_builder.h"
@@ -43,7 +44,7 @@ public:
 /// All GPU operations happens in the renderer.
 class Renderer {
 public:
-    explicit Renderer(const std::shared_ptr<Device> &_device);
+    explicit Renderer(const std::shared_ptr<Device> &_device, const std::shared_ptr<Queue> &_queue);
 
     ~Renderer();
 
@@ -87,6 +88,8 @@ public:
     std::shared_ptr<Sampler> get_default_sampler();
 
     std::shared_ptr<Device> device;
+
+    std::shared_ptr<Queue> queue;
 
 protected:
     /// If we should clear the dest framebuffer or texture.

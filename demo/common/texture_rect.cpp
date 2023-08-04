@@ -14,8 +14,11 @@
     #include "../../src/shaders/generated/blit_vert.h"
 #endif
 
-TextureRect::TextureRect(const std::shared_ptr<Device> &_device, const std::shared_ptr<RenderPass> &render_pass) {
+TextureRect::TextureRect(const std::shared_ptr<Device> &_device,
+                         const std::shared_ptr<Queue> &_queue,
+                         const std::shared_ptr<RenderPass> &render_pass) {
     device = _device;
+    queue = _queue;
 
     // Set up vertex data (and buffer(s)) and configure vertex attributes.
     float vertices[] = {// Positions, UVs.
@@ -31,9 +34,9 @@ TextureRect::TextureRect(const std::shared_ptr<Device> &_device, const std::shar
 
     sampler = device->create_sampler(SamplerDescriptor{});
 
-    auto cmd_buffer = device->create_command_buffer("Upload TextureRect vertex buffer");
-    cmd_buffer->write_buffer(vertex_buffer, 0, sizeof(vertices), (void *)vertices);
-    cmd_buffer->submit_and_wait();
+    auto encoder = device->create_command_encoder("Upload TextureRect vertex buffer");
+    encoder->write_buffer(vertex_buffer, 0, sizeof(vertices), (void *)vertices);
+    _queue->submit_and_wait(encoder);
 
     // Pipeline.
     {
@@ -81,7 +84,7 @@ void TextureRect::set_texture(const std::shared_ptr<Texture> &new_texture) {
     size = texture->get_size().to_f32();
 }
 
-void TextureRect::draw(const std::shared_ptr<CommandBuffer> &cmd_buffer, const Vec2I &framebuffer_size) {
+void TextureRect::draw(const std::shared_ptr<CommandEncoder> &encoder, const Vec2I &framebuffer_size) {
     // Get MVP matrix.
     // -------------------------------
     // The actual application order of these matrices is reversed.
@@ -94,13 +97,13 @@ void TextureRect::draw(const std::shared_ptr<CommandBuffer> &cmd_buffer, const V
     auto mvp_mat = model_mat;
     // -------------------------------
 
-    cmd_buffer->write_buffer(uniform_buffer, 0, 16 * sizeof(float), &mvp_mat);
+    encoder->write_buffer(uniform_buffer, 0, 16 * sizeof(float), &mvp_mat);
 
-    cmd_buffer->bind_render_pipeline(pipeline);
+    encoder->bind_render_pipeline(pipeline);
 
-    cmd_buffer->bind_vertex_buffers({vertex_buffer});
+    encoder->bind_vertex_buffers({vertex_buffer});
 
-    cmd_buffer->bind_descriptor_set(descriptor_set);
+    encoder->bind_descriptor_set(descriptor_set);
 
-    cmd_buffer->draw(0, 6);
+    encoder->draw(0, 6);
 }

@@ -3,7 +3,7 @@
 
 #include "../../common/global_macros.h"
 #include "../swap_chain.h"
-#include "command_buffer.h"
+#include "command_encoder.h"
 #include "framebuffer.h"
 #include "render_pass.h"
 
@@ -22,7 +22,7 @@ public:
 
         framebuffer = std::shared_ptr<FramebufferGl>(new FramebufferGl(size));
 
-        command_buffer = std::shared_ptr<CommandBufferGl>(new CommandBufferGl());
+        command_buffer = std::shared_ptr<CommandEncoderGl>(new CommandEncoderGl());
 
         render_pass = std::shared_ptr<RenderPassGl>(new RenderPassGl(AttachmentLoadOp::Clear));
     }
@@ -37,15 +37,11 @@ public:
         return framebuffer;
     }
 
-    inline std::shared_ptr<CommandBuffer> get_command_buffer() override {
-        return command_buffer;
-    }
-
     inline bool acquire_image() override {
         return true;
     }
 
-    inline void flush() override {
+    inline void present() override {
     #ifndef __ANDROID__
         glfwSwapBuffers(window);
     #endif
@@ -59,7 +55,7 @@ private:
     #endif
     std::shared_ptr<RenderPass> render_pass;
     std::shared_ptr<Framebuffer> framebuffer;
-    std::shared_ptr<CommandBuffer> command_buffer;
+    std::shared_ptr<CommandEncoder> command_buffer;
 };
 
 } // namespace Pathfinder

@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "buffer.h"
-#include "command_buffer.h"
+#include "command_encoder.h"
 #include "compute_pipeline.h"
 #include "data.h"
 #include "debug_marker.h"
@@ -464,7 +464,7 @@ std::shared_ptr<Sampler> DeviceVk::create_sampler(SamplerDescriptor descriptor) 
     return std::shared_ptr<SamplerVk>(new SamplerVk(descriptor, sampler, device));
 }
 
-std::shared_ptr<CommandBuffer> DeviceVk::create_command_buffer(const std::string &_label) {
+std::shared_ptr<CommandEncoder> DeviceVk::create_command_encoder(const std::string &_label) {
     // Allocate a command buffer.
     // ----------------------------------------
     VkCommandBufferAllocateInfo alloc_info{};
@@ -477,10 +477,10 @@ std::shared_ptr<CommandBuffer> DeviceVk::create_command_buffer(const std::string
     vkAllocateCommandBuffers(device, &alloc_info, &command_buffer);
     // ----------------------------------------
 
-    auto command_buffer_vk = std::shared_ptr<CommandBufferVk>(new CommandBufferVk(command_buffer, this));
-    command_buffer_vk->label = _label;
+    auto command_encoder_vk = std::shared_ptr<CommandEncoderVk>(new CommandEncoderVk(command_buffer, this));
+    command_encoder_vk->label = _label;
 
-    return command_buffer_vk;
+    return command_encoder_vk;
 }
 
 VkShaderModule DeviceVk::create_shader_module(const std::vector<char> &code) {
