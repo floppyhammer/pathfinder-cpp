@@ -170,10 +170,22 @@ public:
         callbacks.push_back(callback);
     }
 
+    inline void perform_callbacks() {
+        for (auto &callback : callbacks) {
+            callback();
+        }
+
+        callbacks.clear();
+    }
+
 protected:
     CommandEncoder() = default;
 
     virtual void finish() = 0;
+
+    virtual void free() {
+        perform_callbacks();
+    }
 
 protected:
     /// Debug label.

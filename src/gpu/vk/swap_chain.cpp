@@ -264,8 +264,6 @@ void SwapChainVk::flush(const std::shared_ptr<CommandEncoder> &encoder) {
         throw std::runtime_error("Failed to submit queue!");
     }
     // -------------------------------------
-
-    encoder->submitted = true;
 }
 
 void SwapChainVk::SwapChainVk::present() {

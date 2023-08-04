@@ -20,13 +20,11 @@ public:
             return;
         }
 
+        encoder->submitted = true;
+
         encoder->finish();
 
-        for (auto &callback : encoder->callbacks) {
-            callback();
-        }
-
-        encoder->callbacks.clear();
+        encoder->free();
     };
 
     void submit(std::shared_ptr<CommandEncoder> encoder, std::shared_ptr<SwapChain> surface) override {

@@ -28,6 +28,9 @@ public:
             return;
         }
 
+        // Mark the encoder as submitted.
+        encoder->submitted = true;
+
         encoder->finish();
 
         auto encoder_vk = (CommandEncoderVk *)encoder.get();
@@ -43,22 +46,14 @@ public:
         // Wait for the queue to finish commands.
         vkQueueWaitIdle(graphics_queue);
 
-        for (auto &callback : encoder->callbacks) {
-            callback();
-        }
-
-        encoder->callbacks.clear();
-
-        // Mark the encoder as submitted.
-        encoder->submitted = true;
-
-        encoder_vk->free();
+        encoder->free();
     };
 
     void submit(std::shared_ptr<CommandEncoder> encoder, std::shared_ptr<SwapChain> surface) override {
         #ifndef ANDROID
+        // Cleanup last encoder.
         if (encoder_of_last_frame) {
-            dynamic_cast<CommandEncoderVk *>(encoder_of_last_frame.get())->free();
+            encoder_of_last_frame->free();
             encoder_of_last_frame = nullptr;
         }
 
@@ -66,6 +61,8 @@ public:
             Logger::error("Attempted to submit an encoder that's already been submitted!");
             return;
         }
+
+        encoder->submitted = true;
 
         encoder->finish();
 

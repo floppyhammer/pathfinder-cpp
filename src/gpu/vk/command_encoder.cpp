@@ -172,6 +172,8 @@ CommandEncoderVk::CommandEncoderVk(VkCommandBuffer _vk_command_buffer, DeviceVk 
     : vk_command_buffer(_vk_command_buffer), vk_device(_device->get_device()), device_vk(_device) {}
 
 void CommandEncoderVk::free() {
+    perform_callbacks();
+
     vkFreeCommandBuffers(vk_device, device_vk->get_command_pool(), 1, &vk_command_buffer);
     vk_command_buffer = VK_NULL_HANDLE;
 }

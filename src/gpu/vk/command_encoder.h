@@ -27,7 +27,7 @@ private:
 
     void finish() override;
 
-    void free();
+    void free() override;
 
 private:
     VkCommandBuffer vk_command_buffer{};
