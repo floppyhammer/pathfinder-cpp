@@ -56,6 +56,7 @@ public:
     };
 
     void submit(std::shared_ptr<CommandEncoder> encoder, std::shared_ptr<SwapChain> surface) override {
+        #ifndef ANDROID
         if (encoder_of_last_frame) {
             dynamic_cast<CommandEncoderVk *>(encoder_of_last_frame.get())->free();
             encoder_of_last_frame = nullptr;
@@ -73,6 +74,7 @@ public:
         surface_vk->flush(encoder);
 
         encoder_of_last_frame = encoder;
+        #endif
     };
 
 private:

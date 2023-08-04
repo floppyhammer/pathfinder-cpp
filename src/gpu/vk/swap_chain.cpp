@@ -8,7 +8,7 @@
 #include "window.h"
 
 #ifdef PATHFINDER_USE_VULKAN
-    #if defined(WIN32) || defined(__linux__) || defined(__APPLE__)
+    #if (defined(WIN32) || defined(__linux__) || defined(__APPLE__)) && !defined(ANDROID)
 
 namespace Pathfinder {
 

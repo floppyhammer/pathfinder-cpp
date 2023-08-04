@@ -11,7 +11,7 @@
 
 #ifdef PATHFINDER_USE_VULKAN
     // We don't need a Window on Android and Web.
-    #if defined(WIN32) || defined(__linux__) || defined(__APPLE__)
+    #if (defined(WIN32) || defined(__linux__) || defined(__APPLE__)) && !defined(ANDROID)
 
 namespace Pathfinder {
 

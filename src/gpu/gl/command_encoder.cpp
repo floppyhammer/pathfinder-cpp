@@ -22,8 +22,8 @@ void CommandEncoderGl::finish() {
                 assert(compute_pipeline == nullptr);
 
                 auto &args = cmd.args.begin_render_pass;
-                auto render_pass_gl = dynamic_cast<RenderPassGl *>(args.render_pass);
-                auto framebuffer_gl = dynamic_cast<FramebufferGl *>(args.framebuffer);
+                auto render_pass_gl = static_cast<RenderPassGl *>(args.render_pass);
+                auto framebuffer_gl = static_cast<FramebufferGl *>(args.framebuffer);
 
                 glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_gl->get_gl_framebuffer());
 
@@ -38,7 +38,7 @@ void CommandEncoderGl::finish() {
             } break;
             case CommandType::BindRenderPipeline: {
                 auto &args = cmd.args.bind_render_pipeline;
-                auto pipeline_gl = dynamic_cast<RenderPipelineGl *>(args.pipeline);
+                auto pipeline_gl = static_cast<RenderPipelineGl *>(args.pipeline);
 
                 auto blend_state = pipeline_gl->get_blend_state();
 
@@ -63,7 +63,7 @@ void CommandEncoderGl::finish() {
 
                 auto &args = cmd.args.bind_vertex_buffers;
 
-                auto pipeline_gl = dynamic_cast<RenderPipelineGl *>(render_pipeline);
+                auto pipeline_gl = static_cast<RenderPipelineGl *>(render_pipeline);
 
                 auto buffer_count = args.buffer_count;
                 auto vertex_buffers = args.buffers;
@@ -82,7 +82,7 @@ void CommandEncoderGl::finish() {
                         return;
                     }
 
-                    auto buffer = dynamic_cast<BufferGl *>(vertex_buffers[attrib.binding]);
+                    auto buffer = static_cast<BufferGl *>(vertex_buffers[attrib.binding]);
                     auto vbo = buffer->get_handle();
 
                     if (location == 0) {
@@ -136,10 +136,10 @@ void CommandEncoderGl::finish() {
 
                 uint32_t program_id;
                 if (render_pipeline != nullptr) {
-                    auto pipeline_gl = dynamic_cast<RenderPipelineGl *>(render_pipeline);
+                    auto pipeline_gl = static_cast<RenderPipelineGl *>(render_pipeline);
                     program_id = pipeline_gl->get_program()->get_id();
                 } else {
-                    auto pipeline_gl = dynamic_cast<ComputePipelineGl *>(compute_pipeline);
+                    auto pipeline_gl = static_cast<ComputePipelineGl *>(compute_pipeline);
                     program_id = pipeline_gl->get_program()->get_id();
                 }
 
@@ -152,14 +152,14 @@ void CommandEncoderGl::finish() {
 
                     switch (descriptor.type) {
                         case DescriptorType::UniformBuffer: {
-                            auto buffer_gl = dynamic_cast<BufferGl *>(descriptor.buffer.get());
+                            auto buffer_gl = static_cast<BufferGl *>(descriptor.buffer.get());
 
                             unsigned int ubo_index = glGetUniformBlockIndex(program_id, binding_name.c_str());
                             glUniformBlockBinding(program_id, ubo_index, binding_point);
                             glBindBufferBase(GL_UNIFORM_BUFFER, binding_point, buffer_gl->get_handle());
                         } break;
                         case DescriptorType::Sampler: {
-                            auto texture_gl = dynamic_cast<TextureGl *>(descriptor.texture.get());
+                            auto texture_gl = static_cast<TextureGl *>(descriptor.texture.get());
 
                             if (!binding_name.empty()) {
                                 glUniform1i(glGetUniformLocation(program_id, binding_name.c_str()),
@@ -238,7 +238,7 @@ void CommandEncoderGl::finish() {
             case CommandType::BindComputePipeline: {
                 auto &args = cmd.args.bind_compute_pipeline;
 
-                auto pipeline_gl = dynamic_cast<ComputePipelineGl *>(args.pipeline);
+                auto pipeline_gl = static_cast<ComputePipelineGl *>(args.pipeline);
 
                 pipeline_gl->get_program()->use();
 
@@ -276,7 +276,7 @@ void CommandEncoderGl::finish() {
             case CommandType::WriteTexture: {
                 auto &args = cmd.args.write_texture;
 
-                auto texture_gl = dynamic_cast<TextureGl *>(args.texture);
+                auto texture_gl = static_cast<TextureGl *>(args.texture);
 
                 glBindTexture(GL_TEXTURE_2D, texture_gl->get_texture_id());
                 glTexSubImage2D(GL_TEXTURE_2D,
