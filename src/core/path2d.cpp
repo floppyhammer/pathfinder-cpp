@@ -22,9 +22,10 @@ void Path2d::quadratic_to(float cx, float cy, float x, float y) {
     Vec2F ctrl = {cx, cy};
     Vec2F point1 = {x, y};
 
-    // Degenerated into a line.
+    // Degenerates into a line.
     if (point0.approx_eq(ctrl, FLOAT_EPSILON) || point1.approx_eq(ctrl, FLOAT_EPSILON)) {
         current_contour.push_endpoint(point1);
+        return;
     }
 
     current_contour.push_quadratic(ctrl, point1);
@@ -36,24 +37,14 @@ void Path2d::cubic_to(float cx0, float cy0, float cx1, float cy1, float x, float
     Vec2F ctrl1 = {cx1, cy1};
     Vec2F point1 = {x, y};
 
-    // The degeneration into lower-level curves are to fix incorrect line caps.
+    // Degenerates into a line.
     if (ctrl0.approx_eq(ctrl1, FLOAT_EPSILON) && ctrl1.approx_eq(point1, FLOAT_EPSILON)) {
         // No point to add the exactly same on-curve and control points.
         if (point0.approx_eq(ctrl0, FLOAT_EPSILON)) {
             return;
         }
 
-        // Degenerated into a line.
         current_contour.push_endpoint(point1);
-    }
-
-    // Degenerated into a quadratic curve.
-    if (point0.approx_eq(ctrl0, FLOAT_EPSILON)) {
-        current_contour.push_quadratic(ctrl1, point1);
-        return;
-    }
-    if (point1.approx_eq(ctrl1, FLOAT_EPSILON)) {
-        current_contour.push_quadratic(ctrl0, point1);
         return;
     }
 
