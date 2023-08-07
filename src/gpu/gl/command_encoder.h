@@ -21,7 +21,7 @@ public:
 private:
     CommandEncoderGl() = default;
 
-    void finish() override;
+    bool finish() override;
 };
 
 } // namespace Pathfinder

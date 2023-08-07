@@ -181,7 +181,9 @@ public:
 protected:
     CommandEncoder() = default;
 
-    virtual void finish() = 0;
+    /// Prepare the encoder for submission.
+    /// @return If valid for submission.
+    virtual bool finish() = 0;
 
 protected:
     /// Debug label.

@@ -182,10 +182,15 @@ VkCommandBuffer CommandEncoderVk::get_vk_handle() const {
     return vk_command_buffer;
 }
 
-void CommandEncoderVk::finish() {
+bool CommandEncoderVk::finish() {
     if (finished) {
         Logger::error("Attempted to finished an encoder that's been finished previously!");
-        return;
+        return false;
+    }
+
+    // Vulkan will complain if we submit an empty command buffer.
+    if (commands.empty()) {
+        return false;
     }
 
     // Begin recording.
@@ -551,6 +556,8 @@ void CommandEncoderVk::finish() {
     }
 
     finished = true;
+
+    return true;
 }
 
 void CommandEncoderVk::sync_descriptor_set(DescriptorSet *descriptor_set) {

@@ -27,7 +27,7 @@ private:
 
     void sync_descriptor_set(DescriptorSet *descriptor_set);
 
-    void finish() override;
+    bool finish() override;
 
 private:
     VkCommandBuffer vk_command_buffer{};

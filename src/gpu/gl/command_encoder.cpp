@@ -17,7 +17,11 @@ CommandEncoderGl::~CommandEncoderGl() {
     perform_callbacks();
 }
 
-void CommandEncoderGl::finish() {
+bool CommandEncoderGl::finish() {
+    if (commands.empty()) {
+        return false;
+    }
+
     while (!commands.empty()) {
         auto &cmd = commands.front();
 
@@ -83,7 +87,7 @@ void CommandEncoderGl::finish() {
 
                     if (attrib.binding >= buffer_count) {
                         assert("Vertex buffer binding exceeded buffer count!");
-                        return;
+                        return false;
                     }
 
                     auto buffer = static_cast<BufferGl *>(vertex_buffers[attrib.binding]);
@@ -302,6 +306,8 @@ void CommandEncoderGl::finish() {
 
         commands.pop_front();
     }
+
+    return true;
 }
 
 } // namespace Pathfinder

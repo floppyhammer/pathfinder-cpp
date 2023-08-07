@@ -31,7 +31,9 @@ public:
         // Mark the encoder as submitted.
         encoder->submitted = true;
 
-        encoder->finish();
+        if (!encoder->finish()) {
+            return;
+        }
 
         auto encoder_vk = (CommandEncoderVk *)encoder.get();
 
@@ -61,7 +63,9 @@ public:
 
         encoder->submitted = true;
 
-        encoder->finish();
+        if (!encoder->finish()) {
+            return;
+        }
 
         auto surface_vk = (SwapChainVk *)surface.get();
 
