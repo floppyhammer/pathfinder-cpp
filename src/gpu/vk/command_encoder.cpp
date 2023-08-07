@@ -171,7 +171,7 @@ void transition_image_layout(VkCommandBuffer command_buffer,
 CommandEncoderVk::CommandEncoderVk(VkCommandBuffer _vk_command_buffer, DeviceVk *_device)
     : vk_command_buffer(_vk_command_buffer), vk_device(_device->get_device()), device_vk(_device) {}
 
-void CommandEncoderVk::free() {
+CommandEncoderVk::~CommandEncoderVk() {
     perform_callbacks();
 
     vkFreeCommandBuffers(vk_device, device_vk->get_command_pool(), 1, &vk_command_buffer);

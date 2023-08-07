@@ -45,15 +45,12 @@ public:
 
         // Wait for the queue to finish commands.
         vkQueueWaitIdle(graphics_queue);
-
-        encoder->free();
     };
 
     void submit(std::shared_ptr<CommandEncoder> encoder, std::shared_ptr<SwapChain> surface) override {
         #ifndef ANDROID
         // Cleanup last encoder.
         if (encoder_of_last_frame) {
-            encoder_of_last_frame->free();
             encoder_of_last_frame = nullptr;
         }
 

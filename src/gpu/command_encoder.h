@@ -183,10 +183,6 @@ protected:
 
     virtual void finish() = 0;
 
-    virtual void free() {
-        perform_callbacks();
-    }
-
 protected:
     /// Debug label.
     std::string label;

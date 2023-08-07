@@ -23,11 +23,11 @@ public:
 private:
     CommandEncoderVk(VkCommandBuffer _vk_command_buffer, DeviceVk *_device);
 
+    ~CommandEncoderVk() override;
+
     void sync_descriptor_set(DescriptorSet *descriptor_set);
 
     void finish() override;
-
-    void free() override;
 
 private:
     VkCommandBuffer vk_command_buffer{};

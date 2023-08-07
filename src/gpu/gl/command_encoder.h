@@ -18,6 +18,8 @@ class CommandEncoderGl : public CommandEncoder {
 private:
     CommandEncoderGl() = default;
 
+    ~CommandEncoderGl() override;
+
     void finish() override;
 };
 

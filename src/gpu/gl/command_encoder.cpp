@@ -13,6 +13,10 @@
 
 namespace Pathfinder {
 
+CommandEncoderGl::~CommandEncoderGl() {
+    perform_callbacks();
+}
+
 void CommandEncoderGl::finish() {
     while (!commands.empty()) {
         auto &cmd = commands.front();

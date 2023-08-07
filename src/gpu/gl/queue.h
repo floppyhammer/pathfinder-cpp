@@ -23,8 +23,6 @@ public:
         encoder->submitted = true;
 
         encoder->finish();
-
-        encoder->free();
     };
 
     void submit(std::shared_ptr<CommandEncoder> encoder, std::shared_ptr<SwapChain> surface) override {
