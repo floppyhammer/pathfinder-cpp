@@ -18,12 +18,12 @@ class CommandEncoderVk : public CommandEncoder {
     friend class SwapChainVk;
 
 public:
+    ~CommandEncoderVk() override;
+
     VkCommandBuffer get_vk_handle() const;
 
 private:
     CommandEncoderVk(VkCommandBuffer _vk_command_buffer, DeviceVk *_device);
-
-    ~CommandEncoderVk() override;
 
     void sync_descriptor_set(DescriptorSet *descriptor_set);
 

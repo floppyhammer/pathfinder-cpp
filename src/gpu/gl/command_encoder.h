@@ -15,10 +15,11 @@ class CommandEncoderGl : public CommandEncoder {
     friend class DeviceGl;
     friend class SwapChainGl;
 
+public:
+    ~CommandEncoderGl() override;
+
 private:
     CommandEncoderGl() = default;
-
-    ~CommandEncoderGl() override;
 
     void finish() override;
 };
