@@ -64,9 +64,6 @@ private:
     /// This is not managed by the memory allocator.
     std::shared_ptr<Framebuffer> dest_framebuffer;
 
-    /// Where to draw the mask texture.
-    MaskStorage mask_storage;
-
     std::shared_ptr<RenderPass> mask_render_pass_clear, mask_render_pass_load;
     std::shared_ptr<RenderPass> dest_render_pass_clear, dest_render_pass_load;
 

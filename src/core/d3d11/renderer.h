@@ -193,8 +193,6 @@ private:
     // Unlike D3D9, we only need mask/dest textures instead of mask/dest framebuffers.
     std::shared_ptr<Texture> dest_texture;
 
-    MaskStorage mask_storage;
-
     std::shared_ptr<ComputePipeline> bound_pipeline, dice_pipeline, bin_pipeline, propagate_pipeline, sort_pipeline,
         fill_pipeline, tile_pipeline;
 

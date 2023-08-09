@@ -106,6 +106,9 @@ protected:
 
     uint32_t alpha_tile_count = 0;
 
+    /// Where to draw the alpha tile mask.
+    MaskStorage mask_storage;
+
     // Basic data.
     std::shared_ptr<GpuMemoryAllocator> allocator;
 

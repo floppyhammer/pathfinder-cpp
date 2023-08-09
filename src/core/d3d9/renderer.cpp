@@ -219,7 +219,6 @@ void RendererD3D9::reallocate_alpha_tile_pages_if_necessary() {
     auto format = mask_texture_format();
 
     auto mask_framebuffer_id = allocator->allocate_framebuffer(new_size, format, "Mask framebuffer");
-    auto mask_framebuffer = allocator->get_framebuffer(mask_framebuffer_id);
 
     mask_storage = MaskStorage{
         mask_framebuffer_id,
