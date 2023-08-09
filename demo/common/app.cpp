@@ -16,7 +16,7 @@ App::App(const std::shared_ptr<Device> &_device,
     canvas = std::make_shared<Canvas>(device, queue);
 
     // TEST: Clip path.
-    if (false) {
+    if (true) {
         Path2d path;
         path.add_rect(RectF(Vec2F(0.0, 0.0), Vec2F(360.0, 360.0)));
 
@@ -87,7 +87,7 @@ App::App(const std::shared_ptr<Device> &_device,
         svg_scene.load_from_string(std::string(svg_input.begin(), svg_input.end()), *canvas);
 
         // TEST: Replace scene.
-        // canvas->set_scene(svg_scene.get_scene());
+        //         canvas->set_scene(svg_scene.get_scene());
 
         // TEST: Append scene.
         canvas->get_scene()->append_scene(*svg_scene.get_scene(), Transform2::from_scale({1.0, 1.0}));

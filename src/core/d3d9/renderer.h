@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "../../common/global_macros.h"
+#include "../../common/math/mat4.h"
 #include "../../gpu/descriptor_set.h"
 #include "../../gpu/framebuffer.h"
 #include "../../gpu/render_pass.h"
@@ -17,6 +18,21 @@ namespace Pathfinder {
 struct ClipBufferInfo {
     uint64_t clip_buffer_id;
     uint32_t clip_count;
+};
+
+struct FillUniformDx9 {
+    Vec2F tile_size;        // Fixed as (16, 16).
+    Vec2F framebuffer_size; // Mask framebuffer size. Dynamic as (4096, 1024 * page_count).
+};
+
+struct TileUniformDx9 {
+    Vec2F tile_size; // Fixed as (16, 16).
+    Vec2F texture_metadata_size;
+    Vec2F z_buffer_size;
+    Vec2F mask_texture_size;
+    Vec2F color_texture_size;
+    Vec2F framebuffer_size;
+    Mat4 transform;
 };
 
 /// Renderer should run in a different thread than that of the builder.
@@ -42,14 +58,14 @@ private:
     std::shared_ptr<DescriptorSet> tile_clip_copy_descriptor_set, tile_clip_combine_descriptor_set; // For clip paths.
 
     /// Uniform buffers.
-    uint64_t tile_varying_sizes_ub_id, tile_transform_ub_id;
+    uint64_t fill_ub_id, tile_ub_id;
 
     /// Where the final rendering output goes.
     /// This is not managed by the memory allocator.
     std::shared_ptr<Framebuffer> dest_framebuffer;
 
     /// Where to draw the mask texture.
-    uint64_t mask_framebuffer_id;
+    MaskStorage mask_storage;
 
     std::shared_ptr<RenderPass> mask_render_pass_clear, mask_render_pass_load;
     std::shared_ptr<RenderPass> dest_render_pass_clear, dest_render_pass_load;
@@ -67,6 +83,10 @@ public:
     void set_dest_texture(const std::shared_ptr<Texture> &new_texture) override;
 
 private:
+    void reallocate_alpha_tile_pages_if_necessary();
+
+    TextureFormat mask_texture_format() const override;
+
     void create_tile_clip_copy_pipeline();
 
     void create_tile_clip_combine_pipeline();

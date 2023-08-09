@@ -23,33 +23,17 @@ uniform sampler2D uZBuffer;
 #endif
 
 #ifdef VULKAN
-layout(binding = 2) uniform bTransform {
+layout(binding = 2) uniform bUniform {
 #else
-layout(std140) uniform bTransform {
+layout(std140) uniform bUniform {
 #endif
-    mat4 uTransform; // Will vary.
-};
-
-#ifdef VULKAN
-layout(binding = 3) uniform bVaryingSizes {
-#else
-layout(std140) uniform bVaryingSizes {
-#endif
-    vec2 uZBufferSize; // Will vary.
-    vec2 uColorTextureSize0; // Will vary.
-    vec2 uFramebufferSize; // Will vary.
-    vec2 pad0;
-};
-
-#ifdef VULKAN
-layout(binding = 4) uniform bConstantSizes {
-#else
-layout(std140) uniform bConstantSizes {
-#endif
-    vec2 uMaskTextureSize0; // Fixed as (4096, 1024). Not used here.
     vec2 uTileSize; // Fixed as (16, 16).
     vec2 uTextureMetadataSize; // Fixed as (1280, 512).
-    vec2 pad1;
+    vec2 uZBufferSize;
+    vec2 uMaskTextureSize0; // Not used here.
+    vec2 uColorTextureSize0; // Not used here.
+    vec2 uFramebufferSize; // Not used here.
+    mat4 uTransform;
 };
 
 layout(location = 0) in uvec2 aTileOffset; // Tile local coordinates

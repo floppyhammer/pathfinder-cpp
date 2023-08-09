@@ -30,7 +30,7 @@ layout(binding = 4) uniform sampler2D uAreaLUT;
 
 layout(std140, binding = 5) uniform bUniform {
     ivec2 uAlphaTileRange;
-    ivec2 pad;
+    ivec2 uPad0;
 };
 
 // microlines_buffer

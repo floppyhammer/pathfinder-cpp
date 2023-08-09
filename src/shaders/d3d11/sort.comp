@@ -11,9 +11,9 @@ precision highp float;
 
 layout(std140, binding = 3) uniform bUniform {
     int uTileCount;
-    int pad0;
-    int pad1;
-    int pad2;
+    int uPad0;
+    int uPad1;
+    int uPad2;
 };
 
 restrict layout(std430, binding = 0) buffer bTiles {
