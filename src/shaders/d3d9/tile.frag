@@ -17,32 +17,24 @@ precision highp sampler2D;
 #endif
 
 #ifdef VULKAN
-layout(binding = 3) uniform bVaryingSizes {
+layout(binding = 2) uniform bUniform {
 #else
-layout(std140) uniform bVaryingSizes {
+layout(std140) uniform bUniform {
 #endif
-    vec2 uZBufferSize; // Will vary.
-    vec2 uColorTextureSize0; // Will vary.
-    vec2 uFramebufferSize; // Will vary.
-    vec2 pad0;
+    vec2 uTileSize; // Fixed as (16, 16).
+    vec2 uTextureMetadataSize; // Fixed as (1280, 512).
+    vec2 uZBufferSize; // Not used here.
+    vec2 uMaskTextureSize0; // Dynamic as (4096, 1024 * page_count).
+    vec2 uColorTextureSize0;
+    vec2 uFramebufferSize; // Dst framebuffer.
+    mat4 uTransform;
 };
 
 #ifdef VULKAN
-layout(binding = 4) uniform bConstantSizes {
-#else
-layout(std140) uniform bConstantSizes {
-#endif
-    vec2 uMaskTextureSize0; // Fixed as (4096, 1024).
-    vec2 uTileSize; // Fixed as (16, 16). Not used here.
-    vec2 uTextureMetadataSize; // Fixed as (1280, 512). Not used here.
-    vec2 pad1;
-};
-
-#ifdef VULKAN
-layout(binding = 5) uniform sampler2D uColorTexture0; // Pattern image.
-layout(binding = 6) uniform sampler2D uMaskTexture0;
-layout(binding = 7) uniform sampler2D uDestTexture;
-layout(binding = 8) uniform sampler2D uGammaLUT;
+layout(binding = 3) uniform sampler2D uColorTexture0; // Pattern image.
+layout(binding = 4) uniform sampler2D uMaskTexture0;
+layout(binding = 5) uniform sampler2D uDestTexture;
+layout(binding = 6) uniform sampler2D uGammaLUT;
 
 layout(location = 0) in vec3 vMaskTexCoord0;
 layout(location = 1) in vec2 vColorTexCoord0;

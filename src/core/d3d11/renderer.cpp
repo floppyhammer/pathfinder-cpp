@@ -129,13 +129,7 @@ RendererD3D11::RendererD3D11(const std::shared_ptr<Pathfinder::Device> &device, 
     fill_ub_id = allocator->allocate_buffer(4 * sizeof(int32_t), BufferType::Uniform, "Fill uniform buffer");
     propagate_ub_id = allocator->allocate_buffer(4 * sizeof(int32_t), BufferType::Uniform, "Propagate uniform buffer");
     sort_ub_id = allocator->allocate_buffer(4 * sizeof(int32_t), BufferType::Uniform, "Sort uniform buffer");
-    tile_ub0_id = allocator->allocate_buffer(8 * sizeof(float), BufferType::Uniform, "Tile uniform buffer 0");
-    tile_ub1_id = allocator->allocate_buffer(8 * sizeof(int32_t), BufferType::Uniform, "Tile uniform buffer 1");
-
-    // Unlike D3D9, we use RGBA8 instead of RGBA16F for the mask texture.
-    mask_texture_id = allocator->allocate_texture({MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT},
-                                                  TextureFormat::Rgba8Unorm,
-                                                  "Mask texture");
+    tile_ub_id = allocator->allocate_buffer(sizeof(TileUniformDx11), BufferType::Uniform, "Tile uniform buffer");
 }
 
 void RendererD3D11::set_up_pipelines() {
@@ -214,7 +208,7 @@ void RendererD3D11::set_up_pipelines() {
         Descriptor::storage(0, ShaderStage::Compute), // Read only.
         Descriptor::storage(1, ShaderStage::Compute), // Read only.
         Descriptor::storage(2, ShaderStage::Compute), // Read only.
-        Descriptor::image(3, ShaderStage::Compute, "uDest", allocator->get_texture(mask_texture_id)),
+        Descriptor::image(3, ShaderStage::Compute, "uDest"),
         Descriptor::sampled(4,
                             ShaderStage::Compute,
                             "uAreaLUT",
@@ -230,20 +224,14 @@ void RendererD3D11::set_up_pipelines() {
         Descriptor::sampled(2, ShaderStage::Compute, "uTextureMetadata"),
         Descriptor::sampled(3, ShaderStage::Compute, "uZBuffer"),
         Descriptor::sampled(4, ShaderStage::Compute, "uColorTexture0"),
-        Descriptor::sampled(5,
-                            ShaderStage::Compute,
-                            "uMaskTexture0",
-                            allocator->get_texture(mask_texture_id),
-                            default_sampler),
+        Descriptor::sampled(5, ShaderStage::Compute, "uMaskTexture0"),
         Descriptor::sampled(6,
                             ShaderStage::Compute,
                             "uGammaLUT",
                             allocator->get_texture(dummy_texture_id),
                             default_sampler), // Unused binding.
         Descriptor::image(7, ShaderStage::Compute, "uDestImage"),
-        Descriptor::uniform(8, ShaderStage::Compute, "bConstantsUniform", allocator->get_buffer(constants_ub_id)),
-        Descriptor::uniform(9, ShaderStage::Compute, "bUniform0", allocator->get_buffer(tile_ub0_id)),
-        Descriptor::uniform(10, ShaderStage::Compute, "bUniform1", allocator->get_buffer(tile_ub1_id)),
+        Descriptor::uniform(8, ShaderStage::Compute, "bUniform", allocator->get_buffer(tile_ub_id)),
     });
 
     // These pipelines will be called by order.
@@ -362,25 +350,20 @@ void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
     Vec2F color_texture_size = color_texture->get_size().to_f32();
 
     // Update uniform buffers.
-    std::array<float, 8> ubo_data0 = {0,
-                                      0,
-                                      0,
-                                      0, // uClearColor
-                                      color_texture_size.x,
-                                      color_texture_size.y, // uColorTextureSize0
-                                      (float)target_size.x,
-                                      (float)target_size.y}; // uFramebufferSize
-
-    std::array<int32_t, 5> ubo_data1 = {0,
-                                        0, // uZBufferSize
-                                        (int32_t)framebuffer_tile_size0.x,
-                                        (int32_t)framebuffer_tile_size0.y, // uFramebufferTileSize
-                                        clear_op};                         // uLoadAction
+    TileUniformDx11 uniform_data;
+    std::memset(uniform_data.clear_color, 0, 4 * sizeof(float));
+    uniform_data.load_action = clear_op;
+    uniform_data.tile_size = {TILE_WIDTH, TILE_HEIGHT};
+    uniform_data.color_texture_size = color_texture_size.to_f32();
+    uniform_data.framebuffer_size = target_size.to_f32();
+    uniform_data.framebuffer_tile_size = framebuffer_tile_size0;
+    uniform_data.mask_texture_size = {MASK_FRAMEBUFFER_WIDTH,
+                                      (float)(MASK_FRAMEBUFFER_HEIGHT * mask_storage.allocated_page_count)};
+    uniform_data.texture_metadata_size = {TEXTURE_METADATA_TEXTURE_WIDTH, TEXTURE_METADATA_TEXTURE_HEIGHT};
 
     auto encoder = device->create_command_encoder("Draw tiles");
 
-    encoder->write_buffer(allocator->get_buffer(tile_ub0_id), 0, 8 * sizeof(float), ubo_data0.data());
-    encoder->write_buffer(allocator->get_buffer(tile_ub1_id), 0, 5 * sizeof(int32_t), ubo_data1.data());
+    encoder->write_buffer(allocator->get_buffer(tile_ub_id), 0, sizeof(TileUniformDx11), &uniform_data);
 
     // Update descriptor set.
     tile_descriptor_set->add_or_update({
@@ -399,6 +382,11 @@ void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
                             allocator->get_texture(dummy_texture_id),
                             default_sampler),
         Descriptor::sampled(4, ShaderStage::Compute, "uColorTexture0", color_texture, color_texture_sampler),
+        Descriptor::sampled(5,
+                            ShaderStage::Compute,
+                            "uMaskTexture0",
+                            allocator->get_texture(mask_storage.framebuffer_id),
+                            default_sampler),
         Descriptor::image(7, ShaderStage::Compute, "uDestImage", target_texture),
     });
 
@@ -561,6 +549,8 @@ void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
 
     // Free buffer.
     allocator->free_buffer(propagate_metadata_buffer_ids.backdrops);
+
+    reallocate_alpha_tile_pages_if_necessary();
 
     draw_fills(*fill_buffer_info, tiles_d3d11_buffer_id, alpha_tiles_buffer_id, propagate_tiles_info);
 
@@ -952,6 +942,7 @@ void RendererD3D11::draw_fills(FillBufferInfoD3D11 &fill_storage_info,
         Descriptor::storage(1, ShaderStage::Compute, tiles_d3d11_buffer),
         // Read only.
         Descriptor::storage(2, ShaderStage::Compute, alpha_tiles_buffer),
+        Descriptor::image(3, ShaderStage::Compute, "uDest", allocator->get_texture(mask_storage.framebuffer_id)),
     });
 
     encoder->begin_compute_pass();
@@ -1019,6 +1010,29 @@ void RendererD3D11::free_tile_batch_buffers() {
 
         tile_batch_info.pop_back();
     }
+}
+
+TextureFormat RendererD3D11::mask_texture_format() const {
+    // Unlike D3D9, we use RGBA8 instead of RGBA16F for the mask texture.
+    return TextureFormat::Rgba8Unorm;
+}
+
+void RendererD3D11::reallocate_alpha_tile_pages_if_necessary() {
+    uint32_t alpha_tile_pages_needed = (alpha_tile_count + 0xffff) >> 16;
+
+    if (alpha_tile_pages_needed <= mask_storage.allocated_page_count) {
+        return;
+    }
+
+    auto new_size = Vec2I(MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT * alpha_tile_pages_needed);
+    auto format = mask_texture_format();
+
+    auto mask_texture_id = allocator->allocate_texture(new_size, format, "Mask texture");
+
+    mask_storage = MaskStorage{
+        mask_texture_id,
+        alpha_tile_pages_needed,
+    };
 }
 
 } // namespace Pathfinder

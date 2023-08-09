@@ -14,16 +14,6 @@ Renderer::Renderer(const std::shared_ptr<Device> &_device, const std::shared_ptr
     : device(_device), queue(_queue) {
     allocator = std::make_shared<GpuMemoryAllocator>(device);
 
-    // Uniform buffer for some constants.
-    constants_ub_id = allocator->allocate_buffer(8 * sizeof(float), BufferType::Uniform, "Constants uniform buffer");
-
-    std::array<float, 6> constants = {MASK_FRAMEBUFFER_WIDTH,
-                                      MASK_FRAMEBUFFER_HEIGHT,
-                                      TILE_WIDTH,
-                                      TILE_HEIGHT,
-                                      TEXTURE_METADATA_TEXTURE_WIDTH,
-                                      TEXTURE_METADATA_TEXTURE_HEIGHT};
-
     // Area-Lut texture.
     auto image_buffer = ImageBuffer::from_memory({std::begin(area_lut_png), std::end(area_lut_png)}, false);
 
@@ -37,9 +27,7 @@ Renderer::Renderer(const std::shared_ptr<Device> &_device, const std::shared_ptr
                                                       TextureFormat::Rgba16Float,
                                                       "Metadata texture");
 
-    auto encoder = device->create_command_encoder("Upload constant data");
-
-    encoder->write_buffer(allocator->get_buffer(constants_ub_id), 0, 6 * sizeof(float), constants.data());
+    auto encoder = device->create_command_encoder("Upload common renderer data");
 
     encoder->write_texture(allocator->get_texture(area_lut_texture_id), {}, image_buffer->get_data());
 

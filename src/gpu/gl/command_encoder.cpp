@@ -165,6 +165,8 @@ bool CommandEncoderGl::finish() {
                             unsigned int ubo_index = glGetUniformBlockIndex(program_id, binding_name.c_str());
                             glUniformBlockBinding(program_id, ubo_index, binding_point);
                             glBindBufferBase(GL_UNIFORM_BUFFER, binding_point, buffer_gl->get_handle());
+
+                            gl_check_error("Mismatched uniform binding name!");
                         } break;
                         case DescriptorType::Sampler: {
                             auto texture_gl = static_cast<TextureGl *>(descriptor.texture.get());
@@ -172,6 +174,8 @@ bool CommandEncoderGl::finish() {
                             if (!binding_name.empty()) {
                                 glUniform1i(glGetUniformLocation(program_id, binding_name.c_str()),
                                             (GLint)binding_point);
+
+                                gl_check_error("Mismatched texture binding name!");
                             }
                             glActiveTexture(GL_TEXTURE0 + binding_point);
 

@@ -30,24 +30,15 @@ writeonly layout(rgba8, binding = 7) uniform image2D uDestImage;
 layout(rgba8, binding = 7) uniform image2D uDestImage;
 #endif
 
-layout(std140, binding = 8) uniform bConstantsUniform {
-    vec2 uMaskTextureSize0;
+layout(std140, binding = 8) uniform bUniform {
+    vec4 uClearColor;
+    int uLoadAction, uPad0, uPad1, uPad2;
     vec2 uTileSize;
     vec2 uTextureMetadataSize;
-    vec2 pad0;
-};
-
-layout(std140, binding = 9) uniform bUniform0 {
-    vec4 uClearColor;
-    vec2 uColorTextureSize0;
     vec2 uFramebufferSize;
-};
-
-layout(std140, binding = 10) uniform bUniform1 {
-    ivec2 uZBufferSize;
     ivec2 uFramebufferTileSize;
-    int uLoadAction;
-    int pad1, pad2, pad3;
+    vec2 uMaskTextureSize0;
+    vec2 uColorTextureSize0;
 };
 
 restrict readonly layout(std430, binding = 0) buffer bTiles {

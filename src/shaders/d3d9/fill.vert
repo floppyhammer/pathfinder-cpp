@@ -11,14 +11,12 @@
 // except according to those terms.
 
 #ifdef VULKAN
-    layout(binding = 0) uniform bConstantSizes {
+    layout(binding = 0) uniform bUniform {
 #else
-    layout(std140) uniform bConstantSizes {
+    layout(std140) uniform bUniform {
 #endif
-    vec2 uFramebufferSize; // Fixed as (4096, 1024).
     vec2 uTileSize; // Fixed as (16, 16).
-    vec2 uTextureMetadataSize; // Fixed as (1280, 512). Not used here.
-    vec2 pad;
+    vec2 uFramebufferSize; // Mask framebuffer. Dynamic as (4096, 1024 * page_count).
 };
 
 layout(location=0) in uvec2 aTessCoord; // Vertex coordinates in a quad, fixed.

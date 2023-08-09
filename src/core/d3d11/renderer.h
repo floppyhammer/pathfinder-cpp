@@ -67,16 +67,22 @@ struct PropagateTilesInfoD3D11 {
     Range alpha_tile_range;
 };
 
-struct MaskStorage {
-    uint64_t framebuffer_id;
-    uint32_t allocated_page_count;
-};
-
 struct ClipBufferIDs {
     /// Optional
     uint64_t metadata;
 
     uint64_t tiles;
+};
+
+struct TileUniformDx11 {
+    float clear_color[4]{};
+    int32_t load_action{}, pad0, pad1, pad2;
+    Vec2F tile_size;
+    Vec2F texture_metadata_size;
+    Vec2F framebuffer_size;
+    Vec2I framebuffer_tile_size;
+    Vec2F mask_texture_size;
+    Vec2F color_texture_size;
 };
 
 class RendererD3D11 : public Renderer {
@@ -179,17 +185,21 @@ private:
 
     void free_tile_batch_buffers();
 
+    TextureFormat mask_texture_format() const override;
+
+    void reallocate_alpha_tile_pages_if_necessary();
+
 private:
     // Unlike D3D9, we only need mask/dest textures instead of mask/dest framebuffers.
     std::shared_ptr<Texture> dest_texture;
-    uint64_t mask_texture_id;
+
+    MaskStorage mask_storage;
 
     std::shared_ptr<ComputePipeline> bound_pipeline, dice_pipeline, bin_pipeline, propagate_pipeline, sort_pipeline,
         fill_pipeline, tile_pipeline;
 
     /// Uniform buffers.
-    uint64_t bin_ub_id, bound_ub_id, dice_ub0_id, dice_ub1_id, fill_ub_id, propagate_ub_id, sort_ub_id, tile_ub0_id,
-        tile_ub1_id;
+    uint64_t bin_ub_id, bound_ub_id, dice_ub0_id, dice_ub1_id, fill_ub_id, propagate_ub_id, sort_ub_id, tile_ub_id;
 
     std::shared_ptr<DescriptorSet> bound_descriptor_set, dice_descriptor_set, bin_descriptor_set,
         propagate_descriptor_set, sort_descriptor_set, fill_descriptor_set, tile_descriptor_set;

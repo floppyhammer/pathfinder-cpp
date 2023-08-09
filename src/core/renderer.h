@@ -17,8 +17,8 @@ const uint32_t MASK_TILES_DOWN = 256;
 
 /// Mask framebuffer size.
 // Divide the height by 4 to compress the rows into rgba channels.
-const int32_t MASK_FRAMEBUFFER_WIDTH = TILE_WIDTH * MASK_TILES_ACROSS;
-const int32_t MASK_FRAMEBUFFER_HEIGHT = TILE_HEIGHT / 4 * MASK_TILES_DOWN;
+const uint32_t MASK_FRAMEBUFFER_WIDTH = TILE_WIDTH * MASK_TILES_ACROSS;
+const uint32_t MASK_FRAMEBUFFER_HEIGHT = TILE_HEIGHT / 4 * MASK_TILES_DOWN;
 
 struct RenderTarget {
     std::shared_ptr<Framebuffer> framebuffer;
@@ -37,6 +37,12 @@ public:
     uint64_t framebuffer_id;
     /// Should preserve framebuffer content.
     bool must_preserve_contents;
+};
+
+struct MaskStorage {
+    /// Texture ID for Dx11.
+    uint64_t framebuffer_id;
+    uint32_t allocated_page_count = 0;
 };
 
 /// In most cases, we have only one renderer set up, while having
@@ -92,8 +98,13 @@ public:
     std::shared_ptr<Queue> queue;
 
 protected:
+    virtual TextureFormat mask_texture_format() const = 0;
+
+protected:
     /// If we should clear the dest framebuffer or texture.
     bool clear_dest_texture = true;
+
+    uint32_t alpha_tile_count = 0;
 
     // Basic data.
     std::shared_ptr<GpuMemoryAllocator> allocator;
@@ -101,7 +112,7 @@ protected:
     // Read-only static core resources.
     // -----------------------------------------------
     /// Uniform buffer containing some constants. Shared by D3D9 and D3D10.
-    uint64_t constants_ub_id;
+    uint64_t common_sizes_ub_id;
 
     /// Pre-Defined texture used to draw the mask texture. Shared by D3D9 and D3D10.
     uint64_t area_lut_texture_id;
