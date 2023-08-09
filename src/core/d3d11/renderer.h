@@ -209,8 +209,6 @@ private:
 
     SceneBuffers scene_buffers;
 
-    uint32_t alpha_tile_count = 0;
-
     std::vector<TileBatchInfoD3D11> tile_batch_info;
 };
 
