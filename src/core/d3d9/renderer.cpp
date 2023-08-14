@@ -215,13 +215,19 @@ void RendererD3D9::reallocate_alpha_tile_pages_if_necessary() {
         return;
     }
 
+    auto old_mask_framebuffer_id = mask_storage.framebuffer_id;
+    if (old_mask_framebuffer_id) {
+        allocator->free_framebuffer(*old_mask_framebuffer_id);
+    }
+
     auto new_size = Vec2I(MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT * alpha_tile_pages_needed);
     auto format = mask_texture_format();
 
     auto mask_framebuffer_id = allocator->allocate_framebuffer(new_size, format, "Mask framebuffer");
 
     mask_storage = MaskStorage{
-        mask_framebuffer_id,
+        std::make_shared<uint64_t>(mask_framebuffer_id),
+        nullptr,
         alpha_tile_pages_needed,
     };
 }
@@ -436,7 +442,7 @@ void RendererD3D9::draw_fills(uint64_t fill_vertex_buffer_id,
     encoder->write_buffer(allocator->get_buffer(fill_ub_id), 0, sizeof(FillUniformDx9), &fill_uniform);
 
     encoder->begin_render_pass(mask_render_pass_clear,
-                               allocator->get_framebuffer(mask_storage.framebuffer_id),
+                               allocator->get_framebuffer(*mask_storage.framebuffer_id),
                                ColorF());
 
     encoder->bind_render_pipeline(fill_pipeline);
@@ -480,7 +486,7 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std:
         Descriptor::sampled(1,
                             ShaderStage::Fragment,
                             "uSrc",
-                            allocator->get_framebuffer(mask_storage.framebuffer_id)->get_texture(),
+                            allocator->get_framebuffer(*mask_storage.framebuffer_id)->get_texture(),
                             get_default_sampler()),
     });
 
@@ -512,7 +518,7 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std:
         });
 
         encoder->begin_render_pass(mask_render_pass_load,
-                                   allocator->get_framebuffer(mask_storage.framebuffer_id),
+                                   allocator->get_framebuffer(*mask_storage.framebuffer_id),
                                    ColorF());
 
         encoder->bind_render_pipeline(tile_clip_combine_pipeline);
@@ -618,7 +624,7 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
         Descriptor::sampled(4,
                             ShaderStage::Fragment,
                             "uMaskTexture0",
-                            allocator->get_framebuffer(mask_storage.framebuffer_id)->get_texture(),
+                            allocator->get_framebuffer(*mask_storage.framebuffer_id)->get_texture(),
                             get_default_sampler()),
     });
 

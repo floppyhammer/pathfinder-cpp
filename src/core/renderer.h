@@ -40,8 +40,10 @@ public:
 };
 
 struct MaskStorage {
-    /// Texture ID for Dx11.
-    uint64_t framebuffer_id;
+    /// For Dx9.
+    std::shared_ptr<uint64_t> framebuffer_id;
+    /// For Dx11.
+    std::shared_ptr<uint64_t> texture_id;
     uint32_t allocated_page_count = 0;
 };
 

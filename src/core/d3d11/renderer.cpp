@@ -385,7 +385,7 @@ void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
         Descriptor::sampled(5,
                             ShaderStage::Compute,
                             "uMaskTexture0",
-                            allocator->get_texture(mask_storage.framebuffer_id),
+                            allocator->get_texture(*mask_storage.texture_id),
                             default_sampler),
         Descriptor::image(7, ShaderStage::Compute, "uDestImage", target_texture),
     });
@@ -942,7 +942,7 @@ void RendererD3D11::draw_fills(FillBufferInfoD3D11 &fill_storage_info,
         Descriptor::storage(1, ShaderStage::Compute, tiles_d3d11_buffer),
         // Read only.
         Descriptor::storage(2, ShaderStage::Compute, alpha_tiles_buffer),
-        Descriptor::image(3, ShaderStage::Compute, "uDest", allocator->get_texture(mask_storage.framebuffer_id)),
+        Descriptor::image(3, ShaderStage::Compute, "uDest", allocator->get_texture(*mask_storage.texture_id)),
     });
 
     encoder->begin_compute_pass();
@@ -1024,13 +1024,19 @@ void RendererD3D11::reallocate_alpha_tile_pages_if_necessary() {
         return;
     }
 
+    auto old_mask_texture_id = mask_storage.texture_id;
+    if (old_mask_texture_id) {
+        allocator->free_texture(*old_mask_texture_id);
+    }
+
     auto new_size = Vec2I(MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT * alpha_tile_pages_needed);
     auto format = mask_texture_format();
 
     auto mask_texture_id = allocator->allocate_texture(new_size, format, "Mask texture");
 
     mask_storage = MaskStorage{
-        mask_texture_id,
+        nullptr,
+        std::make_shared<uint64_t>(mask_texture_id),
         alpha_tile_pages_needed,
     };
 }
