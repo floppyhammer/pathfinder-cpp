@@ -398,7 +398,7 @@ void Canvas::draw_subimage(const std::shared_ptr<Image> &image, const RectF &src
     auto old_fill_paint = current_state.fill_paint;
 
     current_state.fill_paint = Paint::from_pattern(pattern);
-    fill_rect(RectF(dst_rect.origin(), dst_rect.origin() + dst_size));
+    fill_rect(dst_rect);
 
     // Restore the previous fill paint.
     current_state.fill_paint = old_fill_paint;
@@ -422,7 +422,7 @@ void Canvas::draw_sub_render_target(const RenderTargetId &render_target_id,
     auto render_target_size = scene->palette.get_render_target(render_target_id).size;
 
     auto pattern = Pattern::from_render_target(render_target_id, render_target_size);
-    pattern.apply_transform(transform);
+    pattern.apply_transform(current_state.transform * transform);
 
     // Save the current fill paint.
     auto old_fill_paint = current_state.fill_paint;

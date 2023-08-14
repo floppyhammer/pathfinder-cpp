@@ -3,7 +3,6 @@
 #include "../../common/math/basic.h"
 #include "../d3d9/tiler.h"
 #include "../renderer.h"
-#include "umHalf.h"
 
 namespace Pathfinder {
 
@@ -389,32 +388,12 @@ void Palette::calculate_texture_transforms(std::vector<PaintMetadata> &paint_met
             } else {
                 auto pattern = overlay->contents.pattern;
 
-                Transform2 transform;
+                auto texture_scale = Vec2F(1.f / texture_rect.width(), 1.f / texture_rect.height());
 
-                if (pattern.source.type == PatternSource::Type::Image) {
-                    auto texture_scale = Vec2F(1.f / texture_rect.width(), 1.f / texture_rect.height());
+                auto texture_origin_uv = rect_to_uv(texture_rect, texture_scale).origin();
 
-                    auto texture_origin_uv = rect_to_uv(texture_rect, texture_scale).origin();
-
-                    transform = Transform2::from_scale(texture_scale).translate(texture_origin_uv) *
-                                pattern.transform.inverse();
-                } else {
-                    auto texture_scale = Vec2F(1.f / texture_rect.width(), 1.f / texture_rect.height());
-
-#ifdef PATHFINDER_USE_D3D11
-                    auto texture_origin_uv = rect_to_uv(texture_rect, texture_scale).lower_left();
-
-                    transform = Transform2::from_translation(texture_origin_uv) *
-                                Transform2::from_scale(texture_scale * Vec2F(1.0, -1.0)) * pattern.transform.inverse();
-#else
-                    auto texture_origin_uv = rect_to_uv(texture_rect, texture_scale).origin();
-
-                    transform = Transform2::from_translation(texture_origin_uv) *
-                                Transform2::from_scale(texture_scale * Vec2F(1.0, 1.0)) * pattern.transform.inverse();
-#endif
-                }
-
-                color_texture_metadata->transform = transform;
+                color_texture_metadata->transform =
+                    Transform2::from_scale(texture_scale).translate(texture_origin_uv) * pattern.transform.inverse();
             }
         } else {
             throw std::runtime_error("Why do we have color texture metadata but no overlay?");

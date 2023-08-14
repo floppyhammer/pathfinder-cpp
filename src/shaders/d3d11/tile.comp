@@ -573,13 +573,15 @@ sampler2D destTexture,
 vec2 destTextureSize,
 vec2 fragCoord,
 int op) {
-    if (op == COMBINER_CTRL_COMPOSITE_NORMAL)
-    return srcColor;
+    if (op == COMBINER_CTRL_COMPOSITE_NORMAL) {
+        return srcColor;
+    }
 
     // FIXME(pcwalton): What should the output alpha be here?
     vec2 destTexCoord = fragCoord / destTextureSize;
     vec4 destColor = texture(destTexture, destTexCoord);
     vec3 blendedRGB = compositeRGB(destColor.rgb, srcColor.rgb, op);
+
     return vec4(srcColor.a * (1.0 - destColor.a) * srcColor.rgb +
     srcColor.a * destColor.a * blendedRGB +
     (1.0 - srcColor.a) * destColor.rgb,
@@ -736,7 +738,7 @@ uint calculateTileIndex(uint bufferOffset, uvec4 tileRect, uvec2 tileCoord) {
 }
 
 ivec2 toImageCoords(ivec2 coords) {
-    return ivec2(coords.x, int(uFramebufferSize.y) - coords.y);
+    return ivec2(coords.x, coords.y);
 }
 
 void main() {
