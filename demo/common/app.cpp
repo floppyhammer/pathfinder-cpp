@@ -16,7 +16,7 @@ App::App(const std::shared_ptr<Device> &_device,
     canvas = std::make_shared<Canvas>(device, queue);
 
     // TEST: Clip path.
-    if (true) {
+    if (false) {
         Path2d path;
         path.add_rect(RectF(Vec2F(0.0, 0.0), Vec2F(360.0, 360.0)));
 
@@ -28,7 +28,7 @@ App::App(const std::shared_ptr<Device> &_device,
         auto image_buffer = ImageBuffer::from_memory(img_input, false);
         if (image_buffer) {
             auto image = std::make_shared<Image>(image_buffer->get_size(), image_buffer->to_rgba_pixels());
-            Vec2F pos = {100, 200};
+            Vec2F pos = {10, 20};
             canvas->draw_image(image, RectF(pos, pos + image->size.to_f32()));
         }
     }
