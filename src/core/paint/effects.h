@@ -70,7 +70,7 @@ struct PaintFilter {
 
     RadialGradient gradient_filter; // For RadialGradient type.
 
-    PatternFilter pattern_filter;   // For PatternFilter type.
+    PatternFilter pattern_filter; // For PatternFilter type.
 };
 
 /// Blend modes that can be applied to individual paths.
@@ -299,6 +299,10 @@ struct TextureSamplingFlags {
 
     bool contains(uint8_t flags) const {
         return value & flags;
+    }
+
+    inline bool operator==(const TextureSamplingFlags &rhs) const {
+        return value == rhs.value;
     }
 };
 
