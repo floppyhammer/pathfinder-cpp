@@ -27,6 +27,14 @@ struct TileBatchTextureInfo {
     uint32_t page_id;
     TextureSamplingFlags sampling_flags;
     PaintCompositeOp composite_op;
+
+    inline bool operator==(const TileBatchTextureInfo &rhs) const {
+        return page_id == rhs.page_id && sampling_flags == rhs.sampling_flags && composite_op == rhs.composite_op;
+    }
+
+    inline bool operator!=(const TileBatchTextureInfo &rhs) const {
+        return !(*this == rhs);
+    }
 };
 
 RectF rect_to_uv(const RectI &rect, const Vec2F &texture_scale);
@@ -48,7 +56,7 @@ struct PaintContents {
         if (type == rhs.type) {
             if (type == PaintContents::Type::Gradient) {
                 // FIXME: incorrect.
-                res = true;
+                res = false;
             } else {
                 res = pattern.source < rhs.pattern.source;
             }
@@ -131,15 +139,15 @@ public:
     /// In order to use Paint as Map keys.
     /// See https://stackoverflow.com/questions/1102392/how-can-i-use-stdmaps-with-user-defined-types-as-key.
     inline bool operator<(const Paint &rhs) const {
-        bool res;
-
-//        if (overlay) {
-//            res = overlay->contents < rhs.overlay->contents;
-//        } else {
-            res = base_color < rhs.base_color;
-//        }
-
-        return res;
+        if (overlay && rhs.overlay) {
+            return overlay->contents < rhs.overlay->contents;
+        } else if (overlay && !rhs.overlay) {
+            return false;
+        } else if (!overlay && rhs.overlay) {
+            return true;
+        } else {
+            return base_color < rhs.base_color;
+        }
     }
 };
 
