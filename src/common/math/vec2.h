@@ -130,6 +130,11 @@ struct Vec2 {
         return x == b.x && y == b.y;
     }
 
+    // For being used as ordered key.
+    inline bool operator<(const Vec2 &b) const {
+        return x < b.x && y < b.y;
+    }
+
     inline bool operator!=(const Vec2 &b) const {
         return x != b.x || y != b.y;
     }

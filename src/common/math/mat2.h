@@ -77,6 +77,11 @@ struct Mat2 {
         return v[0] == b.v[0] && v[1] == b.v[1] && v[2] == b.v[2] && v[3] == b.v[3];
     }
 
+    // For being used as ordered key.
+    inline bool operator<(const Mat2 &b) const {
+        return v[0] < b.v[0] && v[1] < b.v[1] && v[2] < b.v[2] && v[3] < b.v[3];
+    }
+
     inline Vec2F operator*(const Vec2F &other) const {
         return {v[0] * other.x + v[2] * other.y, v[1] * other.x + v[3] * other.y};
     }

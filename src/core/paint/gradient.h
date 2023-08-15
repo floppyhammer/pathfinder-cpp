@@ -126,6 +126,26 @@ public:
     /// Returns true if all colors of all stops in this gradient are opaque.
     bool is_opaque();
 
+    // For being used as ordered key.
+    inline bool operator<(const Gradient &rhs) const {
+        if (wrap == rhs.wrap) {
+            if (geometry.type == rhs.geometry.type) {
+                if (geometry.type == GradientGeometry::Type::Linear) {
+                    return geometry.linear < rhs.geometry.linear;
+                } else {
+                    bool res = geometry.radial.line < rhs.geometry.radial.line;
+                    res = res && geometry.radial.radii < rhs.geometry.radial.radii;
+                    res = res && geometry.radial.transform < rhs.geometry.radial.transform;
+                    return res;
+                }
+            } else {
+                return geometry.type < rhs.geometry.type;
+            }
+        } else {
+            return wrap < rhs.wrap;
+        }
+    }
+
 private:
     /// Color stops.
     std::vector<ColorStop> stops;

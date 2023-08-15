@@ -98,6 +98,11 @@ public:
     inline Transform2 operator*(const Transform2 &other) const {
         return {matrix * other.matrix, *this * other.vector};
     }
+
+    // For being used as ordered key.
+    inline bool operator<(const Transform2 &rhs) const {
+        return matrix < rhs.matrix && vector < rhs.vector;
+    }
 };
 
 } // namespace Pathfinder

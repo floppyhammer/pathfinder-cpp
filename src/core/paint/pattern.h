@@ -92,19 +92,17 @@ struct PatternSource {
 
     // For being used as key in ordered maps.
     inline bool operator<(const PatternSource &rhs) const {
-        bool res = type < rhs.type;
-
         if (type == rhs.type) {
             if (type == PatternSource::Type::RenderTarget) {
-                res = res && *image < *rhs.image;
+                return *image < *rhs.image;
             } else {
-                res = res && render_target_id < rhs.render_target_id;
-                res = res && size.x < rhs.size.x;
-                res = res && size.y < rhs.size.y;
+                bool res = render_target_id < rhs.render_target_id;
+                res = res && size < rhs.size;
+                return res;
             }
+        } else {
+            return type < rhs.type;
         }
-
-        return res;
     }
 };
 

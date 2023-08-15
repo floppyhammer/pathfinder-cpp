@@ -51,18 +51,15 @@ struct PaintContents {
 
     // For being used as key in ordered maps.
     inline bool operator<(const PaintContents &rhs) const {
-        bool res = type < rhs.type;
-
         if (type == rhs.type) {
             if (type == PaintContents::Type::Gradient) {
-                // FIXME: incorrect.
-                res = false;
+                return gradient < rhs.gradient;
             } else {
-                res = pattern.source < rhs.pattern.source;
+                return pattern.source < rhs.pattern.source;
             }
+        } else {
+            return type < rhs.type;
         }
-
-        return res;
     }
 };
 

@@ -97,6 +97,15 @@ struct LineSegmentF {
     inline LineSegmentF operator*(const Vec2F &v) const {
         return {from() * v, to() * v};
     }
+
+    // For being used as ordered key.
+    inline bool operator<(const LineSegmentF &rhs) const {
+        bool res = value.get<0>() < rhs.value.get<0>();
+        res = res && value.get<1>() < rhs.value.get<1>();
+        res = res && value.get<2>() < rhs.value.get<2>();
+        res = res && value.get<3>() < rhs.value.get<3>();
+        return res;
+    }
 };
 
 } // namespace Pathfinder
