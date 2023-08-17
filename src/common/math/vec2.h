@@ -1,6 +1,7 @@
 #ifndef PATHFINDER_VEC2_H
 #define PATHFINDER_VEC2_H
 
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <sstream>
