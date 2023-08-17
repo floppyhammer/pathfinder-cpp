@@ -30,7 +30,7 @@ void WindowGl::init() {
     // GLFW: initialize and configure.
     glfwInit();
 
-            #ifdef PATHFINDER_USE_D3D11
+            #ifdef PATHFINDER_ENABLE_D3D11
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
             #else
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);

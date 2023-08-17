@@ -10,7 +10,7 @@
 #include "../paint/paint.h"
 #include "../scene.h"
 
-#ifdef PATHFINDER_USE_D3D11
+#ifdef PATHFINDER_ENABLE_D3D11
 
 //! Data that will be sent directly to GPU.
 

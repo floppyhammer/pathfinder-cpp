@@ -93,7 +93,9 @@ std::vector<DrawTileBatchD3D9> build_tile_batches_for_draw_path_display_item(
     return flushed_draw_tile_batches;
 }
 
-void SceneBuilderD3D9::build(Renderer *renderer) {
+void SceneBuilderD3D9::build(Scene *_scene, Renderer *renderer) {
+    scene = _scene;
+
     // Build paint data.
     auto paint_metadata = scene->palette.build_paint_info(renderer);
 

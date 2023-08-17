@@ -118,17 +118,27 @@ void composite_shadow_blur_render_targets(Scene &scene, const ShadowBlurRenderTa
     scene.push_draw_path(path_y);
 }
 
-Canvas::Canvas(const std::shared_ptr<Device> &_device, const std::shared_ptr<Queue> &_queue) : device(_device) {
-    // Create the renderer.
-#ifndef PATHFINDER_USE_D3D11
-    renderer = std::make_shared<RendererD3D9>(device, _queue);
+Canvas::Canvas(const std::shared_ptr<Device> &_device, const std::shared_ptr<Queue> &_queue, RenderLevel _render_level)
+    : device(_device), render_level(_render_level) {
+    // Create the renderer and scene builder.
+    if (render_level == RenderLevel::Dx9) {
+        Logger::info("Created new canvas using Dx9 render level", "Canvas");
+        renderer = std::make_shared<RendererD3D9>(device, _queue);
+        scene_builder = std::make_shared<SceneBuilderD3D9>();
+    } else {
+#ifdef PATHFINDER_ENABLE_D3D11
+        Logger::info("Created new canvas using Dx11 render level", "Canvas");
+        renderer = std::make_shared<RendererD3D11>(device, _queue);
+        scene_builder = std::make_shared<SceneBuilderD3D11>();
 #else
-    renderer = std::make_shared<RendererD3D11>(device, _queue);
+        throw std::runtime_error(std::string("Pathfinder Dx11 level is selected but not enabled!"));
 #endif
+    }
 
     // Set up pipelines.
     renderer->set_up_pipelines();
 
+    // An empty scene.
     scene = std::make_shared<Scene>(0, RectF(0, 0, 0, 0));
 }
 
@@ -466,8 +476,12 @@ void Canvas::restore_state() {
     }
 }
 
-void Canvas::draw() {
-    scene->build_and_render(renderer);
+void Canvas::draw(bool clear_dst_texture) {
+    scene_builder->build(scene.get(), renderer.get());
+
+    renderer->draw(scene_builder, clear_dst_texture);
+
+    renderer->reset();
 }
 
 void Canvas::set_scene(const std::shared_ptr<Scene> &new_scene) {
@@ -495,12 +509,16 @@ void Canvas::set_size(const Vec2I &new_size) {
 }
 
 Vec2I Canvas::get_size() const {
-    return scene->get_view_box().size().ceil();
+    auto dst_texture = renderer->get_dest_texture();
+    if (dst_texture) {
+        return dst_texture->get_size();
+    }
+    return {};
 }
 
 Pattern Canvas::create_pattern_from_canvas(Canvas &canvas, const Transform2 &transform) {
-    auto subscene_size = canvas.get_size();
     auto subscene = canvas.get_scene();
+    auto subscene_size = subscene->get_view_box().size().ceil();
 
     auto render_target_desc = RenderTargetDesc{subscene_size, "Pattern Render Pass"};
     auto render_target_id = scene->push_render_target(render_target_desc);

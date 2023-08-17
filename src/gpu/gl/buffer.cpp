@@ -29,7 +29,7 @@ BufferGl::BufferGl(const BufferDescriptor &_desc) : Buffer(_desc) {
             abort();
         } break;
         case BufferType::Storage: {
-    #ifdef PATHFINDER_USE_D3D11
+    #ifdef PATHFINDER_ENABLE_D3D11
             target = GL_SHADER_STORAGE_BUFFER;
     #endif
         } break;
@@ -60,7 +60,7 @@ void BufferGl::upload_via_mapping(size_t data_size, size_t offset, void *data) {
             Logger::error("Cannot handle index buffers yet!");
         } break;
         case BufferType::Storage: {
-    #ifdef PATHFINDER_USE_D3D11
+    #ifdef PATHFINDER_ENABLE_D3D11
             gl_buffer_type = GL_SHADER_STORAGE_BUFFER;
     #endif
         } break;
@@ -80,7 +80,7 @@ void BufferGl::download_via_mapping(size_t data_size, size_t offset, void *data)
         return;
     }
 
-    #ifdef PATHFINDER_USE_D3D11
+    #ifdef PATHFINDER_ENABLE_D3D11
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, id);
         #ifdef __ANDROID__
     void *ptr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, offset, data_size, GL_MAP_READ_BIT);

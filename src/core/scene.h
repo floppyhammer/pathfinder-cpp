@@ -29,7 +29,7 @@ struct DisplayItem {
 
     RenderTargetId render_target_id{}; // For PushRenderTarget.
 
-    Range range;                       // For DrawPaths.
+    Range range; // For DrawPaths.
 };
 
 /// Used to control RenderTarget changing.
@@ -51,8 +51,6 @@ struct LastSceneInfo {
     std::vector<Range> draw_segment_ranges;
     std::vector<Range> clip_segment_ranges;
 };
-
-class SceneBuilder;
 
 /// The vector scene to be rendered.
 /// You can see scenes as an analogy of SVG images.
@@ -131,20 +129,11 @@ public:
 
     void set_bounds(const RectF &new_bounds);
 
-    /// Build the scene by SceneBuilder.
-    void build(std::shared_ptr<Renderer> &renderer);
-
-    /// A convenience method to build and render the scene.
-    void build_and_render(std::shared_ptr<Renderer> &renderer);
-
 private:
     RectF bounds;
 
     /// Scene-wide clipping control.
     RectF view_box;
-
-    /// Scene builder.
-    std::shared_ptr<SceneBuilder> scene_builder;
 };
 
 } // namespace Pathfinder

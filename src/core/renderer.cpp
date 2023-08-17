@@ -108,13 +108,8 @@ void Renderer::upload_texel_data(std::vector<ColorU> &texels, TextureLocation lo
     texture_page->must_preserve_contents = true;
 }
 
-void Renderer::start_rendering() {
+void Renderer::reset() {
     render_target_locations.clear();
-}
-
-void Renderer::begin_scene() {}
-
-void Renderer::end_scene() {
     allocator->purge_if_needed();
 }
 

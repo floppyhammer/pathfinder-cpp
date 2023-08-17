@@ -73,7 +73,7 @@ public:
     void set_up_pipelines() override;
 
     /// We need to call this for each scene.
-    void draw(const std::shared_ptr<SceneBuilder> &_scene_builder) override;
+    void draw(const std::shared_ptr<SceneBuilder> &_scene_builder, bool _clear_dst_texture) override;
 
     std::shared_ptr<Texture> get_dest_texture() override;
 

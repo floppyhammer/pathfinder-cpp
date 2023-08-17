@@ -202,7 +202,7 @@ bool CommandEncoderGl::finish() {
                                             to_gl_sampler_filter(sampler_descriptor.mag_filter));
                             // --------------------------------------------------------------
                         } break;
-    #ifdef PATHFINDER_USE_D3D11
+    #ifdef PATHFINDER_ENABLE_D3D11
                         case DescriptorType::StorageBuffer: {
                             auto buffer_gl = static_cast<BufferGl *>(descriptor.buffer.get());
 
@@ -257,7 +257,7 @@ bool CommandEncoderGl::finish() {
                 compute_pipeline = args.pipeline;
             } break;
             case CommandType::Dispatch: {
-    #ifdef PATHFINDER_USE_D3D11
+    #ifdef PATHFINDER_ENABLE_D3D11
                 auto &args = cmd.args.dispatch;
 
                 // Max global (total) work group counts x:2147483647 y:65535 z:65535.
