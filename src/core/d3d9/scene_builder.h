@@ -39,7 +39,7 @@ struct DrawPathBuildParams {
 /// Such data only changes when the scene becomes dirty and is rebuilt.
 class SceneBuilderD3D9 : public SceneBuilder {
 public:
-    explicit SceneBuilderD3D9(Scene *_scene) : SceneBuilder(_scene) {}
+    explicit SceneBuilderD3D9() {}
 
     // Data that will be sent to a renderer.
     // ------------------------------------------
@@ -57,7 +57,7 @@ public:
     std::array<std::atomic<size_t>, ALPHA_TILE_LEVEL_COUNT> next_alpha_tile_indices;
 
     /// Build everything we need for rendering.
-    void build(Renderer *renderer) override;
+    void build(Scene* _scene, Renderer *renderer) override;
 
 private:
     /// For parallel fill insertion.

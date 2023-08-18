@@ -104,7 +104,7 @@ ComputeProgram::ComputeProgram(const std::vector<char> &compute_code) : Program(
 }
 
 void ComputeProgram::compile(const char *compute_code) {
-    #ifdef PATHFINDER_USE_D3D11
+    #ifdef PATHFINDER_ENABLE_D3D11
     // Compile shaders.
     unsigned int compute = glCreateShader(GL_COMPUTE_SHADER);
     glShaderSource(compute, 1, &compute_code, nullptr);

@@ -47,6 +47,11 @@ struct MaskStorage {
     uint32_t allocated_page_count = 0;
 };
 
+enum RenderLevel {
+    Dx9,
+    Dx11,
+};
+
 /// In most cases, we have only one renderer set up, while having
 /// multiple scenes prepared for rendering.
 /// All GPU operations happens in the renderer.
@@ -72,24 +77,13 @@ public:
 
     virtual void set_dest_texture(const std::shared_ptr<Texture> &new_texture) = 0;
 
-    void start_rendering();
-
-    virtual void draw(const std::shared_ptr<SceneBuilder> &_scene_builder) = 0;
+    virtual void draw(const std::shared_ptr<SceneBuilder> &_scene_builder, bool _clear_dst_texture) = 0;
 
     TextureLocation get_render_target_location(RenderTargetId render_target_id);
 
     RenderTarget get_render_target(RenderTargetId render_target_id);
 
-    /// Performs work necessary to begin rendering a scene.
-    ///
-    /// This must be called before `render_command()`.
-    void begin_scene();
-
-    /// Finishes rendering a scene.
-    ///
-    /// Note that, after calling this method, you might need to flush the output to the screen via
-    /// `swap_buffers()`, `present()`, or a similar method that your windowing library offers.
-    void end_scene();
+    void reset();
 
     std::shared_ptr<Sampler> get_or_create_sampler(TextureSamplingFlags sampling_flags);
 

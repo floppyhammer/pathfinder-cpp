@@ -25,14 +25,7 @@ void SceneEpoch::next() {
     *this = successor();
 }
 
-Scene::Scene(uint32_t _id, RectF _view_box) : id(_id), view_box(_view_box), palette(Palette(_id)) {
-    // Create the scene builder.
-#ifndef PATHFINDER_USE_D3D11
-    scene_builder = std::make_shared<SceneBuilderD3D9>(this);
-#else
-    scene_builder = std::make_shared<SceneBuilderD3D11>(this);
-#endif
-}
+Scene::Scene(uint32_t _id, RectF _view_box) : id(_id), view_box(_view_box), palette(Palette(_id)) {}
 
 uint32_t Scene::push_paint(const Paint &paint) {
     auto paint_id = palette.push_paint(paint);
@@ -198,29 +191,6 @@ RectF Scene::get_bounds() {
 void Scene::set_bounds(const RectF &new_bounds) {
     bounds = new_bounds;
     epoch.next();
-}
-
-void Scene::build(std::shared_ptr<Renderer> &renderer) {
-    // No need to rebuild the scene if it hasn't changed.
-    // Comment this to do benchmark more precisely.
-    if (scene_builder && is_dirty) {
-        renderer->start_rendering();
-
-        scene_builder->build(renderer.get());
-
-        // Mark the scene as clean, so we don't need to rebuild it the next frame.
-        is_dirty = false;
-    }
-}
-
-void Scene::build_and_render(std::shared_ptr<Renderer> &renderer) {
-    renderer->begin_scene();
-
-    build(renderer);
-
-    renderer->draw(scene_builder);
-
-    renderer->end_scene();
 }
 
 } // namespace Pathfinder

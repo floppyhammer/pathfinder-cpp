@@ -9,7 +9,7 @@
 #include "gpu_data.h"
 #include "scene_builder.h"
 
-#ifdef PATHFINDER_USE_D3D11
+#ifdef PATHFINDER_ENABLE_D3D11
 
 namespace Pathfinder {
 
@@ -91,7 +91,7 @@ public:
 
     void set_up_pipelines() override;
 
-    void draw(const std::shared_ptr<SceneBuilder> &scene_builder) override;
+    void draw(const std::shared_ptr<SceneBuilder> &scene_builder, bool _clear_dst_texture) override;
 
     std::shared_ptr<Texture> get_dest_texture() override;
 

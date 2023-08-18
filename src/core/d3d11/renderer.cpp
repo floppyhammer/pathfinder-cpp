@@ -11,7 +11,7 @@
 #include "../data/data.h"
 #include "gpu_data.h"
 
-#ifdef PATHFINDER_USE_D3D11
+#ifdef PATHFINDER_ENABLE_D3D11
     #ifdef PATHFINDER_USE_VULKAN
         #include "../../shaders/generated/bin_comp_spv.h"
         #include "../../shaders/generated/bound_comp_spv.h"
@@ -245,7 +245,9 @@ void RendererD3D11::set_up_pipelines() {
     tile_pipeline = device->create_compute_pipeline(tile_source, tile_descriptor_set, "Tile pipeline");    // 7
 }
 
-void RendererD3D11::draw(const std::shared_ptr<SceneBuilder> &_scene_builder) {
+void RendererD3D11::draw(const std::shared_ptr<SceneBuilder> &_scene_builder, bool _clear_dst_texture) {
+    clear_dest_texture = _clear_dst_texture;
+
     auto *scene_builder = static_cast<SceneBuilderD3D11 *>(_scene_builder.get());
 
     if (scene_builder->built_segments.draw_segments.points.empty()) {
@@ -256,7 +258,6 @@ void RendererD3D11::draw(const std::shared_ptr<SceneBuilder> &_scene_builder) {
     upload_scene(scene_builder->built_segments.draw_segments, scene_builder->built_segments.clip_segments);
 
     alpha_tile_count = 0;
-    clear_dest_texture = true;
 
     // Prepare clip tiles.
     {

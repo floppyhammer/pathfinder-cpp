@@ -1,6 +1,6 @@
 #include "gpu_data.h"
 
-#ifdef PATHFINDER_USE_D3D11
+#ifdef PATHFINDER_ENABLE_D3D11
 
 namespace Pathfinder {
 

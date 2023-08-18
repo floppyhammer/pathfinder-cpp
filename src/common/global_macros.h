@@ -1,10 +1,15 @@
 #ifndef PATHFINDER_GLOBAL_MACROS_H
 #define PATHFINDER_GLOBAL_MACROS_H
 
-// Choose between D3D9 and D3D11.
-//#define PATHFINDER_USE_D3D11
+// Enable Dx11 render level.
+#define PATHFINDER_ENABLE_D3D11
 
-// Enable this if GLES3.0 support is needed.
+// Dx11 level is not available in Web.
+#if defined(__EMSCRIPTEN__)
+    #undef PATHFINDER_ENABLE_D3D11
+#endif
+
+// Enable this if ES3.0 support is needed.
 // #define PATHFINDER_MINIMUM_SHADER_VERSION_SUPPORT
 
 // WebGL only supports ES3.0 shaders.

@@ -50,7 +50,9 @@ enum class PathOp {
 /// Normally, we only need one canvas to render multiple scenes.
 class Canvas {
 public:
-    explicit Canvas(const std::shared_ptr<Device> &_device, const std::shared_ptr<Queue> &_queue);
+    explicit Canvas(const std::shared_ptr<Device> &_device,
+                    const std::shared_ptr<Queue> &_queue,
+                    RenderLevel _render_level);
 
     /// Clears the current canvas.
     /// You shouldn't call this per frame.
@@ -173,7 +175,7 @@ public:
 
     void restore_state();
 
-    void draw();
+    void draw(bool clear_dst_texture);
 
     // Extensions
 
@@ -189,17 +191,22 @@ private:
     void push_path(Outline &outline, PathOp path_op, FillRule fill_rule);
 
 private:
-    // Brush state management.
+    /// Brush state management.
     BrushState current_state;
     std::vector<BrushState> saved_states;
 
     std::shared_ptr<Scene> scene;
 
-    /// Rendering API related.
-    std::shared_ptr<Device> device;
+    /// Scene builder.
+    std::shared_ptr<SceneBuilder> scene_builder;
 
     /// Scene renderer.
     std::shared_ptr<Renderer> renderer;
+
+    /// Rendering API related.
+    std::shared_ptr<Device> device;
+
+    RenderLevel render_level;
 };
 
 } // namespace Pathfinder

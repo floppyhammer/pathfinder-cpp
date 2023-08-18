@@ -21,6 +21,8 @@ public:
 
     std::shared_ptr<Canvas> canvas;
 
+    std::shared_ptr<Scene> scene_0, scene_1;
+
     std::shared_ptr<Device> device;
     std::shared_ptr<Queue> queue;
 

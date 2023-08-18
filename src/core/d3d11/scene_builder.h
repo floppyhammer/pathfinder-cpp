@@ -6,7 +6,7 @@
 #include "../scene_builder.h"
 #include "gpu_data.h"
 
-#ifdef PATHFINDER_USE_D3D11
+#ifdef PATHFINDER_ENABLE_D3D11
 
 namespace Pathfinder {
 
@@ -46,7 +46,7 @@ struct ClipBatchesD3D11 {
 
 class SceneBuilderD3D11 : public SceneBuilder {
 public:
-    explicit SceneBuilderD3D11(Scene *_scene) : SceneBuilder(_scene) {}
+    explicit SceneBuilderD3D11() {}
 
     BuiltSegments built_segments;
 
@@ -55,7 +55,7 @@ public:
     // Will be sent to renderer to draw tiles.
     std::vector<DrawTileBatchD3D11> tile_batches;
 
-    void build(Renderer *renderer) override;
+    void build(Scene *_scene, Renderer *renderer) override;
 
 private:
     void finish_building(LastSceneInfo &last_scene,

@@ -13,7 +13,7 @@ App::App(const std::shared_ptr<Device> &_device,
     queue = _queue;
 
     // Set up a canvas.
-    canvas = std::make_shared<Canvas>(device, queue);
+    canvas = std::make_shared<Canvas>(device, queue, RenderLevel::Dx9);
 
     // TEST: Clip path.
     if (false) {
@@ -81,16 +81,18 @@ App::App(const std::shared_ptr<Device> &_device,
         canvas->draw_render_target(render_target_id, {{}, render_target_size.to_f32()});
     }
 
+    scene_0 = canvas->get_scene();
+
     // TEST: Append SVG scene.
     if (true) {
         SvgScene svg_scene;
         svg_scene.load_from_string(std::string(svg_input.begin(), svg_input.end()), *canvas);
 
         // TEST: Replace scene.
-        //         canvas->set_scene(svg_scene.get_scene());
+        scene_1 = svg_scene.get_scene();
 
         // TEST: Append scene.
-        canvas->get_scene()->append_scene(*svg_scene.get_scene(), Transform2::from_scale({1.0, 1.0}));
+        //        canvas->get_scene()->append_scene(*scene_1, Transform2::from_scale({1.0, 1.0}));
     }
 
     // Timer.
@@ -121,7 +123,11 @@ void App::update() {
     }
     // ----------------------------------------
 
-    canvas->draw();
+    canvas->set_scene(scene_0);
+    canvas->draw(true);
+
+    canvas->set_scene(scene_1);
+    canvas->draw(false);
 }
 
 void App::cleanup() {

@@ -318,12 +318,14 @@ void RendererD3D9::create_tile_clip_combine_pipeline() {
                                                                 "Tile clip combine pipeline");
 }
 
-void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &_scene_builder) {
+void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &_scene_builder, bool _clear_dst_texture) {
     auto *scene_builder = static_cast<SceneBuilderD3D9 *>(_scene_builder.get());
 
     // We are supposed to draw fills before the builder finishes building.
     // However, it seems not providing much performance boost.
     // So, we just leave it as it is for the sake of simplicity.
+
+    clear_dest_texture = _clear_dst_texture;
 
     alpha_tile_count = 0;
 
@@ -388,9 +390,6 @@ uint64_t RendererD3D9::upload_tiles(const std::vector<TileObjectPrimitive> &tile
 }
 
 void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &tile_batches) {
-    // Clear the destination framebuffer for the first time.
-    clear_dest_texture = true;
-
     // One draw call for one batch.
     for (const auto &batch : tile_batches) {
         uint32_t tile_count = batch.tiles.size();

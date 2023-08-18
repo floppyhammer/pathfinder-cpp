@@ -16,7 +16,7 @@ TextureGl::TextureGl(const TextureDescriptor& _desc) : Texture(_desc) {
 
     // Allocate space.
     // We need to use glTexStorage2D() in order to access the texture via image2D in compute shaders.
-    #ifdef PATHFINDER_USE_D3D11
+    #ifdef PATHFINDER_ENABLE_D3D11
     glTexStorage2D(GL_TEXTURE_2D, 1, to_gl_texture_format(_desc.format), _desc.size.x, _desc.size.y);
     #else
     // We can deduce the pixel data type by the texture format.

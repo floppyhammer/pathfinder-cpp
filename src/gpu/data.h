@@ -7,7 +7,7 @@
     #ifdef PATHFINDER_USE_VULKAN
         #include "vulkan_wrapper.h"
     #else
-        #ifdef PATHFINDER_USE_D3D11
+        #ifdef PATHFINDER_ENABLE_D3D11
             #include <GLES3/gl31.h>
         #else
             #include <GLES3/gl3.h>
