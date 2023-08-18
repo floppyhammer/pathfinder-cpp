@@ -4,6 +4,10 @@
 #include "../common/io.h"
 #include "../common/logger.h"
 #include "../common/timestamp.h"
+#include "d3d11/renderer.h"
+#include "d3d11/scene_builder.h"
+#include "d3d9/renderer.h"
+#include "d3d9/scene_builder.h"
 #include "dash.h"
 #include "stroke.h"
 
@@ -442,10 +446,6 @@ void Canvas::draw_sub_render_target(const RenderTargetId &render_target_id,
 
     // Restore the previous fill paint.
     current_state.fill_paint = old_fill_paint;
-}
-
-void Canvas::clear() {
-    take_scene();
 }
 
 std::shared_ptr<Scene> Canvas::get_scene() const {

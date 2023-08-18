@@ -2,8 +2,10 @@
 
 #include "../common/io.h"
 
-#define NANOSVG_IMPLEMENTATION
-#include <nanosvg.h>
+#ifndef NANOSVG_IMPLEMENTATION
+    #define NANOSVG_IMPLEMENTATION
+    #include <nanosvg.h>
+#endif
 
 namespace Pathfinder {
 

@@ -3,11 +3,9 @@
 
 #include <memory>
 
-#include "d3d11/renderer.h"
-#include "d3d11/scene_builder.h"
-#include "d3d9/renderer.h"
-#include "d3d9/scene_builder.h"
 #include "path2d.h"
+#include "renderer.h"
+#include "scene_builder.h"
 
 namespace Pathfinder {
 
@@ -54,10 +52,6 @@ public:
                     const std::shared_ptr<Queue> &_queue,
                     RenderLevel _render_level);
 
-    /// Clears the current canvas.
-    /// You shouldn't call this per frame.
-    void clear();
-
     /// Set the final render target.
     void set_dst_texture(const std::shared_ptr<Texture> &new_dst_texture);
 
@@ -91,7 +85,7 @@ public:
 
     void set_line_dash_offset(float new_line_dash_offset);
 
-    // Fill and stroke styles
+    // Fill & stroke styles
 
     Paint fill_paint() const;
 

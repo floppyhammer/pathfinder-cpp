@@ -1,10 +1,10 @@
 #include "renderer.h"
-#include "scene.h"
 
 namespace Pathfinder {
 
 bool fixup_batch_for_new_path_if_possible(std::shared_ptr<TileBatchTextureInfo> &batch_color_texture,
                                           const BuiltDrawPath &draw_path) {
+    // Check if the new draw path has a color texture.
     if (draw_path.color_texture_info) {
         // If the current batch doesn't have a color texture.
         if (batch_color_texture == nullptr) {

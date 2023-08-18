@@ -14,7 +14,7 @@ class Scene;
 
 class Renderer;
 
-// A builder doesn't involve GPU related code.
+/// Build a scene on the CPU side for rendering.
 class SceneBuilder {
 public:
     explicit SceneBuilder() {}
