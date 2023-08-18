@@ -72,9 +72,6 @@ public:
 
     SceneEpoch epoch;
 
-    /// Only rebuild the scene when it is dirty.
-    bool is_dirty = true;
-
     /**
      * Adds a shape to the scene, to be drawn on top of all previously-added shapes.
      * If a render target is on the stack (see `push_render_target()`), the path goes to the

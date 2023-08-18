@@ -143,9 +143,6 @@ void Scene::append_scene(const Scene &scene, const Transform2 &transform) {
 
     // Bump epoch.
     epoch.next();
-
-    // Need to rebuild the scene.
-    is_dirty = true;
 }
 
 RenderTargetId Scene::push_render_target(const RenderTargetDesc &render_target_desc) {
@@ -179,9 +176,6 @@ void Scene::set_view_box(const RectF &new_view_box) {
     view_box = new_view_box;
 
     epoch.next();
-
-    // We need rebuild the scene if the view box changes.
-    is_dirty = true;
 }
 
 RectF Scene::get_bounds() {

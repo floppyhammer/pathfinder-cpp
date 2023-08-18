@@ -352,7 +352,6 @@ void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
 
     // Update uniform buffers.
     TileUniformDx11 uniform_data;
-    std::memset(uniform_data.clear_color, 0, 4 * sizeof(float));
     uniform_data.load_action = clear_op;
     uniform_data.tile_size = {TILE_WIDTH, TILE_HEIGHT};
     uniform_data.color_texture_size = color_texture_size.to_f32();
