@@ -18,6 +18,7 @@
     #include <GLFW/glfw3.h>
 #else
     #ifdef PATHFINDER_USE_VULKAN
+        #define GLFW_INCLUDE_NONE
         // Vulkan headers.
         #define GLFW_INCLUDE_VULKAN
         #include <GLFW/glfw3.h>
