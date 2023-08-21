@@ -12,6 +12,7 @@ class App {
 public:
     App(const std::shared_ptr<Pathfinder::Device> &device,
         const std::shared_ptr<Queue> &queue,
+        const Vec2I &canvas_size,
         const std::vector<char> &svg_input,
         const std::vector<char> &img_input);
 

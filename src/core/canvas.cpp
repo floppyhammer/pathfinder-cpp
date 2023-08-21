@@ -122,8 +122,11 @@ void composite_shadow_blur_render_targets(Scene &scene, const ShadowBlurRenderTa
     scene.push_draw_path(path_y);
 }
 
-Canvas::Canvas(const std::shared_ptr<Device> &_device, const std::shared_ptr<Queue> &_queue, RenderLevel _render_level)
-    : device(_device), render_level(_render_level) {
+Canvas::Canvas(const std::shared_ptr<Device> &_device,
+               const std::shared_ptr<Queue> &_queue,
+               RenderLevel _render_level,
+               const Vec2I &_size)
+    : device(_device), render_level(_render_level), size(_size) {
     // Create the renderer and scene builder.
     if (render_level == RenderLevel::Dx9) {
         Logger::info("Created new canvas using Dx9 render level", "Canvas");
@@ -476,12 +479,7 @@ void Canvas::restore_state() {
 }
 
 void Canvas::draw(bool clear_dst_texture) {
-    auto dst_texture = get_dst_texture();
-    if (!dst_texture) {
-        return;
-    }
-
-    auto view_box = RectI({}, dst_texture->get_size()).to_f32();
+    auto view_box = RectI({}, size).to_f32();
     scene->set_bounds(view_box);
     scene->set_view_box(view_box);
 
@@ -508,6 +506,14 @@ std::shared_ptr<Scene> Canvas::take_scene() {
     set_scene(std::make_shared<Scene>(0, scene->get_view_box()));
 
     return taken_scene;
+}
+
+void Canvas::set_size(const Vec2I &new_size) {
+    size = new_size;
+}
+
+Vec2I Canvas::get_size() const {
+    return size;
 }
 
 Pattern Canvas::create_pattern_from_canvas(Canvas &canvas, const Transform2 &transform) {
