@@ -156,6 +156,8 @@ void SvgScene::load_from_string(const std::string &svg, Canvas &canvas) {
     auto old_scene = canvas.take_scene();
     canvas.set_scene(scene);
 
+    canvas.set_size({(int)image->width, (int)image->height});
+
     // Extract paths, contours and points from the SVG image.
     // Notable: NSVGshape equals to our Path, and NSVGpath equals to our Contour (Sub-Path).
     for (NSVGshape *nsvg_shape = image->shapes; nsvg_shape != nullptr; nsvg_shape = nsvg_shape->next) {
