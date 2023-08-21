@@ -5,6 +5,7 @@ const float FRAME_TIME_PERIOD = 5;
 
 App::App(const std::shared_ptr<Device> &_device,
          const std::shared_ptr<Queue> &_queue,
+         const Vec2I &canvas_size,
          const std::vector<char> &svg_input,
          const std::vector<char> &img_input) {
     Logger::set_level(Logger::Level::Info);
@@ -13,7 +14,7 @@ App::App(const std::shared_ptr<Device> &_device,
     queue = _queue;
 
     // Set up a canvas.
-    canvas = std::make_shared<Canvas>(device, queue, RenderLevel::Dx9);
+    canvas = std::make_shared<Canvas>(device, queue, RenderLevel::Dx9, canvas_size);
 
     // TEST: Clip path.
     if (false) {
