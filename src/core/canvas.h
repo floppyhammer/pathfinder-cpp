@@ -50,7 +50,8 @@ class Canvas {
 public:
     explicit Canvas(const std::shared_ptr<Device> &_device,
                     const std::shared_ptr<Queue> &_queue,
-                    RenderLevel _render_level);
+                    RenderLevel _render_level,
+                    const Vec2I &_size);
 
     /// Set the final render target.
     void set_dst_texture(const std::shared_ptr<Texture> &new_dst_texture);
@@ -190,6 +191,8 @@ private:
     std::vector<BrushState> saved_states;
 
     std::shared_ptr<Scene> scene;
+
+    Vec2I size;
 
     /// Scene builder.
     std::shared_ptr<SceneBuilder> scene_builder;
