@@ -148,9 +148,9 @@ public:
     void draw_sub_render_target(const RenderTargetId &render_target_id, const RectF &src_rect, const RectF &dst_rect);
 
     /// Set the inner scene's view box.
-    /// Global control of path clipping.
     void set_size(const Vec2I &size);
 
+    /// Get the inner scene's view box.
     Vec2I get_size() const;
 
     /// Returns the inner scene.

@@ -509,11 +509,7 @@ void Canvas::set_size(const Vec2I &new_size) {
 }
 
 Vec2I Canvas::get_size() const {
-    auto dst_texture = renderer->get_dest_texture();
-    if (dst_texture) {
-        return dst_texture->get_size();
-    }
-    return {};
+    return scene->get_view_box().size().ceil().to_i32();
 }
 
 Pattern Canvas::create_pattern_from_canvas(Canvas &canvas, const Transform2 &transform) {

@@ -42,7 +42,7 @@ int main() {
 
         auto current_window_size = window->get_size();
 
-        if (current_window_size != app.canvas->get_size() && current_window_size.area() != 0) {
+        if (current_window_size != app.canvas->get_dst_texture()->get_size() && current_window_size.area() != 0) {
             auto dst_texture = device->create_texture({current_window_size, TextureFormat::Rgba8Unorm}, "dst texture");
 
             app.canvas->set_dst_texture(dst_texture);
