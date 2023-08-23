@@ -122,7 +122,10 @@ void composite_shadow_blur_render_targets(Scene &scene, const ShadowBlurRenderTa
     scene.push_draw_path(path_y);
 }
 
-Canvas::Canvas(const std::shared_ptr<Device> &_device, const std::shared_ptr<Queue> &_queue, RenderLevel _render_level)
+Canvas::Canvas(Vec2I size,
+               const std::shared_ptr<Device> &_device,
+               const std::shared_ptr<Queue> &_queue,
+               RenderLevel _render_level)
     : device(_device), render_level(_render_level) {
     // Create the renderer and scene builder.
     if (render_level == RenderLevel::Dx9) {
@@ -143,7 +146,7 @@ Canvas::Canvas(const std::shared_ptr<Device> &_device, const std::shared_ptr<Que
     renderer->set_up_pipelines();
 
     // An empty scene.
-    scene = std::make_shared<Scene>(0, RectF(0, 0, 0, 0));
+    scene = std::make_shared<Scene>(0, RectF({0, 0}, size.to_f32()));
 }
 
 void Canvas::push_path(Outline &outline, PathOp path_op, FillRule fill_rule) {
@@ -452,12 +455,7 @@ std::shared_ptr<Scene> Canvas::get_scene() const {
     return scene;
 }
 
-std::shared_ptr<Device> Canvas::get_device() const {
-    return device;
-}
-
 void Canvas::set_dst_texture(const std::shared_ptr<Texture> &new_dst_texture) {
-    set_size(new_dst_texture->get_size());
     renderer->set_dest_texture(new_dst_texture);
 }
 

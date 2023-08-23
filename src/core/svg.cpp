@@ -123,10 +123,6 @@ Paint convert_nsvg_paint(NSVGpaint nsvg_paint) {
     return paint;
 }
 
-SvgScene::SvgScene() {
-    scene = std::make_shared<Scene>(0, RectF());
-}
-
 void SvgScene::load_from_string(const std::string &svg, Canvas &canvas) {
     // We use std::string instead of std::vector<char> here, otherwise NanoSVG occasionally crashes.
 
@@ -154,9 +150,6 @@ void SvgScene::load_from_string(const std::string &svg, Canvas &canvas) {
     }
 
     auto old_scene = canvas.take_scene();
-    canvas.set_scene(scene);
-
-    canvas.set_size({(int)image->width, (int)image->height});
 
     // Extract paths, contours and points from the SVG image.
     // Notable: NSVGshape equals to our Path, and NSVGpath equals to our Contour (Sub-Path).
@@ -199,6 +192,8 @@ void SvgScene::load_from_string(const std::string &svg, Canvas &canvas) {
 
         canvas.restore_state();
     }
+
+    scene = canvas.get_scene();
 
     canvas.set_scene(old_scene);
 

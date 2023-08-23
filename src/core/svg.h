@@ -9,7 +9,7 @@ namespace Pathfinder {
 /// Analogy to a SVG image.
 class SvgScene {
 public:
-    SvgScene();
+    SvgScene() = default;
 
     /**
      * @brief Load SVG string into the scene.
