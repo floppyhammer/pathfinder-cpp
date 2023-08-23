@@ -144,6 +144,14 @@ struct TilingPathInfo {
 
     DrawTilingPathInfo info;
 
+    bool has_destructive_blend_mode() const {
+        if (type == Type::Draw) {
+            return is_blend_mode_destructive(info.blend_mode);
+        }
+
+        return false;
+    }
+
     inline uint8_t to_ctrl() const {
         uint8_t ctrl = 0;
 

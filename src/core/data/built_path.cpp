@@ -18,7 +18,7 @@ BuiltPath::BuiltPath(uint32_t path_id,
 
     ctrl_byte = tiling_path_info.to_ctrl();
 
-    RectF tile_map_bounds = path_bounds;
+    RectF tile_map_bounds = tiling_path_info.has_destructive_blend_mode() ? view_box_bounds : path_bounds;
 
     tile_bounds = round_rect_out_to_tile_bounds(tile_map_bounds);
 

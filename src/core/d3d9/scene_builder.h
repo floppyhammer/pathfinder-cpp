@@ -30,9 +30,9 @@ struct DrawPathBuildParams {
                         std::vector<BuiltPath> &_built_clip_paths)
         : path_build_params(_path_build_params), paint_metadata(_paint_metadata), built_clip_paths(_built_clip_paths) {}
 
-    PathBuildParams path_build_params;
-    std::vector<PaintMetadata> &paint_metadata;
-    std::vector<BuiltPath> &built_clip_paths;
+    const PathBuildParams path_build_params;
+    const std::vector<PaintMetadata> &paint_metadata;
+    const std::vector<BuiltPath> &built_clip_paths;
 };
 
 /// Builds a scene into rendering data.
@@ -57,7 +57,7 @@ public:
     std::array<std::atomic<size_t>, ALPHA_TILE_LEVEL_COUNT> next_alpha_tile_indices;
 
     /// Build everything we need for rendering.
-    void build(Scene* _scene, Renderer *renderer) override;
+    void build(Scene *_scene, Renderer *renderer) override;
 
 private:
     /// For parallel fill insertion.

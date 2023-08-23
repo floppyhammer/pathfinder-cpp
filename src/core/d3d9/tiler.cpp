@@ -322,7 +322,7 @@ Tiler::Tiler(SceneBuilderD3D9 &_scene_builder,
 
     if (clip_path_id) {
         clip_path = std::make_shared<BuiltPath>(built_clip_paths[*clip_path_id]);
-    };
+    }
 
     // Create an object builder.
     object_builder = ObjectBuilder(path_id, bounds, view_box, fill_rule, clip_path_id, path_info);

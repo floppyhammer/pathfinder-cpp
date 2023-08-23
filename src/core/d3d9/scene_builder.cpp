@@ -169,14 +169,15 @@ std::vector<BuiltDrawPath> SceneBuilderD3D9::build_paths_on_cpu(std::vector<Pain
     std::vector<BuiltDrawPath> built_draw_paths(draw_paths_count);
     {
         // Parallel build.
-        auto task =
-            [this, &built_draw_paths, &draw_paths_count, &view_box, &paint_metadata, &built_clip_paths](int begin) {
-                for (uint32_t path_index = begin; path_index < draw_paths_count; path_index += PATHFINDER_THREADS) {
-                    auto params = DrawPathBuildParams({path_index, view_box, scene}, paint_metadata, built_clip_paths);
+        auto task = [this, &built_draw_paths, &draw_paths_count, &view_box, &paint_metadata, &built_clip_paths](
+                        int begin) {
+            for (uint32_t path_index = begin; path_index < draw_paths_count; path_index += PATHFINDER_THREADS) {
+                auto params =
+                    DrawPathBuildParams(PathBuildParams{path_index, view_box, scene}, paint_metadata, built_clip_paths);
 
-                    built_draw_paths[path_index] = build_draw_path_on_cpu(params);
-                }
-            };
+                built_draw_paths[path_index] = build_draw_path_on_cpu(params);
+            }
+        };
 
         size_t threads_count = std::min(draw_paths_count, (size_t)PATHFINDER_THREADS);
 
@@ -241,7 +242,7 @@ BuiltDrawPath SceneBuilderD3D9::build_draw_path_on_cpu(const DrawPathBuildParams
                 path_id,
                 path_object.outline,
                 path_object.fill_rule,
-                scene->get_view_box(),
+                params.path_build_params.view_box,
                 path_object.clip_path,
                 params.built_clip_paths,
                 path_info);
@@ -249,10 +250,10 @@ BuiltDrawPath SceneBuilderD3D9::build_draw_path_on_cpu(const DrawPathBuildParams
     // Core step.
     tiler.generate_tiles();
 
-    // Add generated fills from the tile generation step.
+    // Send the fills generated from the tile generation step.
     send_fills(tiler.object_builder.fills);
 
-    return BuiltDrawPath(tiler.object_builder.built_path, path_object, _paint_metadata);
+    return {tiler.object_builder.built_path, path_object, _paint_metadata};
 }
 
 void SceneBuilderD3D9::build_tile_batches(const std::vector<BuiltDrawPath> &built_paths) {
