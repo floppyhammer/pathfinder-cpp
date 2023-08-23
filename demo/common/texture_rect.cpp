@@ -21,10 +21,15 @@ TextureRect::TextureRect(const std::shared_ptr<Device> &_device,
     queue = _queue;
 
     // Set up vertex data (and buffer(s)) and configure vertex attributes.
-    float vertices[] = {// Positions, UVs.
-                        0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0,
-
-                        0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0};
+    float vertices[] = {
+        // Positions, UVs.
+        0.0, 0.0, 0.0, 0.0, // 0
+        1.0, 0.0, 1.0, 0.0, // 1
+        1.0, 1.0, 1.0, 1.0, // 2
+        0.0, 0.0, 0.0, 0.0, // 3
+        1.0, 1.0, 1.0, 1.0, // 4
+        0.0, 1.0, 0.0, 1.0  // 5
+    };
 
     vertex_buffer = device->create_buffer({BufferType::Vertex, sizeof(vertices), MemoryProperty::DeviceLocal},
                                           "TextureRect vertex buffer");

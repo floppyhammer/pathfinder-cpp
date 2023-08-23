@@ -20,5 +20,10 @@ uniform sampler2D uTexture;
 #endif
 
 void main() {
+    // When drawing to the screen, we need to flip the texture for GL.
+#ifdef VULKAN
     oFragColor = texture(uTexture, vUV);
+#else
+    oFragColor = texture(uTexture, vec2(vUV.x, 1.0f - vUV.y));
+#endif
 }
