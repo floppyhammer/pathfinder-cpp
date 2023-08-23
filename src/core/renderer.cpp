@@ -159,6 +159,10 @@ std::shared_ptr<Sampler> Renderer::get_default_sampler() {
 }
 
 void Renderer::upload_texture_metadata(const std::vector<TextureMetadataEntry> &metadata) {
+    if (metadata.empty()) {
+        return;
+    }
+
     auto padded_texel_size =
         alignup_i32((int32_t)metadata.size(), TEXTURE_METADATA_ENTRIES_PER_ROW) * TEXTURE_METADATA_TEXTURE_WIDTH * 4;
 
