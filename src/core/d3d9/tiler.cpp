@@ -281,9 +281,8 @@ void process_line_segment(LineSegmentF line_segment, SceneBuilderD3D9 &scene_bui
 /// Recursive call.
 void process_segment(Segment &segment, SceneBuilderD3D9 &scene_builder, ObjectBuilder &object_builder) {
     // TODO(pcwalton): Stop degree elevating.
-    // If the segment is a quadratic curve.
+    // 1. If the segment is a quadratic curve, convert it into a cubic one, then process it.
     if (segment.is_quadratic()) {
-        // Convert to a cubic one.
         auto cubic = segment.to_cubic();
         process_segment(cubic, scene_builder, object_builder);
 
@@ -291,7 +290,7 @@ void process_segment(Segment &segment, SceneBuilderD3D9 &scene_builder, ObjectBu
         return;
     }
 
-    // If the segment is a line or a cubic curve that is flat enough, go to next step.
+    // 2. If the segment is a line or a cubic curve that is flat enough, go to next step.
     if (segment.is_line() || (segment.is_cubic() && segment.is_flat(FLATTENING_TOLERANCE))) {
         // (Next step) Process the segment as a line segment.
         process_line_segment(segment.baseline, scene_builder, object_builder);
@@ -300,7 +299,7 @@ void process_segment(Segment &segment, SceneBuilderD3D9 &scene_builder, ObjectBu
         return;
     }
 
-    // If the segment is a cubic curve.
+    // 3. If the segment is a cubic curve, split it and process the split segments.
     Segment prev, next;
     segment.split(0.5f, prev, next);
 
@@ -380,7 +379,7 @@ void Tiler::prepare_tiles() {
         auto delta = draw_tile.backdrop;
 
         auto draw_alpha_tile_id = draw_tile.alpha_tile_id;
-        int8_t draw_tile_backdrop = int8_t(backdrops[column]);
+        auto draw_tile_backdrop = int8_t(backdrops[column]);
 
         // Handle clip path.
         if (clip_path) {

@@ -4,8 +4,8 @@
 
 #ifndef NANOSVG_IMPLEMENTATION
     #define NANOSVG_IMPLEMENTATION
-    #include <nanosvg.h>
 #endif
+#include <nanosvg.h>
 
 namespace Pathfinder {
 
@@ -109,7 +109,7 @@ Paint convert_nsvg_paint(NSVGpaint nsvg_paint) {
                 case NSVG_SPREAD_REPEAT: {
                     gradient.wrap = GradientWrap::Repeat;
                 } break;
-            };
+            }
 
             // Get stops.
             for (int i = 0; i < nsvg_gradient->nstops; i++) {

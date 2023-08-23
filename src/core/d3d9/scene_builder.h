@@ -39,7 +39,7 @@ struct DrawPathBuildParams {
 /// Such data only changes when the scene becomes dirty and is rebuilt.
 class SceneBuilderD3D9 : public SceneBuilder {
 public:
-    explicit SceneBuilderD3D9() {}
+    explicit SceneBuilderD3D9() = default;
 
     // Data that will be sent to a renderer.
     // ------------------------------------------
