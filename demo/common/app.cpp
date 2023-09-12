@@ -86,8 +86,7 @@ App::App(const std::shared_ptr<Device> &_device,
 
     // TEST: Append SVG scene.
     if (true) {
-        SvgScene svg_scene;
-        svg_scene.load_from_string(std::string(svg_input.begin(), svg_input.end()), *canvas);
+        auto svg_scene = SvgScene(std::string(svg_input.begin(), svg_input.end()), *canvas);
 
         // TEST: Replace scene.
         scene_1 = svg_scene.get_scene();

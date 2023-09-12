@@ -9,13 +9,11 @@ namespace Pathfinder {
 /// Analogy to a SVG image.
 class SvgScene {
 public:
-    SvgScene() = default;
-
     /**
      * @brief Load SVG string into the scene.
      * @param input SVG file content, a copy by value is needed.
      */
-    void load_from_string(const std::string& svg, Canvas& canvas);
+    SvgScene(const std::string& svg, Canvas& canvas);
 
     std::shared_ptr<Scene> get_scene() const;
 

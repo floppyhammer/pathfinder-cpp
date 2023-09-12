@@ -18,8 +18,8 @@
 #endif
 
 // Enable DEBUG mode. Influencing performance.
-// For GL, we will check for errors.
-// For Vulkan, we will enable validation layers.
+// For the GL backend, error checking is enabled.
+// For Vulkan , the validation layers are enabled.
 #define PATHFINDER_DEBUG
 
 // Enable building scene in parallel.

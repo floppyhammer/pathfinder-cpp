@@ -123,7 +123,7 @@ Paint convert_nsvg_paint(NSVGpaint nsvg_paint) {
     return paint;
 }
 
-void SvgScene::load_from_string(const std::string &svg, Canvas &canvas) {
+SvgScene::SvgScene(const std::string &svg, Canvas &canvas) {
     // We use std::string instead of std::vector<char> here, otherwise NanoSVG occasionally crashes.
 
     if (svg.empty()) {
