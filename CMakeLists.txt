@@ -69,7 +69,6 @@ if ((WIN32 OR LINUX OR APPLE) AND NOT (EMSCRIPTEN OR ANDROID))
     # Include GLFW headers.
     # Emscripten has its own version of GLFW.
     include_directories(${glfw_SOURCE_DIR}/include)
-    add_subdirectory(${glfw_SOURCE_DIR})
 endif ()
 
 # Core library.
@@ -82,6 +81,7 @@ if (PATHFINDER_BUILD_DEMO)
     add_subdirectory(demo/common)
 
     if ((WIN32 OR LINUX OR APPLE) AND NOT (EMSCRIPTEN OR ANDROID))
+        add_subdirectory(${glfw_SOURCE_DIR})
         add_subdirectory(demo/native)
     elseif (EMSCRIPTEN)
         # Set output directory to the web demo, so we don't have to copy output files manually.
