@@ -17,7 +17,7 @@ struct BuiltSegments {
     std::vector<Range> draw_segment_ranges;
     std::vector<Range> clip_segment_ranges;
 
-    static BuiltSegments from_scene(Scene &scene) {
+    static BuiltSegments from_scene(const Scene &scene) {
         BuiltSegments built_segments;
 
         built_segments.clip_segment_ranges.reserve(scene.clip_paths.size());
@@ -46,7 +46,7 @@ struct ClipBatchesD3D11 {
 
 class SceneBuilderD3D11 : public SceneBuilder {
 public:
-    explicit SceneBuilderD3D11() {}
+    SceneBuilderD3D11() = default;
 
     BuiltSegments built_segments;
 
