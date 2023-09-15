@@ -17,8 +17,3 @@
 
 # Set branch:
 # git submodule set-branch --branch [BRANCH_NAME] [SUBMODULE_PATH]
-
-[submodule "external/glfw"]
-	path = external/glfw
-	url = https://github.com/floppyhammer/glfw.git
-	branch = master
