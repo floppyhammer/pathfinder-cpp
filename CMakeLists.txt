@@ -50,8 +50,8 @@ else ()
     message("Pathfinder will use OpenGL")
 endif ()
 
-# Include external and third_party headers.
-include_directories(external third_party)
+# Include third_party headers.
+include_directories(third_party)
 
 if ((WIN32 OR LINUX OR APPLE) AND NOT (EMSCRIPTEN OR ANDROID))
     include(FetchContent)
