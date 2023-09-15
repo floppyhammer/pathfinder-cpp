@@ -53,16 +53,12 @@ endif ()
 # Include external and third_party headers.
 include_directories(external third_party)
 
-if (PATHFINDER_BUILD_DEMO)
-    message("Pathfinder will build demo")
-
-
+if ((WIN32 OR LINUX OR APPLE) AND NOT (EMSCRIPTEN OR ANDROID))
     include(FetchContent)
     FetchContent_Declare(glfw
             GIT_REPOSITORY https://github.com/floppyhammer/glfw.git
             GIT_TAG master
     )
-
     FetchContent_GetProperties(glfw)
 
     if (NOT glfw_POPULATED)
@@ -70,16 +66,17 @@ if (PATHFINDER_BUILD_DEMO)
         FetchContent_Populate(glfw)
     endif ()
 
-    if ((WIN32 OR LINUX OR APPLE) AND NOT (EMSCRIPTEN OR ANDROID))
-        message(${glfw_SOURCE_DIR}/include)
-        # Include GLFW headers.
-        # Emscripten has its own version of GLFW.
-        include_directories(${glfw_SOURCE_DIR}/include)
-        add_subdirectory(${glfw_SOURCE_DIR})
-    endif ()
+    # Include GLFW headers.
+    # Emscripten has its own version of GLFW.
+    include_directories(${glfw_SOURCE_DIR}/include)
+    add_subdirectory(${glfw_SOURCE_DIR})
+endif ()
 
-    # Core library.
-    add_subdirectory(src)
+# Core library.
+add_subdirectory(src)
+
+if (PATHFINDER_BUILD_DEMO)
+    message("Pathfinder will build demo")
 
     # Demo library.
     add_subdirectory(demo/common)
@@ -97,7 +94,4 @@ if (PATHFINDER_BUILD_DEMO)
 
         add_subdirectory(demo/web)
     endif ()
-else ()
-    # Core library.
-    add_subdirectory(src)
 endif ()
