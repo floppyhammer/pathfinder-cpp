@@ -16,8 +16,17 @@ App::App(const std::shared_ptr<Device> &_device,
     // Set up a canvas.
     canvas = std::make_shared<Canvas>(canvas_size, device, queue, RenderLevel::Dx9);
 
+    // TEST: View box clipping.
+    if (true) {
+        Path2d path;
+        path.add_rect(RectF(Vec2F(400, 400), canvas_size.to_f32() + Vec2F(100)));
+
+        canvas->set_fill_paint(Paint::from_color(ColorU::red()));
+        canvas->fill_path(path, FillRule::Winding);
+    }
+
     // TEST: Clip path.
-    if (false) {
+    if (true) {
         Path2d path;
         path.add_rect(RectF(Vec2F(0.0, 0.0), Vec2F(360.0, 360.0)));
 
