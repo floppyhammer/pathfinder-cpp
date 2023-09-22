@@ -209,7 +209,7 @@ BuiltPath SceneBuilderD3D9::build_clip_path_on_cpu(const PathBuildParams &params
                 path_id,
                 path_object.outline,
                 path_object.fill_rule,
-                scene->get_view_box(),
+                params.view_box,
                 path_object.clip_path,
                 {},
                 tiling_path_info);
