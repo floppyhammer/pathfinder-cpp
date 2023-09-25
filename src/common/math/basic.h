@@ -89,6 +89,24 @@ struct Range {
     }
 };
 
+// Rounding up to the nearest multiple of a number.
+inline int round_up(int number, int multiple) {
+    if (multiple == 0) {
+        return number;
+    }
+
+    int remainder = abs(number) % multiple;
+    if (remainder == 0) {
+        return number;
+    }
+
+    if (number < 0) {
+        return -(abs(number) - remainder);
+    } else {
+        return number + multiple - remainder;
+    }
+}
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_BASIC_MATH_H
