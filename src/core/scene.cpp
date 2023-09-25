@@ -25,7 +25,9 @@ void SceneEpoch::next() {
     *this = successor();
 }
 
-Scene::Scene(uint32_t _id, RectF _view_box) : id(_id), view_box(_view_box), palette(Palette(_id)) {}
+Scene::Scene(uint32_t _id, RectF _view_box) : id(_id), palette(Palette(_id)) {
+    set_view_box(_view_box);
+}
 
 uint32_t Scene::push_paint(const Paint &paint) {
     auto paint_id = palette.push_paint(paint);
@@ -169,11 +171,12 @@ RectF Scene::get_view_box() const {
 }
 
 void Scene::set_view_box(const RectF &new_view_box) {
-    if (new_view_box == view_box) {
-        return;
-    }
-
     view_box = new_view_box;
+
+    // Makes the view box's width a multiple of TILE_WIDTH.
+    // Fixes https://github.com/floppyhammer/pathfinder-cpp/issues/21.
+    view_box.right = round_up(ceil(new_view_box.right), TILE_WIDTH);
+    assert(int(view_box.right) % TILE_WIDTH == 0);
 
     epoch.next();
 }
