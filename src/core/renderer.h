@@ -47,7 +47,7 @@ struct MaskStorage {
     uint32_t allocated_page_count = 0;
 };
 
-enum RenderLevel {
+enum class RenderLevel {
     Dx9,
     Dx11,
 };
