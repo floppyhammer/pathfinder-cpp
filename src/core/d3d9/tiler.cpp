@@ -132,7 +132,7 @@ void process_line_segment(LineSegmentF line_segment, SceneBuilderD3D9 &scene_bui
     // Validate the tile coordinates. This an attempt that tries to avoid an endless WHILE loop below.
     if (!line_segment.is_valid()) {
         Logger::error("Invalid line segment!", "process_line_segment()");
-        abort();
+        return;
     }
 
     // Clip the line segment if it intersects the view box bounds.
