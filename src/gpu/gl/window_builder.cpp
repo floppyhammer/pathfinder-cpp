@@ -1,7 +1,6 @@
 #include "window_builder.h"
 
 #include "../../common/logger.h"
-#include "../window_builder.h"
 #include "device.h"
 #include "queue.h"
 #include "window.h"
@@ -80,7 +79,6 @@ WindowBuilderGl::~WindowBuilderGl() {
     main_window.reset();
 
 #ifndef __ANDROID__
-    // GLFW: terminate, clearing all previously allocated resources (including windows).
     glfwTerminate();
 #endif
 }
@@ -93,6 +91,7 @@ std::shared_ptr<Window> WindowBuilderGl::create_window(const Vec2I& size, const 
 
     return new_window;
 }
+
 void WindowBuilderGl::destroy_window(const std::shared_ptr<Window>& window) {
     auto window_gl = (WindowGl*)window.get();
 

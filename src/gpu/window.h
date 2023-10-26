@@ -41,39 +41,15 @@ protected:
 
 #ifndef __ANDROID__
 public:
-    inline GLFWwindow *get_glfw_window() const {
-        return glfw_window;
-    }
+    GLFWwindow *get_glfw_window() const;
 
     /// GLFW: whenever the window size changed (by OS or user) this callback function executes.
-    static void framebuffer_resize_callback(GLFWwindow *glfw_window, int width, int height) {
-        auto window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(glfw_window));
-
-        if (window) {
-            window->just_resized = true;
-            window->size = {width, height};
-            window->minimized = window->size.area() == 0;
-
-            Logger::info("Window resized to " + window->size.to_string());
-        } else {
-            Logger::error("glfwGetWindowUserPointer is NULL!");
-        }
-    }
+    static void framebuffer_resize_callback(GLFWwindow *glfw_window, int width, int height);
 
     /// Process input events: query GLFW whether relevant keys are pressed/released this frame and react accordingly.
-    inline void poll_events() {
-        just_resized = false;
+    void poll_events();
 
-        glfwPollEvents();
-
-        if (glfwGetKey(glfw_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-            glfwSetWindowShouldClose(glfw_window, true);
-        }
-    }
-
-    inline bool should_close() {
-        return glfwWindowShouldClose(glfw_window);
-    }
+    bool should_close();
 #endif
 };
 

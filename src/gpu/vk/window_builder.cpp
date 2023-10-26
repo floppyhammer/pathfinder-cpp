@@ -82,8 +82,6 @@ WindowBuilderVk::~WindowBuilderVk() {
     destroy_window(main_window);
     main_window.reset();
 
-    // FIXME: we might need to handle the main window destruction more carefully.
-    //    vkDestroySurfaceKHR(instance, surface, nullptr);
     vkDestroyInstance(instance, nullptr);
 
     glfwTerminate();

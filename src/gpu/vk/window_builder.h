@@ -65,26 +65,6 @@ public:
     std::shared_ptr<Device> request_device() override;
 
     std::shared_ptr<Queue> create_queue() override;
-
-    static std::vector<const char *> get_required_extensions();
-
-    static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
-                                                         VkDebugUtilsMessageTypeFlagsEXT message_type,
-                                                         const VkDebugUtilsMessengerCallbackDataEXT *callback_data,
-                                                         void *user_data) {
-        std::cerr << "Validation layer: " << callback_data->pMessage << std::endl;
-
-        return VK_FALSE;
-    }
-
-    static bool check_validation_layer_support();
-
-    [[nodiscard]] VkFormat find_depth_format() const;
-
-    [[nodiscard]] VkFormat find_supported_format(const std::vector<VkFormat> &candidates,
-                                                 VkImageTiling tiling,
-                                                 VkFormatFeatureFlags features) const;
-
     VkPhysicalDevice get_physical_device() const {
         return physical_device;
     }
@@ -111,6 +91,25 @@ private:
     VkQueue present_queue{};
 
     VkCommandPool command_pool{};
+
+private:
+    static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
+                                                         VkDebugUtilsMessageTypeFlagsEXT message_type,
+                                                         const VkDebugUtilsMessengerCallbackDataEXT *callback_data,
+                                                         void *user_data) {
+        std::cerr << "Validation layer: " << callback_data->pMessage << std::endl;
+        return VK_FALSE;
+    }
+
+    static bool check_validation_layer_support();
+
+    [[nodiscard]] VkFormat find_depth_format() const;
+
+    [[nodiscard]] VkFormat find_supported_format(const std::vector<VkFormat> &candidates,
+                                                 VkImageTiling tiling,
+                                                 VkFormatFeatureFlags features) const;
+
+    static std::vector<const char *> get_required_extensions();
 
     void initialize_after_surface_creation(VkSurfaceKHR surface);
 
