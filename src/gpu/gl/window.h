@@ -12,19 +12,14 @@
 namespace Pathfinder {
 
 class WindowGl : public Window {
+    friend class WindowBuilderGl;
+
 public:
-    explicit WindowGl(Vec2I _window_size);
+    explicit WindowGl(const Vec2I &_size, GLFWwindow *window_handle);
 
-    std::shared_ptr<Device> request_device() override;
-
-    std::shared_ptr<Queue> create_queue() override;
+    ~WindowGl() override = default;
 
     std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Device> &device) override;
-
-    void cleanup() override;
-
-private:
-    void init();
 };
 
 } // namespace Pathfinder

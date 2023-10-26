@@ -6,9 +6,9 @@
 #include "command_encoder.h"
 #include "debug_marker.h"
 #include "window.h"
+#include "window_builder.h"
 
-#ifdef PATHFINDER_USE_VULKAN
-    #if (defined(WIN32) || defined(__linux__) || defined(__APPLE__)) && !defined(ANDROID)
+#if (defined(WIN32) || defined(__linux__) || defined(__APPLE__)) && !defined(ANDROID)
 
 namespace Pathfinder {
 
@@ -61,7 +61,7 @@ bool SwapChainVk::acquire_image() {
 
 void SwapChainVk::init_swapchain() {
     // Create a swap chain and corresponding swap chain images.
-    create_swapchain();
+    create_swapchain(device_vk->get_physical_device());
 
     // Create views for swap chain images.
     create_image_views();
@@ -113,13 +113,13 @@ void SwapChainVk::cleanup() {
     }
 }
 
-void SwapChainVk::create_swapchain() {
+void SwapChainVk::create_swapchain(VkPhysicalDevice physical_device) {
     auto device = device_vk->get_device();
 
-    SwapchainSupportDetails swapchain_support = window->query_swapchain_support(window->physical_device);
+    SwapchainSupportDetails swapchain_support = query_swapchain_support(physical_device, window->surface);
 
-    VkSurfaceFormatKHR surface_format = window->choose_swap_surface_format(swapchain_support.formats);
-    VkPresentModeKHR present_mode = window->choose_swap_present_mode(swapchain_support.present_modes);
+    VkSurfaceFormatKHR surface_format = choose_swap_surface_format(swapchain_support.formats);
+    VkPresentModeKHR present_mode = choose_swap_present_mode(swapchain_support.present_modes);
     VkExtent2D vk_extent = window->choose_swap_extent(swapchain_support.capabilities);
 
     uint32_t image_count = swapchain_support.capabilities.minImageCount + 1;
@@ -139,7 +139,7 @@ void SwapChainVk::create_swapchain() {
     create_info.imageArrayLayers = 1;
     create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    QueueFamilyIndices qf_indices = window->find_queue_families(window->physical_device);
+    QueueFamilyIndices qf_indices = find_queue_families(physical_device, window->surface);
     uint32_t queue_family_indices[] = {*qf_indices.graphics_family, *qf_indices.present_family};
 
     if (*qf_indices.graphics_family != *qf_indices.present_family) {
@@ -304,5 +304,4 @@ void SwapChainVk::SwapChainVk::present() {
 
 } // namespace Pathfinder
 
-    #endif
 #endif

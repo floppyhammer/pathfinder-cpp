@@ -6,8 +6,6 @@
 
 #include "debug_marker.h"
 
-#ifdef PATHFINDER_USE_VULKAN
-
 namespace Pathfinder {
 
 FramebufferVk::FramebufferVk(VkDevice _vk_device,
@@ -77,5 +75,3 @@ void FramebufferVk::set_label(const std::string &_label) {
 }
 
 } // namespace Pathfinder
-
-#endif

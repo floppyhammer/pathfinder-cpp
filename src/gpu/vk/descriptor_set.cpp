@@ -3,8 +3,6 @@
 #include "buffer.h"
 #include "texture.h"
 
-#ifdef PATHFINDER_USE_VULKAN
-
 namespace Pathfinder {
 
 void DescriptorSetVk::update_vk_descriptor_set(VkDevice _device, VkDescriptorSetLayout descriptor_set_layout) {
@@ -150,5 +148,3 @@ DescriptorSetVk::~DescriptorSetVk() {
 }
 
 } // namespace Pathfinder
-
-#endif

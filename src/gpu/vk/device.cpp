@@ -14,8 +14,6 @@
 #include "swap_chain.h"
 #include "texture.h"
 
-#ifdef PATHFINDER_USE_VULKAN
-
 namespace Pathfinder {
 
 DeviceVk::DeviceVk(VkDevice _device,
@@ -27,6 +25,10 @@ DeviceVk::DeviceVk(VkDevice _device,
 
 VkDevice DeviceVk::get_device() const {
     return device;
+}
+
+VkPhysicalDevice DeviceVk::get_physical_device() const {
+    return physical_device;
 }
 
 VkQueue DeviceVk::get_graphics_queue() const {
@@ -739,5 +741,3 @@ void DeviceVk::copy_data_from_mappable_memory(void *dst, VkDeviceMemory buffer_m
 }
 
 } // namespace Pathfinder
-
-#endif

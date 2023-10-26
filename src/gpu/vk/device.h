@@ -55,6 +55,8 @@ public:
 public:
     VkDevice get_device() const;
 
+    VkPhysicalDevice get_physical_device() const;
+
     VkQueue get_graphics_queue() const;
 
     VkCommandPool get_command_pool() const;
@@ -122,4 +124,4 @@ private:
 
 #endif
 
-#endif // PATHFINDER_GPU_DRIVER_VK_H
+#endif

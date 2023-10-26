@@ -6,19 +6,15 @@
 
 namespace Pathfinder {
 
+class SwapChain;
+
 class Window {
 public:
     explicit Window(Vec2I _size) : size(_size) {}
 
-    static std::shared_ptr<Window> new_impl(Vec2I _size);
-
-    virtual std::shared_ptr<Device> request_device() = 0;
-
-    virtual std::shared_ptr<Queue> create_queue() = 0;
+    virtual ~Window() = default;
 
     virtual std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Device> &device) = 0;
-
-    virtual void cleanup() = 0;
 
     Vec2I get_size() const {
         return size;
@@ -32,48 +28,7 @@ public:
         return minimized;
     }
 
-protected:
-    inline void common_glfw_init() {
-#ifndef __ANDROID__
-    #ifndef __EMSCRIPTEN__
-        // Enable window resizing.
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-
-        // Hide window upon creation as we need to center the window before showing it.
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-
-        // Get monitor position (used to correctly center the window in a multi-monitor scenario).
-        int monitor_count, monitor_x, monitor_y;
-        GLFWmonitor **monitors = glfwGetMonitors(&monitor_count);
-
-        const GLFWvidmode *video_mode = glfwGetVideoMode(monitors[0]);
-        glfwGetMonitorPos(monitors[0], &monitor_x, &monitor_y);
-
-        // Get DPI scale.
-        float dpi_scale_x, dpi_scale_y;
-        glfwGetMonitorContentScale(monitors[0], &dpi_scale_x, &dpi_scale_y);
-    #endif
-
-        glfw_window = glfwCreateWindow(size.x, size.y, "Pathfinder", nullptr, nullptr);
-        if (glfw_window == nullptr) {
-            throw std::runtime_error("Failed to create GLFW window!");
-        }
-
-    #ifndef __EMSCRIPTEN__
-        // Center the window.
-        glfwSetWindowPos(glfw_window,
-                         monitor_x + (video_mode->width - size.x) / 2,
-                         monitor_y + (video_mode->height - size.y) / 2);
-
-        // Show the window.
-        glfwShowWindow(glfw_window);
-    #endif
-
-        // Assign this to window user, so we can fetch it when window size changes.
-        glfwSetWindowUserPointer(glfw_window, this);
-        glfwSetFramebufferSizeCallback(glfw_window, framebuffer_resize_callback);
-#endif
-    }
+    std::shared_ptr<SwapChain> swapchain;
 
 protected:
 #ifndef __ANDROID__

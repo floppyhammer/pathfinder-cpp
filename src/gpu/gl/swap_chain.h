@@ -17,12 +17,12 @@ class SwapChainGl : public SwapChain {
 public:
     #ifndef __ANDROID__
 
-    SwapChainGl(Vec2I _size, GLFWwindow *_window) : SwapChain(_size) {
-        window = _window;
+    SwapChainGl(Vec2I _size, GLFWwindow *window_handle) : SwapChain(_size) {
+        glfw_window = window_handle;
 
         framebuffer = std::shared_ptr<FramebufferGl>(new FramebufferGl(size));
 
-        command_buffer = std::shared_ptr<CommandEncoderGl>(new CommandEncoderGl());
+        command_encoder = std::shared_ptr<CommandEncoderGl>(new CommandEncoderGl());
 
         render_pass = std::shared_ptr<RenderPassGl>(new RenderPassGl(AttachmentLoadOp::Clear));
     }
@@ -38,12 +38,15 @@ public:
     }
 
     inline bool acquire_image() override {
+    #ifndef __ANDROID__
+        glfwMakeContextCurrent(glfw_window);
+    #endif
         return true;
     }
 
     inline void present() override {
     #ifndef __ANDROID__
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(glfw_window);
     #endif
     }
 
@@ -51,11 +54,12 @@ public:
 
 private:
     #ifndef __ANDROID__
-    GLFWwindow *window;
+    GLFWwindow *glfw_window;
     #endif
+
     std::shared_ptr<RenderPass> render_pass;
     std::shared_ptr<Framebuffer> framebuffer;
-    std::shared_ptr<CommandEncoder> command_buffer;
+    std::shared_ptr<CommandEncoder> command_encoder;
 };
 
 } // namespace Pathfinder

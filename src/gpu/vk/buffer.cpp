@@ -7,8 +7,6 @@
 #include "debug_marker.h"
 #include "device.h"
 
-#ifdef PATHFINDER_USE_VULKAN
-
 namespace Pathfinder {
 
 BufferVk::BufferVk(VkDevice _vk_device, const BufferDescriptor& _desc) : Buffer(_desc), vk_device(_vk_device) {}
@@ -69,5 +67,3 @@ void BufferVk::set_label(const std::string& _label) {
 }
 
 } // namespace Pathfinder
-
-#endif

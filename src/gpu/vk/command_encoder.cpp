@@ -13,8 +13,6 @@
 #include "render_pipeline.h"
 #include "texture.h"
 
-#ifdef PATHFINDER_USE_VULKAN
-
 namespace Pathfinder {
 
 /// Correct image layout should be set even before binding, not just before submitting command buffer.
@@ -652,5 +650,3 @@ void CommandEncoderVk::sync_descriptor_set(DescriptorSet *descriptor_set) {
 }
 
 } // namespace Pathfinder
-
-#endif

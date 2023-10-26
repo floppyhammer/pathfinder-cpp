@@ -6,8 +6,6 @@
 #include "../../common/global_macros.h"
 #include "debug_marker.h"
 
-#ifdef PATHFINDER_USE_VULKAN
-
 namespace Pathfinder {
 
 TextureVk::TextureVk(VkDevice _vk_device, const TextureDescriptor& _desc) : Texture(_desc), vk_device(_vk_device) {}
@@ -73,5 +71,3 @@ void TextureVk::set_label(const std::string& _label) {
 }
 
 } // namespace Pathfinder
-
-#endif

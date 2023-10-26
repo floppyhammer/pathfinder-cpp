@@ -14,6 +14,8 @@
 
 namespace Pathfinder {
 
+class WindowBuilderVk;
+
 /// How many frames should be processed concurrently.
 /// NOTE: Swapchain image count doesn't necessarily equal to this (One is expected, the other is what we
 /// actually get considering device capacity).
@@ -82,7 +84,7 @@ private:
      * form a sequence of images that can be drawn into and then given to
      * the Surface to be presented to the user for viewing.
      */
-    void create_swapchain();
+    void create_swapchain(VkPhysicalDevice physical_device);
 
     void create_image_views();
 

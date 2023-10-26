@@ -2,8 +2,6 @@
 
 #include "debug_marker.h"
 
-#ifdef PATHFINDER_USE_VULKAN
-
 namespace Pathfinder {
 
 Pathfinder::RenderPassVk::RenderPassVk(VkDevice _device,
@@ -84,5 +82,3 @@ VkRenderPass RenderPassVk::get_vk_render_pass() {
 }
 
 } // namespace Pathfinder
-
-#endif
