@@ -56,7 +56,7 @@ class WindowBuilderVk : public WindowBuilder {
 public:
     explicit WindowBuilderVk(const Vec2I &size);
 
-    ~WindowBuilderVk();
+    ~WindowBuilderVk() override;
 
     std::shared_ptr<Window> create_window(const Vec2I &_size, const std::string &title) override;
 

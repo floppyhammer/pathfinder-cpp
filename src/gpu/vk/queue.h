@@ -8,20 +8,13 @@
 
 #ifdef PATHFINDER_USE_VULKAN
 
-    #if defined(WIN32) || defined(__linux__) || defined(__APPLE__)
-
 namespace Pathfinder {
 
 class QueueVk : public Queue {
     friend class WindowVk;
+    friend class WindowBuilderVk;
 
 public:
-    QueueVk(VkDevice _device, VkQueue _graphics_queue, VkQueue _present_queue) {
-        device = _device;
-        graphics_queue = _graphics_queue;
-        present_queue = _present_queue;
-    }
-
     void submit_and_wait(std::shared_ptr<CommandEncoder> encoder) override {
         if (encoder->submitted) {
             Logger::error("Attempted to submit an encoder that's already been submitted!");
@@ -50,7 +43,7 @@ public:
     };
 
     void submit(std::shared_ptr<CommandEncoder> encoder, std::shared_ptr<SwapChain> surface) override {
-        #ifndef ANDROID
+    #ifndef ANDROID
         // Cleanup last encoder.
         if (encoder_of_last_frame) {
             encoder_of_last_frame = nullptr;
@@ -72,7 +65,7 @@ public:
         surface_vk->flush(encoder);
 
         encoder_of_last_frame = encoder;
-        #endif
+    #endif
     };
 
 private:
@@ -83,11 +76,16 @@ private:
     VkQueue present_queue{};
 
     std::shared_ptr<CommandEncoder> encoder_of_last_frame;
+
+private:
+    QueueVk(VkDevice _device, VkQueue _graphics_queue, VkQueue _present_queue) {
+        device = _device;
+        graphics_queue = _graphics_queue;
+        present_queue = _present_queue;
+    }
 };
 
 } // namespace Pathfinder
-
-    #endif
 
 #endif
 

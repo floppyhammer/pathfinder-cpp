@@ -13,6 +13,8 @@ class WindowBuilder {
 public:
     static std::shared_ptr<WindowBuilder> new_impl(const Vec2I &size);
 
+    virtual ~WindowBuilder() = default;
+
     /// Create a new sub-window.
     virtual std::shared_ptr<Window> create_window(const Vec2I &size, const std::string &title) = 0;
 

@@ -13,12 +13,10 @@ namespace Pathfinder {
 
 class DeviceVk : public Device {
     friend class WindowVk;
-
     friend class SwapChainVk;
+    friend class WindowBuilderVk;
 
 public:
-    DeviceVk(VkDevice device, VkPhysicalDevice physical_device, VkQueue graphics_queue, VkCommandPool command_pool);
-
     std::shared_ptr<RenderPass> create_render_pass(TextureFormat format,
                                                    AttachmentLoadOp load_op,
                                                    const std::string &label) override;
@@ -52,7 +50,6 @@ public:
                                                              const std::shared_ptr<DescriptorSet> &descriptor_set,
                                                              const std::string &label) override;
 
-public:
     VkDevice get_device() const;
 
     VkPhysicalDevice get_physical_device() const;
@@ -79,6 +76,9 @@ public:
                         VkDeviceSize size,
                         VkDeviceSize src_offset = 0,
                         VkDeviceSize dst_offset = 0) const;
+
+private:
+    DeviceVk(VkDevice device, VkPhysicalDevice physical_device, VkQueue graphics_queue, VkCommandPool command_pool);
 
 private:
     /// The graphics card that we'll end up selecting will be stored in a VkPhysicalDevice handle.

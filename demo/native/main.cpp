@@ -96,7 +96,7 @@ int main() {
     }
 
     swap_chain0->cleanup();
-    swap_chain0->cleanup();
+    swap_chain1->cleanup();
 
     // Do this after swap chain cleanup.
     app.cleanup();

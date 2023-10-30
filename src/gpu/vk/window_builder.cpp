@@ -131,12 +131,12 @@ void WindowBuilderVk::create_graphics_queues(VkSurfaceKHR surface, VkQueue &grap
 }
 
 std::shared_ptr<Device> WindowBuilderVk::request_device() {
-    auto device = std::make_shared<DeviceVk>(vk_device, physical_device, graphics_queue, command_pool);
+    auto device = std::shared_ptr<DeviceVk>(new DeviceVk(vk_device, physical_device, graphics_queue, command_pool));
     return device;
 }
 
 std::shared_ptr<Queue> WindowBuilderVk::create_queue() {
-    auto queue = std::make_shared<QueueVk>(vk_device, graphics_queue, present_queue);
+    auto queue = std::shared_ptr<QueueVk>(new QueueVk(vk_device, graphics_queue, present_queue));
     return queue;
 }
 

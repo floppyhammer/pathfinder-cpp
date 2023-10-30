@@ -16,7 +16,7 @@ class WindowBuilderGl : public WindowBuilder {
 public:
     explicit WindowBuilderGl(const Vec2I& size);
 
-    ~WindowBuilderGl();
+    ~WindowBuilderGl() override;
 
     std::shared_ptr<Window> create_window(const Vec2I& _size, const std::string& title) override;
 
