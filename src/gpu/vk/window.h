@@ -26,9 +26,9 @@ public:
     std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Device> &device) override;
 
 public:
-    VkSurfaceKHR _surface{};
+    VkSurfaceKHR surface_{};
 
-    VkInstance _instance{};
+    VkInstance instance_{};
 
 private:
     void destroy();

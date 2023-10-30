@@ -114,7 +114,7 @@ void SwapChainVk::cleanup() {
 void SwapChainVk::create_swapchain(VkPhysicalDevice physical_device) {
     auto device = device_vk->get_device();
 
-    SwapchainSupportDetails swapchain_support = query_swapchain_support(physical_device, window->_surface);
+    SwapchainSupportDetails swapchain_support = query_swapchain_support(physical_device, window->surface_);
 
     VkSurfaceFormatKHR surface_format = choose_swap_surface_format(swapchain_support.formats);
     VkPresentModeKHR present_mode = choose_swap_present_mode(swapchain_support.present_modes);
@@ -128,7 +128,7 @@ void SwapChainVk::create_swapchain(VkPhysicalDevice physical_device) {
 
     VkSwapchainCreateInfoKHR create_info{};
     create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    create_info.surface = window->_surface;
+    create_info.surface = window->surface_;
 
     create_info.minImageCount = image_count;
     create_info.imageFormat = surface_format.format;
@@ -137,7 +137,7 @@ void SwapChainVk::create_swapchain(VkPhysicalDevice physical_device) {
     create_info.imageArrayLayers = 1;
     create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    QueueFamilyIndices qf_indices = find_queue_families(physical_device, window->_surface);
+    QueueFamilyIndices qf_indices = find_queue_families(physical_device, window->surface_);
     uint32_t queue_family_indices[] = {*qf_indices.graphics_family, *qf_indices.present_family};
 
     if (*qf_indices.graphics_family != *qf_indices.present_family) {

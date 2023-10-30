@@ -12,8 +12,8 @@ namespace Pathfinder {
 
 WindowVk::WindowVk(const Vec2I& _size, GLFWwindow* window_handle, VkSurfaceKHR surface, VkInstance instance)
     : Window(_size) {
-    _surface = surface;
-    _instance = instance;
+    surface_ = surface;
+    instance_ = instance;
     glfw_window = window_handle;
 }
 
@@ -45,9 +45,9 @@ WindowVk::~WindowVk() {
 }
 
 void WindowVk::destroy() {
-    if (_surface) {
-        vkDestroySurfaceKHR(_instance, _surface, nullptr);
-        _surface = nullptr;
+    if (surface_) {
+        vkDestroySurfaceKHR(instance_, surface_, nullptr);
+        surface_ = nullptr;
     }
 
     if (glfw_window) {
