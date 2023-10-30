@@ -14,7 +14,7 @@
 namespace Pathfinder {
 
 CommandEncoderGl::~CommandEncoderGl() {
-    perform_callbacks();
+    invoke_callbacks();
 }
 
 bool CommandEncoderGl::finish() {

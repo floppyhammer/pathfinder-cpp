@@ -16,17 +16,11 @@ public:
 
     virtual std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Device> &device) = 0;
 
-    Vec2I get_size() const {
-        return size;
-    }
+    Vec2I get_size() const;
 
-    bool get_resize_flag() const {
-        return just_resized;
-    }
+    bool get_resize_flag() const;
 
-    bool is_minimized() const {
-        return minimized;
-    }
+    bool is_minimized() const;
 
     std::shared_ptr<SwapChain> swapchain;
 

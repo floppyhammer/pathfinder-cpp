@@ -116,11 +116,11 @@ void App::update() {
     const auto current_time = std::chrono::steady_clock::now();
 
     std::chrono::duration<double> duration = current_time - last_time;
-    float elapsed_time = duration.count();
+    double elapsed_time = duration.count();
 
     if (elapsed_time > FRAME_TIME_PERIOD) {
         // Average frame time in ms.
-        float average_frame_time = elapsed_time * 1000.f / (float)frame_count;
+        double average_frame_time = elapsed_time * 1000.f / (float)frame_count;
 
         // Show frame time.
         std::ostringstream string_stream;

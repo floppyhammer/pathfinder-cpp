@@ -65,9 +65,8 @@ public:
     std::shared_ptr<Device> request_device() override;
 
     std::shared_ptr<Queue> create_queue() override;
-    VkPhysicalDevice get_physical_device() const {
-        return physical_device;
-    }
+
+    VkPhysicalDevice get_physical_device() const;
 
 private:
     bool initialized = false;
@@ -81,10 +80,11 @@ private:
     VkInstance instance{};
     VkDebugUtilsMessengerEXT debug_messenger{};
 
+    static const bool enable_validation_layers =
         #ifdef PATHFINDER_DEBUG
-    static const bool enable_validation_layers = true;
+        true;
         #else
-    static const bool enable_validation_layers = false;
+        false;
         #endif
 
     VkQueue graphics_queue{};

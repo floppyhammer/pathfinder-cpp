@@ -18,6 +18,7 @@ public:
 
     virtual void submit_and_wait(std::shared_ptr<CommandEncoder> encoder) = 0;
 
+    // TODO: remove swapchain dependency.
     virtual void submit(std::shared_ptr<CommandEncoder> encoder, std::shared_ptr<SwapChain> surface) = 0;
 };
 

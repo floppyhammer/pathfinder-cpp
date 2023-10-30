@@ -8,12 +8,15 @@ namespace Pathfinder {
 
 class Window;
 
+/// Window management.
 class WindowBuilder {
 public:
     static std::shared_ptr<WindowBuilder> new_impl(const Vec2I &size);
 
+    /// Create a new sub-window.
     virtual std::shared_ptr<Window> create_window(const Vec2I &size, const std::string &title) = 0;
 
+    /// Destroy a sub-window.
     virtual void destroy_window(const std::shared_ptr<Window> &window) = 0;
 
     std::shared_ptr<Window> get_main_window() const;

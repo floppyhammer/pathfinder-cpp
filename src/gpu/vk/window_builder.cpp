@@ -498,6 +498,10 @@ void WindowBuilderVk::destroy_window(const std::shared_ptr<Window> &window) {
     window_vk->glfw_window = nullptr;
 }
 
+VkPhysicalDevice WindowBuilderVk::get_physical_device() const {
+    return physical_device;
+}
+
 #endif
 
 } // namespace Pathfinder

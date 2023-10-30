@@ -20,7 +20,7 @@
 namespace Pathfinder {
 
 enum class CommandType {
-    // Render pass.
+    // RENDER PASS
 
     BeginRenderPass = 0,
     BindRenderPipeline,
@@ -30,18 +30,19 @@ enum class CommandType {
     DrawInstanced,
     EndRenderPass,
 
-    // Compute pass.
+    // COMPUTE PASS
 
     BeginComputePass,
     BindComputePipeline,
     Dispatch,
     EndComputePass,
 
-    // Data transfer.
+    // DATA TRANSFER
 
     WriteBuffer,
-    WriteTexture,
     ReadBuffer,
+    WriteTexture,
+    ReadTexture, // TODO
 
     Max,
 };
@@ -151,7 +152,7 @@ public:
 
     void end_compute_pass();
 
-    // COPY PASS
+    // DATA TRANSFER
 
     /**
      * Upload to buffer.
@@ -170,7 +171,7 @@ public:
         callbacks.push_back(callback);
     }
 
-    inline void perform_callbacks() {
+    inline void invoke_callbacks() {
         for (auto &callback : callbacks) {
             callback();
         }
