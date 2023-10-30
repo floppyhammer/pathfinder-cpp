@@ -13,9 +13,6 @@
 
 #ifdef PATHFINDER_USE_VULKAN
 
-    // We don't need a Window on Android and Web.
-    #if (defined(WIN32) || defined(__linux__) || defined(__APPLE__)) && !defined(ANDROID)
-
 namespace Pathfinder {
 
 /// List of required validation layers.
@@ -81,11 +78,11 @@ private:
     VkDebugUtilsMessengerEXT debug_messenger{};
 
     static const bool enable_validation_layers =
-        #ifdef PATHFINDER_DEBUG
+    #ifdef PATHFINDER_DEBUG
         true;
-        #else
+    #else
         false;
-        #endif
+    #endif
 
     VkQueue graphics_queue{};
     VkQueue present_queue{};
@@ -138,8 +135,6 @@ private:
 };
 
 } // namespace Pathfinder
-
-    #endif
 
 #endif
 

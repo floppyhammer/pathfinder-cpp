@@ -18,7 +18,7 @@ class TextureGl : public Texture {
 public:
     explicit TextureGl(const TextureDescriptor& _desc);
 
-    ~TextureGl();
+    ~TextureGl() override;
 
     uint32_t get_texture_id() const;
 

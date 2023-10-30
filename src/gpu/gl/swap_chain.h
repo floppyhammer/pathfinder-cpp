@@ -16,7 +16,6 @@ class SwapChainGl : public SwapChain {
 
 public:
     #ifndef __ANDROID__
-
     SwapChainGl(Vec2I _size, GLFWwindow *window_handle) : SwapChain(_size) {
         glfw_window = window_handle;
 
@@ -26,7 +25,6 @@ public:
 
         render_pass = std::shared_ptr<RenderPassGl>(new RenderPassGl(AttachmentLoadOp::Clear));
     }
-
     #endif
 
     inline std::shared_ptr<RenderPass> get_render_pass() override {

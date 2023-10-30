@@ -8,8 +8,6 @@
 #include "window.h"
 #include "window_builder.h"
 
-#if (defined(WIN32) || defined(__linux__) || defined(__APPLE__)) && !defined(ANDROID)
-
 namespace Pathfinder {
 
 SwapChainVk::SwapChainVk(Vec2I _size, WindowVk *_window, DeviceVk *_device) : SwapChain(_size) {
@@ -303,5 +301,3 @@ void SwapChainVk::SwapChainVk::present() {
 }
 
 } // namespace Pathfinder
-
-#endif

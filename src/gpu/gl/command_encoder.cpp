@@ -9,8 +9,6 @@
 #include "render_pass.h"
 #include "render_pipeline.h"
 
-#ifndef PATHFINDER_USE_VULKAN
-
 namespace Pathfinder {
 
 CommandEncoderGl::~CommandEncoderGl() {
@@ -202,7 +200,7 @@ bool CommandEncoderGl::finish() {
                                             to_gl_sampler_filter(sampler_descriptor.mag_filter));
                             // --------------------------------------------------------------
                         } break;
-    #ifdef PATHFINDER_ENABLE_D3D11
+#ifdef PATHFINDER_ENABLE_D3D11
                         case DescriptorType::StorageBuffer: {
                             auto buffer_gl = static_cast<BufferGl *>(descriptor.buffer.get());
 
@@ -219,7 +217,7 @@ bool CommandEncoderGl::finish() {
                                                GL_READ_WRITE,
                                                GL_RGBA8);
                         } break;
-    #endif
+#endif
                         default:
                             break;
                     }
@@ -257,20 +255,20 @@ bool CommandEncoderGl::finish() {
                 compute_pipeline = args.pipeline;
             } break;
             case CommandType::Dispatch: {
-    #ifdef PATHFINDER_ENABLE_D3D11
+#ifdef PATHFINDER_ENABLE_D3D11
                 auto &args = cmd.args.dispatch;
 
                 // Max global (total) work group counts x:2147483647 y:65535 z:65535.
                 // Max local (in one shader) work group sizes x:1536 y:1024 z:64.
                 glDispatchCompute(args.group_size_x, args.group_size_y, args.group_size_z);
 
-                    // In order to use timestamps more precisely.
-        #ifdef PATHFINDER_DEBUG
+                // In order to use timestamps more precisely.
+    #ifdef PATHFINDER_DEBUG
                 glFinish();
-        #endif
+    #endif
 
                 gl_check_error("Dispatch");
-    #endif
+#endif
             } break;
             case CommandType::EndComputePass: {
                 compute_pipeline = nullptr;
@@ -315,5 +313,3 @@ bool CommandEncoderGl::finish() {
 }
 
 } // namespace Pathfinder
-
-#endif

@@ -6,8 +6,6 @@
 #include "../framebuffer.h"
 #include "debug_marker.h"
 
-#ifndef PATHFINDER_USE_VULKAN
-
 namespace Pathfinder {
 
 FramebufferGl::FramebufferGl(Vec2I _size) : Framebuffer(_size) {
@@ -52,5 +50,3 @@ void FramebufferGl::set_label(const std::string &_label) {
 }
 
 } // namespace Pathfinder
-
-#endif

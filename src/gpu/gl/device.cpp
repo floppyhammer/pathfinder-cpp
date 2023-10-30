@@ -7,8 +7,6 @@
 #include "render_pass.h"
 #include "render_pipeline.h"
 
-#ifndef PATHFINDER_USE_VULKAN
-
 namespace Pathfinder {
 
 std::shared_ptr<Framebuffer> DeviceGl::create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
@@ -72,5 +70,3 @@ std::shared_ptr<ComputePipeline> DeviceGl::create_compute_pipeline(const std::ve
 }
 
 } // namespace Pathfinder
-
-#endif

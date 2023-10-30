@@ -14,7 +14,7 @@ class BufferGl : public Buffer {
     friend class DeviceGl;
 
 public:
-    ~BufferGl();
+    ~BufferGl() override;
 
     void upload_via_mapping(size_t data_size, size_t offset, void* data) override;
 

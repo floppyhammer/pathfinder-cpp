@@ -2,8 +2,6 @@
 
 #include <regex>
 
-#ifndef PATHFINDER_USE_VULKAN
-
 namespace Pathfinder {
 
 void Program::use() const {
@@ -57,10 +55,10 @@ RasterProgram::RasterProgram(const std::vector<char> &vertex_code, const std::ve
     std::string vert_string = {vertex_code.begin(), vertex_code.end()};
     std::string frag_string = {fragment_code.begin(), fragment_code.end()};
 
-    #ifdef PATHFINDER_MINIMUM_SHADER_VERSION_SUPPORT
+#ifdef PATHFINDER_MINIMUM_SHADER_VERSION_SUPPORT
     vert_string = std::regex_replace(vert_string, std::regex("#version 310 es"), "#version 300 es");
     frag_string = std::regex_replace(frag_string, std::regex("#version 310 es"), "#version 300 es");
-    #endif
+#endif
 
     compile(vert_string.c_str(), frag_string.c_str());
 }
@@ -96,15 +94,15 @@ ComputeProgram::ComputeProgram(const std::vector<char> &compute_code) : Program(
     /// Has to pass string.c_str(), as vector<char>.data() doesn't work.
     std::string compute_string = {compute_code.begin(), compute_code.end()};
 
-    #ifdef PATHFINDER_MINIMUM_SHADER_VERSION_SUPPORT
+#ifdef PATHFINDER_MINIMUM_SHADER_VERSION_SUPPORT
     compute_string = std::regex_replace(compute_string, std::regex("#version 430"), "#version 310 es");
-    #endif
+#endif
 
     compile(compute_string.c_str());
 }
 
 void ComputeProgram::compile(const char *compute_code) {
-    #ifdef PATHFINDER_ENABLE_D3D11
+#ifdef PATHFINDER_ENABLE_D3D11
     // Compile shaders.
     unsigned int compute = glCreateShader(GL_COMPUTE_SHADER);
     glShaderSource(compute, 1, &compute_code, nullptr);
@@ -119,9 +117,7 @@ void ComputeProgram::compile(const char *compute_code) {
 
     // Delete the shaders as they're linked into our program now and no longer necessary.
     glDeleteShader(compute);
-    #endif
+#endif
 }
 
 } // namespace Pathfinder
-
-#endif

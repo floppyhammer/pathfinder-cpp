@@ -15,7 +15,7 @@ class FramebufferGl : public Framebuffer {
     friend class SwapChainGl;
 
 public:
-    ~FramebufferGl();
+    ~FramebufferGl() override;
 
     uint32_t get_gl_framebuffer() const;
 
@@ -31,7 +31,7 @@ private:
     explicit FramebufferGl(Vec2I _size);
 
 private:
-    uint32_t gl_framebuffer;
+    uint32_t gl_framebuffer{};
 };
 
 } // namespace Pathfinder

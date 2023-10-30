@@ -15,7 +15,7 @@ class DescriptorSetVk : public DescriptorSet {
     friend class DeviceVk;
 
 public:
-    ~DescriptorSetVk();
+    ~DescriptorSetVk() override;
 
     void update_vk_descriptor_set(VkDevice _device, VkDescriptorSetLayout descriptor_set_layout);
 

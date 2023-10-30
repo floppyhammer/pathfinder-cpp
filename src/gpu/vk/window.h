@@ -11,8 +11,6 @@
 
 #ifdef PATHFINDER_USE_VULKAN
 
-    #if (defined(WIN32) || defined(__linux__) || defined(__APPLE__)) && !defined(ANDROID)
-
 namespace Pathfinder {
 
 class WindowVk : public Window {
@@ -38,8 +36,6 @@ public:
 };
 
 } // namespace Pathfinder
-
-    #endif
 
 #endif
 

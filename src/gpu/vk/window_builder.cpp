@@ -8,8 +8,6 @@
 #include "queue.h"
 #include "window.h"
 
-#if (defined(WIN32) || defined(__linux__) || defined(__APPLE__)) && !defined(ANDROID)
-
 namespace Pathfinder {
 
 VkResult create_debug_utils_messenger_ext(VkInstance instance,
@@ -501,7 +499,5 @@ void WindowBuilderVk::destroy_window(const std::shared_ptr<Window> &window) {
 VkPhysicalDevice WindowBuilderVk::get_physical_device() const {
     return physical_device;
 }
-
-#endif
 
 } // namespace Pathfinder

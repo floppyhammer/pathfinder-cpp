@@ -16,7 +16,7 @@ class RenderPipelineGl : public RenderPipeline {
     friend class DeviceGl;
 
 public:
-    ~RenderPipelineGl() {
+    ~RenderPipelineGl() override {
         glDeleteVertexArrays(1, &vao);
     };
 

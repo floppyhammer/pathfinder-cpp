@@ -15,7 +15,7 @@ class FramebufferVk : public Framebuffer {
     friend class SwapChainVk;
 
 public:
-    ~FramebufferVk();
+    ~FramebufferVk() override;
 
     unsigned long long get_unique_id() override;
 

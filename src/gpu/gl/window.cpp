@@ -6,10 +6,8 @@
 #include "../../common/logger.h"
 #include "swap_chain.h"
 
-#ifndef PATHFINDER_USE_VULKAN
-
-    #if (defined(WIN32) || defined(__linux__))
-        #include <glad/gl.h>
+#if (defined(WIN32) || defined(__linux__))
+    #include <glad/gl.h>
 
 namespace Pathfinder {
 
@@ -26,7 +24,5 @@ std::shared_ptr<SwapChain> WindowGl::create_swap_chain(const std::shared_ptr<Dev
 }
 
 } // namespace Pathfinder
-
-    #endif
 
 #endif

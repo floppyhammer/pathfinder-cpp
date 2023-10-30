@@ -8,8 +8,6 @@
 #include "queue.h"
 #include "swap_chain.h"
 
-#if (defined(WIN32) || defined(__linux__) || defined(__APPLE__)) && !defined(ANDROID)
-
 namespace Pathfinder {
 
 WindowVk::WindowVk(const Vec2I& _size, GLFWwindow* window_handle, VkSurfaceKHR _surface) : Window(_size) {
@@ -45,5 +43,3 @@ std::shared_ptr<SwapChain> WindowVk::create_swap_chain(const std::shared_ptr<Dev
 }
 
 } // namespace Pathfinder
-
-#endif
