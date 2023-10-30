@@ -17,9 +17,12 @@ class WindowGl : public Window {
 public:
     explicit WindowGl(const Vec2I &_size, GLFWwindow *window_handle);
 
-    ~WindowGl() override = default;
+    ~WindowGl() override;
 
     std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Device> &device) override;
+
+private:
+    void destroy();
 };
 
 } // namespace Pathfinder

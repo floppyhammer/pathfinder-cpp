@@ -19,9 +19,10 @@ namespace Pathfinder {
 DeviceVk::DeviceVk(VkDevice _device,
                    VkPhysicalDevice _physical_device,
                    VkQueue _graphics_queue,
+                   VkQueue _present_queue,
                    VkCommandPool _command_pool)
-    : device(_device), physical_device(_physical_device), graphics_queue(_graphics_queue), command_pool(_command_pool) {
-}
+    : device(_device), physical_device(_physical_device), graphics_queue(_graphics_queue),
+      present_queue(_present_queue), command_pool(_command_pool) {}
 
 VkDevice DeviceVk::get_device() const {
     return device;
@@ -33,6 +34,10 @@ VkPhysicalDevice DeviceVk::get_physical_device() const {
 
 VkQueue DeviceVk::get_graphics_queue() const {
     return graphics_queue;
+}
+
+VkQueue DeviceVk::get_present_queue() const {
+    return present_queue;
 }
 
 VkCommandPool DeviceVk::get_command_pool() const {

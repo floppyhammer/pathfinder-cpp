@@ -20,8 +20,6 @@ public:
 
     std::shared_ptr<Window> create_window(const Vec2I& _size, const std::string& title) override;
 
-    void destroy_window(const std::shared_ptr<Window>& window) override;
-
     std::shared_ptr<Device> request_device() override;
 
     std::shared_ptr<Queue> create_queue() override;

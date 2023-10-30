@@ -23,6 +23,17 @@ std::shared_ptr<SwapChain> WindowGl::create_swap_chain(const std::shared_ptr<Dev
     return std::make_shared<SwapChainGl>(size, glfw_window);
 }
 
+WindowGl::~WindowGl() {
+    destroy();
+}
+
+void WindowGl::destroy() {
+    if (glfw_window) {
+        glfwDestroyWindow(glfw_window);
+        glfw_window = nullptr;
+    }
+}
+
 } // namespace Pathfinder
 
 #endif

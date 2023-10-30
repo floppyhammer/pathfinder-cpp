@@ -14,7 +14,7 @@ class RenderPipelineVk : public RenderPipeline {
     friend class DeviceVk;
 
 public:
-    ~RenderPipelineVk() {
+    ~RenderPipelineVk() override {
         vkDestroyDescriptorSetLayout(vk_device, vk_descriptor_set_layout, nullptr);
         vkDestroyPipeline(vk_device, vk_pipeline, nullptr);
         vkDestroyPipelineLayout(vk_device, vk_layout, nullptr);

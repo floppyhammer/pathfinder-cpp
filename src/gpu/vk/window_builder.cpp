@@ -53,11 +53,7 @@ WindowBuilderVk::WindowBuilderVk(const Vec2I &size) {
 
     initialize_after_surface_creation(surface);
 
-    auto window_vk = std::make_shared<WindowVk>(size, glfw_window, surface);
-
-    main_window = window_vk;
-
-    create_graphics_queues(window_vk->surface, window_vk->present_queue);
+    main_window = std::make_shared<WindowVk>(size, glfw_window, surface, instance);
 }
 
 WindowBuilderVk::~WindowBuilderVk() {
@@ -70,15 +66,21 @@ WindowBuilderVk::~WindowBuilderVk() {
         destroy_debug_utils_messenger_ext(instance, debug_messenger, nullptr);
     }
 
-    for (auto &w : sub_windows) {
-        if (!w.expired()) {
-            destroy_window(w.lock());
+    // Destroy windows.
+    {
+        for (auto &w : sub_windows) {
+            if (!w.expired()) {
+                // We need to destroy a window explicitly in case its smart pointer is held elsewhere.
+                auto window_vk = (WindowVk *)w.lock().get();
+                window_vk->destroy();
+            }
         }
-    }
-    sub_windows.clear();
+        sub_windows.clear();
 
-    destroy_window(main_window);
-    main_window.reset();
+        auto window_vk = (WindowVk *)main_window.get();
+        window_vk->destroy();
+        main_window.reset();
+    }
 
     vkDestroyInstance(instance, nullptr);
 
@@ -94,9 +96,7 @@ std::shared_ptr<Window> WindowBuilderVk::create_window(const Vec2I &size, const 
     }
     initialize_after_surface_creation(surface);
 
-    auto new_window = std::make_shared<WindowVk>(size, glfw_window, surface);
-
-    create_graphics_queues(surface, new_window->present_queue);
+    auto new_window = std::make_shared<WindowVk>(size, glfw_window, surface, instance);
 
     sub_windows.push_back(new_window);
 
@@ -116,20 +116,22 @@ void WindowBuilderVk::initialize_after_surface_creation(VkSurfaceKHR surface) {
 
     create_command_pool(surface);
 
-    create_graphics_queues(surface, graphics_queue);
+    create_queues(surface);
 
     initialized = true;
 }
 
-void WindowBuilderVk::create_graphics_queues(VkSurfaceKHR surface, VkQueue &graphics_queue) {
+void WindowBuilderVk::create_queues(VkSurfaceKHR surface) {
     QueueFamilyIndices qf_indices = find_queue_families(physical_device, surface);
 
     // Get a queue handle from a device.
     vkGetDeviceQueue(vk_device, *qf_indices.graphics_family, 0, &graphics_queue);
+    vkGetDeviceQueue(vk_device, *qf_indices.present_family, 0, &present_queue);
 }
 
 std::shared_ptr<Device> WindowBuilderVk::request_device() {
-    auto device = std::shared_ptr<DeviceVk>(new DeviceVk(vk_device, physical_device, graphics_queue, command_pool));
+    auto device = std::shared_ptr<DeviceVk>(
+        new DeviceVk(vk_device, physical_device, graphics_queue, present_queue, command_pool));
     return device;
 }
 
@@ -484,16 +486,6 @@ VkFormat WindowBuilderVk::find_depth_format() const {
     return find_supported_format({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
                                  VK_IMAGE_TILING_OPTIMAL,
                                  VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
-}
-
-void WindowBuilderVk::destroy_window(const std::shared_ptr<Window> &window) {
-    auto window_vk = (WindowVk *)window.get();
-
-    vkDestroySurfaceKHR(instance, window_vk->surface, nullptr);
-    window_vk->surface = nullptr;
-
-    glfwDestroyWindow(window_vk->glfw_window);
-    window_vk->glfw_window = nullptr;
 }
 
 VkPhysicalDevice WindowBuilderVk::get_physical_device() const {

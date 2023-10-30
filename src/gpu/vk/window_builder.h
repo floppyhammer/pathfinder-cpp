@@ -57,8 +57,6 @@ public:
 
     std::shared_ptr<Window> create_window(const Vec2I &_size, const std::string &title) override;
 
-    void destroy_window(const std::shared_ptr<Window> &window) override;
-
     std::shared_ptr<Device> request_device() override;
 
     std::shared_ptr<Queue> create_queue() override;
@@ -111,7 +109,9 @@ private:
     void initialize_after_surface_creation(VkSurfaceKHR surface);
 
     void setup_debug_messenger();
-    void create_graphics_queues(VkSurfaceKHR surface, VkQueue &graphics_queue);
+
+    void create_queues(VkSurfaceKHR surface);
+
     void create_instance();
 
     void create_surface();

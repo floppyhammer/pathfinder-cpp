@@ -10,6 +10,7 @@ namespace Pathfinder {
 
 class SwapChain;
 
+/// Handle to a command queue on a device.
 class Queue {
 public:
     explicit Queue() = default;

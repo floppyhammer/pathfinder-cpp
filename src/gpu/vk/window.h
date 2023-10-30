@@ -17,22 +17,21 @@ class WindowVk : public Window {
     friend class WindowBuilderVk;
 
 public:
-    explicit WindowVk(const Vec2I &_size, GLFWwindow *window_handle, VkSurfaceKHR surface);
+    explicit WindowVk(const Vec2I &_size, GLFWwindow *window_handle, VkSurfaceKHR surface, VkInstance instance);
 
-    ~WindowVk() override = default;
-
-    VkQueue get_present_queue() const;
+    ~WindowVk() override;
 
     VkExtent2D choose_swap_extent(const VkSurfaceCapabilitiesKHR &capabilities) const;
 
     std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Device> &device) override;
 
 public:
-    VkSurfaceKHR surface{};
+    VkSurfaceKHR _surface{};
 
-    VkInstance instance{};
+    VkInstance _instance{};
 
-    VkQueue present_queue{};
+private:
+    void destroy();
 };
 
 } // namespace Pathfinder

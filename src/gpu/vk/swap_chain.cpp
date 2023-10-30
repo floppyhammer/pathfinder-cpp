@@ -114,7 +114,7 @@ void SwapChainVk::cleanup() {
 void SwapChainVk::create_swapchain(VkPhysicalDevice physical_device) {
     auto device = device_vk->get_device();
 
-    SwapchainSupportDetails swapchain_support = query_swapchain_support(physical_device, window->surface);
+    SwapchainSupportDetails swapchain_support = query_swapchain_support(physical_device, window->_surface);
 
     VkSurfaceFormatKHR surface_format = choose_swap_surface_format(swapchain_support.formats);
     VkPresentModeKHR present_mode = choose_swap_present_mode(swapchain_support.present_modes);
@@ -128,7 +128,7 @@ void SwapChainVk::create_swapchain(VkPhysicalDevice physical_device) {
 
     VkSwapchainCreateInfoKHR create_info{};
     create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    create_info.surface = window->surface;
+    create_info.surface = window->_surface;
 
     create_info.minImageCount = image_count;
     create_info.imageFormat = surface_format.format;
@@ -137,7 +137,7 @@ void SwapChainVk::create_swapchain(VkPhysicalDevice physical_device) {
     create_info.imageArrayLayers = 1;
     create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    QueueFamilyIndices qf_indices = find_queue_families(physical_device, window->surface);
+    QueueFamilyIndices qf_indices = find_queue_families(physical_device, window->_surface);
     uint32_t queue_family_indices[] = {*qf_indices.graphics_family, *qf_indices.present_family};
 
     if (*qf_indices.graphics_family != *qf_indices.present_family) {
@@ -229,7 +229,6 @@ void SwapChainVk::create_sync_objects() {
 void SwapChainVk::flush(const std::shared_ptr<CommandEncoder> &encoder) {
     auto device = device_vk->get_device();
     auto graphics_queue = device_vk->get_graphics_queue();
-    auto present_queue = window->get_present_queue();
     auto encoder_vk = (CommandEncoderVk *)encoder.get();
 
     if (images_in_flight[image_index] != VK_NULL_HANDLE) {
@@ -265,7 +264,7 @@ void SwapChainVk::flush(const std::shared_ptr<CommandEncoder> &encoder) {
 }
 
 void SwapChainVk::SwapChainVk::present() {
-    auto present_queue = window->get_present_queue();
+    auto present_queue = device_vk->get_present_queue();
 
     // Wait until the image to present has finished rendering.
     VkSemaphore signal_semaphores[] = {render_finished_semaphores[current_frame]};

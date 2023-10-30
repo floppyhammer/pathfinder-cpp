@@ -10,13 +10,11 @@
 
 namespace Pathfinder {
 
-WindowVk::WindowVk(const Vec2I& _size, GLFWwindow* window_handle, VkSurfaceKHR _surface) : Window(_size) {
-    surface = _surface;
+WindowVk::WindowVk(const Vec2I& _size, GLFWwindow* window_handle, VkSurfaceKHR surface, VkInstance instance)
+    : Window(_size) {
+    _surface = surface;
+    _instance = instance;
     glfw_window = window_handle;
-}
-
-VkQueue WindowVk::get_present_queue() const {
-    return present_queue;
 }
 
 VkExtent2D WindowVk::choose_swap_extent(const VkSurfaceCapabilitiesKHR& capabilities) const {
@@ -40,6 +38,22 @@ VkExtent2D WindowVk::choose_swap_extent(const VkSurfaceCapabilitiesKHR& capabili
 std::shared_ptr<SwapChain> WindowVk::create_swap_chain(const std::shared_ptr<Device>& device) {
     auto device_vk = static_cast<DeviceVk*>(device.get());
     return std::make_shared<SwapChainVk>(size, this, device_vk);
+}
+
+WindowVk::~WindowVk() {
+    destroy();
+}
+
+void WindowVk::destroy() {
+    if (_surface) {
+        vkDestroySurfaceKHR(_instance, _surface, nullptr);
+        _surface = nullptr;
+    }
+
+    if (glfw_window) {
+        glfwDestroyWindow(glfw_window);
+        glfw_window = nullptr;
+    }
 }
 
 } // namespace Pathfinder

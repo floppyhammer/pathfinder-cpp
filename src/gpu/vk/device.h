@@ -56,6 +56,8 @@ public:
 
     VkQueue get_graphics_queue() const;
 
+    VkQueue get_present_queue() const;
+
     VkCommandPool get_command_pool() const;
 
     uint32_t find_memory_type(uint32_t type_filter, VkMemoryPropertyFlags properties) const;
@@ -78,7 +80,11 @@ public:
                         VkDeviceSize dst_offset = 0) const;
 
 private:
-    DeviceVk(VkDevice device, VkPhysicalDevice physical_device, VkQueue graphics_queue, VkCommandPool command_pool);
+    DeviceVk(VkDevice device,
+             VkPhysicalDevice physical_device,
+             VkQueue _graphics_queue,
+             VkQueue _present_queue,
+             VkCommandPool command_pool);
 
 private:
     /// The graphics card that we'll end up selecting will be stored in a VkPhysicalDevice handle.
@@ -86,8 +92,9 @@ private:
 
     VkDevice device{};
 
-    // Note that we don't need the present queue in a Device.
     VkQueue graphics_queue{};
+
+    VkQueue present_queue{};
 
     VkCommandPool command_pool{};
 

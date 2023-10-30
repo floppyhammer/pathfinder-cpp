@@ -68,15 +68,21 @@ WindowBuilderGl::WindowBuilderGl(const Vec2I& size) {
 }
 
 WindowBuilderGl::~WindowBuilderGl() {
-    for (auto& w : sub_windows) {
-        if (!w.expired()) {
-            destroy_window(w.lock());
+    // Destroy windows.
+    {
+        for (auto& w : sub_windows) {
+            if (!w.expired()) {
+                // We need to destroy a window explicitly in case its smart pointer is held elsewhere.
+                auto window_vk = (WindowGl*)w.lock().get();
+                window_vk->destroy();
+            }
         }
-    }
-    sub_windows.clear();
+        sub_windows.clear();
 
-    destroy_window(main_window);
-    main_window.reset();
+        auto window_vk = (WindowGl*)main_window.get();
+        window_vk->destroy();
+        main_window.reset();
+    }
 
 #ifndef __ANDROID__
     glfwTerminate();
@@ -90,15 +96,6 @@ std::shared_ptr<Window> WindowBuilderGl::create_window(const Vec2I& size, const 
     sub_windows.push_back(new_window);
 
     return new_window;
-}
-
-void WindowBuilderGl::destroy_window(const std::shared_ptr<Window>& window) {
-    auto window_gl = (WindowGl*)window.get();
-
-    if (window_gl->glfw_window) {
-        glfwDestroyWindow(window_gl->glfw_window);
-        window_gl->glfw_window = nullptr;
-    }
 }
 
 std::shared_ptr<Device> WindowBuilderGl::request_device() {
