@@ -6,10 +6,10 @@ std::shared_ptr<Window> WindowBuilder::get_main_window() const {
     return main_window;
 }
 
+#ifndef __ANDROID__
 GLFWwindow* WindowBuilder::common_glfw_window_init(const Vec2I& size,
                                                    const std::string& title,
                                                    GLFWwindow* shared_window) {
-#ifndef __ANDROID__
     #ifndef __EMSCRIPTEN__
     // Enable window resizing.
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
@@ -45,7 +45,7 @@ GLFWwindow* WindowBuilder::common_glfw_window_init(const Vec2I& size,
     #endif
 
     return glfw_window;
-#endif
 }
+#endif
 
 } // namespace Pathfinder

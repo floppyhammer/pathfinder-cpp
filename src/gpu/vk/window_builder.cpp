@@ -31,9 +31,14 @@ void destroy_debug_utils_messenger_ext(VkInstance instance,
 }
 
 std::shared_ptr<WindowBuilder> WindowBuilder::new_impl(const Vec2I &size) {
+#ifndef __ANDROID__
     return std::make_shared<WindowBuilderVk>(size);
+#else
+    return nullptr;
+#endif
 }
 
+#ifndef __ANDROID__
 WindowBuilderVk::WindowBuilderVk(const Vec2I &size) {
     glfwInit();
 
@@ -55,6 +60,29 @@ WindowBuilderVk::WindowBuilderVk(const Vec2I &size) {
 
     main_window = std::make_shared<WindowVk>(size, glfw_window, surface, instance);
 }
+#else
+WindowBuilderVk::WindowBuilderVk(ANativeWindow *native_window, const Vec2I &window_size) {
+    native_window_ = native_window;
+
+    create_instance();
+
+    setup_debug_messenger();
+
+    VkSurfaceKHR surface{};
+    VkAndroidSurfaceCreateInfoKHR create_info{.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,
+                                              .pNext = nullptr,
+                                              .flags = 0,
+                                              .window = native_window_};
+
+    if (vkCreateAndroidSurfaceKHR(instance, &create_info, nullptr, &surface) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to create a Android surface!");
+    }
+
+    initialize_after_surface_creation(surface);
+
+    main_window = std::make_shared<WindowVk>(window_size, surface, instance);
+}
+#endif
 
 WindowBuilderVk::~WindowBuilderVk() {
     vkDestroyCommandPool(vk_device, command_pool, nullptr);
@@ -66,6 +94,7 @@ WindowBuilderVk::~WindowBuilderVk() {
         destroy_debug_utils_messenger_ext(instance, debug_messenger, nullptr);
     }
 
+#ifndef __ANDROID__
     // Destroy windows.
     {
         for (auto &w : sub_windows) {
@@ -81,13 +110,17 @@ WindowBuilderVk::~WindowBuilderVk() {
         window_vk->destroy();
         main_window.reset();
     }
+#endif
 
     vkDestroyInstance(instance, nullptr);
 
+#ifndef __ANDROID__
     glfwTerminate();
+#endif
 }
 
 std::shared_ptr<Window> WindowBuilderVk::create_window(const Vec2I &size, const std::string &title) {
+#ifndef __ANDROID__
     auto glfw_window = common_glfw_window_init(size, title);
 
     VkSurfaceKHR surface{};
@@ -101,6 +134,9 @@ std::shared_ptr<Window> WindowBuilderVk::create_window(const Vec2I &size, const 
     sub_windows.push_back(new_window);
 
     return new_window;
+#else
+    return nullptr;
+#endif
 }
 
 void WindowBuilderVk::initialize_after_surface_creation(VkSurfaceKHR surface) {
@@ -154,9 +190,11 @@ void WindowBuilderVk::create_command_pool(VkSurfaceKHR surface) {
 }
 
 void WindowBuilderVk::create_instance() {
+#ifndef __ANDROID__
     if (enable_validation_layers && !check_validation_layer_support()) {
         throw std::runtime_error("Validation layers requested, but not available!");
     }
+#endif
 
     // Structure specifying application information.
     VkApplicationInfo app_info;
@@ -174,7 +212,7 @@ void WindowBuilderVk::create_instance() {
     create_info.pApplicationInfo = &app_info;
     create_info.flags = 0;
 
-    auto extensions = get_required_extensions();
+    auto extensions = get_required_instance_extensions();
     create_info.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     create_info.ppEnabledExtensionNames = extensions.data();
 
@@ -225,8 +263,6 @@ void WindowBuilderVk::setup_debug_messenger() {
         throw std::runtime_error("Failed to set up debug messenger!");
     }
 }
-
-void WindowBuilderVk::create_surface() {}
 
 bool WindowBuilderVk::check_device_extension_support(VkPhysicalDevice _physical_device) const {
     uint32_t extension_count;
@@ -372,7 +408,8 @@ QueueFamilyIndices find_queue_families(VkPhysicalDevice _physical_device, VkSurf
     return qf_indices;
 }
 
-std::vector<const char *> WindowBuilderVk::get_required_extensions() {
+std::vector<const char *> WindowBuilderVk::get_required_instance_extensions() {
+#ifndef __ANDROID__
     uint32_t glfw_extension_count = 0;
     const char **glfw_extensions;
     glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
@@ -382,6 +419,9 @@ std::vector<const char *> WindowBuilderVk::get_required_extensions() {
     if (enable_validation_layers) {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
+#else
+    std::vector<const char *> extensions = INSTANCE_EXTENSIONS;
+#endif
 
     return extensions;
 }
@@ -490,6 +530,10 @@ VkFormat WindowBuilderVk::find_depth_format() const {
 
 VkPhysicalDevice WindowBuilderVk::get_physical_device() const {
     return physical_device;
+}
+
+VkDevice WindowBuilderVk::get_device() const {
+    return vk_device;
 }
 
 } // namespace Pathfinder

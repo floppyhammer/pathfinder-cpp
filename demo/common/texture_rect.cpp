@@ -14,6 +14,8 @@
     #include "../../src/shaders/generated/blit_vert.h"
 #endif
 
+using namespace Pathfinder;
+
 TextureRect::TextureRect(const std::shared_ptr<Device> &_device,
                          const std::shared_ptr<Queue> &_queue,
                          const std::shared_ptr<RenderPass> &render_pass) {

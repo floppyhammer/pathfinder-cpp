@@ -77,7 +77,7 @@ add_subdirectory(src)
 if (PATHFINDER_BUILD_DEMO)
     message("Pathfinder will build demo")
 
-    # Demo library.
+    # Demo common library.
     add_subdirectory(demo/common)
 
     if ((WIN32 OR LINUX OR APPLE) AND NOT (EMSCRIPTEN OR ANDROID))

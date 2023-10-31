@@ -16,7 +16,9 @@ include_directories(../../../../../../include)
 include_directories(../../../../../../third_party)
 include_directories(../../../../../../demo/common)
 
-set(PATHFINDER_BUILD_DEMO ON)
+# Set some flags before adding.
+set(PATHFINDER_BUILD_DEMO ON CACHE BOOL "" FORCE)
+set(PATHFINDER_VULKAN_SUPPORT ON CACHE BOOL "" FORCE)
 add_subdirectory(../../../../../../ pathfinder)
 
 link_directories(lib/${ANDROID_ABI})

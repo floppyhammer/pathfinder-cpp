@@ -10,39 +10,37 @@
 #include "../../src/gpu/texture.h"
 #include "pathfinder.h"
 
-using namespace Pathfinder;
-
 /**
  * Simple class to blit a texture to screen.
  */
 class TextureRect {
 public:
-    TextureRect(const std::shared_ptr<Device> &_device,
-                const std::shared_ptr<Queue> &_queue,
-                const std::shared_ptr<RenderPass> &render_pass);
+    TextureRect(const std::shared_ptr<Pathfinder::Device> &_device,
+                const std::shared_ptr<Pathfinder::Queue> &_queue,
+                const std::shared_ptr<Pathfinder::RenderPass> &render_pass);
 
-    void set_texture(const std::shared_ptr<Texture> &new_texture);
+    void set_texture(const std::shared_ptr<Pathfinder::Texture> &new_texture);
 
-    void draw(const std::shared_ptr<CommandEncoder> &cmd_buffer, const Vec2I &framebuffer_size);
+    void draw(const std::shared_ptr<Pathfinder::CommandEncoder> &cmd_buffer, const Pathfinder::Vec2I &framebuffer_size);
 
 private:
-    Vec2F position;
-    Vec2F size;
-    Vec2F scale{1};
+    Pathfinder::Vec2F position;
+    Pathfinder::Vec2F size;
+    Pathfinder::Vec2F scale{1};
 
-    std::shared_ptr<Device> device;
+    std::shared_ptr<Pathfinder::Device> device;
 
-    std::shared_ptr<Queue> queue;
+    std::shared_ptr<Pathfinder::Queue> queue;
 
-    std::shared_ptr<Texture> texture;
+    std::shared_ptr<Pathfinder::Texture> texture;
 
-    std::shared_ptr<RenderPipeline> pipeline;
+    std::shared_ptr<Pathfinder::RenderPipeline> pipeline;
 
-    std::shared_ptr<Buffer> vertex_buffer, uniform_buffer;
+    std::shared_ptr<Pathfinder::Buffer> vertex_buffer, uniform_buffer;
 
-    std::shared_ptr<DescriptorSet> descriptor_set;
+    std::shared_ptr<Pathfinder::DescriptorSet> descriptor_set;
 
-    std::shared_ptr<Sampler> sampler;
+    std::shared_ptr<Pathfinder::Sampler> sampler;
 };
 
 #endif // PATHFINDER_DEMO_TEXTURE_RECT_H

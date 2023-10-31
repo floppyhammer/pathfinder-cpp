@@ -30,7 +30,6 @@ void QueueVk::submit_and_wait(std::shared_ptr<CommandEncoder> encoder) {
 }
 
 void QueueVk::submit(std::shared_ptr<CommandEncoder> encoder, std::shared_ptr<SwapChain> surface) {
-#ifndef ANDROID
     // Cleanup last encoder.
     if (encoder_of_last_frame) {
         encoder_of_last_frame = nullptr;
@@ -52,7 +51,6 @@ void QueueVk::submit(std::shared_ptr<CommandEncoder> encoder, std::shared_ptr<Sw
     surface_vk->flush(encoder);
 
     encoder_of_last_frame = encoder;
-#endif
 }
 
 } // namespace Pathfinder

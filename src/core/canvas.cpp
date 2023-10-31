@@ -475,6 +475,10 @@ void Canvas::restore_state() {
 }
 
 void Canvas::draw(bool clear_dst_texture) {
+    if (!scene) {
+        return;
+    }
+
     scene_builder->build(scene.get(), renderer.get());
 
     renderer->draw(scene_builder, clear_dst_texture);
@@ -483,6 +487,10 @@ void Canvas::draw(bool clear_dst_texture) {
 }
 
 void Canvas::set_scene(const std::shared_ptr<Scene> &new_scene) {
+    if (!new_scene) {
+        Logger::warn("Attempted to set a NULL scene!", "Canvas");
+    }
+
     scene = new_scene;
 
     // Clear all states.

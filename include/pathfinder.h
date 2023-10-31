@@ -15,6 +15,7 @@
 #include "../src/gpu/gl/device.h"
 #include "../src/gpu/gl/queue.h"
 #include "../src/gpu/swap_chain.h"
+#include "../src/gpu/vk/window_builder.h"
 #include "../src/gpu/vk/device.h"
 #include "../src/gpu/vk/queue.h"
 #include "../src/gpu/vk/texture.h"

@@ -24,6 +24,13 @@ const std::vector<const char *> DEVICE_EXTENSIONS = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 };
 
+const std::vector<const char *> INSTANCE_EXTENSIONS = {
+    "VK_KHR_surface",
+    #ifdef __ANDROID__
+    "VK_KHR_android_surface",
+    #endif
+};
+
 struct QueueFamilyIndices {
     std::shared_ptr<uint32_t> graphics_family;
     std::shared_ptr<uint32_t> present_family;
@@ -51,7 +58,11 @@ class Window;
 
 class WindowBuilderVk : public WindowBuilder {
 public:
+#ifndef __ANDROID__
     explicit WindowBuilderVk(const Vec2I &size);
+#else
+    explicit WindowBuilderVk(ANativeWindow *native_window, const Vec2I &window_size);
+#endif
 
     ~WindowBuilderVk() override;
 
@@ -62,6 +73,8 @@ public:
     std::shared_ptr<Queue> create_queue() override;
 
     VkPhysicalDevice get_physical_device() const;
+
+    VkDevice get_device() const;
 
 private:
     bool initialized = false;
@@ -76,7 +89,7 @@ private:
     VkDebugUtilsMessengerEXT debug_messenger{};
 
     static const bool enable_validation_layers =
-    #ifdef PATHFINDER_DEBUG
+    #if defined(PATHFINDER_DEBUG) && !defined(__ANDROID__)
         true;
     #else
         false;
@@ -86,6 +99,10 @@ private:
     VkQueue present_queue{};
 
     VkCommandPool command_pool{};
+
+    #ifdef __ANDROID__
+    ANativeWindow *native_window_;
+    #endif
 
 private:
     static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
@@ -104,7 +121,7 @@ private:
                                                  VkImageTiling tiling,
                                                  VkFormatFeatureFlags features) const;
 
-    static std::vector<const char *> get_required_extensions();
+    static std::vector<const char *> get_required_instance_extensions();
 
     void initialize_after_surface_creation(VkSurfaceKHR surface);
 
@@ -113,8 +130,6 @@ private:
     void create_queues(VkSurfaceKHR surface);
 
     void create_instance();
-
-    void create_surface();
 
     bool check_device_extension_support(VkPhysicalDevice physical_device) const;
 

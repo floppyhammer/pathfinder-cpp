@@ -1,5 +1,7 @@
 #include "app.h"
 
+using namespace Pathfinder;
+
 /// Period to calculate average frame time, in seconds.
 const float FRAME_TIME_PERIOD = 5;
 

@@ -5,10 +5,10 @@ const int32_t WINDOW_WIDTH = 1280;
 const int32_t WINDOW_HEIGHT = 720;
 
 int main() {
-    Vec2I window_size = {WINDOW_WIDTH, WINDOW_HEIGHT};
+    Pathfinder::Vec2I window_size = {WINDOW_WIDTH, WINDOW_HEIGHT};
 
     // Create the main window.
-    auto window_builder = WindowBuilder::new_impl(window_size);
+    auto window_builder = Pathfinder::WindowBuilder::new_impl(window_size);
     auto window0 = window_builder->get_main_window();
 
     // Create a sub-window.
@@ -26,13 +26,13 @@ int main() {
     App app(device,
             queue,
             window_size,
-            load_file_as_bytes("../assets/features.svg"),
-            load_file_as_bytes("../assets/sea.png"));
+            Pathfinder::load_file_as_bytes("../assets/features.svg"),
+            Pathfinder::load_file_as_bytes("../assets/sea.png"));
 
     auto texture_rect = std::make_shared<TextureRect>(device, queue, swap_chain0->get_render_pass());
 
     {
-        auto dst_texture = device->create_texture({window_size, TextureFormat::Rgba8Unorm}, "dst texture");
+        auto dst_texture = device->create_texture({window_size, Pathfinder::TextureFormat::Rgba8Unorm}, "dst texture");
 
         app.canvas->set_dst_texture(dst_texture);
 
@@ -43,8 +43,8 @@ int main() {
     while (!window0->should_close()) {
         // Currently, multiple window does not work properly for the GL backend.
         for (int i = 0; i < 2; i++) {
-            std::shared_ptr<Window> window;
-            std::shared_ptr<SwapChain> swap_chain;
+            std::shared_ptr<Pathfinder::Window> window;
+            std::shared_ptr<Pathfinder::SwapChain> swap_chain;
 
             if (i == 0) {
                 window = window0;
@@ -65,7 +65,7 @@ int main() {
 
             if (current_window_size != app.canvas->get_dst_texture()->get_size() && current_window_size.area() != 0) {
                 auto dst_texture =
-                    device->create_texture({current_window_size, TextureFormat::Rgba8Unorm}, "dst texture");
+                    device->create_texture({current_window_size, Pathfinder::TextureFormat::Rgba8Unorm}, "dst texture");
 
                 app.canvas->set_dst_texture(dst_texture);
                 texture_rect->set_texture(dst_texture);
@@ -81,7 +81,9 @@ int main() {
 
             // Swap chain render pass.
             {
-                encoder->begin_render_pass(swap_chain->get_render_pass(), framebuffer, ColorF(0.2, 0.2, 0.2, 1.0));
+                encoder->begin_render_pass(swap_chain->get_render_pass(),
+                                           framebuffer,
+                                           Pathfinder::ColorF(0.2, 0.2, 0.2, 1.0));
 
                 // Draw canvas to screen.
                 texture_rect->draw(encoder, framebuffer->get_size());
