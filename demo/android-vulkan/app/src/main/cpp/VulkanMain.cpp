@@ -90,12 +90,15 @@ bool InitVulkan(android_app *app) {
     // Create swap chains for windows.
     pf_swapchain = pf_window->create_swap_chain(pf_device);
 
+    auto svg_input = load_asset("features.svg");
+    auto img_input = load_asset("sea.png");
+
     // Create app.
     pf_app = std::make_shared<App>(pf_device,
                                    pf_queue,
                                    window_size,
-                                   Pathfinder::load_file_as_bytes("../assets/features.svg"),
-                                   Pathfinder::load_file_as_bytes("../assets/sea.png"));
+                                   svg_input,
+                                   img_input);
 
     pf_text_rect = std::make_shared<TextureRect>(pf_device, pf_queue,
                                                  pf_swapchain->get_render_pass());

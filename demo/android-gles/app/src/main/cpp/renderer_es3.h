@@ -20,7 +20,7 @@ public:
 private:
     EGLContext egl_context;
 
-    Vec2I window_size;
+    Pathfinder::Vec2I window_size;
 
     std::shared_ptr <Pathfinder::Device> device;
     std::shared_ptr <Pathfinder::Queue> queue;

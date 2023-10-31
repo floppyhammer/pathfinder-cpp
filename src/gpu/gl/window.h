@@ -15,7 +15,11 @@ class WindowGl : public Window {
     friend class WindowBuilderGl;
 
 public:
+#ifndef __ANDROID__
     explicit WindowGl(const Vec2I &_size, GLFWwindow *window_handle);
+#else
+    explicit WindowGl(const Vec2I &_size);
+#endif
 
     ~WindowGl() override;
 

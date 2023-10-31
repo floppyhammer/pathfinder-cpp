@@ -74,10 +74,10 @@ void RendererES3::init(int width, int height) {
 
     queue = std::make_shared<Pathfinder::QueueGl>();
 
-    app = std::make_shared<App>(device, queue, svg_input, img_input);
+    app = std::make_shared<App>(device, queue, window_size, svg_input, img_input);
 
     auto dst_texture = device->create_texture(
-            {window_size, TextureFormat::Rgba8Unorm}, "dst texture");
+            {window_size, Pathfinder::TextureFormat::Rgba8Unorm}, "dst texture");
 
     app->canvas->set_dst_texture(dst_texture);
 

@@ -14,14 +14,16 @@
 
 namespace Pathfinder {
 
+#ifndef __ANDROID__
 std::shared_ptr<WindowBuilder> WindowBuilder::new_impl(const Vec2I& size) {
     return std::make_shared<WindowBuilderGl>(size);
 }
+#endif
 
 WindowBuilderGl::WindowBuilderGl(const Vec2I& size) {
+#ifndef __ANDROID__
     glfwInit();
 
-#ifndef __ANDROID__
     // Major GL version.
     #ifdef PATHFINDER_ENABLE_D3D11
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -89,6 +91,7 @@ WindowBuilderGl::~WindowBuilderGl() {
 #endif
 }
 
+#ifndef __ANDROID__
 std::shared_ptr<Window> WindowBuilderGl::create_window(const Vec2I& size, const std::string& title) {
     auto glfw_window = common_glfw_window_init(size, title, main_window->get_glfw_window());
 
@@ -97,6 +100,7 @@ std::shared_ptr<Window> WindowBuilderGl::create_window(const Vec2I& size, const 
 
     return new_window;
 }
+#endif
 
 std::shared_ptr<Device> WindowBuilderGl::request_device() {
     return std::make_shared<DeviceGl>();

@@ -25,6 +25,14 @@ public:
 
         render_pass = std::shared_ptr<RenderPassGl>(new RenderPassGl(AttachmentLoadOp::Clear));
     }
+    #else
+        SwapChainGl(Vec2I _size) : SwapChain(_size) {
+            framebuffer = std::shared_ptr<FramebufferGl>(new FramebufferGl(size));
+
+            command_encoder = std::shared_ptr<CommandEncoderGl>(new CommandEncoderGl());
+
+            render_pass = std::shared_ptr<RenderPassGl>(new RenderPassGl(AttachmentLoadOp::Clear));
+        }
     #endif
 
     inline std::shared_ptr<RenderPass> get_render_pass() override {
