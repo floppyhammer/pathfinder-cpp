@@ -6,12 +6,12 @@
 #include "../../common/logger.h"
 #include "swap_chain.h"
 
-#if (defined(WIN32) || defined(__linux__))
+#if (defined(_WIN32) || defined(__linux__))
     #include <glad/gl.h>
 
 namespace Pathfinder {
 
-#ifndef __ANDROID__
+    #ifndef __ANDROID__
 WindowGl::WindowGl(const Vec2I &_size, GLFWwindow *window_handle) : Window(_size) {
     glfw_window = window_handle;
 
@@ -19,16 +19,16 @@ WindowGl::WindowGl(const Vec2I &_size, GLFWwindow *window_handle) : Window(_size
     glfwSetWindowUserPointer(glfw_window, this);
     glfwSetFramebufferSizeCallback(glfw_window, framebuffer_resize_callback);
 }
-#else
-    WindowGl::WindowGl(const Vec2I &_size) : Window(_size) {}
-#endif
+    #else
+WindowGl::WindowGl(const Vec2I &_size) : Window(_size) {}
+    #endif
 
 std::shared_ptr<SwapChain> WindowGl::create_swap_chain(const std::shared_ptr<Device> &device) {
-#ifndef __ANDROID__
+    #ifndef __ANDROID__
     return std::make_shared<SwapChainGl>(size, glfw_window);
-#else
+    #else
     return std::make_shared<SwapChainGl>(size);
-#endif
+    #endif
 }
 
 WindowGl::~WindowGl() {
@@ -36,12 +36,12 @@ WindowGl::~WindowGl() {
 }
 
 void WindowGl::destroy() {
-#ifndef __ANDROID__
+    #ifndef __ANDROID__
     if (glfw_window) {
         glfwDestroyWindow(glfw_window);
         glfw_window = nullptr;
     }
-#endif
+    #endif
 }
 
 } // namespace Pathfinder

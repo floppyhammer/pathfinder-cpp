@@ -5,7 +5,7 @@
 #include "queue.h"
 #include "window.h"
 
-#if (defined(WIN32) || defined(__linux__))
+#if (defined(_WIN32) || (defined(__linux__) && !defined(__ANDROID__)))
     #ifndef GLAD_GL_IMPLEMENTATION
         #define GLAD_GL_IMPLEMENTATION
     #endif
@@ -57,6 +57,8 @@ WindowBuilderGl::WindowBuilderGl(const Vec2I& size) {
         Logger::info("Debug markers disabled. Try running from inside a OpenGL graphics debugger (e.g. RenderDoc).",
                      "WindowBuilderGl");
     }
+#else
+    main_window = std::make_shared<WindowGl>(size);
 #endif
 
     // Print GL version.

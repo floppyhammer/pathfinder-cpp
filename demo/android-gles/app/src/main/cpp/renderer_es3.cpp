@@ -18,23 +18,24 @@ void RendererES3::init(int width, int height) {
 
     window_size = {width, height};
 
+    pf_window_builder = std::make_shared<Pathfinder::WindowBuilderGl>(window_size);
+    pf_window = pf_window_builder->get_main_window();
+    pf_device = std::make_shared<Pathfinder::DeviceGl>();
+    pf_queue = std::make_shared<Pathfinder::QueueGl>();
+    pf_swapchain = pf_window->create_swap_chain(pf_device);
+
     auto svg_input = Pathfinder::load_asset(asset_manager, "features.svg");
     auto img_input = Pathfinder::load_asset(asset_manager, "sea.png");
 
-    // Wrap a device.
-    device = std::make_shared<Pathfinder::DeviceGl>();
+    pf_app = std::make_shared<App>(pf_device, pf_queue, window_size, svg_input, img_input);
 
-    queue = std::make_shared<Pathfinder::QueueGl>();
-
-    app = std::make_shared<App>(device, queue, window_size, svg_input, img_input);
-
-    auto dst_texture = device->create_texture(
+    auto dst_texture = pf_device->create_texture(
             {window_size, Pathfinder::TextureFormat::Rgba8Unorm}, "dst texture");
 
-    app->canvas->set_dst_texture(dst_texture);
+    pf_app->canvas->set_dst_texture(dst_texture);
 
-    texture_rect = std::make_shared<TextureRect>(device, queue, nullptr);
-    texture_rect->set_texture(dst_texture);
+    pf_texture_rect = std::make_shared<TextureRect>(pf_device, pf_queue, nullptr);
+    pf_texture_rect->set_texture(dst_texture);
 }
 
 RendererES3::~RendererES3() {
@@ -50,14 +51,29 @@ RendererES3::~RendererES3() {
 }
 
 void RendererES3::render() {
-    app->update();
+    // Acquire next swap chain image.
+    if (!pf_swapchain->acquire_image()) {
+        return;
+    }
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(0, 0, window_size.x, window_size.y);
+    pf_app->update();
 
-    auto encoder = device->create_command_encoder("");
+    auto encoder = pf_device->create_command_encoder("Main encoder");
 
-    texture_rect->draw(encoder, window_size);
+    auto framebuffer = pf_swapchain->get_framebuffer();
 
-    queue->submit_and_wait(encoder);
+    // Swap chain render pass.
+    {
+        encoder->begin_render_pass(pf_swapchain->get_render_pass(), framebuffer,
+                                   Pathfinder::ColorF(0.2, 0.2, 0.2, 1.0));
+
+        // Draw canvas to screen.
+        pf_texture_rect->draw(encoder, framebuffer->get_size());
+
+        encoder->end_render_pass();
+    }
+
+    pf_queue->submit(encoder, pf_swapchain);
+
+    pf_swapchain->present();
 }

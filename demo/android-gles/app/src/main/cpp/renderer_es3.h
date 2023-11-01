@@ -22,10 +22,14 @@ private:
 
     Pathfinder::Vec2I window_size;
 
-    std::shared_ptr <Pathfinder::Device> device;
-    std::shared_ptr <Pathfinder::Queue> queue;
-    std::shared_ptr <App> app;
-    std::shared_ptr <TextureRect> texture_rect;
+    std::shared_ptr<App> pf_app;
+    std::shared_ptr<TextureRect> pf_texture_rect;
+
+    std::shared_ptr<Pathfinder::WindowBuilder> pf_window_builder;
+    std::shared_ptr<Pathfinder::Window> pf_window;
+    std::shared_ptr<Pathfinder::Device> pf_device;
+    std::shared_ptr<Pathfinder::Queue> pf_queue;
+    std::shared_ptr<Pathfinder::SwapChain> pf_swapchain;
 };
 
 #endif //ANDROID_RENDERER_ES3_H
