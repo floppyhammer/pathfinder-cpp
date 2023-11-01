@@ -41,16 +41,18 @@ void render(void* _swap_chain) {
 int main() {
     Vec2I window_size = {WINDOW_WIDTH, WINDOW_HEIGHT};
 
-    auto window = Window::new_impl(window_size);
+    auto window_builder = std::make_shared<WindowBuilderGl>(window_size);
 
-    auto device = window->request_device();
+    auto window = window_builder->get_main_window();
 
-    auto queue = window->create_queue();
+    auto device = window_builder->request_device();
+
+    auto queue = window_builder->create_queue();
 
     auto swap_chain = window->create_swap_chain(device);
 
     // Create app.
-    app = new App(device, queue, {}, {});
+    app = new App(device, queue, window_size, {}, {});
 
     auto dst_texture = device->create_texture({window_size, TextureFormat::Rgba8Unorm}, "dst texture");
 
@@ -67,8 +69,6 @@ int main() {
     // Do this after swap chain cleanup.
     delete app;
     delete texture_rect;
-
-    window->cleanup();
 
     return 0;
 }

@@ -5,10 +5,10 @@ project(pathfinder)
 set(CMAKE_CXX_STANDARD 14)
 
 # Set binary output directory.
-# Using CMAKE_CURRENT_SOURCE_DIR is necessary.
+# (Using CMAKE_CURRENT_SOURCE_DIR is necessary.)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
-# Preset.
+# Options.
 option(PATHFINDER_VULKAN_SUPPORT "Use Vulkan instead of OpenGL" OFF)
 option(PATHFINDER_BUILD_DEMO "Build demo" OFF)
 
@@ -24,13 +24,13 @@ endif ()
 
 # No Vulkan support for web.
 if (EMSCRIPTEN)
-    message("Pathfinder will build for web")
+    message("[Pathfinder] Will build for Web")
 
     set(PATHFINDER_VULKAN_SUPPORT OFF)
 endif ()
 
 if (PATHFINDER_VULKAN_SUPPORT)
-    message("Pathfinder will use Vulkan")
+    message("[Pathfinder] Will use Vulkan")
 
     add_compile_definitions(PATHFINDER_USE_VULKAN)
 
@@ -47,7 +47,7 @@ if (PATHFINDER_VULKAN_SUPPORT)
     # We need to include Vulkan headers manually because of the above reason.
     include_directories(${Vulkan_INCLUDE_DIRS})
 else ()
-    message("Pathfinder will use OpenGL")
+    message("[Pathfinder] Will use OpenGL")
 endif ()
 
 # Include third_party headers.
@@ -62,20 +62,19 @@ if ((WIN32 OR LINUX OR APPLE) AND NOT (EMSCRIPTEN OR ANDROID))
     FetchContent_GetProperties(glfw)
 
     if (NOT glfw_POPULATED)
-        message("Fetching external git repositories")
+        message("[Pathfinder] Fetching external git repositories")
         FetchContent_Populate(glfw)
     endif ()
 
     # Include GLFW headers.
-    # Emscripten has its own version of GLFW.
+    # (Emscripten has its own version of GLFW.)
     include_directories(${glfw_SOURCE_DIR}/include)
 endif ()
 
-# Core library.
 add_subdirectory(src)
 
 if (PATHFINDER_BUILD_DEMO)
-    message("Pathfinder will build demo")
+    message("[Pathfinder] Will build demo")
 
     # Demo common library.
     add_subdirectory(demo/common)

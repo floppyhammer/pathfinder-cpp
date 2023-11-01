@@ -46,6 +46,7 @@ WindowBuilderGl::WindowBuilderGl(const Vec2I& size) {
     // Have to make the window context current before calling gladLoadGL().
     glfwMakeContextCurrent(glfw_window);
 
+    #ifndef __EMSCRIPTEN__
     // GLAD: load all OpenGL function pointers.
     if (!gladLoadGL(glfwGetProcAddress)) {
         throw std::runtime_error("Failed to initialize GLAD!");
@@ -57,6 +58,7 @@ WindowBuilderGl::WindowBuilderGl(const Vec2I& size) {
         Logger::info("Debug markers disabled. Try running from inside a OpenGL graphics debugger (e.g. RenderDoc).",
                      "WindowBuilderGl");
     }
+    #endif
 #else
     main_window = std::make_shared<WindowGl>(size);
 #endif

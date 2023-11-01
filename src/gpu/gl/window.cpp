@@ -6,8 +6,10 @@
 #include "../../common/logger.h"
 #include "swap_chain.h"
 
-#if (defined(_WIN32) || defined(__linux__))
-    #include <glad/gl.h>
+#if (defined(_WIN32) || defined(__linux__) || defined(__EMSCRIPTEN__))
+    #if !defined(__ANDROID) && !defined(__EMSCRIPTEN__)
+        #include <glad/gl.h>
+    #endif
 
 namespace Pathfinder {
 

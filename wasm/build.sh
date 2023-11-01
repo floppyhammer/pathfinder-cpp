@@ -1,3 +1,0 @@
-emcmake cmake ..
-
-make

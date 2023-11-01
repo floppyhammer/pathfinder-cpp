@@ -32,6 +32,6 @@ the same image in a single compute invocation.
 ### Web
 
 * Set up emscripten environment.
-* Run `wasm/build.ps1` to build the demo.
-* Run `demo/web/serve.ps1` to serve a local website.
+* Run `build_wasm.sh` to build the demo.
+* Run `demo/web/serve.sh` to serve a local website.
 * Open http://127.0.0.1:8000/.
