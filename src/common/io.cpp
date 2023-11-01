@@ -3,7 +3,9 @@
 #include "logger.h"
 #include "timestamp.h"
 
-#define STB_IMAGE_IMPLEMENTATION
+#ifndef STB_IMAGE_IMPLEMENTATION
+    #define STB_IMAGE_IMPLEMENTATION
+#endif
 #include <stb_image.h>
 
 #include <cerrno>
@@ -11,6 +13,7 @@
 
 namespace Pathfinder {
 
+#ifndef __ANDROID__
 std::string load_file_as_string(const std::string &file_path) {
     Timestamp timer;
 
@@ -64,6 +67,7 @@ std::vector<char> load_file_as_bytes(const std::string &file_path) {
 
     return std::move(bytes);
 }
+#endif
 
 std::shared_ptr<ImageBuffer> ImageBuffer::from_memory(const std::vector<char> &bytes, bool flip_y) {
     stbi_set_flip_vertically_on_load(flip_y);
@@ -93,10 +97,6 @@ std::shared_ptr<ImageBuffer> ImageBuffer::from_memory(const std::vector<char> &b
     image_buffer->data = img_data;
 
     return image_buffer;
-}
-
-std::shared_ptr<ImageBuffer> ImageBuffer::from_file(const std::string &file_path, bool flip_y) {
-    return ImageBuffer::from_memory(load_file_as_bytes(file_path), flip_y);
 }
 
 ImageBuffer::~ImageBuffer() {

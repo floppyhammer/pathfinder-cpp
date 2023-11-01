@@ -22,49 +22,6 @@ std::shared_ptr<Pathfinder::Device> pf_device;
 std::shared_ptr<Pathfinder::Queue> pf_queue;
 std::shared_ptr<Pathfinder::SwapChain> pf_swapchain;
 
-VkResult loadShaderFromFile(const char *filePath, VkShaderModule *shaderOut) {
-    // Read the file
-    assert(androidAppCtx);
-    AAsset *file = AAssetManager_open(androidAppCtx->activity->assetManager,
-                                      filePath, AASSET_MODE_BUFFER);
-    size_t fileLength = AAsset_getLength(file);
-
-    char *fileContent = new char[fileLength];
-
-    AAsset_read(file, fileContent, fileLength);
-    AAsset_close(file);
-
-    VkShaderModuleCreateInfo shaderModuleCreateInfo{
-            .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-            .pNext = nullptr,
-            .flags = 0,
-            .codeSize = fileLength,
-            .pCode = (const uint32_t *) fileContent,
-    };
-    VkResult result = vkCreateShaderModule(
-            window_builder->get_device(), &shaderModuleCreateInfo, nullptr, shaderOut);
-    assert(result == VK_SUCCESS);
-
-    delete[] fileContent;
-
-    return result;
-}
-
-std::vector<char> load_asset(const std::string &filename) {
-    assert(androidAppCtx);
-    AAsset *file = AAssetManager_open(androidAppCtx->activity->assetManager,
-                                      filename.c_str(),
-                                      AASSET_MODE_BUFFER);
-    size_t fileLength = AAsset_getLength(file);
-
-    std::vector<char> fileContent(fileLength);
-
-    AAsset_read(file, fileContent.data(), fileLength);
-    AAsset_close(file);
-
-    return fileContent;
-}
-
 // InitVulkan:
 //   Initialize Vulkan Context when android application window is created
 //   upon return, vulkan is ready to draw frames
@@ -90,8 +47,8 @@ bool InitVulkan(android_app *app) {
     // Create swap chains for windows.
     pf_swapchain = pf_window->create_swap_chain(pf_device);
 
-    auto svg_input = load_asset("features.svg");
-    auto img_input = load_asset("sea.png");
+    auto svg_input = Pathfinder::load_asset(androidAppCtx->activity->assetManager, "features.svg");
+    auto img_input = Pathfinder::load_asset(androidAppCtx->activity->assetManager, "sea.png");
 
     // Create app.
     pf_app = std::make_shared<App>(pf_device,
