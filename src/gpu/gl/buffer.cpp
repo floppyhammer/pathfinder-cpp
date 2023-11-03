@@ -44,7 +44,7 @@ BufferGl::~BufferGl() {
     glDeleteBuffers(1, &id);
 }
 
-void BufferGl::upload_via_mapping(size_t data_size, size_t offset, void *data) {
+void BufferGl::upload_via_mapping(size_t data_size, size_t offset, const void *data) {
     int gl_buffer_type = 0;
 
     switch (desc.type) {

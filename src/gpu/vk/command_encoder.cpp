@@ -159,6 +159,15 @@ void transition_image_layout(VkCommandBuffer command_buffer,
 
         src_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
         dst_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    }
+    // Color attachment -> Transfer src
+    else if (old_layout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL &&
+             new_layout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL) {
+        barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+        src_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dst_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
     } else {
         throw std::invalid_argument("Unsupported layout transition!");
     }
@@ -534,6 +543,80 @@ bool CommandEncoderVk::finish() {
 
                 // Callback to clean up staging resources.
                 auto callback = [this, staging_buffer, staging_buffer_memory] {
+                    vkDestroyBuffer(vk_device, staging_buffer, nullptr);
+                    vkFreeMemory(vk_device, staging_buffer_memory, nullptr);
+                };
+                add_callback(callback);
+            } break;
+            case CommandType::ReadTexture: {
+                auto &args = cmd.args.read_texture;
+
+                auto texture_vk = dynamic_cast<TextureVk *>(args.texture);
+
+                // Image region size in bytes.
+                auto pixel_size = get_pixel_size(texture_vk->get_format()); // Bytes of one pixel.
+                VkDeviceSize data_size = args.width * args.height * pixel_size;
+
+                // Staging buffer and buffer memory.
+                VkBuffer staging_buffer;
+                VkDeviceMemory staging_buffer_memory;
+
+                device_vk->create_vk_buffer(data_size,
+                                            VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                            staging_buffer,
+                                            staging_buffer_memory);
+
+                // Transition the image layout to transfer dst.
+                transition_image_layout(vk_command_buffer,
+                                        texture_vk->get_image(),
+                                        to_vk_layout(texture_vk->get_layout()),
+                                        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+                texture_vk->set_layout(TextureLayout::TransferSrc);
+
+                // Execute the buffer to image copy operation.
+                {
+                    // Structure specifying a buffer image copy operation.
+                    VkBufferImageCopy region{};
+
+                    // Specify which part of the buffer is going to be copied.
+                    {
+                        region.bufferOffset = 0;      // Byte offset in the buffer at which the pixel values start.
+                        region.bufferRowLength = 0;   // Specify how the pixels are laid out in memory.
+                        region.bufferImageHeight = 0; // This too.
+                    }
+
+                    // Specify which part of the image we want to copy the pixels.
+                    {
+                        // A VkImageSubresourceLayers used to specify the specific image subresources of the image used
+                        // for the source or destination image data.
+                        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                        region.imageSubresource.mipLevel = 0;
+                        region.imageSubresource.baseArrayLayer = 0;
+                        region.imageSubresource.layerCount = 1;
+                        // Selects the initial x, y, z offsets in texels of the subregion of the source or destination
+                        // image data.
+                        region.imageOffset = {static_cast<int32_t>(args.offset_x),
+                                              static_cast<int32_t>(args.offset_y),
+                                              0};
+                        // Size in texels of the image to copy in width, height and depth.
+                        region.imageExtent = {args.width, args.height, 1};
+                    }
+
+                    // Copy data from a buffer into an image.
+                    vkCmdCopyImageToBuffer(vk_command_buffer,
+                                           texture_vk->get_image(),
+                                           VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                                           staging_buffer,
+                                           1,
+                                           &region);
+                }
+
+                // Callback to clean up staging resources.
+                auto callback = [this, staging_buffer, staging_buffer_memory, data_size, args] {
+                    // Copy the pixel data from the staging buffer.
+                    device_vk->copy_data_from_mappable_memory(args.data, staging_buffer_memory, data_size);
+
                     vkDestroyBuffer(vk_device, staging_buffer, nullptr);
                     vkFreeMemory(vk_device, staging_buffer_memory, nullptr);
                 };

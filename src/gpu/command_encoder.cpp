@@ -1,5 +1,6 @@
-#include "../common/logger.h"
 #include "command_encoder.h"
+
+#include "../common/logger.h"
 
 namespace Pathfinder {
 
@@ -126,7 +127,7 @@ void CommandEncoder::end_compute_pass() {
 void CommandEncoder::write_buffer(const std::shared_ptr<Buffer> &buffer,
                                   uint32_t offset,
                                   uint32_t data_size,
-                                  void *data) {
+                                  const void *data) {
     if (data_size == 0 || data == nullptr) {
         Logger::error("Tried to write buffer with invalid data!", "CommandEncoder");
         return;
@@ -150,32 +151,6 @@ void CommandEncoder::write_buffer(const std::shared_ptr<Buffer> &buffer,
     args.buffer = buffer.get();
     args.offset = offset;
     args.data_size = data_size;
-    args.data = data;
-
-    commands.push_back(cmd);
-}
-
-void CommandEncoder::write_texture(const std::shared_ptr<Texture> &texture, RectI _region, const void *data) {
-    auto whole_region = RectI({0, 0}, {texture->get_size()});
-
-    // Invalid region represents the whole texture.
-    auto region = _region.is_valid() ? _region : whole_region;
-
-    // Check if the region is a subset of the whole texture region.
-    if (!region.union_rect(whole_region).is_valid() || region.area() == 0) {
-        Logger::error("Tried to write invalid region of a texture!", "CommandEncoder");
-        return;
-    }
-
-    Command cmd;
-    cmd.type = CommandType::WriteTexture;
-
-    auto &args = cmd.args.write_texture;
-    args.texture = texture.get();
-    args.offset_x = region.left;
-    args.offset_y = region.top;
-    args.width = region.width();
-    args.height = region.height();
     args.data = data;
 
     commands.push_back(cmd);
@@ -213,6 +188,58 @@ void CommandEncoder::read_buffer(const std::shared_ptr<Buffer> &buffer,
             Logger::error("Cannot read data from non-storage buffers!", "CommandEncoder");
         } break;
     }
+}
+
+void CommandEncoder::write_texture(const std::shared_ptr<Texture> &texture, RectI region, const void *src) {
+    auto whole_region = RectI({0, 0}, {texture->get_size()});
+
+    // Invalid region represents the whole texture.
+    auto effective_region = region.is_valid() ? region : whole_region;
+
+    // Check if the region is a subset of the whole texture region.
+    if (!effective_region.union_rect(whole_region).is_valid() || effective_region.area() == 0) {
+        Logger::error("Tried to write invalid region of a texture!", "CommandEncoder");
+        return;
+    }
+
+    Command cmd;
+    cmd.type = CommandType::WriteTexture;
+
+    auto &args = cmd.args.write_texture;
+    args.texture = texture.get();
+    args.offset_x = effective_region.left;
+    args.offset_y = effective_region.top;
+    args.width = effective_region.width();
+    args.height = effective_region.height();
+    args.data = src;
+
+    commands.push_back(cmd);
+}
+
+void CommandEncoder::read_texture(const std::shared_ptr<Texture> &texture, RectI region, void *dst) {
+    auto whole_region = RectI({0, 0}, {texture->get_size()});
+
+    // Invalid region represents the whole texture.
+    auto effective_region = region.is_valid() ? region : whole_region;
+
+    // Check if the region is a subset of the whole texture region.
+    if (!effective_region.union_rect(whole_region).is_valid() || effective_region.area() == 0) {
+        Logger::error("Tried to write invalid region of a texture!", "CommandEncoder");
+        return;
+    }
+
+    Command cmd;
+    cmd.type = CommandType::ReadTexture;
+
+    auto &args = cmd.args.read_texture;
+    args.texture = texture.get();
+    args.offset_x = effective_region.left;
+    args.offset_y = effective_region.top;
+    args.width = effective_region.width();
+    args.height = effective_region.height();
+    args.data = dst;
+
+    commands.push_back(cmd);
 }
 
 } // namespace Pathfinder

@@ -90,8 +90,14 @@ struct Command {
             Buffer *buffer;
             uint32_t offset;
             uint32_t data_size;
-            void *data;
+            const void *data;
         } write_buffer;
+        struct {
+            Buffer *buffer;
+            uint32_t offset;
+            uint32_t data_size;
+            void *data;
+        } read_buffer;
         struct {
             Texture *texture;
             uint32_t offset_x;
@@ -101,11 +107,13 @@ struct Command {
             const void *data;
         } write_texture;
         struct {
-            Buffer *buffer;
-            uint32_t offset;
-            uint32_t data_size;
+            Texture *texture;
+            uint32_t offset_x;
+            uint32_t offset_y;
+            uint32_t width;
+            uint32_t height;
             void *data;
-        } read_buffer;
+        } read_texture;
     } args;
 };
 
@@ -161,11 +169,16 @@ public:
      * @param data_size Size of the data we are uploading, not the size of the buffer.
      * @param data
      */
-    virtual void write_buffer(const std::shared_ptr<Buffer> &buffer, uint32_t offset, uint32_t data_size, void *data);
+    virtual void write_buffer(const std::shared_ptr<Buffer> &buffer,
+                              uint32_t offset,
+                              uint32_t data_size,
+                              const void *data);
+
+    void read_buffer(const std::shared_ptr<Buffer> &buffer, uint32_t offset, uint32_t data_size, void *data);
 
     void write_texture(const std::shared_ptr<Texture> &texture, RectI region, const void *data);
 
-    void read_buffer(const std::shared_ptr<Buffer> &buffer, uint32_t offset, uint32_t data_size, void *data);
+    void read_texture(const std::shared_ptr<Texture> &texture, RectI region, void *data);
 
     inline void add_callback(const std::function<void()> &callback) {
         callbacks.push_back(callback);

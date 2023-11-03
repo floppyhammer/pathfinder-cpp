@@ -24,7 +24,7 @@ VkDeviceMemory BufferVk::get_vk_device_memory() {
     return vk_device_memory;
 }
 
-void BufferVk::upload_via_mapping(size_t data_size, size_t offset, void* data) {
+void BufferVk::upload_via_mapping(size_t data_size, size_t offset, const void* data) {
     if (desc.property != MemoryProperty::HostVisibleAndCoherent) {
         abort();
     }

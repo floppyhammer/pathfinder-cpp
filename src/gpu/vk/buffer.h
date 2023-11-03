@@ -15,9 +15,9 @@ class BufferVk : public Buffer {
     friend class DeviceVk;
 
 public:
-    ~BufferVk();
+    ~BufferVk() override;
 
-    void upload_via_mapping(size_t data_size, size_t offset, void* data) override;
+    void upload_via_mapping(size_t data_size, size_t offset, const void* data) override;
 
     void download_via_mapping(size_t data_size, size_t offset, void* data) override;
 

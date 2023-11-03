@@ -300,7 +300,35 @@ bool CommandEncoderGl::finish() {
                                 args.data);
                 glBindTexture(GL_TEXTURE_2D, 0); // Unbind.
 
-                gl_check_error("UploadToTexture");
+                gl_check_error("WriteTexture");
+            } break;
+            case CommandType::ReadTexture: {
+                auto &args = cmd.args.read_texture;
+
+                auto texture_gl = static_cast<TextureGl *>(args.texture);
+
+                GLenum temp_fbo;
+                glGenFramebuffers(1, &temp_fbo);
+                glBindFramebuffer(GL_FRAMEBUFFER, temp_fbo);
+
+                glFramebufferTexture2D(GL_FRAMEBUFFER,
+                                       GL_COLOR_ATTACHMENT0,
+                                       GL_TEXTURE_2D,
+                                       texture_gl->get_texture_id(),
+                                       0);
+
+                glReadPixels(args.offset_x,
+                             args.offset_y,
+                             args.width,
+                             args.height,
+                             GL_RGBA,
+                             to_gl_data_type(texture_format_to_data_type(args.texture->get_format())),
+                             args.data);
+
+                glBindTexture(GL_FRAMEBUFFER, 0); // Unbind.
+                glDeleteFramebuffers(1, &temp_fbo);
+
+                gl_check_error("ReadTexture");
             } break;
             case CommandType::Max:
                 break;
