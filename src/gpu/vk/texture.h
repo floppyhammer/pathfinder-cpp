@@ -15,7 +15,7 @@ class TextureVk : public Texture {
 
 public:
     // Releasing GPU resources is done by itself.
-    ~TextureVk();
+    ~TextureVk() override;
 
     // Wrapping an external Vulkan image.
     static std::shared_ptr<TextureVk> from_wrapping(const TextureDescriptor& _desc,
@@ -60,7 +60,7 @@ class SamplerVk : public Sampler {
     friend class DeviceVk;
 
 public:
-    ~SamplerVk() {
+    ~SamplerVk() override {
         vkDestroySampler(vk_device, vk_sampler, nullptr);
     }
 

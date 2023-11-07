@@ -42,7 +42,7 @@ enum class CommandType {
     WriteBuffer,
     ReadBuffer,
     WriteTexture,
-    ReadTexture, // TODO
+    ReadTexture,
 
     Max,
 };

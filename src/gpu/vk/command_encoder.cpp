@@ -481,6 +481,8 @@ bool CommandEncoderVk::finish() {
 
                 // Image region size in bytes.
                 auto pixel_size = get_pixel_size(texture_vk->get_format()); // Bytes of one pixel.
+
+                // Notable that the data size is of the whole texture but of a region.
                 VkDeviceSize data_size = args.width * args.height * pixel_size;
 
                 // Staging buffer and buffer memory.
