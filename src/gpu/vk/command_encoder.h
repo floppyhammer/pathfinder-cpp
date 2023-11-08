@@ -8,8 +8,6 @@
 #include "../command_encoder.h"
 #include "device.h"
 
-#ifdef PATHFINDER_USE_VULKAN
-
 namespace Pathfinder {
 
 class CommandEncoderVk : public CommandEncoder {
@@ -38,7 +36,5 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif
 
 #endif // PATHFINDER_GPU_COMMAND_BUFFER_VK_H

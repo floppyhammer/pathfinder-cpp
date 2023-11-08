@@ -11,9 +11,7 @@
 #include "../../common/logger.h"
 #include "../../common/math/mat2.h"
 #include "../../common/math/mat4.h"
-#include "../data.h"
-
-#ifndef PATHFINDER_USE_VULKAN
+#include "base.h"
 
 namespace Pathfinder {
 
@@ -90,7 +88,5 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif
 
 #endif // PATHFINDER_GPU_PROGRAM_H

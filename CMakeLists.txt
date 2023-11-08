@@ -51,7 +51,7 @@ else ()
 endif ()
 
 # Include third_party headers.
-include_directories(third_party)
+include_directories(third_party third_party/glad/include)
 
 if ((WIN32 OR LINUX OR APPLE) AND NOT (EMSCRIPTEN OR ANDROID))
     include(FetchContent)

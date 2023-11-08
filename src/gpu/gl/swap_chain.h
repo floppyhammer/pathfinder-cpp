@@ -3,11 +3,10 @@
 
 #include "../../common/global_macros.h"
 #include "../swap_chain.h"
+#include "base.h"
 #include "command_encoder.h"
 #include "framebuffer.h"
 #include "render_pass.h"
-
-#ifndef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
 
@@ -15,7 +14,7 @@ class SwapChainGl : public SwapChain {
     friend class DeviceGl;
 
 public:
-    #ifndef __ANDROID__
+#ifndef __ANDROID__
     SwapChainGl(Vec2I _size, GLFWwindow *window_handle) : SwapChain(_size) {
         glfw_window = window_handle;
 
@@ -25,15 +24,15 @@ public:
 
         render_pass = std::shared_ptr<RenderPassGl>(new RenderPassGl(AttachmentLoadOp::Clear));
     }
-    #else
-        SwapChainGl(Vec2I _size) : SwapChain(_size) {
-            framebuffer = std::shared_ptr<FramebufferGl>(new FramebufferGl(size));
+#else
+    SwapChainGl(Vec2I _size) : SwapChain(_size) {
+        framebuffer = std::shared_ptr<FramebufferGl>(new FramebufferGl(size));
 
-            command_encoder = std::shared_ptr<CommandEncoderGl>(new CommandEncoderGl());
+        command_encoder = std::shared_ptr<CommandEncoderGl>(new CommandEncoderGl());
 
-            render_pass = std::shared_ptr<RenderPassGl>(new RenderPassGl(AttachmentLoadOp::Clear));
-        }
-    #endif
+        render_pass = std::shared_ptr<RenderPassGl>(new RenderPassGl(AttachmentLoadOp::Clear));
+    }
+#endif
 
     inline std::shared_ptr<RenderPass> get_render_pass() override {
         return render_pass;
@@ -44,24 +43,24 @@ public:
     }
 
     inline bool acquire_image() override {
-    #ifndef __ANDROID__
+#ifndef __ANDROID__
         glfwMakeContextCurrent(glfw_window);
-    #endif
+#endif
         return true;
     }
 
     inline void present() override {
-    #ifndef __ANDROID__
+#ifndef __ANDROID__
         glfwSwapBuffers(glfw_window);
-    #endif
+#endif
     }
 
     inline void cleanup() override {}
 
 private:
-    #ifndef __ANDROID__
+#ifndef __ANDROID__
     GLFWwindow *glfw_window;
-    #endif
+#endif
 
     std::shared_ptr<RenderPass> render_pass;
     std::shared_ptr<Framebuffer> framebuffer;
@@ -69,7 +68,5 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif
 
 #endif // PATHFINDER_GPU_SWAP_CHAIN_GL_H

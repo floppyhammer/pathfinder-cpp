@@ -6,8 +6,6 @@
 
 #include "../render_pipeline.h"
 
-#ifdef PATHFINDER_USE_VULKAN
-
 namespace Pathfinder {
 
 class RenderPipelineVk : public RenderPipeline {
@@ -50,7 +48,5 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif
 
 #endif // PATHFINDER_GPU_RENDER_PIPELINE_VK_H

@@ -6,8 +6,6 @@
 #include "../queue.h"
 #include "swap_chain.h"
 
-#ifdef PATHFINDER_USE_VULKAN
-
 namespace Pathfinder {
 
 class QueueVk : public Queue {
@@ -37,7 +35,5 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif
 
 #endif // PATHFINDER_GPU_QUEUE_VK_H

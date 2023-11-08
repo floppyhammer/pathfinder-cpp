@@ -6,8 +6,7 @@
 
 #include "../../common/global_macros.h"
 #include "../descriptor_set.h"
-
-#ifdef PATHFINDER_USE_VULKAN
+#include "base.h"
 
 namespace Pathfinder {
 
@@ -34,7 +33,5 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif
 
 #endif // PATHFINDER_GPU_DESCRIPTOR_SET_VK_H

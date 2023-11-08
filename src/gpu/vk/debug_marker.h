@@ -12,9 +12,7 @@
 
 #include "../../common/color.h"
 #include "../../common/logger.h"
-#include "data.h"
-
-#ifdef PATHFINDER_USE_VULKAN
+#include "base.h"
 
 namespace Pathfinder {
 
@@ -131,7 +129,5 @@ public:
 };
 
 } // namespace Pathfinder
-
-#endif
 
 #endif // PATHFINDER_GPU_VK_DEBUG_MARKER_H

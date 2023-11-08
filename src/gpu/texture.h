@@ -5,7 +5,7 @@
 
 #include "../common/global_macros.h"
 #include "../common/math/vec2.h"
-#include "data.h"
+#include "base.h"
 
 namespace Pathfinder {
 

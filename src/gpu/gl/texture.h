@@ -5,9 +5,7 @@
 #include "../../common/logger.h"
 #include "../../common/math/rect.h"
 #include "../texture.h"
-#include "data.h"
-
-#ifndef PATHFINDER_USE_VULKAN
+#include "base.h"
 
 namespace Pathfinder {
 
@@ -29,7 +27,5 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif
 
 #endif // PATHFINDER_GPU_TEXTURE_GL_H

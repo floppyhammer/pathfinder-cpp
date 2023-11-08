@@ -8,8 +8,6 @@
 #include "debug_marker.h"
 #include "program.h"
 
-#ifndef PATHFINDER_USE_VULKAN
-
 namespace Pathfinder {
 
 class RenderPipelineGl : public RenderPipeline {
@@ -52,7 +50,5 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif
 
 #endif // PATHFINDER_GPU_RENDER_PIPELINE_GL_H

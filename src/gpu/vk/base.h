@@ -4,11 +4,18 @@
 #include <array>
 
 #include "../../common/global_macros.h"
-#include "../data.h"
-
-#ifdef PATHFINDER_USE_VULKAN
+#include "../base.h"
 
 namespace Pathfinder {
+
+// Vulkan header.
+#ifdef __ANDROID__
+    #include "vulkan_wrapper.h"
+#else
+    #define GLFW_INCLUDE_NONE
+    #define GLFW_INCLUDE_VULKAN
+    #include <GLFW/glfw3.h>
+#endif
 
 inline VkFormat to_vk_texture_format(TextureFormat texture_format) {
     switch (texture_format) {
@@ -190,7 +197,5 @@ inline VkAttachmentLoadOp to_vk_attachment_load_op(AttachmentLoadOp load_op) {
 }
 
 } // namespace Pathfinder
-
-#endif
 
 #endif // PATHFINDER_GPU_DATA_VK_H

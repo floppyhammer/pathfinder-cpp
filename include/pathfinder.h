@@ -1,5 +1,5 @@
-#ifndef PATHFINDER_API_H
-#define PATHFINDER_API_H
+#ifndef PATHFINDER_API_OPENGL_H
+#define PATHFINDER_API_OPENGL_H
 
 #include "../src/common/global_macros.h"
 #include "../src/common/io.h"
@@ -13,12 +13,16 @@
 #include "../src/core/svg.h"
 #include "../src/gpu/framebuffer.h"
 #include "../src/gpu/swap_chain.h"
-#include "../src/gpu/gl/window_builder.h"
-#include "../src/gpu/gl/device.h"
-#include "../src/gpu/gl/queue.h"
-#include "../src/gpu/vk/window_builder.h"
-#include "../src/gpu/vk/device.h"
-#include "../src/gpu/vk/queue.h"
-#include "../src/gpu/vk/texture.h"
+#ifdef PATHFINDER_USE_VULKAN
+    #include "../src/gpu/vk/device.h"
+    #include "../src/gpu/vk/queue.h"
+    #include "../src/gpu/vk/window.h"
+    #include "../src/gpu/vk/window_builder.h"
+#else
+    #include "../src/gpu/gl/device.h"
+    #include "../src/gpu/gl/queue.h"
+    #include "../src/gpu/gl/window.h"
+    #include "../src/gpu/gl/window_builder.h"
+#endif
 
-#endif // PATHFINDER_API_H
+#endif // PATHFINDER_API_OPENGL_H

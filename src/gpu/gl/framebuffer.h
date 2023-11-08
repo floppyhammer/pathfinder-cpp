@@ -6,8 +6,6 @@
 #include "../framebuffer.h"
 #include "texture.h"
 
-#ifndef PATHFINDER_USE_VULKAN
-
 namespace Pathfinder {
 
 class FramebufferGl : public Framebuffer {
@@ -35,7 +33,5 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif
 
 #endif // PATHFINDER_GPU_FRAMEBUFFER_GL_H

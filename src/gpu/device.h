@@ -8,7 +8,6 @@
 #include "framebuffer.h"
 #include "render_pass.h"
 #include "render_pipeline.h"
-#include "swap_chain.h"
 
 namespace Pathfinder {
 

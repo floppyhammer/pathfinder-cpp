@@ -1,26 +1,20 @@
 #include "window_builder.h"
 
 #include "../../common/logger.h"
+#include "base.h"
 #include "device.h"
 #include "queue.h"
 #include "window.h"
 
-#if (defined(_WIN32) || (defined(__linux__) && !defined(__ANDROID__)))
-    #ifndef GLAD_GL_IMPLEMENTATION
-        #define GLAD_GL_IMPLEMENTATION
-    #endif
-    #include <glad/gl.h>
-#endif
-
 namespace Pathfinder {
 
 #ifndef __ANDROID__
-std::shared_ptr<WindowBuilder> WindowBuilder::new_impl(const Vec2I& size) {
+std::shared_ptr<WindowBuilder> WindowBuilder::new_impl(const Vec2I &size) {
     return std::make_shared<WindowBuilderGl>(size);
 }
 #endif
 
-WindowBuilderGl::WindowBuilderGl(const Vec2I& size) {
+WindowBuilderGl::WindowBuilderGl(const Vec2I &size) {
 #ifndef __ANDROID__
     glfwInit();
 
@@ -40,7 +34,7 @@ WindowBuilderGl::WindowBuilderGl(const Vec2I& size) {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     #endif
 
-    auto glfw_window = common_glfw_window_init(size, "Main");
+    auto glfw_window = glfw_window_init(size, "Main");
     main_window = std::make_shared<WindowGl>(size, glfw_window);
 
     // Have to make the window context current before calling gladLoadGL().
@@ -76,16 +70,16 @@ WindowBuilderGl::WindowBuilderGl(const Vec2I& size) {
 WindowBuilderGl::~WindowBuilderGl() {
     // Destroy windows.
     {
-        for (auto& w : sub_windows) {
+        for (auto &w : sub_windows) {
             if (!w.expired()) {
                 // We need to destroy a window explicitly in case its smart pointer is held elsewhere.
-                auto window_vk = (WindowGl*)w.lock().get();
+                auto window_vk = (WindowGl *)w.lock().get();
                 window_vk->destroy();
             }
         }
         sub_windows.clear();
 
-        auto window_vk = (WindowGl*)main_window.get();
+        auto window_vk = (WindowGl *)main_window.get();
         window_vk->destroy();
         main_window.reset();
     }
@@ -96,8 +90,50 @@ WindowBuilderGl::~WindowBuilderGl() {
 }
 
 #ifndef __ANDROID__
-std::shared_ptr<Window> WindowBuilderGl::create_window(const Vec2I& size, const std::string& title) {
-    auto glfw_window = common_glfw_window_init(size, title, main_window->get_glfw_window());
+GLFWwindow *WindowBuilderGl::glfw_window_init(const Vec2I &size, const std::string &title, GLFWwindow *shared_window) {
+    #ifndef __EMSCRIPTEN__
+    // Enable window resizing.
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+
+    // Hide window upon creation as we need to center the window before showing it.
+    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+
+    // Get monitor position (used to correctly center the window in a multi-monitor scenario).
+    int monitor_count, monitor_x, monitor_y;
+    GLFWmonitor **monitors = glfwGetMonitors(&monitor_count);
+
+    const GLFWvidmode *video_mode = glfwGetVideoMode(monitors[0]);
+    glfwGetMonitorPos(monitors[0], &monitor_x, &monitor_y);
+
+    // Get DPI scale.
+    float dpi_scale_x, dpi_scale_y;
+    glfwGetMonitorContentScale(monitors[0], &dpi_scale_x, &dpi_scale_y);
+    #endif
+
+    auto glfw_window = glfwCreateWindow(size.x, size.y, title.c_str(), nullptr, shared_window);
+    if (glfw_window == nullptr) {
+        throw std::runtime_error("Failed to create GLFW window!");
+    }
+
+    #ifndef __EMSCRIPTEN__
+    // Center the window.
+    glfwSetWindowPos(glfw_window,
+                     monitor_x + (video_mode->width - size.x) / 2,
+                     monitor_y + (video_mode->height - size.y) / 2);
+
+    // Show the window.
+    glfwShowWindow(glfw_window);
+    #endif
+
+    return glfw_window;
+}
+#endif
+
+#ifndef __ANDROID__
+std::shared_ptr<Window> WindowBuilderGl::create_window(const Vec2I &size, const std::string &title) {
+    auto window_gl = (WindowGl *)main_window.get();
+
+    auto glfw_window = glfw_window_init(size, title, window_gl->get_glfw_window());
 
     auto new_window = std::make_shared<WindowGl>(size, glfw_window);
     sub_windows.push_back(new_window);

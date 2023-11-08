@@ -8,8 +8,6 @@
 #include "framebuffer.h"
 #include "window.h"
 
-#ifdef PATHFINDER_USE_VULKAN
-
 namespace Pathfinder {
 
 class WindowBuilderVk;
@@ -115,7 +113,5 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif
 
 #endif // PATHFINDER_GPU_SWAP_CHAIN_VK_H

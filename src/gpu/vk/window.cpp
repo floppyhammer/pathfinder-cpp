@@ -18,11 +18,44 @@ WindowVk::WindowVk(const Vec2I& _size, GLFWwindow* window_handle, VkSurfaceKHR s
     glfw_window = window_handle;
 }
 #else
-    WindowVk::WindowVk(const Vec2I& _size, VkSurfaceKHR surface, VkInstance instance)
-            : Window(_size) {
-        surface_ = surface;
-        instance_ = instance;
+WindowVk::WindowVk(const Vec2I& _size, VkSurfaceKHR surface, VkInstance instance) : Window(_size) {
+    surface_ = surface;
+    instance_ = instance;
+}
+#endif
+
+#ifndef __ANDROID__
+void WindowVk::framebuffer_resize_callback(GLFWwindow* glfw_window, int width, int height) {
+    auto window = reinterpret_cast<WindowVk*>(glfwGetWindowUserPointer(glfw_window));
+
+    if (window) {
+        window->just_resized = true;
+        window->size = {width, height};
+        window->minimized = window->size.area() == 0;
+
+        Logger::info("Window resized to " + window->size.to_string());
+    } else {
+        Logger::error("glfwGetWindowUserPointer is NULL!");
     }
+}
+
+void WindowVk::poll_events() {
+    just_resized = false;
+
+    glfwPollEvents();
+
+    if (glfwGetKey(glfw_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+        glfwSetWindowShouldClose(glfw_window, true);
+    }
+}
+
+bool WindowVk::should_close() {
+    return glfwWindowShouldClose(glfw_window);
+}
+
+GLFWwindow* WindowVk::get_glfw_window() const {
+    return glfw_window;
+}
 #endif
 
 VkExtent2D WindowVk::choose_swap_extent(const VkSurfaceCapabilitiesKHR& capabilities) const {

@@ -3,11 +3,9 @@
 
 #include "../../common/global_macros.h"
 #include "../../common/io.h"
-#include "../data.h"
+#include "../base.h"
 #include "../device.h"
 #include "render_pass.h"
-
-#ifdef PATHFINDER_USE_VULKAN
 
 namespace Pathfinder {
 
@@ -128,7 +126,5 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif
 
 #endif

@@ -6,8 +6,6 @@
 #include "../queue.h"
 #include "swap_chain.h"
 
-#ifndef PATHFINDER_USE_VULKAN
-
 namespace Pathfinder {
 
 class QueueGl : public Queue {
@@ -31,7 +29,5 @@ public:
 };
 
 } // namespace Pathfinder
-
-#endif
 
 #endif // PATHFINDER_GPU_QUEUE_GL_H

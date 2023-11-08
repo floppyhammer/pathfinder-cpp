@@ -22,12 +22,6 @@ public:
 
     std::shared_ptr<Window> get_main_window() const;
 
-#ifndef __ANDROID__
-    static GLFWwindow *common_glfw_window_init(const Vec2I &size,
-                                               const std::string &title,
-                                               GLFWwindow *shared_window = nullptr);
-#endif
-
     virtual std::shared_ptr<Device> request_device() = 0;
 
     virtual std::shared_ptr<Queue> create_queue() = 0;

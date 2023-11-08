@@ -6,8 +6,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base.h"
 #include "buffer.h"
-#include "data.h"
 #include "texture.h"
 
 namespace Pathfinder {

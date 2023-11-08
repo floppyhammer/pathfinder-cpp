@@ -2,34 +2,7 @@
 #define PATHFINDER_GPU_DATA_H
 
 #include <cstdint>
-
-#ifdef __ANDROID__
-    #ifdef PATHFINDER_USE_VULKAN
-        #include "vulkan_wrapper.h"
-    #else
-        #ifdef PATHFINDER_ENABLE_D3D11
-            #include <GLES3/gl31.h>
-        #else
-            #include <GLES3/gl3.h>
-        #endif
-    #endif
-#elif defined(__EMSCRIPTEN__)
-    #define GLFW_INCLUDE_ES3
-    #include <GLFW/glfw3.h>
-#else
-    #ifdef PATHFINDER_USE_VULKAN
-        #define GLFW_INCLUDE_NONE
-        // Vulkan headers.
-        #define GLFW_INCLUDE_VULKAN
-        #include <GLFW/glfw3.h>
-    #else
-        // Include OpenGL header via GLAD.
-        #include <glad/gl.h>
-        // Prevent the GLFW header from including the OpenGL header.
-        #define GLFW_INCLUDE_NONE
-        #include <GLFW/glfw3.h>
-    #endif
-#endif
+#include <cstdlib>
 
 namespace Pathfinder {
 

@@ -2,11 +2,26 @@
 #define PATHFINDER_GPU_DATA_GL_H
 
 #include "../../common/global_macros.h"
-#include "../data.h"
-
-#ifndef PATHFINDER_USE_VULKAN
+#include "../base.h"
 
 namespace Pathfinder {
+
+#ifdef __ANDROID__
+    #ifdef PATHFINDER_ENABLE_D3D11
+        #include <GLES3/gl31.h>
+    #else
+        #include <GLES3/gl3.h>
+    #endif
+#elif defined(__EMSCRIPTEN__)
+    #define GLFW_INCLUDE_ES3
+    #include <GLFW/glfw3.h>
+#else
+    // Include OpenGL header via GLAD.
+    #include <glad/gl.h>
+    // Prevent the GLFW header from including the OpenGL header.
+    #define GLFW_INCLUDE_NONE
+    #include <GLFW/glfw3.h>
+#endif
 
 inline GLint to_gl_blend_factor(BlendFactor blend_factor) {
     switch (blend_factor) {
@@ -83,7 +98,5 @@ inline GLint to_gl_sampler_address_mode(SamplerAddressMode address_mode) {
 }
 
 } // namespace Pathfinder
-
-#endif
 
 #endif // PATHFINDER_GPU_DATA_GL_H

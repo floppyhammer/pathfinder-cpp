@@ -6,8 +6,6 @@
 #include "../../common/global_macros.h"
 #include "../buffer.h"
 
-#ifndef PATHFINDER_USE_VULKAN
-
 namespace Pathfinder {
 
 class BufferGl : public Buffer {
@@ -32,7 +30,5 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif
 
 #endif // PATHFINDER_GPU_BUFFER_GL_H

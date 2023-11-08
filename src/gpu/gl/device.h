@@ -12,8 +12,6 @@
 #include "swap_chain.h"
 #include "texture.h"
 
-#ifndef PATHFINDER_USE_VULKAN
-
 namespace Pathfinder {
 
 class DeviceGl : public Device {
@@ -53,7 +51,5 @@ public:
 };
 
 } // namespace Pathfinder
-
-#endif
 
 #endif // PATHFINDER_GPU_DEVICE_GL_H

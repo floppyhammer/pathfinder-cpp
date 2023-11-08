@@ -2,9 +2,7 @@
 #define PATHFINDER_GPU_RENDER_PASS_VK_H
 
 #include "../render_pass.h"
-#include "data.h"
-
-#ifdef PATHFINDER_USE_VULKAN
+#include "base.h"
 
 namespace Pathfinder {
 
@@ -12,7 +10,7 @@ class RenderPassVk : public RenderPass {
     friend class DeviceVk;
 
 public:
-    ~RenderPassVk();
+    ~RenderPassVk() override;
 
     VkRenderPass get_vk_render_pass();
 
@@ -30,7 +28,5 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif
 
 #endif // PATHFINDER_GPU_RENDER_PASS_VK_H

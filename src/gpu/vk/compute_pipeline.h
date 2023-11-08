@@ -6,8 +6,6 @@
 
 #include "../compute_pipeline.h"
 
-#ifdef PATHFINDER_USE_VULKAN
-
 namespace Pathfinder {
 
 class ComputePipelineVk : public ComputePipeline {
@@ -48,7 +46,5 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif
 
 #endif // PATHFINDER_GPU_COMPUTE_PIPELINE_VK_H

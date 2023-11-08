@@ -3,8 +3,6 @@
 
 #include "../render_pass.h"
 
-#ifndef PATHFINDER_USE_VULKAN
-
 namespace Pathfinder {
 
 class RenderPassGl : public RenderPass {
@@ -24,7 +22,5 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif
 
 #endif // PATHFINDER_GPU_RENDER_PASS_GL_H

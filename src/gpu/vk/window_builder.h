@@ -11,8 +11,6 @@
 #include "../window_builder.h"
 #include "device.h"
 
-#ifdef PATHFINDER_USE_VULKAN
-
 namespace Pathfinder {
 
 /// List of required validation layers.
@@ -58,11 +56,11 @@ class Window;
 
 class WindowBuilderVk : public WindowBuilder {
 public:
-#ifndef __ANDROID__
+    #ifndef __ANDROID__
     explicit WindowBuilderVk(const Vec2I &size);
-#else
+    #else
     explicit WindowBuilderVk(ANativeWindow *native_window, const Vec2I &window_size);
-#endif
+    #endif
 
     ~WindowBuilderVk() override;
 
@@ -105,6 +103,12 @@ private:
     #endif
 
 private:
+    #ifndef __ANDROID__
+    static GLFWwindow *glfw_window_init(const Vec2I &size,
+                                        const std::string &title,
+                                        GLFWwindow *shared_window = nullptr);
+    #endif
+
     static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
                                                          VkDebugUtilsMessageTypeFlagsEXT message_type,
                                                          const VkDebugUtilsMessengerCallbackDataEXT *callback_data,
@@ -150,7 +154,5 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif
 
 #endif // PATHFINDER_WINDOW_BUILDER_VK_H
