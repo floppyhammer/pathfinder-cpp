@@ -21,7 +21,7 @@ public:
 
     void set_texture(const std::shared_ptr<Pathfinder::Texture> &new_texture);
 
-    void draw(const std::shared_ptr<Pathfinder::CommandEncoder> &cmd_buffer, const Pathfinder::Vec2I &framebuffer_size);
+    void draw(const std::shared_ptr<Pathfinder::CommandEncoder> &encoder, const Pathfinder::Vec2I &framebuffer_size);
 
 private:
     Pathfinder::Vec2F position;

@@ -48,7 +48,7 @@ struct SceneSourceBuffers {
     void upload(SegmentsD3D11 &segments,
                 const std::shared_ptr<GpuMemoryAllocator> &allocator,
                 const std::shared_ptr<Device> &device,
-                const std::shared_ptr<CommandEncoder> &cmd_buffer);
+                const std::shared_ptr<CommandEncoder> &encoder);
 };
 
 struct SceneBuffers {
@@ -59,8 +59,8 @@ struct SceneBuffers {
     void upload(SegmentsD3D11 &draw_segments,
                 SegmentsD3D11 &clip_segments,
                 const std::shared_ptr<GpuMemoryAllocator> &allocator,
-                const std::shared_ptr<Pathfinder::Device> &device,
-                const std::shared_ptr<CommandEncoder> &cmd_buffer);
+                const std::shared_ptr<Device> &device,
+                const std::shared_ptr<CommandEncoder> &encoder);
 };
 
 struct PropagateTilesInfoD3D11 {
@@ -87,7 +87,7 @@ struct TileUniformDx11 {
 
 class RendererD3D11 : public Renderer {
 public:
-    explicit RendererD3D11(const std::shared_ptr<Pathfinder::Device> &device, const std::shared_ptr<Queue> &queue);
+    explicit RendererD3D11(const std::shared_ptr<Device> &device, const std::shared_ptr<Queue> &queue);
 
     void set_up_pipelines() override;
 

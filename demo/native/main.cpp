@@ -9,27 +9,23 @@ int main() {
 
     // Create the main window.
     auto window_builder = Pathfinder::WindowBuilder::new_impl(window_size);
-    auto window0 = window_builder->get_main_window();
-
-    // Create a sub-window.
-    auto window1 = window_builder->create_window(window_size, "Second");
+    auto window = window_builder->get_main_window();
 
     // Create device and queue.
     auto device = window_builder->request_device();
     auto queue = window_builder->create_queue();
 
     // Create swap chains for windows.
-    auto swap_chain0 = window0->create_swap_chain(device);
-    auto swap_chain1 = window1->create_swap_chain(device);
+    auto swap_chain = window->create_swap_chain(device);
 
     // Create app.
     App app(device,
             queue,
             window_size,
-            Pathfinder::load_file_as_bytes("../assets/features.svg"),
+            Pathfinder::load_file_as_bytes("../assets/paris-30k - Copy.svg"),
             Pathfinder::load_file_as_bytes("../assets/sea.png"));
 
-    auto texture_rect = std::make_shared<TextureRect>(device, queue, swap_chain0->get_render_pass());
+    auto texture_rect = std::make_shared<TextureRect>(device, queue, swap_chain->get_render_pass());
 
     {
         auto dst_texture = device->create_texture({window_size, Pathfinder::TextureFormat::Rgba8Unorm}, "dst texture");
@@ -40,20 +36,9 @@ int main() {
     }
 
     // Main loop.
-    while (!window0->should_close()) {
+    while (!window->should_close()) {
         // Currently, multiple window does not work properly for the GL backend.
-        for (int i = 0; i < 2; i++) {
-            std::shared_ptr<Pathfinder::Window> window;
-            std::shared_ptr<Pathfinder::SwapChain> swap_chain;
-
-            if (i == 0) {
-                window = window0;
-                swap_chain = swap_chain0;
-            } else {
-                window = window1;
-                swap_chain = swap_chain1;
-            }
-
+        for (int i = 0; i < 1; i++) {
             window->poll_events();
 
             // Acquire next swap chain image.
@@ -97,8 +82,7 @@ int main() {
         }
     }
 
-    swap_chain0->cleanup();
-    swap_chain1->cleanup();
+    swap_chain->cleanup();
 
     // Do this after swap chain cleanup.
     app.cleanup();

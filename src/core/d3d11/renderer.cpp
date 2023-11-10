@@ -110,13 +110,13 @@ void SceneSourceBuffers::upload(SegmentsD3D11 &segments,
 void SceneBuffers::upload(SegmentsD3D11 &draw_segments,
                           SegmentsD3D11 &clip_segments,
                           const std::shared_ptr<GpuMemoryAllocator> &allocator,
-                          const std::shared_ptr<Pathfinder::Device> &device,
+                          const std::shared_ptr<Device> &device,
                           const std::shared_ptr<CommandEncoder> &encoder) {
     draw.upload(draw_segments, allocator, device, encoder);
     clip.upload(clip_segments, allocator, device, encoder);
 }
 
-RendererD3D11::RendererD3D11(const std::shared_ptr<Pathfinder::Device> &device, const std::shared_ptr<Queue> &queue)
+RendererD3D11::RendererD3D11(const std::shared_ptr<Device> &device, const std::shared_ptr<Queue> &queue)
     : Renderer(device, queue) {
     allocated_microline_count = INITIAL_ALLOCATED_MICROLINE_COUNT;
     allocated_fill_count = INITIAL_ALLOCATED_FILL_COUNT;
