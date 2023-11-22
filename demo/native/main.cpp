@@ -22,7 +22,7 @@ int main() {
     App app(device,
             queue,
             window_size,
-            Pathfinder::load_file_as_bytes("../assets/paris-30k - Copy.svg"),
+            Pathfinder::load_file_as_bytes("../assets/features.svg"),
             Pathfinder::load_file_as_bytes("../assets/sea.png"));
 
     auto texture_rect = std::make_shared<TextureRect>(device, queue, swap_chain->get_render_pass());
