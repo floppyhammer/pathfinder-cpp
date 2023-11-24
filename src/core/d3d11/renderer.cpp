@@ -1018,7 +1018,7 @@ TextureFormat RendererD3D11::mask_texture_format() const {
 }
 
 void RendererD3D11::reallocate_alpha_tile_pages_if_necessary() {
-    uint32_t alpha_tile_pages_needed = (alpha_tile_count + 0xffff) >> 16;
+    uint32_t alpha_tile_pages_needed = std::max((alpha_tile_count + 0xffff) >> 16, 1u);
 
     if (alpha_tile_pages_needed <= mask_storage.allocated_page_count) {
         return;

@@ -209,7 +209,9 @@ TextureFormat RendererD3D9::mask_texture_format() const {
 }
 
 void RendererD3D9::reallocate_alpha_tile_pages_if_necessary() {
-    uint32_t alpha_tile_pages_needed = (alpha_tile_count + 0xffff) >> 16;
+    // Make sure at least one page is allocated even when thers's no alpha tile.
+    // Bacause we use `*mask_storage.framebuffer_id` in several places.
+    uint32_t alpha_tile_pages_needed = std::max((alpha_tile_count + 0xffff) >> 16, 1u);
 
     if (alpha_tile_pages_needed <= mask_storage.allocated_page_count) {
         return;
