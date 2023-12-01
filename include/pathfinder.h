@@ -1,5 +1,5 @@
-#ifndef PATHFINDER_API_OPENGL_H
-#define PATHFINDER_API_OPENGL_H
+#ifndef PATHFINDER_API_H
+#define PATHFINDER_API_H
 
 #include "../src/common/global_macros.h"
 #include "../src/common/io.h"
@@ -13,6 +13,7 @@
 #include "../src/core/svg.h"
 #include "../src/gpu/framebuffer.h"
 #include "../src/gpu/swap_chain.h"
+
 #ifdef PATHFINDER_USE_VULKAN
     #include "../src/gpu/vk/device.h"
     #include "../src/gpu/vk/queue.h"
@@ -25,4 +26,4 @@
     #include "../src/gpu/gl/window_builder.h"
 #endif
 
-#endif // PATHFINDER_API_OPENGL_H
+#endif
