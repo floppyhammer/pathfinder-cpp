@@ -4,8 +4,6 @@
 #include "../../common/global_macros.h"
 #include "../base.h"
 
-namespace Pathfinder {
-
 #ifdef __ANDROID__
     #ifdef PATHFINDER_ENABLE_D3D11
         #include <GLES3/gl31.h>
@@ -22,6 +20,8 @@ namespace Pathfinder {
     #define GLFW_INCLUDE_NONE
     #include <GLFW/glfw3.h>
 #endif
+
+namespace Pathfinder {
 
 inline GLint to_gl_blend_factor(BlendFactor blend_factor) {
     switch (blend_factor) {

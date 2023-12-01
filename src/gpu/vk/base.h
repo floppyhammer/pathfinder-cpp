@@ -6,8 +6,6 @@
 #include "../../common/global_macros.h"
 #include "../base.h"
 
-namespace Pathfinder {
-
 // Vulkan header.
 #ifdef __ANDROID__
     #include "vulkan_wrapper.h"
@@ -16,6 +14,8 @@ namespace Pathfinder {
     #define GLFW_INCLUDE_VULKAN
     #include <GLFW/glfw3.h>
 #endif
+
+namespace Pathfinder {
 
 inline VkFormat to_vk_texture_format(TextureFormat texture_format) {
     switch (texture_format) {
