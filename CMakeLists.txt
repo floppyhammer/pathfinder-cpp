@@ -32,8 +32,6 @@ endif ()
 if (PATHFINDER_VULKAN_SUPPORT)
     message("[Pathfinder] Will use Vulkan")
 
-    add_compile_definitions(PATHFINDER_USE_VULKAN)
-
     # In case Vulkan is found but Vulkan_LIBRARY is not.
     #    set(Vulkan_LIBRARY "C:/VulkanSDK/1.3.224.1/Lib/vulkan-1.lib")
 
@@ -72,6 +70,12 @@ if ((WIN32 OR LINUX OR APPLE) AND NOT (EMSCRIPTEN OR ANDROID))
 endif ()
 
 add_subdirectory(src)
+
+# Add some macros.
+if (PATHFINDER_VULKAN_SUPPORT)
+    # Don't use add_compile_definitions, which doesn't propagate to parent projects.
+    target_compile_definitions(pathfinder PUBLIC PATHFINDER_USE_VULKAN)
+endif ()
 
 if (PATHFINDER_BUILD_DEMO)
     message("[Pathfinder] Will build demo")
