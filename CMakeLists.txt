@@ -17,16 +17,15 @@ if (UNIX AND NOT APPLE)
     set(LINUX ON)
 endif ()
 
-# No GL support for Mac.
-if (APPLE)
-    set(PATHFINDER_VULKAN_SUPPORT ON)
-endif ()
-
-# No Vulkan support for web.
+# Should handle EMSCRIPTEN before other platforms.
 if (EMSCRIPTEN)
     message("[Pathfinder] Will build for Web")
 
+    # No Vulkan support for web.
     set(PATHFINDER_VULKAN_SUPPORT OFF)
+elseif (APPLE)
+    # No GL support for Mac.
+    set(PATHFINDER_VULKAN_SUPPORT ON)
 endif ()
 
 if (PATHFINDER_VULKAN_SUPPORT)

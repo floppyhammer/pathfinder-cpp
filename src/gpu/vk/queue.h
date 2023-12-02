@@ -26,7 +26,7 @@ private:
 
     std::shared_ptr<CommandEncoder> encoder_of_last_frame;
 
-private:
+public:
     QueueVk(VkDevice _device, VkQueue _graphics_queue, VkQueue _present_queue) {
         device = _device;
         graphics_queue = _graphics_queue;

@@ -77,7 +77,7 @@ public:
                         VkDeviceSize src_offset = 0,
                         VkDeviceSize dst_offset = 0) const;
 
-private:
+public:
     DeviceVk(VkDevice device,
              VkPhysicalDevice physical_device,
              VkQueue _graphics_queue,
