@@ -79,6 +79,12 @@ endif ()
 if (PATHFINDER_BUILD_DEMO)
     message("[Pathfinder] Will build demo")
 
+    # target_compile_definitions only added PATHFINDER_USE_VULKAN to the Pathfinder library.
+    # We need to define PATHFINDER_USE_VULKAN for the demo as well.
+    if (PATHFINDER_VULKAN_SUPPORT)
+        add_compile_definitions(PATHFINDER_USE_VULKAN)
+    endif ()
+
     # Demo common library.
     add_subdirectory(demo/common)
 
