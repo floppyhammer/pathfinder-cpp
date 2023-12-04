@@ -149,6 +149,8 @@ SvgScene::SvgScene(const std::string &svg, Canvas &canvas) {
         // Don't return here, as we still need to free the allocated NSVGimage.
     }
 
+    size_ = {image->width, image->height};
+
     auto old_scene = canvas.take_scene();
 
     // Extract paths, contours and points from the SVG image.
@@ -193,7 +195,7 @@ SvgScene::SvgScene(const std::string &svg, Canvas &canvas) {
         canvas.restore_state();
     }
 
-    scene = canvas.get_scene();
+    scene_ = canvas.get_scene();
 
     canvas.set_scene(old_scene);
 
@@ -202,7 +204,11 @@ SvgScene::SvgScene(const std::string &svg, Canvas &canvas) {
 }
 
 std::shared_ptr<Scene> SvgScene::get_scene() const {
-    return scene;
+    return scene_;
+}
+
+Vec2F SvgScene::get_size() const {
+    return size_;
 }
 
 } // namespace Pathfinder

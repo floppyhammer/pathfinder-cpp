@@ -17,8 +17,12 @@ public:
 
     std::shared_ptr<Scene> get_scene() const;
 
+    Vec2F get_size() const;
+
 private:
-    std::shared_ptr<Scene> scene;
+    std::shared_ptr<Scene> scene_;
+
+    Vec2F size_;
 };
 
 } // namespace Pathfinder
