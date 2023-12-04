@@ -133,7 +133,7 @@ GLFWwindow *WindowBuilderGl::glfw_window_init(const Vec2I &size, const std::stri
 std::shared_ptr<Window> WindowBuilderGl::create_window(const Vec2I &size, const std::string &title) {
     auto window_gl = (WindowGl *)main_window.get();
 
-    auto glfw_window = glfw_window_init(size, title, window_gl->get_glfw_window());
+    auto glfw_window = glfw_window_init(size, title, (GLFWwindow *)window_gl->get_raw_handle());
 
     auto new_window = std::make_shared<WindowGl>(size, glfw_window);
     sub_windows.push_back(new_window);

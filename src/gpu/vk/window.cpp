@@ -53,7 +53,7 @@ bool WindowVk::should_close() {
     return glfwWindowShouldClose(glfw_window);
 }
 
-GLFWwindow* WindowVk::get_glfw_window() const {
+void* WindowVk::get_raw_handle() const {
     return glfw_window;
 }
 #endif

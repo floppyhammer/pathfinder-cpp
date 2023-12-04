@@ -14,4 +14,8 @@ bool Window::is_minimized() const {
     return minimized;
 }
 
+void* Window::get_raw_handle() const {
+    return nullptr;
+}
+
 } // namespace Pathfinder

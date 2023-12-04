@@ -25,10 +25,10 @@ public:
 
     std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Device> &device) override;
 
+    void *get_raw_handle() const override;
+
 #ifndef __ANDROID__
 public:
-    GLFWwindow *get_glfw_window() const;
-
     /// GLFW: whenever the window size changed (by OS or user) this callback function executes.
     static void framebuffer_resize_callback(GLFWwindow *glfw_window, int width, int height);
 

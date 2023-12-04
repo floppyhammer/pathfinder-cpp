@@ -72,7 +72,7 @@ bool WindowGl::should_close() {
     return glfwWindowShouldClose(glfw_window);
 }
 
-GLFWwindow *WindowGl::get_glfw_window() const {
+void *WindowGl::get_raw_handle() const {
     return glfw_window;
 }
     #endif
