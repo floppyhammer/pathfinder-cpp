@@ -1,5 +1,5 @@
 # Recursive search and automatic re-configuration on adding or deleting source files.
-file(GLOB_RECURSE SOURCE_FILES ${SOURCE_FILES} CONFIGURE_DEPENDS common/*.cpp core/*.cpp gpu_mem/*.cpp)
+file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS common/*.cpp core/*.cpp gpu_mem/*.cpp)
 
 file(GLOB SOURCE_FILES ${SOURCE_FILES} gpu/*.cpp)
 
