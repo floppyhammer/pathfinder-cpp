@@ -18,9 +18,7 @@ public:
 
     ~WindowBuilderGl() override;
 
-#ifndef __ANDROID__
     std::shared_ptr<Window> create_window(const Vec2I &_size, const std::string &title) override;
-#endif
 
     std::shared_ptr<Device> request_device() override;
 

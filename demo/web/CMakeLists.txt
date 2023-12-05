@@ -1,5 +1,5 @@
 # Include Pathfinder headers.
-include_directories(../../include)
+include_directories(../../)
 
 # Build executable.
 add_executable(web-demo ${SOURCE_FILES}

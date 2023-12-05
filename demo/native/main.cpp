@@ -1,5 +1,6 @@
+#include <pathfinder/prelude.h>
+
 #include "../common/app.h"
-#include "../src/gpu/window_builder.h"
 
 const int32_t WINDOW_WIDTH = 1280;
 const int32_t WINDOW_HEIGHT = 720;

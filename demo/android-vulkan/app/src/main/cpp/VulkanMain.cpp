@@ -2,6 +2,7 @@
 #include "vulkan_wrapper.h"
 
 #include "app.h"
+#include <pathfinder/gpu/vk/window_builder.h>
 
 #include <android/log.h>
 

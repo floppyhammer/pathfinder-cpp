@@ -8,11 +8,9 @@
 
 namespace Pathfinder {
 
-#ifndef __ANDROID__
 std::shared_ptr<WindowBuilder> WindowBuilder::new_impl(const Vec2I &size) {
     return std::make_shared<WindowBuilderGl>(size);
 }
-#endif
 
 WindowBuilderGl::WindowBuilderGl(const Vec2I &size) {
 #ifndef __ANDROID__
@@ -129,8 +127,8 @@ GLFWwindow *WindowBuilderGl::glfw_window_init(const Vec2I &size, const std::stri
 }
 #endif
 
-#ifndef __ANDROID__
 std::shared_ptr<Window> WindowBuilderGl::create_window(const Vec2I &size, const std::string &title) {
+#ifndef __ANDROID__
     auto window_gl = (WindowGl *)main_window.get();
 
     auto glfw_window = glfw_window_init(size, title, (GLFWwindow *)window_gl->get_raw_handle());
@@ -139,8 +137,10 @@ std::shared_ptr<Window> WindowBuilderGl::create_window(const Vec2I &size, const 
     sub_windows.push_back(new_window);
 
     return new_window;
-}
+#else
+    return nullptr;
 #endif
+}
 
 std::shared_ptr<Device> WindowBuilderGl::request_device() {
     return std::make_shared<DeviceGl>();

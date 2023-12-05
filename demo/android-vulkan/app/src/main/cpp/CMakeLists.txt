@@ -12,7 +12,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall \
 
 add_compile_definitions(PATHFINDER_USE_VULKAN)
 
-include_directories(../../../../../../include)
+include_directories(../../../../../../)
 include_directories(../../../../../../third_party)
 include_directories(../../../../../../demo/common)
 

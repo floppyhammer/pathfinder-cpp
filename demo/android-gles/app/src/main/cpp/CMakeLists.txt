@@ -15,7 +15,7 @@ else ()
     set(OPENGL_LIB GLESv3)
 endif (${ANDROID_PLATFORM_LEVEL} LESS 12)
 
-include_directories(../../../../../../include)
+include_directories(../../../../../../)
 include_directories(../../../../../../third_party)
 include_directories(../../../../../../demo/common)
 

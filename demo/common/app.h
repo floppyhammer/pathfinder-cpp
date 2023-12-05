@@ -1,9 +1,10 @@
 #ifndef PATHFINDER_DEMO_APP_H
 #define PATHFINDER_DEMO_APP_H
 
+#include <pathfinder/prelude.h>
+
 #include <chrono>
 
-#include "pathfinder.h"
 #include "texture_rect.h"
 
 class App {

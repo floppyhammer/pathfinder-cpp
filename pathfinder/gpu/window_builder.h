@@ -15,10 +15,8 @@ public:
 
     virtual ~WindowBuilder() = default;
 
-#ifndef __ANDROID__
     /// Create a new sub-window.
     virtual std::shared_ptr<Window> create_window(const Vec2I &size, const std::string &title) = 0;
-#endif
 
     std::shared_ptr<Window> get_main_window() const;
 

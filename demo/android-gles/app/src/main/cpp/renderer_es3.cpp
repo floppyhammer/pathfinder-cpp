@@ -18,10 +18,10 @@ void RendererES3::init(int width, int height) {
 
     window_size = {width, height};
 
-    pf_window_builder = std::make_shared<Pathfinder::WindowBuilderGl>(window_size);
+    pf_window_builder = Pathfinder::WindowBuilder::new_impl(window_size);
     pf_window = pf_window_builder->get_main_window();
-    pf_device = std::make_shared<Pathfinder::DeviceGl>();
-    pf_queue = std::make_shared<Pathfinder::QueueGl>();
+    pf_device = pf_window_builder->request_device();
+    pf_queue = pf_window_builder->create_queue();
     pf_swapchain = pf_window->create_swap_chain(pf_device);
 
     auto svg_input = Pathfinder::load_asset(asset_manager, "features.svg");

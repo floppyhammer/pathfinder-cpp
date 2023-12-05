@@ -68,7 +68,7 @@ if ((WIN32 OR LINUX OR APPLE) AND NOT (EMSCRIPTEN OR ANDROID))
     include_directories(${glfw_SOURCE_DIR}/include)
 endif ()
 
-add_subdirectory(src)
+add_subdirectory(pathfinder)
 
 # Add some macros.
 if (PATHFINDER_VULKAN_SUPPORT)

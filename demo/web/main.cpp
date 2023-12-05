@@ -1,5 +1,6 @@
+#include <pathfinder/prelude.h>
+
 #include "../common/app.h"
-#include "../src/gpu/window.h"
 
 #ifdef __EMSCRIPTEN__
     #include <emscripten.h>

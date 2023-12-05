@@ -1,5 +1,5 @@
 # Include Pathfinder headers.
-include_directories(../../include)
+include_directories(../../)
 
 # Recursive search and automatic re-configuration on adding or deleting source files.
 file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS *.cpp)

@@ -1,14 +1,9 @@
 #ifndef PATHFINDER_DEMO_TEXTURE_RECT_H
 #define PATHFINDER_DEMO_TEXTURE_RECT_H
 
-#include <memory>
+#include <pathfinder/prelude.h>
 
-#include "../../src/gpu/command_encoder.h"
-#include "../../src/gpu/descriptor_set.h"
-#include "../../src/gpu/framebuffer.h"
-#include "../../src/gpu/render_pipeline.h"
-#include "../../src/gpu/texture.h"
-#include "pathfinder.h"
+#include <memory>
 
 /**
  * Simple class to blit a texture to screen.
