@@ -11,6 +11,7 @@ namespace Pathfinder {
 
 class TextureVk : public Texture {
     friend class DeviceVk;
+    friend class CommandEncoderVk;
 
 public:
     // Releasing GPU resources is done by itself.
@@ -37,6 +38,8 @@ private:
     // This constructor is only a wrapper, actual GPU resource allocation is done by DeviceVk.
     TextureVk(VkDevice _vk_device, const TextureDescriptor& _desc);
 
+    void create_staging_buffer(DeviceVk *device_vk);
+
 private:
     /// Handle.
     VkImage vk_image{};
@@ -46,6 +49,10 @@ private:
 
     /// Thin wrapper over image.
     VkImageView vk_image_view{};
+
+    /// Cache the host visible buffer used to read/write the texture.
+    VkBuffer vk_staging_buffer{};
+    VkDeviceMemory vk_staging_buffer_memory{};
 
     /// For releasing resources in destructor.
     /// This is null for wrapped external textures.

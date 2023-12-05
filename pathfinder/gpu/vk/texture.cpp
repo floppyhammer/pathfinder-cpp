@@ -1,10 +1,9 @@
 #include "texture.h"
 
 #include <cassert>
-#include <utility>
 
-#include "../../common/global_macros.h"
 #include "debug_marker.h"
+#include "device.h"
 
 namespace Pathfinder {
 
@@ -23,6 +22,11 @@ TextureVk::~TextureVk() {
 
     // Release device memory.
     vkFreeMemory(vk_device, vk_image_memory, nullptr);
+
+    if (vk_staging_buffer) {
+        vkDestroyBuffer(vk_device, vk_staging_buffer, nullptr);
+        vkFreeMemory(vk_device, vk_staging_buffer_memory, nullptr);
+    }
 }
 
 std::shared_ptr<TextureVk> TextureVk::from_wrapping(const TextureDescriptor& _desc,
@@ -68,6 +72,23 @@ void TextureVk::set_label(const std::string& _label) {
     Texture::set_label(_label);
 
     DebugMarker::get_singleton()->set_object_name(vk_device, (uint64_t)vk_image, VK_OBJECT_TYPE_IMAGE, label);
+}
+
+void TextureVk::create_staging_buffer(DeviceVk* device_vk) {
+    if (vk_staging_buffer != VK_NULL_HANDLE) {
+        return;
+    }
+
+    // Bytes of one pixel.
+    auto pixel_size = get_pixel_size(get_format());
+
+    uint32_t max_data_size = get_size().area() * pixel_size;
+
+    device_vk->create_vk_buffer(max_data_size,
+                                VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                vk_staging_buffer,
+                                vk_staging_buffer_memory);
 }
 
 } // namespace Pathfinder

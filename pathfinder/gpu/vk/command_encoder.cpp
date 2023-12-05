@@ -485,18 +485,11 @@ bool CommandEncoderVk::finish() {
                 // Notable that the data size is of the whole texture but of a region.
                 VkDeviceSize data_size = args.width * args.height * pixel_size;
 
-                // Staging buffer and buffer memory.
-                VkBuffer staging_buffer;
-                VkDeviceMemory staging_buffer_memory;
-
-                device_vk->create_vk_buffer(data_size,
-                                            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                            staging_buffer,
-                                            staging_buffer_memory);
+                // Prepare staging buffer.
+                texture_vk->create_staging_buffer(device_vk);
 
                 // Copy the pixel data to the staging buffer.
-                device_vk->copy_data_to_mappable_memory(args.data, staging_buffer_memory, data_size);
+                device_vk->copy_data_to_mappable_memory(args.data, texture_vk->vk_staging_buffer_memory, data_size);
 
                 // Transition the image layout to transfer dst.
                 transition_image_layout(vk_command_buffer,
@@ -536,19 +529,12 @@ bool CommandEncoderVk::finish() {
 
                     // Copy data from a buffer into an image.
                     vkCmdCopyBufferToImage(vk_command_buffer,
-                                           staging_buffer,
+                                           texture_vk->vk_staging_buffer,
                                            texture_vk->get_image(),
                                            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // Final image layout after copy.
                                            1,
                                            &region);
                 }
-
-                // Callback to clean up staging resources.
-                auto callback = [this, staging_buffer, staging_buffer_memory] {
-                    vkDestroyBuffer(vk_device, staging_buffer, nullptr);
-                    vkFreeMemory(vk_device, staging_buffer_memory, nullptr);
-                };
-                add_callback(callback);
             } break;
             case CommandType::ReadTexture: {
                 auto &args = cmd.args.read_texture;
@@ -559,15 +545,8 @@ bool CommandEncoderVk::finish() {
                 auto pixel_size = get_pixel_size(texture_vk->get_format()); // Bytes of one pixel.
                 VkDeviceSize data_size = args.width * args.height * pixel_size;
 
-                // Staging buffer and buffer memory.
-                VkBuffer staging_buffer;
-                VkDeviceMemory staging_buffer_memory;
-
-                device_vk->create_vk_buffer(data_size,
-                                            VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                            staging_buffer,
-                                            staging_buffer_memory);
+                // Prepare staging buffer.
+                texture_vk->create_staging_buffer(device_vk);
 
                 // Transition the image layout to transfer dst.
                 transition_image_layout(vk_command_buffer,
@@ -609,18 +588,17 @@ bool CommandEncoderVk::finish() {
                     vkCmdCopyImageToBuffer(vk_command_buffer,
                                            texture_vk->get_image(),
                                            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                           staging_buffer,
+                                           texture_vk->vk_staging_buffer,
                                            1,
                                            &region);
                 }
 
                 // Callback to clean up staging resources.
-                auto callback = [this, staging_buffer, staging_buffer_memory, data_size, args] {
+                auto callback = [this, texture_vk, data_size, args] {
                     // Copy the pixel data from the staging buffer.
-                    device_vk->copy_data_from_mappable_memory(args.data, staging_buffer_memory, data_size);
-
-                    vkDestroyBuffer(vk_device, staging_buffer, nullptr);
-                    vkFreeMemory(vk_device, staging_buffer_memory, nullptr);
+                    device_vk->copy_data_from_mappable_memory(args.data,
+                                                              texture_vk->vk_staging_buffer_memory,
+                                                              data_size);
                 };
                 add_callback(callback);
             } break;
