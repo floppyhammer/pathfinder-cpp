@@ -11,19 +11,11 @@
 #include "../src/common/timestamp.h"
 #include "../src/core/canvas.h"
 #include "../src/core/svg.h"
+#include "../src/gpu/device.h"
 #include "../src/gpu/framebuffer.h"
+#include "../src/gpu/queue.h"
 #include "../src/gpu/swap_chain.h"
-
-#ifdef PATHFINDER_USE_VULKAN
-    #include "../src/gpu/vk/device.h"
-    #include "../src/gpu/vk/queue.h"
-    #include "../src/gpu/vk/window.h"
-    #include "../src/gpu/vk/window_builder.h"
-#else
-    #include "../src/gpu/gl/device.h"
-    #include "../src/gpu/gl/queue.h"
-    #include "../src/gpu/gl/window.h"
-    #include "../src/gpu/gl/window_builder.h"
-#endif
+#include "../src/gpu/window.h"
+#include "../src/gpu/window_builder.h"
 
 #endif
