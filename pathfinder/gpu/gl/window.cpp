@@ -12,11 +12,11 @@ namespace Pathfinder {
 
     #ifndef __ANDROID__
 WindowGl::WindowGl(const Vec2I &_size, GLFWwindow *window_handle) : Window(_size) {
-    glfw_window = window_handle;
+    glfw_window_ = window_handle;
 
     // Assign this to window user, so we can fetch it when window size changes.
-    glfwSetWindowUserPointer(glfw_window, this);
-    glfwSetFramebufferSizeCallback(glfw_window, framebuffer_resize_callback);
+    glfwSetWindowUserPointer(glfw_window_, this);
+    glfwSetFramebufferSizeCallback(glfw_window_, framebuffer_resize_callback);
 }
     #else
 WindowGl::WindowGl(const Vec2I &_size) : Window(_size) {}
@@ -24,7 +24,7 @@ WindowGl::WindowGl(const Vec2I &_size) : Window(_size) {}
 
 std::shared_ptr<SwapChain> WindowGl::create_swap_chain(const std::shared_ptr<Device> &device) {
     #ifndef __ANDROID__
-    return std::make_shared<SwapChainGl>(size, glfw_window);
+    return std::make_shared<SwapChainGl>(size_, glfw_window_);
     #else
     return std::make_shared<SwapChainGl>(size);
     #endif
@@ -36,9 +36,9 @@ WindowGl::~WindowGl() {
 
 void WindowGl::destroy() {
     #ifndef __ANDROID__
-    if (glfw_window) {
-        glfwDestroyWindow(glfw_window);
-        glfw_window = nullptr;
+    if (glfw_window_) {
+        glfwDestroyWindow(glfw_window_);
+        glfw_window_ = nullptr;
     }
     #endif
 }
@@ -48,32 +48,32 @@ void WindowGl::framebuffer_resize_callback(GLFWwindow *glfw_window, int width, i
     auto window = reinterpret_cast<WindowGl *>(glfwGetWindowUserPointer(glfw_window));
 
     if (window) {
-        window->just_resized = true;
-        window->size = {width, height};
-        window->minimized = window->size.area() == 0;
+        window->just_resized_ = true;
+        window->size_ = {width, height};
+        window->minimized_ = window->size_.area() == 0;
 
-        Logger::info("Window resized to " + window->size.to_string());
+        Logger::info("Window resized to " + window->size_.to_string());
     } else {
         Logger::error("glfwGetWindowUserPointer is NULL!");
     }
 }
 
 void WindowGl::poll_events() {
-    just_resized = false;
+    just_resized_ = false;
 
     glfwPollEvents();
 
-    if (glfwGetKey(glfw_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-        glfwSetWindowShouldClose(glfw_window, true);
+    if (glfwGetKey(glfw_window_, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+        glfwSetWindowShouldClose(glfw_window_, true);
     }
 }
 
 bool WindowGl::should_close() {
-    return glfwWindowShouldClose(glfw_window);
+    return glfwWindowShouldClose(glfw_window_);
 }
 
 void *WindowGl::get_raw_handle() const {
-    return glfw_window;
+    return glfw_window_;
 }
     #endif
 

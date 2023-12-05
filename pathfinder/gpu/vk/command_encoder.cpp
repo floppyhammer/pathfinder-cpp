@@ -489,7 +489,7 @@ bool CommandEncoderVk::finish() {
                 texture_vk->create_staging_buffer(device_vk);
 
                 // Copy the pixel data to the staging buffer.
-                device_vk->copy_data_to_mappable_memory(args.data, texture_vk->vk_staging_buffer_memory, data_size);
+                device_vk->copy_data_to_mappable_memory(args.data, texture_vk->vk_staging_buffer_memory_, data_size);
 
                 // Transition the image layout to transfer dst.
                 transition_image_layout(vk_command_buffer,
@@ -529,7 +529,7 @@ bool CommandEncoderVk::finish() {
 
                     // Copy data from a buffer into an image.
                     vkCmdCopyBufferToImage(vk_command_buffer,
-                                           texture_vk->vk_staging_buffer,
+                                           texture_vk->vk_staging_buffer_,
                                            texture_vk->get_image(),
                                            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // Final image layout after copy.
                                            1,
@@ -588,7 +588,7 @@ bool CommandEncoderVk::finish() {
                     vkCmdCopyImageToBuffer(vk_command_buffer,
                                            texture_vk->get_image(),
                                            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                           texture_vk->vk_staging_buffer,
+                                           texture_vk->vk_staging_buffer_,
                                            1,
                                            &region);
                 }
@@ -597,7 +597,7 @@ bool CommandEncoderVk::finish() {
                 auto callback = [this, texture_vk, data_size, args] {
                     // Copy the pixel data from the staging buffer.
                     device_vk->copy_data_from_mappable_memory(args.data,
-                                                              texture_vk->vk_staging_buffer_memory,
+                                                              texture_vk->vk_staging_buffer_memory_,
                                                               data_size);
                 };
                 add_callback(callback);

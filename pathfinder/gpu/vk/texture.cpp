@@ -7,75 +7,75 @@
 
 namespace Pathfinder {
 
-TextureVk::TextureVk(VkDevice _vk_device, const TextureDescriptor& _desc) : Texture(_desc), vk_device(_vk_device) {}
+TextureVk::TextureVk(VkDevice vk_device, const TextureDescriptor& desc) : Texture(desc), vk_device_(vk_device) {}
 
 TextureVk::~TextureVk() {
-    if (!resource_ownership) {
+    if (!resource_ownership_) {
         return;
     }
 
     // Should be right before destroying the image itself.
-    vkDestroyImageView(vk_device, vk_image_view, nullptr);
+    vkDestroyImageView(vk_device_, vk_image_view_, nullptr);
 
     // Destroy image handle.
-    vkDestroyImage(vk_device, vk_image, nullptr);
+    vkDestroyImage(vk_device_, vk_image_, nullptr);
 
     // Release device memory.
-    vkFreeMemory(vk_device, vk_image_memory, nullptr);
+    vkFreeMemory(vk_device_, vk_image_memory_, nullptr);
 
-    if (vk_staging_buffer) {
-        vkDestroyBuffer(vk_device, vk_staging_buffer, nullptr);
-        vkFreeMemory(vk_device, vk_staging_buffer_memory, nullptr);
+    if (vk_staging_buffer_) {
+        vkDestroyBuffer(vk_device_, vk_staging_buffer_, nullptr);
+        vkFreeMemory(vk_device_, vk_staging_buffer_memory_, nullptr);
     }
 }
 
-std::shared_ptr<TextureVk> TextureVk::from_wrapping(const TextureDescriptor& _desc,
+std::shared_ptr<TextureVk> TextureVk::from_wrapping(const TextureDescriptor& desc,
                                                     VkImage image,
                                                     VkDeviceMemory image_memory,
                                                     VkImageView image_view,
                                                     TextureLayout layout) {
-    auto texture_vk = std::shared_ptr<TextureVk>(new TextureVk(nullptr, _desc));
+    auto texture_vk = std::shared_ptr<TextureVk>(new TextureVk(nullptr, desc));
 
     // We're not responsible for management of wrapped textures.
-    texture_vk->resource_ownership = false;
+    texture_vk->resource_ownership_ = false;
 
-    texture_vk->vk_image = image;
-    texture_vk->vk_image_memory = image_memory;
-    texture_vk->vk_image_view = image_view;
-    texture_vk->layout = layout;
+    texture_vk->vk_image_ = image;
+    texture_vk->vk_image_memory_ = image_memory;
+    texture_vk->vk_image_view_ = image_view;
+    texture_vk->layout_ = layout;
 
     return texture_vk;
 }
 
 VkImage TextureVk::get_image() const {
-    return vk_image;
+    return vk_image_;
 }
 
 VkImageView TextureVk::get_image_view() const {
-    return vk_image_view;
+    return vk_image_view_;
 }
 
 TextureLayout TextureVk::get_layout() const {
-    return layout;
+    return layout_;
 }
 
 void TextureVk::set_layout(TextureLayout new_layout) {
-    layout = new_layout;
+    layout_ = new_layout;
 }
 
 void TextureVk::set_label(const std::string& _label) {
-    if (vk_device == nullptr) {
+    if (vk_device_ == nullptr) {
         Logger::warn("Attempted to set label for a wrapped texture!");
         return;
     }
 
     Texture::set_label(_label);
 
-    DebugMarker::get_singleton()->set_object_name(vk_device, (uint64_t)vk_image, VK_OBJECT_TYPE_IMAGE, label);
+    DebugMarker::get_singleton()->set_object_name(vk_device_, (uint64_t)vk_image_, VK_OBJECT_TYPE_IMAGE, label_);
 }
 
 void TextureVk::create_staging_buffer(DeviceVk* device_vk) {
-    if (vk_staging_buffer != VK_NULL_HANDLE) {
+    if (vk_staging_buffer_ != VK_NULL_HANDLE) {
         return;
     }
 
@@ -87,8 +87,8 @@ void TextureVk::create_staging_buffer(DeviceVk* device_vk) {
     device_vk->create_vk_buffer(max_data_size,
                                 VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                vk_staging_buffer,
-                                vk_staging_buffer_memory);
+                                vk_staging_buffer_,
+                                vk_staging_buffer_memory_);
 }
 
 } // namespace Pathfinder

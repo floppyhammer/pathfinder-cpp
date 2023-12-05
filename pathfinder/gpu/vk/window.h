@@ -28,7 +28,6 @@ public:
     std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Device> &device) override;
 
 #ifndef __ANDROID__
-public:
     void *get_raw_handle() const override;
 
     /// GLFW: whenever the window size changed (by OS or user) this callback function executes.
@@ -40,7 +39,6 @@ public:
     bool should_close() override;
 #endif
 
-public:
     VkSurfaceKHR surface_{};
 
     VkInstance instance_{};
@@ -49,7 +47,7 @@ private:
     void destroy();
 
 #ifndef __ANDROID__
-    GLFWwindow *glfw_window{};
+    GLFWwindow *glfw_window_{};
 #endif
 };
 

@@ -1,21 +1,19 @@
 #include "texture.h"
 
-#include <utility>
-
 #include "../../common/global_macros.h"
 #include "debug_marker.h"
 
 namespace Pathfinder {
 
-TextureGl::TextureGl(const TextureDescriptor& _desc) : Texture(_desc) {
+TextureGl::TextureGl(const TextureDescriptor& desc) : Texture(desc) {
     // Generate a texture.
-    glGenTextures(1, &texture_id);
-    glBindTexture(GL_TEXTURE_2D, texture_id);
+    glGenTextures(1, &texture_id_);
+    glBindTexture(GL_TEXTURE_2D, texture_id_);
 
 // Allocate space.
 // We need to use glTexStorage2D() in order to access the texture via image2D in compute shaders.
 #ifdef PATHFINDER_ENABLE_D3D11
-    glTexStorage2D(GL_TEXTURE_2D, 1, to_gl_texture_format(_desc.format), _desc.size.x, _desc.size.y);
+    glTexStorage2D(GL_TEXTURE_2D, 1, to_gl_texture_format(desc.format), desc.size.x, desc.size.y);
 #else
     // We can deduce the pixel data type by the texture format.
     DataType type = texture_format_to_data_type(_desc.format);
@@ -35,21 +33,21 @@ TextureGl::TextureGl(const TextureDescriptor& _desc) : Texture(_desc) {
 
     gl_check_error("create_texture");
 
-    DebugMarker::label_texture(texture_id, label);
+    DebugMarker::label_texture(texture_id_, label_);
 }
 
 TextureGl::~TextureGl() {
-    glDeleteTextures(1, &texture_id);
+    glDeleteTextures(1, &texture_id_);
 }
 
 uint32_t TextureGl::get_texture_id() const {
-    return texture_id;
+    return texture_id_;
 }
 
-void TextureGl::set_label(const std::string& _label) {
-    Texture::set_label(_label);
+void TextureGl::set_label(const std::string& label) {
+    Texture::set_label(label);
 
-    DebugMarker::label_texture(texture_id, _label);
+    DebugMarker::label_texture(texture_id_, label);
 }
 
 } // namespace Pathfinder

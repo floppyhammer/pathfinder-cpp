@@ -3,7 +3,6 @@
 
 #include <cstdint>
 
-#include "../../common/global_macros.h"
 #include "../buffer.h"
 
 namespace Pathfinder {
@@ -20,13 +19,12 @@ public:
 
     uint32_t get_handle() const;
 
-    void set_label(const std::string& _label) override;
+    void set_label(const std::string& label) override;
 
 private:
-    explicit BufferGl(const BufferDescriptor& _desc);
+    explicit BufferGl(const BufferDescriptor& desc);
 
-private:
-    uint32_t id = 0;
+    uint32_t gl_id_ = 0;
 };
 
 } // namespace Pathfinder

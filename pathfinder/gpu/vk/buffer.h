@@ -1,10 +1,6 @@
 #ifndef PATHFINDER_GPU_BUFFER_VK_H
 #define PATHFINDER_GPU_BUFFER_VK_H
 
-#include <cstdint>
-#include <memory>
-
-#include "../../common/global_macros.h"
 #include "../buffer.h"
 #include "base.h"
 
@@ -27,13 +23,12 @@ public:
     VkDeviceMemory get_vk_device_memory();
 
 private:
-    BufferVk(VkDevice _vk_device, const BufferDescriptor& _desc);
+    BufferVk(VkDevice vk_device, const BufferDescriptor& desc);
 
-private:
-    VkBuffer vk_buffer{};
-    VkDeviceMemory vk_device_memory{};
+    VkBuffer vk_buffer_{};
+    VkDeviceMemory vk_device_memory_{};
 
-    VkDevice vk_device{};
+    VkDevice vk_device_{};
 };
 
 } // namespace Pathfinder

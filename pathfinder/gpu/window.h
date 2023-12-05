@@ -10,7 +10,7 @@ class SwapChain;
 
 class Window {
 public:
-    explicit Window(Vec2I _size) : size(_size) {}
+    explicit Window(Vec2I size) : size_(size) {}
 
     virtual ~Window() = default;
 
@@ -33,13 +33,12 @@ public:
     }
 #endif
 
-public:
-    std::shared_ptr<SwapChain> swapchain;
+    std::shared_ptr<SwapChain> swapchain_;
 
 protected:
-    Vec2I size;
-    bool just_resized = false;
-    bool minimized = false;
+    Vec2I size_;
+    bool just_resized_ = false;
+    bool minimized_ = false;
 };
 
 } // namespace Pathfinder

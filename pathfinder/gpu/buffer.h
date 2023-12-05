@@ -3,9 +3,7 @@
 
 #include <cstdint>
 #include <string>
-#include <utility>
 
-#include "../common/global_macros.h"
 #include "base.h"
 
 namespace Pathfinder {
@@ -18,27 +16,27 @@ struct BufferDescriptor {
     size_t size;
     MemoryProperty property;
 
-    inline bool operator==(const BufferDescriptor& b) const {
+    bool operator==(const BufferDescriptor& b) const {
         return size == b.size && type == b.type && property == b.property;
     }
 };
 
 class Buffer {
 public:
-    explicit Buffer(BufferDescriptor _desc) : desc(_desc) {}
+    explicit Buffer(BufferDescriptor desc) : desc_(desc) {}
 
     virtual ~Buffer() = default;
 
     size_t get_size() const {
-        return desc.size;
+        return desc_.size;
     }
 
     BufferType get_type() const {
-        return desc.type;
+        return desc_.type;
     }
 
     MemoryProperty get_memory_property() const {
-        return desc.property;
+        return desc_.property;
     }
 
     virtual void upload_via_mapping(size_t data_size, size_t offset, const void* data) = 0;
@@ -46,12 +44,14 @@ public:
     virtual void download_via_mapping(size_t data_size, size_t offset, void* data) = 0;
 
     // Sometimes, we need to update label for a buffer as we reuse it for another purpose.
-    virtual void set_label(const std::string& _label){};
+    virtual void set_label(const std::string& label) {
+        label_ = label;
+    }
 
 protected:
-    BufferDescriptor desc;
+    BufferDescriptor desc_;
 
-    std::string label;
+    std::string label_;
 };
 
 } // namespace Pathfinder

@@ -385,23 +385,23 @@ std::shared_ptr<Buffer> DeviceVk::create_buffer(const BufferDescriptor &desc, co
             create_vk_buffer(desc.size,
                              VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                              vk_memory_property,
-                             buffer_vk->vk_buffer,
-                             buffer_vk->vk_device_memory);
+                             buffer_vk->vk_buffer_,
+                             buffer_vk->vk_device_memory_);
         } break;
         case BufferType::Vertex: {
             create_vk_buffer(desc.size,
                              VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
                              vk_memory_property,
-                             buffer_vk->vk_buffer,
-                             buffer_vk->vk_device_memory);
+                             buffer_vk->vk_buffer_,
+                             buffer_vk->vk_device_memory_);
         } break;
         case BufferType::Storage: {
             create_vk_buffer(desc.size,
                              VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
                                  VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
                              vk_memory_property,
-                             buffer_vk->vk_buffer,
-                             buffer_vk->vk_device_memory);
+                             buffer_vk->vk_buffer_,
+                             buffer_vk->vk_device_memory_);
         } break;
         default:
             abort();
@@ -422,12 +422,12 @@ std::shared_ptr<Texture> DeviceVk::create_texture(const TextureDescriptor &desc,
                     VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
                         VK_IMAGE_USAGE_STORAGE_BIT,
                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                    texture_vk->vk_image,
-                    texture_vk->vk_image_memory);
+                    texture_vk->vk_image_,
+                    texture_vk->vk_image_memory_);
 
     // Create image view.
-    texture_vk->vk_image_view =
-        create_vk_image_view(texture_vk->vk_image, to_vk_texture_format(desc.format), VK_IMAGE_ASPECT_COLOR_BIT);
+    texture_vk->vk_image_view_ =
+        create_vk_image_view(texture_vk->vk_image_, to_vk_texture_format(desc.format), VK_IMAGE_ASPECT_COLOR_BIT);
 
     texture_vk->set_label(label);
 

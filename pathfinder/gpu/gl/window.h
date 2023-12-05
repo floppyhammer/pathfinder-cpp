@@ -1,10 +1,6 @@
 #ifndef PATHFINDER_GPU_WINDOW_GL_H
 #define PATHFINDER_GPU_WINDOW_GL_H
 
-#include <iostream>
-#include <vector>
-
-#include "../../common/global_macros.h"
 #include "../window.h"
 
 struct GLFWwindow;
@@ -41,7 +37,7 @@ private:
     void destroy();
 
 #ifndef __ANDROID__
-    GLFWwindow *glfw_window{};
+    GLFWwindow *glfw_window_{};
 #endif
 };
 

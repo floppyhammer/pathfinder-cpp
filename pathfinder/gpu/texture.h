@@ -1,9 +1,6 @@
 #ifndef PATHFINDER_GPU_TEXTURE_H
 #define PATHFINDER_GPU_TEXTURE_H
 
-#include <utility>
-
-#include "../common/global_macros.h"
 #include "../common/math/vec2.h"
 #include "base.h"
 
@@ -17,7 +14,7 @@ struct TextureDescriptor {
         return size.area() * get_pixel_size(format);
     }
 
-    inline bool operator==(const TextureDescriptor& b) const {
+    bool operator==(const TextureDescriptor& b) const {
         return size == b.size && format == b.format;
     }
 };
@@ -28,7 +25,7 @@ struct SamplerDescriptor {
     SamplerAddressMode address_mode_u;
     SamplerAddressMode address_mode_v;
 
-    inline bool operator==(const SamplerDescriptor& rhs) const {
+    bool operator==(const SamplerDescriptor& rhs) const {
         return mag_filter == rhs.mag_filter && min_filter == rhs.min_filter && address_mode_u == rhs.address_mode_u &&
                address_mode_v == rhs.address_mode_v;
     }
@@ -41,42 +38,40 @@ public:
     virtual ~Sampler() = default;
 
     SamplerDescriptor get_descriptor() const {
-        return descriptor;
+        return descriptor_;
     }
 
 protected:
-    explicit Sampler(SamplerDescriptor _descriptor) : descriptor(_descriptor) {}
+    explicit Sampler(SamplerDescriptor descriptor) : descriptor_(descriptor) {}
 
-protected:
-    SamplerDescriptor descriptor;
+    SamplerDescriptor descriptor_;
 };
 
 class Texture {
 public:
     virtual ~Texture() = default;
 
-    inline Vec2I get_size() const {
-        return desc.size;
+    Vec2I get_size() const {
+        return desc_.size;
     }
 
-    inline TextureFormat get_format() const {
-        return desc.format;
+    TextureFormat get_format() const {
+        return desc_.format;
     }
 
     // Sometimes, we need to update label for a texture as we reuse it for another purpose.
-    virtual void set_label(const std::string& _label) {
-        label = _label;
+    virtual void set_label(const std::string& label) {
+        label_ = label;
     }
 
 protected:
-    explicit Texture(TextureDescriptor _desc) : desc(_desc) {}
+    explicit Texture(TextureDescriptor desc) : desc_(desc) {}
 
-protected:
-    TextureDescriptor desc;
+    TextureDescriptor desc_;
 
-    bool resource_ownership = true;
+    bool resource_ownership_ = true;
 
-    std::string label;
+    std::string label_;
 };
 
 } // namespace Pathfinder

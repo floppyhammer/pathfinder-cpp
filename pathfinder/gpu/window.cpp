@@ -3,15 +3,15 @@
 namespace Pathfinder {
 
 Vec2I Window::get_size() const {
-    return size;
+    return size_;
 }
 
 bool Window::get_resize_flag() const {
-    return just_resized;
+    return just_resized_;
 }
 
 bool Window::is_minimized() const {
-    return minimized;
+    return minimized_;
 }
 
 void* Window::get_raw_handle() const {
