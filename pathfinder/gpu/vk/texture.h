@@ -6,6 +6,8 @@
 
 namespace Pathfinder {
 
+class DeviceVk;
+
 class TextureVk : public Texture {
     friend class DeviceVk;
     friend class CommandEncoderVk;

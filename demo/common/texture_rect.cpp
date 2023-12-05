@@ -1,11 +1,11 @@
 #include "texture_rect.h"
 
 #ifdef PATHFINDER_USE_VULKAN
-    #include "../../src/shaders/generated/blit_frag_spv.h"
-    #include "../../src/shaders/generated/blit_vert_spv.h"
+    #include "../../pathfinder/shaders/generated/blit_frag_spv.h"
+    #include "../../pathfinder/shaders/generated/blit_vert_spv.h"
 #else
-    #include "../../src/shaders/generated/blit_frag.h"
-    #include "../../src/shaders/generated/blit_vert.h"
+    #include "../../pathfinder/shaders/generated/blit_frag.h"
+    #include "../../pathfinder/shaders/generated/blit_vert.h"
 #endif
 
 using namespace Pathfinder;
