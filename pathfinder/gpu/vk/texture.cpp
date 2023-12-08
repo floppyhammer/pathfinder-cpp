@@ -10,6 +10,13 @@ namespace Pathfinder {
 TextureVk::TextureVk(VkDevice vk_device, const TextureDescriptor& desc) : Texture(desc), vk_device_(vk_device) {}
 
 TextureVk::~TextureVk() {
+    // The staging buffer is not involved in external wrapping,
+    // so it always needs to be released.
+    if (vk_staging_buffer_) {
+        vkDestroyBuffer(vk_device_, vk_staging_buffer_, nullptr);
+        vkFreeMemory(vk_device_, vk_staging_buffer_memory_, nullptr);
+    }
+
     if (!resource_ownership_) {
         return;
     }
@@ -22,11 +29,6 @@ TextureVk::~TextureVk() {
 
     // Release device memory.
     vkFreeMemory(vk_device_, vk_image_memory_, nullptr);
-
-    if (vk_staging_buffer_) {
-        vkDestroyBuffer(vk_device_, vk_staging_buffer_, nullptr);
-        vkFreeMemory(vk_device_, vk_staging_buffer_memory_, nullptr);
-    }
 }
 
 std::shared_ptr<TextureVk> TextureVk::from_wrapping(const TextureDescriptor& desc,
