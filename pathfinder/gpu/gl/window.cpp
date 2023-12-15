@@ -26,7 +26,7 @@ std::shared_ptr<SwapChain> WindowGl::create_swap_chain(const std::shared_ptr<Dev
     #ifndef __ANDROID__
     return std::make_shared<SwapChainGl>(size_, glfw_window_);
     #else
-    return std::make_shared<SwapChainGl>(size);
+    return std::make_shared<SwapChainGl>(size_);
     #endif
 }
 

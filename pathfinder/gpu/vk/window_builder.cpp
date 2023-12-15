@@ -31,7 +31,11 @@ void destroy_debug_utils_messenger_ext(VkInstance instance,
 }
 
 std::shared_ptr<WindowBuilder> WindowBuilder::new_impl(const Vec2I &size) {
+#ifndef __ANDROID__
     return std::make_shared<WindowBuilderVk>(size);
+#else
+    return nullptr;
+#endif
 }
 
 #ifndef __ANDROID__
