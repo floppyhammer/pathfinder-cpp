@@ -35,8 +35,8 @@ void ObjectBuilder::add_fill(SceneBuilderD3D9 &scene_builder, const LineSegmentF
     F32x4 max = F32x4::splat(TILE_WIDTH * 256 - 1);
     segment = segment.clamp(min, max);
 
-    // FIXME: This is disabled for the sake of performance.
-    // segment = segment.round();
+    // TODO: is this really necessary?
+    segment = segment.round();
 
     auto from_x = static_cast<uint16_t>(segment.get<0>());
     auto from_y = static_cast<uint16_t>(segment.get<1>());
