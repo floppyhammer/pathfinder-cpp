@@ -26,6 +26,8 @@ if (EMSCRIPTEN)
 elseif (APPLE)
     # No GL support for Mac.
     set(PATHFINDER_VULKAN_SUPPORT ON)
+elseif (LINUX)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1")
 endif ()
 
 if (PATHFINDER_VULKAN_SUPPORT)
