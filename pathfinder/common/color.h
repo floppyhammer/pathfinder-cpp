@@ -8,14 +8,14 @@
 namespace Pathfinder {
 /// Color(0~1, 0~1, 0~1, 0~1).
 struct ColorF {
-    float r = 0;
-    float g = 0;
-    float b = 0;
-    float a = 0;
+    float r_ = 0;
+    float g_ = 0;
+    float b_ = 0;
+    float a_ = 0;
 
     ColorF() = default;
 
-    ColorF(float _r, float _g, float _b, float _a);
+    ColorF(float r, float g, float b, float a);
 
     ColorF lerp(const ColorF& other, float t) const;
 
@@ -39,27 +39,27 @@ struct ColorF {
         return {0, 0, 0, 1};
     }
 
-    inline ColorF operator*(ColorF other) const {
-        return {r * other.r, g * other.g, b * other.b, a * other.a};
+    ColorF operator*(ColorF other) const {
+        return {r_ * other.r_, g_ * other.g_, b_ * other.b_, a_ * other.a_};
     }
 };
 
 /// Color(0~255, 0~255, 0~255, 0~255).
 struct ColorU {
-    uint8_t r = 0;
-    uint8_t g = 0;
-    uint8_t b = 0;
-    uint8_t a = 0;
+    uint8_t r_ = 0;
+    uint8_t g_ = 0;
+    uint8_t b_ = 0;
+    uint8_t a_ = 0;
 
     ColorU() = default;
 
-    explicit ColorU(uint32_t _color);
+    explicit ColorU(uint32_t color);
 
-    explicit ColorU(ColorF _color);
+    explicit ColorU(ColorF color);
 
-    ColorU(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t _a);
+    ColorU(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 
-    ColorU(uint8_t _r, uint8_t _g, uint8_t _b);
+    ColorU(uint8_t r, uint8_t g, uint8_t b);
 
     uint32_t to_u32() const;
 
@@ -68,7 +68,7 @@ struct ColorU {
     /// Check for transparency.
     bool is_opaque() const;
 
-    inline bool operator<(const ColorU& rhs) const {
+    bool operator<(const ColorU& rhs) const {
         return to_u32() < rhs.to_u32();
     }
 

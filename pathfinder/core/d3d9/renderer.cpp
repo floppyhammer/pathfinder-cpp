@@ -596,7 +596,7 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
         if (color_texture_info) {
             auto color_texture_page = pattern_texture_pages[color_texture_info->page_id];
             if (color_texture_page) {
-                color_texture = allocator->get_framebuffer(color_texture_page->framebuffer_id)->get_texture();
+                color_texture = allocator->get_framebuffer(color_texture_page->framebuffer_id_)->get_texture();
                 color_texture_sampler = get_or_create_sampler(color_texture_info->sampling_flags);
 
                 if (color_texture == nullptr) {

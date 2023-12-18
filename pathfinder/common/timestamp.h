@@ -8,24 +8,23 @@
 namespace Pathfinder {
 
 class Timestamp {
-private:
     std::chrono::time_point<std::chrono::steady_clock> start_time;
 
     std::vector<double> records; // In ms.
     std::vector<std::string> labels;
 
-    bool enabled = true;
+    bool enabled_ = true;
 
 public:
     Timestamp();
 
-    void record(const std::string &_label);
+    void record(const std::string &label);
 
     void reset();
 
-    void print();
+    void print() const;
 
-    void set_enabled(bool _enabled);
+    void set_enabled(bool enabled);
 };
 
 } // namespace Pathfinder

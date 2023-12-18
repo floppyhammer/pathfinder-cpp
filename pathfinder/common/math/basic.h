@@ -39,16 +39,12 @@ inline unsigned long upper_power_of_two(unsigned long v) {
     return v;
 }
 
-inline bool approx_eq(float a, float b) {
-    return std::abs(a - b) <= FLOAT_EPSILON;
-}
-
 inline float lerp(float a, float b, float t) {
     return a + (b - a) * t;
 }
 
 template <class T>
-inline T clamp(T value, T min, T max) {
+T clamp(T value, T min, T max) {
     return value < min ? min : (value > max ? max : value);
 }
 
@@ -56,7 +52,7 @@ inline int alignup_i32(int32_t a, int32_t b) {
     return (a + b - 1) / b;
 }
 
-inline static uint64_t fnv_hash(const char* bytes, size_t size) {
+static uint64_t fnv_hash(const char* bytes, size_t size) {
     const unsigned int fnv_prime = 0x811C9DC5;
     uint64_t hash = 0;
 
@@ -102,9 +98,9 @@ inline int round_up(int number, int multiple) {
 
     if (number < 0) {
         return -(abs(number) - remainder);
-    } else {
-        return number + multiple - remainder;
     }
+
+    return number + multiple - remainder;
 }
 
 } // namespace Pathfinder

@@ -3,7 +3,7 @@
 namespace Pathfinder {
 
 Transform2::Transform2() {
-    *this = Transform2::from_scale(Vec2F(1));
+    *this = from_scale(Vec2F(1));
 }
 
 Transform2::Transform2(float xform[6]) {
@@ -14,11 +14,11 @@ Transform2::Transform2(float xform[6]) {
 Transform2::Transform2(const Mat2 &matrix, const Vec2F &vector) : matrix(matrix), vector(vector) {}
 
 Transform2 Transform2::translate(const Vec2F &_vector) const {
-    return Transform2::from_translation(_vector) * *this;
+    return from_translation(_vector) * *this;
 }
 
 Transform2 Transform2::rotate(float theta) const {
-    return Transform2::from_rotation(theta) * *this;
+    return from_rotation(theta) * *this;
 }
 
 bool Transform2::is_identity() const {

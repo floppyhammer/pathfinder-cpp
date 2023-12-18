@@ -11,7 +11,7 @@ namespace Pathfinder {
 
 /**
  * @brief Convert NanoSVG fill rule enum to our own type.
- * @param line_cap NanoSVG fill rule enum
+ * @param fill_rule NanoSVG fill rule enum
  * @return FillRule enum
  */
 FillRule convert_nsvg_fill_rule(char fill_rule) {
@@ -39,7 +39,7 @@ LineCap convert_nsvg_line_cap(char line_cap) {
 
 /**
  * @brief Convert NanoSVG line join enum to our own type.
- * @param line_cap NanoSVG line join enum
+ * @param line_join NanoSVG line join enum
  * @return LineJoin enum
  */
 LineJoin convert_nsvg_line_join(char line_join) {
@@ -118,6 +118,8 @@ Paint convert_nsvg_paint(NSVGpaint nsvg_paint) {
 
             paint = Paint::from_gradient(gradient);
         } break;
+        default:
+            break;
     }
 
     return paint;

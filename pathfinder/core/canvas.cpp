@@ -176,9 +176,9 @@ void Canvas::push_path(Outline &outline, PathOp path_op, FillRule fill_rule) {
         // Per spec the shadow must respect the alpha of the shadowed path, but otherwise have
         // the color of the shadow paint.
         auto shadow_paint = paint;
-        auto shadow_base_alpha = shadow_paint.get_base_color().a;
+        auto shadow_base_alpha = shadow_paint.get_base_color().a_;
         auto shadow_color = current_state.shadow_color.to_f32();
-        shadow_color.a = shadow_color.a * (float)shadow_base_alpha / 255.f;
+        shadow_color.a_ = shadow_color.a_ * (float)shadow_base_alpha / 255.f;
         shadow_paint.set_base_color(ColorU(shadow_color));
 
         auto overlay = shadow_paint.get_overlay();

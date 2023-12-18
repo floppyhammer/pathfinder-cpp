@@ -11,7 +11,8 @@ class SvgScene {
 public:
     /**
      * @brief Load SVG string into the scene.
-     * @param input SVG file content, a copy by value is needed.
+     * @param svg SVG file content, a copy by value is needed.
+     * @param canvas Pathfinder Canvas.
      */
     SvgScene(const std::string& svg, Canvas& canvas);
 

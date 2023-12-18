@@ -17,12 +17,14 @@ class Renderer;
 /// Build a scene on the CPU side for rendering.
 class SceneBuilder {
 public:
-    explicit SceneBuilder() {}
+    SceneBuilder() = default;
+
+    virtual ~SceneBuilder() = default;
 
     /// Build everything we need for rendering.
     virtual void build(Scene* _scene, Renderer* renderer) = 0;
 
-    Scene* get_scene() {
+    Scene* get_scene() const {
         return scene;
     }
 

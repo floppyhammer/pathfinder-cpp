@@ -23,15 +23,15 @@ struct Vec3 {
         return {x, y};
     }
 
-    inline Vec3 operator*(T s) const {
+    Vec3 operator*(T s) const {
         return {x * s, y * s, z * s};
     }
 
-    inline bool operator==(const Vec3 &b) const {
+    bool operator==(const Vec3 &b) const {
         return x == b.x && y == b.y && z == b.z;
     }
 
-    inline void operator+=(const Vec3 &b) {
+    void operator+=(const Vec3 &b) {
         x += b.x;
         y += b.y;
         z += b.z;

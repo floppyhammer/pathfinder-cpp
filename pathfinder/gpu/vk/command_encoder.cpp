@@ -256,7 +256,7 @@ bool CommandEncoderVk::finish() {
                 // Clear color.
                 std::array<VkClearValue, 1> clearValues{};
                 clearValues[0].color = {
-                    {args.clear_color.r, args.clear_color.g, args.clear_color.b, args.clear_color.a}};
+                    {args.clear_color.r_, args.clear_color.g_, args.clear_color.b_, args.clear_color.a_}};
 
                 render_pass_info.clearValueCount = static_cast<uint32_t>(clearValues.size());
                 render_pass_info.pClearValues = clearValues.data();

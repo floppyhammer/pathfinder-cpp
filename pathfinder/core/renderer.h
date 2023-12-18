@@ -31,12 +31,12 @@ void upload_texture_metadata(const std::shared_ptr<Texture> &metadata_texture,
 /// Pattern GPU textures.
 class PatternTexturePage {
 public:
-    PatternTexturePage(uint64_t _framebuffer_id, bool _must_preserve_contents)
-        : framebuffer_id(_framebuffer_id), must_preserve_contents(_must_preserve_contents) {}
+    PatternTexturePage(uint64_t framebuffer_id, bool must_preserve_contents)
+        : framebuffer_id_(framebuffer_id), must_preserve_contents_(must_preserve_contents) {}
 
-    uint64_t framebuffer_id;
+    uint64_t framebuffer_id_;
     /// Should preserve framebuffer content.
-    bool must_preserve_contents;
+    bool must_preserve_contents_;
 };
 
 struct MaskStorage {
@@ -57,9 +57,9 @@ enum class RenderLevel {
 /// All GPU operations happens in the renderer.
 class Renderer {
 public:
-    explicit Renderer(const std::shared_ptr<Device> &_device, const std::shared_ptr<Queue> &_queue);
+    Renderer(const std::shared_ptr<Device> &_device, const std::shared_ptr<Queue> &_queue);
 
-    ~Renderer();
+    virtual ~Renderer();
 
     /// Upload texture metadata built by palette.
     void upload_texture_metadata(const std::vector<TextureMetadataEntry> &metadata);
@@ -96,7 +96,6 @@ public:
 protected:
     virtual TextureFormat mask_texture_format() const = 0;
 
-protected:
     /// If we should clear the dest framebuffer or texture.
     bool clear_dest_texture = true;
 

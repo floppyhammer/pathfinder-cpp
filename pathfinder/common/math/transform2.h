@@ -56,35 +56,35 @@ public:
 
     Vec2F get_position() const;
 
-    inline float m11() const {
+    float m11() const {
         return matrix.m11();
     }
 
-    inline float m21() const {
+    float m21() const {
         return matrix.m21();
     }
 
-    inline float m12() const {
+    float m12() const {
         return matrix.m12();
     }
 
-    inline float m22() const {
+    float m22() const {
         return matrix.m22();
     }
 
-    inline float m13() const {
+    float m13() const {
         return vector.x;
     }
 
-    inline float m23() const {
+    float m23() const {
         return vector.y;
     }
 
-    inline Vec2F operator*(const Vec2F &_vector) const {
+    Vec2F operator*(const Vec2F &_vector) const {
         return {matrix * _vector + vector};
     }
 
-    inline RectF operator*(const RectF &rect) const {
+    RectF operator*(const RectF &rect) const {
         auto upper_left = *this * rect.origin();
         auto upper_right = *this * rect.upper_right();
         auto lower_left = *this * rect.lower_left();
@@ -95,12 +95,12 @@ public:
         return {min_point, max_point};
     }
 
-    inline Transform2 operator*(const Transform2 &other) const {
+    Transform2 operator*(const Transform2 &other) const {
         return {matrix * other.matrix, *this * other.vector};
     }
 
     // For being used as ordered key.
-    inline bool operator<(const Transform2 &rhs) const {
+    bool operator<(const Transform2 &rhs) const {
         return matrix < rhs.matrix && vector < rhs.vector;
     }
 };

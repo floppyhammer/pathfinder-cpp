@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <iostream>
 #include <sstream>
 
 #include "../logger.h"
@@ -24,43 +23,43 @@ struct Vec2 {
 
     Vec2(T x, T y) : x(x), y(y){};
 
-    inline Vec2<int32_t> floor() const {
+    Vec2<int32_t> floor() const {
         return {(int32_t)std::floor(x), (int32_t)std::floor(y)};
     }
 
-    inline Vec2<int32_t> ceil() const {
+    Vec2<int32_t> ceil() const {
         return {(int32_t)std::ceil(x), (int32_t)std::ceil(y)};
     }
 
-    inline Vec2 abs() const {
+    Vec2 abs() const {
         return {std::abs(x), std::abs(y)};
     }
 
-    inline Vec2<float> to_f32() const {
+    Vec2<float> to_f32() const {
         return {(float)x, (float)y};
     }
 
-    inline Vec2<int32_t> to_i32() const {
+    Vec2<int32_t> to_i32() const {
         return {(int32_t)x, (int32_t)y};
     }
 
-    inline Vec2 min(const Vec2 &other) const {
+    Vec2 min(const Vec2 &other) const {
         return {std::min(x, other.x), std::min(y, other.y)};
     }
 
-    inline Vec2 max(const Vec2 &other) const {
+    Vec2 max(const Vec2 &other) const {
         return {std::max(x, other.x), std::max(y, other.y)};
     }
 
-    inline T square_length() const {
+    T square_length() const {
         return x * x + y * y;
     }
 
-    inline float length() const {
+    float length() const {
         return std::sqrt(square_length());
     }
 
-    inline Vec2 normalize() const {
+    Vec2 normalize() const {
 #ifdef PATHFINDER_DEBUG
         if (length() == 0) {
             Logger::error("Attempted to normalize a vector of zero length. This may indicate a bug in your code!",
@@ -70,87 +69,87 @@ struct Vec2 {
         return *this / length();
     }
 
-    inline Vec2 sqrt() const {
+    Vec2 sqrt() const {
         return {std::sqrt(x), std::sqrt(y)};
     }
 
-    inline bool is_zero() const {
+    bool is_zero() const {
         return x == 0 && y == 0;
     }
 
-    inline T area() const {
+    T area() const {
         return x * y;
     }
 
-    inline bool approx_eq(const Vec2 &other, float epsilon) const {
+    bool approx_eq(const Vec2 &other, float epsilon) const {
         return (*this - other).length() <= epsilon;
     }
 
     /// Swap y and x.
-    inline Vec2 yx() const {
+    Vec2 yx() const {
         return {y, x};
     }
 
-    inline Vec2 operator+(const Vec2 &b) const {
+    Vec2 operator+(const Vec2 &b) const {
         return {x + b.x, y + b.y};
     }
 
-    inline Vec2 operator-() const {
+    Vec2 operator-() const {
         return {-x, -y};
     }
 
-    inline Vec2 operator-(const Vec2 &b) const {
+    Vec2 operator-(const Vec2 &b) const {
         return {x - b.x, y - b.y};
     }
 
-    inline Vec2 operator*(const Vec2 &b) const {
+    Vec2 operator*(const Vec2 &b) const {
         return {x * b.x, y * b.y};
     }
 
-    inline Vec2 operator/(const Vec2 &b) const {
+    Vec2 operator/(const Vec2 &b) const {
         return {x / b.x, y / b.y};
     }
 
-    inline Vec2 operator+(T s) const {
+    Vec2 operator+(T s) const {
         return {x + s, y + s};
     }
 
-    inline Vec2 operator-(T s) const {
+    Vec2 operator-(T s) const {
         return {x - s, y - s};
     }
 
-    inline Vec2 operator/(T s) const {
+    Vec2 operator/(T s) const {
         return {x / s, y / s};
     }
 
-    inline Vec2 operator*(T s) const {
+    Vec2 operator*(T s) const {
         return {x * s, y * s};
     }
 
-    inline bool operator==(const Vec2 &b) const {
+    bool operator==(const Vec2 &b) const {
         return x == b.x && y == b.y;
     }
 
     // For being used as ordered key.
-    inline bool operator<(const Vec2 &b) const {
+    bool operator<(const Vec2 &b) const {
         return x < b.x && y < b.y;
     }
 
-    inline bool operator!=(const Vec2 &b) const {
+    bool operator!=(const Vec2 &b) const {
         return x != b.x || y != b.y;
     }
 
-    inline void operator+=(const Vec2 &b) {
+    void operator+=(const Vec2 &b) {
         x += b.x;
         y += b.y;
     }
 
-    inline void operator-=(const Vec2 &b) {
+    void operator-=(const Vec2 &b) {
         x -= b.x;
         y -= b.y;
     }
 
-    inline void operator*=(const Vec2 &b) {
+    void operator*=(const Vec2 &b) {
         x *= b.x;
         y *= b.y;
     }
@@ -160,7 +159,7 @@ struct Vec2 {
         return os;
     }
 
-    inline std::string to_string() const {
+    std::string to_string() const {
         std::ostringstream string_stream;
         string_stream << *this;
         return string_stream.str();
@@ -168,12 +167,12 @@ struct Vec2 {
 };
 
 template <typename T>
-inline Vec2<T> operator/(float s, Vec2<T> v) {
+Vec2<T> operator/(float s, Vec2<T> v) {
     return {s / v.x, s / v.y};
 }
 
 template <typename T>
-inline Vec2<T> lerp(const Vec2<T> &a, const Vec2<T> &b, float t) {
+Vec2<T> lerp(const Vec2<T> &a, const Vec2<T> &b, float t) {
     return {a.x + t * (b.x - a.x), a.y + t * (b.y - a.y)};
 }
 

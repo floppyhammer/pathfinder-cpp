@@ -37,7 +37,7 @@ Renderer::Renderer(const std::shared_ptr<Device> &_device, const std::shared_ptr
 Renderer::~Renderer() {
     for (const auto &texture_page : pattern_texture_pages) {
         if (texture_page != nullptr) {
-            allocator->free_framebuffer(texture_page->framebuffer_id);
+            allocator->free_framebuffer(texture_page->framebuffer_id_);
         }
     }
 }
@@ -52,7 +52,7 @@ void Renderer::allocate_pattern_texture_page(uint64_t page_id, Vec2I texture_siz
     auto old_texture_page = pattern_texture_pages[page_id];
     if (old_texture_page != nullptr) {
         pattern_texture_pages[page_id] = nullptr;
-        allocator->free_framebuffer(old_texture_page->framebuffer_id);
+        allocator->free_framebuffer(old_texture_page->framebuffer_id_);
     }
 
     // Allocate texture.
@@ -83,7 +83,7 @@ RenderTarget Renderer::get_render_target(RenderTargetId render_target_id) {
         return {nullptr};
     }
 
-    return {allocator->get_framebuffer(texture_page->framebuffer_id)};
+    return {allocator->get_framebuffer(texture_page->framebuffer_id_)};
 }
 
 void Renderer::upload_texel_data(std::vector<ColorU> &texels, TextureLocation location) {
@@ -98,14 +98,14 @@ void Renderer::upload_texel_data(std::vector<ColorU> &texels, TextureLocation lo
         return;
     }
 
-    auto framebuffer = allocator->get_framebuffer(texture_page->framebuffer_id);
+    auto framebuffer = allocator->get_framebuffer(texture_page->framebuffer_id_);
     auto texture = framebuffer->get_texture();
 
     auto encoder = device->create_command_encoder("Upload data of the pattern texture pages");
     encoder->write_texture(texture, location.rect, texels.data());
     queue->submit_and_wait(encoder);
 
-    texture_page->must_preserve_contents = true;
+    texture_page->must_preserve_contents_ = true;
 }
 
 void Renderer::reset() {
@@ -187,10 +187,10 @@ void Renderer::upload_texture_metadata(const std::vector<TextureMetadataEntry> &
             0.0f,
             0.0f,
             // 2 pixel
-            base_color.r,
-            base_color.g,
-            base_color.b,
-            base_color.a,
+            base_color.r_,
+            base_color.g_,
+            base_color.b_,
+            base_color.a_,
             // 3 pixel
             filter_params.p0.xy().x,
             filter_params.p0.xy().y,

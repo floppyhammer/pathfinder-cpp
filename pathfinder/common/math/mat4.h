@@ -37,7 +37,7 @@ struct Mat4 {
         return mat;
     }
 
-    inline Mat4 operator*(const Mat4 &other) const {
+    Mat4 operator*(const Mat4 &other) const {
         auto mat = Mat4();
 
         for (int i = 0; i < 4; i++) {
@@ -53,12 +53,12 @@ struct Mat4 {
         return mat;
     }
 
-    inline Mat4 translate(const Vec3F &translation) const {
-        return *this * Mat4::from_translation(translation);
+    Mat4 translate(const Vec3F &translation) const {
+        return *this * from_translation(translation);
     }
 
-    inline Mat4 scale(const Vec3F &scale) const {
-        return *this * Mat4::from_scale(scale);
+    Mat4 scale(const Vec3F &scale) const {
+        return *this * from_scale(scale);
     }
 };
 

@@ -37,22 +37,22 @@ struct Rect {
     }
 
     template <typename U>
-    inline Rect operator+(const Vec2<U> &v) const {
+    Rect operator+(const Vec2<U> &v) const {
         return {left + v.x, top + v.y, right + v.x, bottom + v.y};
     }
 
     template <typename U>
-    inline Rect operator-(const Vec2<U> &v) const {
+    Rect operator-(const Vec2<U> &v) const {
         return {left - v.x, top - v.y, right - v.x, bottom - v.y};
     }
 
     template <typename U>
-    inline Rect operator*(const Vec2<U> &v) const {
+    Rect operator*(const Vec2<U> &v) const {
         return {left * v.x, top * v.y, right * v.x, bottom * v.y};
     }
 
     template <typename U>
-    inline void operator+=(const Vec2<U> &v) {
+    void operator+=(const Vec2<U> &v) {
         left += v.x;
         top += v.y;
         right += v.x;
@@ -60,7 +60,7 @@ struct Rect {
     }
 
     template <typename U>
-    inline void operator*=(const Vec2<U> &v) {
+    void operator*=(const Vec2<U> &v) {
         left *= v.x;
         top *= v.y;
         right *= v.x;
@@ -68,7 +68,7 @@ struct Rect {
     }
 
     template <typename U>
-    inline bool operator==(const Rect<U> &rhs) const {
+    bool operator==(const Rect<U> &rhs) const {
         return left == rhs.left && top == rhs.top && right == rhs.right && bottom == rhs.bottom;
     }
 
@@ -77,98 +77,98 @@ struct Rect {
         return os;
     }
 
-    inline bool is_valid() const {
+    bool is_valid() const {
         return left <= right && top <= bottom;
     }
 
-    inline T width() const {
+    T width() const {
         return right - left;
     }
 
-    inline T height() const {
+    T height() const {
         return bottom - top;
     }
 
-    inline Vec2<T> origin() const {
+    Vec2<T> origin() const {
         return {left, top};
     }
 
-    inline Vec2<T> upper_right() const {
+    Vec2<T> upper_right() const {
         return {right, top};
     }
 
-    inline Vec2<T> lower_right() const {
+    Vec2<T> lower_right() const {
         return {right, bottom};
     }
 
-    inline Vec2<T> lower_left() const {
+    Vec2<T> lower_left() const {
         return {left, bottom};
     }
 
-    inline Vec2<T> size() const {
+    Vec2<T> size() const {
         return lower_right() - origin();
     }
 
-    inline T area() const {
+    T area() const {
         return width() * height();
     }
 
-    inline T min_x() const {
+    T min_x() const {
         return left;
     }
 
-    inline T min_y() const {
+    T min_y() const {
         return top;
     }
 
-    inline T max_x() const {
+    T max_x() const {
         return right;
     }
 
-    inline T max_y() const {
+    T max_y() const {
         return bottom;
     }
 
-    inline Vec2<T> center() const {
+    Vec2<T> center() const {
         return Vec2<T>(left + right, top + bottom) * 0.5f;
     }
 
-    inline Rect<T> contract(Vec2<T> amount) {
+    Rect<T> contract(Vec2<T> amount) {
         return {origin() + amount, lower_right() - amount};
     }
 
-    inline Rect<float> to_f32() const {
+    Rect<float> to_f32() const {
         return {(float)left, (float)top, (float)right, (float)bottom};
     }
 
-    inline Rect<int32_t> to_i32() const {
+    Rect<int32_t> to_i32() const {
         return {int32_t(round(left)), int32_t(round(top)), int32_t(round(right)), int32_t(round(bottom))};
     }
 
-    inline Rect<int32_t> round_out() const {
+    Rect<int32_t> round_out() const {
         return {origin().floor(), lower_right().ceil()};
     }
 
-    inline Rect<T> dilate(T amount) {
+    Rect<T> dilate(T amount) {
         return {origin() - amount, lower_right() + amount};
     }
 
     /// Check if intersects with other rect.
-    inline bool intersects(const Rect &other) const {
+    bool intersects(const Rect &other) const {
         return !(left > other.right || right < other.left || top > other.bottom || bottom < other.top);
     }
 
     /// Return intersection rect. Return an invalid rect if no intersection.
-    inline Rect intersection(const Rect &other) const {
+    Rect intersection(const Rect &other) const {
         // If not intersected, return a zero rect.
         if (!intersects(other)) {
             return {};
-        } else {
-            return {origin().max(other.origin()), lower_right().min(other.lower_right())};
         }
+
+        return {origin().max(other.origin()), lower_right().min(other.lower_right())};
     }
 
-    inline Rect union_rect(const Rect &other) const {
+    Rect union_rect(const Rect &other) const {
         // This rect is invalid, return the other rect.
         if (!is_valid()) {
             return other;
@@ -183,12 +183,12 @@ struct Rect {
     }
 
     // The containment check is a bit different for int and float.
-    inline bool contains_point(const Vec2F &point) {
+    bool contains_point(const Vec2F &point) {
         // self.origin <= point && point <= self.lower_right
         return (left <= point.x && point.x <= right && top <= point.y && point.y <= bottom);
     }
 
-    inline bool contains_point(const Vec2I &point) {
+    bool contains_point(const Vec2I &point) {
         // self.origin <= point && point <= self.lower_right - 1
         return (left <= point.x && point.x <= right - 1 && top <= point.y && point.y <= bottom - 1);
     }

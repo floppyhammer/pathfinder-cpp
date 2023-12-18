@@ -34,7 +34,7 @@ bool CommandEncoderGl::finish() {
                 glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_gl->get_gl_framebuffer());
 
                 if (render_pass_gl->get_attachment_load_op() == AttachmentLoadOp::Clear) {
-                    glClearColor(args.clear_color.r, args.clear_color.g, args.clear_color.b, args.clear_color.a);
+                    glClearColor(args.clear_color.r_, args.clear_color.g_, args.clear_color.b_, args.clear_color.a_);
                     glClear(GL_COLOR_BUFFER_BIT);
                 }
 
