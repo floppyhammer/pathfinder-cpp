@@ -39,11 +39,6 @@ void Path2d::cubic_to(float cx0, float cy0, float cx1, float cy1, float x, float
 
     // Degenerates into a line.
     if (ctrl0.approx_eq(ctrl1, FLOAT_EPSILON) && ctrl1.approx_eq(point1, FLOAT_EPSILON)) {
-        // No point to add the exactly same on-curve and control points.
-        if (point0.approx_eq(ctrl0, FLOAT_EPSILON)) {
-            return;
-        }
-
         current_contour.push_endpoint(point1);
         return;
     }

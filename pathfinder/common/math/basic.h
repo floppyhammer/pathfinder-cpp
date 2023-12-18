@@ -8,7 +8,7 @@
 namespace Pathfinder {
 
 // To handle floating point error.
-const float FLOAT_EPSILON = 0.001;
+const float FLOAT_EPSILON = 0.0001;
 
 const float PI = 3.141592653589f;
 

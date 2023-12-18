@@ -62,7 +62,7 @@ Outcode compute_outcode(const Vec2F &point, const RectF &rect) {
 }
 
 /// Clips a line segment to an axis-aligned rectangle using Cohen-Sutherland clipping.
-bool clip_line_segment_to_rect(LineSegmentF &line_segment, RectF rect) {
+bool clip_line_segment_to_rect(LineSegmentF &line_segment, const RectF &rect) {
     auto outcode_from = compute_outcode(line_segment.from(), rect);
     auto outcode_to = compute_outcode(line_segment.to(), rect);
 
