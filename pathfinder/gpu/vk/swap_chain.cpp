@@ -10,9 +10,9 @@
 
 namespace Pathfinder {
 
-SwapChainVk::SwapChainVk(Vec2I _size, WindowVk *_window, DeviceVk *_device) : SwapChain(_size) {
-    window = _window;
-    device_vk = _device;
+SwapChainVk::SwapChainVk(Vec2I size, WindowVk *window, DeviceVk *device) : SwapChain(size) {
+    window_ = window;
+    device_vk_ = device;
 
     // Swap chain related resources.
     init_swapchain();
@@ -29,11 +29,11 @@ std::shared_ptr<Framebuffer> SwapChainVk::get_framebuffer() {
 }
 
 bool SwapChainVk::acquire_image() {
-    if (window->is_minimized()) {
+    if (window_->is_minimized()) {
         return false;
     }
 
-    auto device = device_vk->get_device();
+    auto device = device_vk_->get_device();
 
     // Wait for the frame to be finished.
     vkWaitForFences(device, 1, &in_flight_fences[current_frame], VK_TRUE, UINT64_MAX);
@@ -59,7 +59,7 @@ bool SwapChainVk::acquire_image() {
 
 void SwapChainVk::init_swapchain() {
     // Create a swap chain and corresponding swap chain images.
-    create_swapchain(device_vk->get_physical_device());
+    create_swapchain(device_vk_->get_physical_device());
 
     // Create views for swap chain images.
     create_image_views();
@@ -80,7 +80,7 @@ void SwapChainVk::recreate_swapchain() {
 }
 
 void SwapChainVk::cleanup_swapchain() {
-    auto device = device_vk->get_device();
+    auto device = device_vk_->get_device();
 
     // Wait on the host for the completion of outstanding queue operations for all queues on a given logical device.
     vkDeviceWaitIdle(device);
@@ -97,8 +97,8 @@ void SwapChainVk::cleanup_swapchain() {
     vkDestroySwapchainKHR(device, swapchain, nullptr);
 }
 
-void SwapChainVk::cleanup() {
-    auto device = device_vk->get_device();
+void SwapChainVk::destroy() {
+    auto device = device_vk_->get_device();
 
     // Clean up swap chain related resources.
     cleanup_swapchain();
@@ -112,13 +112,13 @@ void SwapChainVk::cleanup() {
 }
 
 void SwapChainVk::create_swapchain(VkPhysicalDevice physical_device) {
-    auto device = device_vk->get_device();
+    auto device = device_vk_->get_device();
 
-    SwapchainSupportDetails swapchain_support = query_swapchain_support(physical_device, window->surface_);
+    SwapchainSupportDetails swapchain_support = query_swapchain_support(physical_device, window_->surface_);
 
     VkSurfaceFormatKHR surface_format = choose_swap_surface_format(swapchain_support.formats);
     VkPresentModeKHR present_mode = choose_swap_present_mode(swapchain_support.present_modes);
-    VkExtent2D vk_extent = window->choose_swap_extent(swapchain_support.capabilities);
+    VkExtent2D vk_extent = window_->choose_swap_extent(swapchain_support.capabilities);
 
     uint32_t image_count = swapchain_support.capabilities.minImageCount + 1;
     if (swapchain_support.capabilities.maxImageCount > 0 &&
@@ -128,7 +128,7 @@ void SwapChainVk::create_swapchain(VkPhysicalDevice physical_device) {
 
     VkSwapchainCreateInfoKHR create_info{};
     create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    create_info.surface = window->surface_;
+    create_info.surface = window_->surface_;
 
     create_info.minImageCount = image_count;
     create_info.imageFormat = surface_format.format;
@@ -137,7 +137,7 @@ void SwapChainVk::create_swapchain(VkPhysicalDevice physical_device) {
     create_info.imageArrayLayers = 1;
     create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    QueueFamilyIndices qf_indices = find_queue_families(physical_device, window->surface_);
+    QueueFamilyIndices qf_indices = find_queue_families(physical_device, window_->surface_);
     uint32_t queue_family_indices[] = {*qf_indices.graphics_family, *qf_indices.present_family};
 
     if (*qf_indices.graphics_family != *qf_indices.present_family) {
@@ -168,7 +168,7 @@ void SwapChainVk::create_swapchain(VkPhysicalDevice physical_device) {
     vkGetSwapchainImagesKHR(device, swapchain, &image_count, swapchain_images.data());
 
     swapchain_image_format = surface_format.format;
-    size = {int32_t(vk_extent.width), int32_t(vk_extent.height)};
+    size_ = {int32_t(vk_extent.width), int32_t(vk_extent.height)};
 }
 
 void SwapChainVk::create_image_views() {
@@ -176,17 +176,17 @@ void SwapChainVk::create_image_views() {
 
     for (uint32_t i = 0; i < swapchain_images.size(); i++) {
         swapchain_image_views[i] =
-            device_vk->create_vk_image_view(swapchain_images[i], swapchain_image_format, VK_IMAGE_ASPECT_COLOR_BIT);
+            device_vk_->create_vk_image_view(swapchain_images[i], swapchain_image_format, VK_IMAGE_ASPECT_COLOR_BIT);
     }
 }
 
 void SwapChainVk::create_render_pass() {
-    render_pass =
-        device_vk->create_swap_chain_render_pass(vk_to_texture_format(swapchain_image_format), AttachmentLoadOp::Clear);
+    render_pass = device_vk_->create_swap_chain_render_pass(vk_to_texture_format(swapchain_image_format),
+                                                            AttachmentLoadOp::Clear);
 }
 
 void SwapChainVk::create_framebuffers() {
-    auto device = device_vk->get_device();
+    auto device = device_vk_->get_device();
 
     framebuffers.clear();
 
@@ -195,14 +195,14 @@ void SwapChainVk::create_framebuffers() {
 
         // No texture for swap chain framebuffer.
         auto framebuffer_vk = std::shared_ptr<FramebufferVk>(
-            new FramebufferVk(device, render_pass_vk->get_vk_render_pass(), size, swapchain_image_views[i]));
+            new FramebufferVk(device, render_pass_vk->get_vk_render_pass(), size_, swapchain_image_views[i]));
 
         framebuffers.push_back(framebuffer_vk);
     }
 }
 
 void SwapChainVk::create_sync_objects() {
-    auto device = device_vk->get_device();
+    auto device = device_vk_->get_device();
 
     image_available_semaphores.resize(MAX_FRAMES_IN_FLIGHT);
     render_finished_semaphores.resize(MAX_FRAMES_IN_FLIGHT);
@@ -227,8 +227,8 @@ void SwapChainVk::create_sync_objects() {
 }
 
 void SwapChainVk::flush(const std::shared_ptr<CommandEncoder> &encoder) {
-    auto device = device_vk->get_device();
-    auto graphics_queue = device_vk->get_graphics_queue();
+    auto device = device_vk_->get_device();
+    auto graphics_queue = device_vk_->get_graphics_queue();
     auto encoder_vk = (CommandEncoderVk *)encoder.get();
 
     if (images_in_flight[image_index] != VK_NULL_HANDLE) {
@@ -263,8 +263,8 @@ void SwapChainVk::flush(const std::shared_ptr<CommandEncoder> &encoder) {
     // -------------------------------------
 }
 
-void SwapChainVk::SwapChainVk::present() {
-    auto present_queue = device_vk->get_present_queue();
+void SwapChainVk::present() {
+    auto present_queue = device_vk_->get_present_queue();
 
     // Wait until the image to present has finished rendering.
     VkSemaphore signal_semaphores[] = {render_finished_semaphores[current_frame]};
@@ -289,7 +289,7 @@ void SwapChainVk::SwapChainVk::present() {
     VkResult result = vkQueuePresentKHR(present_queue, &present_info);
     // -------------------------------------
 
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window->get_resize_flag()) {
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window_->get_resize_flag()) {
         recreate_swapchain();
     } else if (result != VK_SUCCESS) {
         throw std::runtime_error("Failed to present swap chain image!");

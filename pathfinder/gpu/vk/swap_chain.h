@@ -22,7 +22,7 @@ class SwapChainVk : public SwapChain {
     friend class QueueVk;
 
 public:
-    SwapChainVk(Vec2I _size, WindowVk *_window, DeviceVk *_device);
+    SwapChainVk(Vec2I size, WindowVk *window, DeviceVk *device);
 
     std::shared_ptr<RenderPass> get_render_pass() override;
 
@@ -31,8 +31,8 @@ public:
     bool acquire_image() override;
 
 private:
-    WindowVk *window{};
-    DeviceVk *device_vk{};
+    WindowVk *window_{};
+    DeviceVk *device_vk_{};
 
     VkSwapchainKHR swapchain{};
 
@@ -109,7 +109,7 @@ private:
 
     void present() override;
 
-    void cleanup() override;
+    void destroy() override;
 };
 
 } // namespace Pathfinder

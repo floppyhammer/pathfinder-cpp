@@ -17,7 +17,7 @@ public:
 
     void update();
 
-    void cleanup();
+    void destroy();
 
     std::shared_ptr<Pathfinder::Canvas> canvas;
 

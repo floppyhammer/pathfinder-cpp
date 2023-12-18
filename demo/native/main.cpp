@@ -8,16 +8,16 @@ const int32_t WINDOW_HEIGHT = 720;
 int main() {
     Pathfinder::Vec2I window_size = {WINDOW_WIDTH, WINDOW_HEIGHT};
 
-    // Create the main window.
+    // Create the primary window.
     auto window_builder = Pathfinder::WindowBuilder::new_impl(window_size);
-    auto window = window_builder->get_main_window();
+    auto window = window_builder->get_primary_window();
 
     // Create device and queue.
     auto device = window_builder->request_device();
     auto queue = window_builder->create_queue();
 
     // Create swap chains for windows.
-    auto swap_chain = window->create_swap_chain(device);
+    auto swap_chain = window->get_swap_chain(device);
 
     // Create app.
     App app(device,
@@ -83,10 +83,10 @@ int main() {
         }
     }
 
-    swap_chain->cleanup();
+    window_builder->preapre_destruction();
 
     // Do this after swap chain cleanup.
-    app.cleanup();
+    app.destroy();
     texture_rect.reset();
 
     return 0;

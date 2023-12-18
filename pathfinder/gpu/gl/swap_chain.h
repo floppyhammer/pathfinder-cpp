@@ -15,10 +15,10 @@ class SwapChainGl : public SwapChain {
 
 public:
 #ifndef __ANDROID__
-    SwapChainGl(Vec2I _size, GLFWwindow *window_handle) : SwapChain(_size) {
+    SwapChainGl(Vec2I size, GLFWwindow *window_handle) : SwapChain(size) {
         glfw_window = window_handle;
 
-        framebuffer = std::shared_ptr<FramebufferGl>(new FramebufferGl(size));
+        framebuffer = std::shared_ptr<FramebufferGl>(new FramebufferGl(size_));
 
         command_encoder = std::shared_ptr<CommandEncoderGl>(new CommandEncoderGl());
 
@@ -34,28 +34,28 @@ public:
     }
 #endif
 
-    inline std::shared_ptr<RenderPass> get_render_pass() override {
+    std::shared_ptr<RenderPass> get_render_pass() override {
         return render_pass;
-    };
+    }
 
-    inline std::shared_ptr<Framebuffer> get_framebuffer() override {
+    std::shared_ptr<Framebuffer> get_framebuffer() override {
         return framebuffer;
     }
 
-    inline bool acquire_image() override {
+    bool acquire_image() override {
 #ifndef __ANDROID__
         glfwMakeContextCurrent(glfw_window);
 #endif
         return true;
     }
 
-    inline void present() override {
+    void present() override {
 #ifndef __ANDROID__
         glfwSwapBuffers(glfw_window);
 #endif
     }
 
-    inline void cleanup() override {}
+    void destroy() override {}
 
 private:
 #ifndef __ANDROID__

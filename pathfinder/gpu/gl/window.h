@@ -17,9 +17,7 @@ public:
     explicit WindowGl(const Vec2I &_size);
 #endif
 
-    ~WindowGl() override;
-
-    std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Device> &device) override;
+    std::shared_ptr<SwapChain> get_swap_chain(const std::shared_ptr<Device> &device) override;
 
 #ifndef __ANDROID__
     void *get_raw_handle() const override;

@@ -22,16 +22,18 @@ WindowGl::WindowGl(const Vec2I &_size, GLFWwindow *window_handle) : Window(_size
 WindowGl::WindowGl(const Vec2I &_size) : Window(_size) {}
     #endif
 
-std::shared_ptr<SwapChain> WindowGl::create_swap_chain(const std::shared_ptr<Device> &device) {
-    #ifndef __ANDROID__
-    return std::make_shared<SwapChainGl>(size_, glfw_window_);
-    #else
-    return std::make_shared<SwapChainGl>(size_);
-    #endif
-}
+std::shared_ptr<SwapChain> WindowGl::get_swap_chain(const std::shared_ptr<Device> &device) {
+    if (swapchain_) {
+        return swapchain_;
+    }
 
-WindowGl::~WindowGl() {
-    destroy();
+    #ifndef __ANDROID__
+    swapchain_ = std::make_shared<SwapChainGl>(size_, glfw_window_);
+    #else
+    swapchain_ = std::make_shared<SwapChainGl>(size_);
+    #endif
+
+    return swapchain_;
 }
 
 void WindowGl::destroy() {

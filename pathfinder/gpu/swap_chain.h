@@ -10,12 +10,12 @@ namespace Pathfinder {
 
 class SwapChain {
 public:
-    explicit SwapChain(Vec2I _size) : size(_size) {}
+    explicit SwapChain(Vec2I size) : size_(size) {}
 
     virtual ~SwapChain() = default;
 
     /// Swap chain framebuffer size.
-    Vec2I size;
+    Vec2I size_;
 
     /**
      * Get a swap chain render pass.
@@ -38,7 +38,7 @@ public:
     virtual void present() = 0;
 
     /// Clean up swap chain resources.
-    virtual void cleanup() = 0;
+    virtual void destroy() = 0;
 };
 
 } // namespace Pathfinder

@@ -141,6 +141,6 @@ void App::update() {
     canvas->draw(false);
 }
 
-void App::cleanup() {
+void App::destroy() {
     canvas.reset();
 }

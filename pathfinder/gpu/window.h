@@ -3,6 +3,7 @@
 
 #include "device.h"
 #include "queue.h"
+#include "swap_chain.h"
 
 namespace Pathfinder {
 
@@ -14,7 +15,9 @@ public:
 
     virtual ~Window() = default;
 
-    virtual std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Device>& device) = 0;
+    virtual void destroy() = 0;
+
+    virtual std::shared_ptr<SwapChain> get_swap_chain(const std::shared_ptr<Device>& device) = 0;
 
     Vec2I get_size() const;
 

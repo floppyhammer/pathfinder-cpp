@@ -21,11 +21,9 @@ public:
     explicit WindowVk(const Vec2I &_size, VkSurfaceKHR surface, VkInstance instance);
 #endif
 
-    ~WindowVk() override;
-
     VkExtent2D choose_swap_extent(const VkSurfaceCapabilitiesKHR &capabilities) const;
 
-    std::shared_ptr<SwapChain> create_swap_chain(const std::shared_ptr<Device> &device) override;
+    std::shared_ptr<SwapChain> get_swap_chain(const std::shared_ptr<Device> &device) override;
 
 #ifndef __ANDROID__
     void *get_raw_handle() const override;
@@ -44,7 +42,7 @@ public:
     VkInstance instance_{};
 
 private:
-    void destroy();
+    void destroy() override;
 
 #ifndef __ANDROID__
     GLFWwindow *glfw_window_{};

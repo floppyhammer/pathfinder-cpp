@@ -64,6 +64,9 @@ public:
 
     ~WindowBuilderVk() override;
 
+    // Call this right after the render loop is stopped.
+    void preapre_destruction() override;
+
     std::shared_ptr<Window> create_window(const Vec2I &_size, const std::string &title) override;
 
     std::shared_ptr<Device> request_device() override;

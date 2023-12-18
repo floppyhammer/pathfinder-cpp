@@ -32,8 +32,8 @@ WindowBuilderGl::WindowBuilderGl(const Vec2I &size) {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     #endif
 
-    auto glfw_window = glfw_window_init(size, "Main");
-    main_window = std::make_shared<WindowGl>(size, glfw_window);
+    auto glfw_window = glfw_window_init(size, "Primary Window");
+    primary_window = std::make_shared<WindowGl>(size, glfw_window);
 
     // Have to make the window context current before calling gladLoadGL().
     glfwMakeContextCurrent(glfw_window);
@@ -52,7 +52,7 @@ WindowBuilderGl::WindowBuilderGl(const Vec2I &size) {
     }
     #endif
 #else
-    main_window = std::make_shared<WindowGl>(size);
+    primary_window = std::make_shared<WindowGl>(size);
 #endif
 
     // Print GL version.
@@ -71,15 +71,13 @@ WindowBuilderGl::~WindowBuilderGl() {
         for (auto &w : sub_windows) {
             if (!w.expired()) {
                 // We need to destroy a window explicitly in case its smart pointer is held elsewhere.
-                auto window_vk = (WindowGl *)w.lock().get();
-                window_vk->destroy();
+                w.lock()->destroy();
             }
         }
         sub_windows.clear();
 
-        auto window_vk = (WindowGl *)main_window.get();
-        window_vk->destroy();
-        main_window.reset();
+        primary_window->destroy();
+        primary_window.reset();
     }
 
 #ifndef __ANDROID__
@@ -129,7 +127,7 @@ GLFWwindow *WindowBuilderGl::glfw_window_init(const Vec2I &size, const std::stri
 
 std::shared_ptr<Window> WindowBuilderGl::create_window(const Vec2I &size, const std::string &title) {
 #ifndef __ANDROID__
-    auto window_gl = (WindowGl *)main_window.get();
+    auto window_gl = (WindowGl *)primary_window.get();
 
     auto glfw_window = glfw_window_init(size, title, (GLFWwindow *)window_gl->get_raw_handle());
 

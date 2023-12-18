@@ -58,7 +58,7 @@ WindowBuilderVk::WindowBuilderVk(const Vec2I &size) {
 
     initialize_after_surface_creation(surface);
 
-    main_window = std::make_shared<WindowVk>(size, glfw_window, surface, instance);
+    primary_window = std::make_shared<WindowVk>(size, glfw_window, surface, instance);
 }
 #else
 WindowBuilderVk::WindowBuilderVk(ANativeWindow *native_window, const Vec2I &window_size) {
@@ -85,6 +85,22 @@ WindowBuilderVk::WindowBuilderVk(ANativeWindow *native_window, const Vec2I &wind
 #endif
 
 WindowBuilderVk::~WindowBuilderVk() {
+#ifndef __ANDROID__
+    // Destroy windows.
+    {
+        for (auto &w : sub_windows) {
+            if (!w.expired()) {
+                // We need to destroy a window explicitly in case its smart pointer is held elsewhere.
+                w.lock()->destroy();
+            }
+        }
+        sub_windows.clear();
+
+        primary_window->destroy();
+        primary_window.reset();
+    }
+#endif
+
     vkDestroyCommandPool(vk_device, command_pool, nullptr);
 
     // Destroy the logical device.
@@ -94,29 +110,25 @@ WindowBuilderVk::~WindowBuilderVk() {
         destroy_debug_utils_messenger_ext(instance, debug_messenger, nullptr);
     }
 
-#ifndef __ANDROID__
-    // Destroy windows.
-    {
-        for (auto &w : sub_windows) {
-            if (!w.expired()) {
-                // We need to destroy a window explicitly in case its smart pointer is held elsewhere.
-                auto window_vk = (WindowVk *)w.lock().get();
-                window_vk->destroy();
-            }
-        }
-        sub_windows.clear();
-
-        auto window_vk = (WindowVk *)main_window.get();
-        window_vk->destroy();
-        main_window.reset();
-    }
-#endif
-
     vkDestroyInstance(instance, nullptr);
 
 #ifndef __ANDROID__
     glfwTerminate();
 #endif
+}
+
+void WindowBuilderVk::preapre_destruction() {
+    // Stop and destroy swapchains.
+    {
+        for (auto &w : sub_windows) {
+            if (!w.expired()) {
+                // We need to destroy a window explicitly in case its smart pointer is held elsewhere.
+                w.lock()->swapchain_->destroy();
+            }
+        }
+
+        primary_window->swapchain_->destroy();
+    }
 }
 
 #ifndef __ANDROID__
