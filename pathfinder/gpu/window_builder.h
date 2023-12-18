@@ -8,6 +8,8 @@ namespace Pathfinder {
 
 class Window;
 
+static const char *PRIMARY_WINDOW_TITLE = "Primary Window";
+
 /// Window management.
 class WindowBuilder {
 public:

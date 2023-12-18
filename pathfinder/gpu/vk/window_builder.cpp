@@ -49,7 +49,7 @@ WindowBuilderVk::WindowBuilderVk(const Vec2I &size) {
     // To not create an OpenGL context (as we're using Vulkan).
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-    auto glfw_window = glfw_window_init(size, "Main");
+    auto glfw_window = glfw_window_init(size, PRIMARY_WINDOW_TITLE);
 
     VkSurfaceKHR surface{};
     if (glfwCreateWindowSurface(instance, glfw_window, nullptr, &surface) != VK_SUCCESS) {

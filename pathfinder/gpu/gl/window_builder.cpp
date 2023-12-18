@@ -32,7 +32,7 @@ WindowBuilderGl::WindowBuilderGl(const Vec2I &size) {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     #endif
 
-    auto glfw_window = glfw_window_init(size, "Primary Window");
+    auto glfw_window = glfw_window_init(size, PRIMARY_WINDOW_TITLE);
     primary_window = std::make_shared<WindowGl>(size, glfw_window);
 
     // Have to make the window context current before calling gladLoadGL().
