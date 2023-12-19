@@ -20,7 +20,7 @@ public:
     void set_label(const std::string& label) override;
 
 private:
-    uint32_t texture_id_ = 0;
+    uint32_t gl_id_ = 0;
 };
 
 } // namespace Pathfinder

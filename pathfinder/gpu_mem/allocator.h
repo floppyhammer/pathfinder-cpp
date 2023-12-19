@@ -62,8 +62,6 @@ struct FreeObject {
 };
 
 /// GPU memory management.
-// TODO: update GPU debug marker when reusing free objects.
-// Currently, only the tag from the first allocation is set as the debug marker.
 class GpuMemoryAllocator {
 public:
     explicit GpuMemoryAllocator(const std::shared_ptr<Device>& _device) : device(_device) {}

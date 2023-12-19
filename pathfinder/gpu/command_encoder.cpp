@@ -16,7 +16,7 @@ void CommandEncoder::begin_render_pass(const std::shared_ptr<RenderPass> &render
     args.clear_color = clear_color;
     args.viewport = {Vec2I(), framebuffer->get_size()};
 
-    commands.push_back(cmd);
+    commands_.push_back(cmd);
 }
 
 void CommandEncoder::bind_render_pipeline(const std::shared_ptr<RenderPipeline> &pipeline) {
@@ -26,7 +26,7 @@ void CommandEncoder::bind_render_pipeline(const std::shared_ptr<RenderPipeline> 
     auto &args = cmd.args.bind_render_pipeline;
     args.pipeline = pipeline.get();
 
-    commands.push_back(cmd);
+    commands_.push_back(cmd);
 }
 
 void CommandEncoder::bind_vertex_buffers(std::vector<std::shared_ptr<Buffer>> vertex_buffers) {
@@ -41,7 +41,7 @@ void CommandEncoder::bind_vertex_buffers(std::vector<std::shared_ptr<Buffer>> ve
         args.buffers[buffer_index] = vertex_buffers[buffer_index].get();
     }
 
-    commands.push_back(cmd);
+    commands_.push_back(cmd);
 }
 
 void CommandEncoder::bind_descriptor_set(const std::shared_ptr<DescriptorSet> &descriptor_set) {
@@ -51,7 +51,7 @@ void CommandEncoder::bind_descriptor_set(const std::shared_ptr<DescriptorSet> &d
     auto &args = cmd.args.bind_descriptor_set;
     args.descriptor_set = descriptor_set.get();
 
-    commands.push_back(cmd);
+    commands_.push_back(cmd);
 }
 
 void CommandEncoder::bind_compute_pipeline(const std::shared_ptr<ComputePipeline> &pipeline) {
@@ -61,7 +61,7 @@ void CommandEncoder::bind_compute_pipeline(const std::shared_ptr<ComputePipeline
     auto &args = cmd.args.bind_compute_pipeline;
     args.pipeline = pipeline.get();
 
-    commands.push_back(cmd);
+    commands_.push_back(cmd);
 }
 
 void CommandEncoder::draw(uint32_t first_vertex, uint32_t vertex_count) {
@@ -72,7 +72,7 @@ void CommandEncoder::draw(uint32_t first_vertex, uint32_t vertex_count) {
     args.first_vertex = first_vertex;
     args.vertex_count = vertex_count;
 
-    commands.push_back(cmd);
+    commands_.push_back(cmd);
 }
 
 void CommandEncoder::draw_instanced(uint32_t vertex_count, uint32_t instance_count) {
@@ -83,21 +83,21 @@ void CommandEncoder::draw_instanced(uint32_t vertex_count, uint32_t instance_cou
     args.vertex_count = vertex_count;
     args.instance_count = instance_count;
 
-    commands.push_back(cmd);
+    commands_.push_back(cmd);
 }
 
 void CommandEncoder::end_render_pass() {
     Command cmd;
     cmd.type = CommandType::EndRenderPass;
 
-    commands.push_back(cmd);
+    commands_.push_back(cmd);
 }
 
 void CommandEncoder::begin_compute_pass() {
     Command cmd;
     cmd.type = CommandType::BeginComputePass;
 
-    commands.push_back(cmd);
+    commands_.push_back(cmd);
 }
 
 void CommandEncoder::dispatch(uint32_t group_size_x, uint32_t group_size_y, uint32_t group_size_z) {
@@ -114,14 +114,14 @@ void CommandEncoder::dispatch(uint32_t group_size_x, uint32_t group_size_y, uint
     args.group_size_y = group_size_y;
     args.group_size_z = group_size_z;
 
-    commands.push_back(cmd);
+    commands_.push_back(cmd);
 }
 
 void CommandEncoder::end_compute_pass() {
     Command cmd;
     cmd.type = CommandType::EndComputePass;
 
-    commands.push_back(cmd);
+    commands_.push_back(cmd);
 }
 
 void CommandEncoder::write_buffer(const std::shared_ptr<Buffer> &buffer,
@@ -153,7 +153,7 @@ void CommandEncoder::write_buffer(const std::shared_ptr<Buffer> &buffer,
     args.data_size = data_size;
     args.data = data;
 
-    commands.push_back(cmd);
+    commands_.push_back(cmd);
 }
 
 void CommandEncoder::read_buffer(const std::shared_ptr<Buffer> &buffer,
@@ -182,7 +182,7 @@ void CommandEncoder::read_buffer(const std::shared_ptr<Buffer> &buffer,
             args.data_size = data_size;
             args.data = data;
 
-            commands.push_back(cmd);
+            commands_.push_back(cmd);
         } break;
         default: {
             Logger::error("Cannot read data from non-storage buffers!", "CommandEncoder");
@@ -213,7 +213,7 @@ void CommandEncoder::write_texture(const std::shared_ptr<Texture> &texture, Rect
     args.height = effective_region.height();
     args.data = src;
 
-    commands.push_back(cmd);
+    commands_.push_back(cmd);
 }
 
 void CommandEncoder::read_texture(const std::shared_ptr<Texture> &texture, RectI region, void *dst) {
@@ -239,7 +239,7 @@ void CommandEncoder::read_texture(const std::shared_ptr<Texture> &texture, RectI
     args.height = effective_region.height();
     args.data = dst;
 
-    commands.push_back(cmd);
+    commands_.push_back(cmd);
 }
 
 } // namespace Pathfinder

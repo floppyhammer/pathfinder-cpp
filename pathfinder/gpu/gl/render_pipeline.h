@@ -15,38 +15,37 @@ class RenderPipelineGl : public RenderPipeline {
 
 public:
     ~RenderPipelineGl() override {
-        glDeleteVertexArrays(1, &vao);
+        glDeleteVertexArrays(1, &vao_);
     };
 
-    inline std::shared_ptr<Program> get_program() {
-        return program;
+    std::shared_ptr<Program> get_program() {
+        return program_;
     }
 
-    inline uint32_t get_vao() const {
-        return vao;
+    uint32_t get_vao() const {
+        return vao_;
     }
 
 private:
     RenderPipelineGl(const std::vector<char> &vert_source,
                      const std::vector<char> &frag_source,
-                     const std::vector<VertexInputAttributeDescription> &_attribute_descriptions,
-                     BlendState _blend_state,
-                     std::string _label)
-        : RenderPipeline(_attribute_descriptions, _blend_state, std::move(_label)) {
-        program = std::make_shared<RasterProgram>(vert_source, frag_source);
+                     const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
+                     BlendState blend_state,
+                     std::string label)
+        : RenderPipeline(attribute_descriptions, blend_state, std::move(label)) {
+        program_ = std::make_shared<RasterProgram>(vert_source, frag_source);
 
-        glGenVertexArrays(1, &vao);
+        glGenVertexArrays(1, &vao_);
 
         gl_check_error("create_render_pipeline");
 
-        DebugMarker::label_program(program->get_id(), label + " program");
-        DebugMarker::label_vao(vao, label + " VAO");
+        DebugMarker::label_program(program_->get_id(), label_ + " program");
+        DebugMarker::label_vao(vao_, label_ + " VAO");
     };
 
-private:
-    std::shared_ptr<RasterProgram> program;
+    std::shared_ptr<RasterProgram> program_;
 
-    uint32_t vao{};
+    uint32_t vao_{};
 };
 
 } // namespace Pathfinder

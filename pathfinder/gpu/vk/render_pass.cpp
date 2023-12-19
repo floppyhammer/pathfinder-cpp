@@ -4,13 +4,13 @@
 
 namespace Pathfinder {
 
-Pathfinder::RenderPassVk::RenderPassVk(VkDevice _device,
-                                       TextureFormat texture_format,
-                                       AttachmentLoadOp load_op,
-                                       bool is_swap_chain_pass,
-                                       const std::string &_label) {
-    vk_device = _device;
-    label = _label;
+RenderPassVk::RenderPassVk(VkDevice vk_device,
+                           TextureFormat texture_format,
+                           AttachmentLoadOp load_op,
+                           bool is_swap_chain_pass,
+                           const std::string &label) {
+    vk_device_ = vk_device;
+    label_ = label;
 
     // Color attachment.
     // ----------------------------------------
@@ -63,22 +63,22 @@ Pathfinder::RenderPassVk::RenderPassVk(VkDevice _device,
     renderPassInfo.dependencyCount = 1;
     renderPassInfo.pDependencies = &dependency;
 
-    if (vkCreateRenderPass(vk_device, &renderPassInfo, nullptr, &vk_render_pass) != VK_SUCCESS) {
+    if (vkCreateRenderPass(vk_device, &renderPassInfo, nullptr, &vk_render_pass_) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create render pass!");
     }
 
     DebugMarker::get_singleton()->set_object_name(vk_device,
-                                                  (uint64_t)vk_render_pass,
+                                                  (uint64_t)vk_render_pass_,
                                                   VK_OBJECT_TYPE_RENDER_PASS,
                                                   label);
 }
 
 RenderPassVk::~RenderPassVk() {
-    vkDestroyRenderPass(vk_device, vk_render_pass, nullptr);
+    vkDestroyRenderPass(vk_device_, vk_render_pass_, nullptr);
 }
 
 VkRenderPass RenderPassVk::get_vk_render_pass() {
-    return vk_render_pass;
+    return vk_render_pass_;
 }
 
 } // namespace Pathfinder

@@ -12,37 +12,36 @@ class ComputePipelineVk : public ComputePipeline {
     friend class DeviceVk;
 
 public:
-    ~ComputePipelineVk() {
-        vkDestroyDescriptorSetLayout(vk_device, vk_descriptor_set_layout, nullptr);
-        vkDestroyPipeline(vk_device, vk_pipeline, nullptr);
-        vkDestroyPipelineLayout(vk_device, vk_layout, nullptr);
+    ~ComputePipelineVk() override {
+        vkDestroyDescriptorSetLayout(vk_device_, vk_descriptor_set_layout_, nullptr);
+        vkDestroyPipeline(vk_device_, vk_pipeline_, nullptr);
+        vkDestroyPipelineLayout(vk_device_, vk_layout_, nullptr);
     }
 
-    inline VkPipeline get_pipeline() const {
-        return vk_pipeline;
+    VkPipeline get_pipeline() const {
+        return vk_pipeline_;
     }
 
-    inline VkPipelineLayout get_layout() const {
-        return vk_layout;
+    VkPipelineLayout get_layout() const {
+        return vk_layout_;
     }
 
-    inline VkDescriptorSetLayout get_descriptor_set_layout() const {
-        return vk_descriptor_set_layout;
-    }
-
-private:
-    ComputePipelineVk(VkDevice _vk_device, std::string _label) : vk_device(_vk_device) {
-        label = std::move(_label);
+    VkDescriptorSetLayout get_descriptor_set_layout() const {
+        return vk_descriptor_set_layout_;
     }
 
 private:
-    VkPipeline vk_pipeline{};
+    ComputePipelineVk(VkDevice vk_device, std::string label) : vk_device_(vk_device) {
+        label_ = std::move(label);
+    }
 
-    VkDescriptorSetLayout vk_descriptor_set_layout{};
+    VkPipeline vk_pipeline_{};
 
-    VkPipelineLayout vk_layout{};
+    VkDescriptorSetLayout vk_descriptor_set_layout_{};
 
-    VkDevice vk_device{};
+    VkPipelineLayout vk_layout_{};
+
+    VkDevice vk_device_{};
 };
 
 } // namespace Pathfinder

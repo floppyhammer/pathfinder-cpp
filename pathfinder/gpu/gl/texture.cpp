@@ -7,8 +7,8 @@ namespace Pathfinder {
 
 TextureGl::TextureGl(const TextureDescriptor& desc) : Texture(desc) {
     // Generate a texture.
-    glGenTextures(1, &texture_id_);
-    glBindTexture(GL_TEXTURE_2D, texture_id_);
+    glGenTextures(1, &gl_id_);
+    glBindTexture(GL_TEXTURE_2D, gl_id_);
 
 // Allocate space.
 // We need to use glTexStorage2D() in order to access the texture via image2D in compute shaders.
@@ -33,21 +33,21 @@ TextureGl::TextureGl(const TextureDescriptor& desc) : Texture(desc) {
 
     gl_check_error("create_texture");
 
-    DebugMarker::label_texture(texture_id_, label_);
+    DebugMarker::label_texture(gl_id_, label_);
 }
 
 TextureGl::~TextureGl() {
-    glDeleteTextures(1, &texture_id_);
+    glDeleteTextures(1, &gl_id_);
 }
 
 uint32_t TextureGl::get_texture_id() const {
-    return texture_id_;
+    return gl_id_;
 }
 
 void TextureGl::set_label(const std::string& label) {
     Texture::set_label(label);
 
-    DebugMarker::label_texture(texture_id_, label);
+    DebugMarker::label_texture(gl_id_, label);
 }
 
 } // namespace Pathfinder

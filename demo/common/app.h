@@ -19,16 +19,16 @@ public:
 
     void destroy();
 
-    std::shared_ptr<Pathfinder::Canvas> canvas;
+    std::shared_ptr<Pathfinder::Canvas> canvas_;
 
-    std::shared_ptr<Pathfinder::Scene> scene_0, scene_1;
+    std::shared_ptr<Pathfinder::Scene> scene_0_, scene_1_;
 
-    std::shared_ptr<Pathfinder::Device> device;
-    std::shared_ptr<Pathfinder::Queue> queue;
+    std::shared_ptr<Pathfinder::Device> device_;
+    std::shared_ptr<Pathfinder::Queue> queue_;
 
 private:
-    std::chrono::time_point<std::chrono::steady_clock> last_time;
-    uint32_t frame_count = 0;
+    std::chrono::time_point<std::chrono::steady_clock> last_time_;
+    uint32_t frame_count_ = 0;
 };
 
 #endif // PATHFINDER_DEMO_APP_H

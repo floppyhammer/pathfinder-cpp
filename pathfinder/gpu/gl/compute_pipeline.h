@@ -12,17 +12,16 @@ class ComputePipelineGl : public ComputePipeline {
     friend class DeviceGl;
 
 public:
-    inline std::shared_ptr<Program> get_program() {
-        return program;
+    std::shared_ptr<Program> get_program() {
+        return program_;
     }
 
 private:
     explicit ComputePipelineGl(const std::vector<char> &comp_source) {
-        program = std::make_shared<ComputeProgram>(comp_source);
+        program_ = std::make_shared<ComputeProgram>(comp_source);
     }
 
-private:
-    std::shared_ptr<ComputeProgram> program;
+    std::shared_ptr<ComputeProgram> program_;
 };
 
 } // namespace Pathfinder

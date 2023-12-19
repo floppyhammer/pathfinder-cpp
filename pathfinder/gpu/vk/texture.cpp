@@ -65,15 +65,15 @@ void TextureVk::set_layout(TextureLayout new_layout) {
     layout_ = new_layout;
 }
 
-void TextureVk::set_label(const std::string& _label) {
+void TextureVk::set_label(const std::string& label) {
     if (vk_device_ == nullptr) {
         Logger::warn("Attempted to set label for a wrapped texture!");
         return;
     }
 
-    Texture::set_label(_label);
+    Texture::set_label(label);
 
-    DebugMarker::get_singleton()->set_object_name(vk_device_, (uint64_t)vk_image_, VK_OBJECT_TYPE_IMAGE, label_);
+    DebugMarker::get_singleton()->set_object_name(vk_device_, (uint64_t)vk_image_, VK_OBJECT_TYPE_IMAGE, label);
 }
 
 void TextureVk::create_staging_buffer(DeviceVk* device_vk) {

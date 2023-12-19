@@ -19,17 +19,16 @@ public:
 
     unsigned long long get_unique_id() override;
 
-    void set_label(const std::string& _label) override;
+    void set_label(const std::string& label) override;
 
 private:
     /// Texture framebuffer.
-    explicit FramebufferGl(const std::shared_ptr<Texture>& _texture);
+    explicit FramebufferGl(const std::shared_ptr<Texture>& texture);
 
     /// Swap chain framebuffer.
-    explicit FramebufferGl(Vec2I _size);
+    explicit FramebufferGl(Vec2I size);
 
-private:
-    uint32_t gl_framebuffer{};
+    uint32_t gl_framebuffer_{};
 };
 
 } // namespace Pathfinder

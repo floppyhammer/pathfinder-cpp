@@ -12,28 +12,28 @@ namespace Pathfinder {
 
 class RenderPipeline {
 public:
-    RenderPipeline(const std::vector<VertexInputAttributeDescription>& _attribute_descriptions,
-                   BlendState _blend_state,
-                   std::string _label)
-        : attribute_descriptions(_attribute_descriptions), blend_state(_blend_state), label(std::move(_label)){};
+    RenderPipeline(const std::vector<VertexInputAttributeDescription>& attribute_descriptions,
+                   BlendState blend_state,
+                   std::string label)
+        : attribute_descriptions_(attribute_descriptions), blend_state_(blend_state), label_(std::move(label)){};
 
     virtual ~RenderPipeline() = default;
 
-    inline const std::vector<VertexInputAttributeDescription>& get_attribute_descriptions() const {
-        return attribute_descriptions;
+    const std::vector<VertexInputAttributeDescription>& get_attribute_descriptions() const {
+        return attribute_descriptions_;
     }
 
-    inline BlendState get_blend_state() const {
-        return blend_state;
+    BlendState get_blend_state() const {
+        return blend_state_;
     }
 
 protected:
-    std::vector<VertexInputAttributeDescription> attribute_descriptions;
+    std::vector<VertexInputAttributeDescription> attribute_descriptions_;
 
-    BlendState blend_state{};
+    BlendState blend_state_{};
 
     /// Debug label.
-    std::string label;
+    std::string label_;
 };
 
 } // namespace Pathfinder

@@ -8,7 +8,7 @@
 
 namespace Pathfinder {
 
-// Maximum binding number of vertex buffers during a draw call.
+// Maximum binding number of vertex buffers for a draw call.
 const uint32_t MAX_VERTEX_BUFFER_BINDINGS = 8;
 
 struct BufferDescriptor {
@@ -23,7 +23,7 @@ struct BufferDescriptor {
 
 class Buffer {
 public:
-    explicit Buffer(BufferDescriptor desc) : desc_(desc) {}
+    explicit Buffer(const BufferDescriptor& desc) : desc_(desc) {}
 
     virtual ~Buffer() = default;
 
@@ -56,4 +56,4 @@ protected:
 
 } // namespace Pathfinder
 
-#endif // PATHFINDER_GPU_BUFFER_H
+#endif

@@ -1,5 +1,5 @@
-#ifndef PATHFINDER_API_H
-#define PATHFINDER_API_H
+#ifndef PATHFINDER_PRELUDE_H
+#define PATHFINDER_PRELUDE_H
 
 #include "common/global_macros.h"
 #include "common/io.h"

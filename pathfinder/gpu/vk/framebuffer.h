@@ -19,19 +19,18 @@ public:
 
     VkFramebuffer get_vk_framebuffer() const;
 
-    void set_label(const std::string& _label) override;
+    void set_label(const std::string& label) override;
 
 private:
     /// Texture framebuffer.
-    FramebufferVk(VkDevice _vk_device, VkRenderPass _vk_render_pass, const std::shared_ptr<Texture>& _texture);
+    FramebufferVk(VkDevice vk_device, VkRenderPass vk_render_pass, const std::shared_ptr<Texture>& texture);
 
     /// Swap chain framebuffer.
-    FramebufferVk(VkDevice _vk_device, VkRenderPass _vk_render_pass, Vec2I size, VkImageView vk_image_view);
+    FramebufferVk(VkDevice vk_device, VkRenderPass vk_render_pass, Vec2I size, VkImageView vk_image_view);
 
-private:
-    VkFramebuffer vk_framebuffer{};
+    VkFramebuffer vk_framebuffer_{};
 
-    VkDevice vk_device{};
+    VkDevice vk_device_{};
 };
 
 } // namespace Pathfinder

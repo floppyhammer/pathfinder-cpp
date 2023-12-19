@@ -180,16 +180,16 @@ public:
 
     void read_texture(const std::shared_ptr<Texture> &texture, RectI region, void *data);
 
-    inline void add_callback(const std::function<void()> &callback) {
-        callbacks.push_back(callback);
+    void add_callback(const std::function<void()> &callback) {
+        callbacks_.push_back(callback);
     }
 
-    inline void invoke_callbacks() {
-        for (auto &callback : callbacks) {
+    void invoke_callbacks() {
+        for (auto &callback : callbacks_) {
             callback();
         }
 
-        callbacks.clear();
+        callbacks_.clear();
     }
 
 protected:
@@ -199,24 +199,23 @@ protected:
     /// @return If valid for submission.
     virtual bool finish() = 0;
 
-protected:
     /// Debug label.
-    std::string label;
+    std::string label_;
 
-    std::deque<Command> commands;
+    std::deque<Command> commands_;
 
     /// Finished recording.
-    bool finished = false;
+    bool finished_ = false;
 
     /// Submitted by a queue.
-    bool submitted = false;
+    bool submitted_ = false;
 
     /// Callbacks after the commands are submitted and waited for finish.
-    std::vector<std::function<void()>> callbacks;
+    std::vector<std::function<void()>> callbacks_;
 
     /// Currently bound pipeline.
-    RenderPipeline *render_pipeline{};
-    ComputePipeline *compute_pipeline{};
+    RenderPipeline *render_pipeline_{};
+    ComputePipeline *compute_pipeline_{};
 };
 
 } // namespace Pathfinder

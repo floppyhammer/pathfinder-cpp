@@ -2,7 +2,6 @@
 
 #include <cstring>
 #include <stdexcept>
-#include <utility>
 
 #include "debug_marker.h"
 #include "device.h"

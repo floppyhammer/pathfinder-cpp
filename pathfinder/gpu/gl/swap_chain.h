@@ -16,13 +16,13 @@ class SwapChainGl : public SwapChain {
 public:
 #ifndef __ANDROID__
     SwapChainGl(Vec2I size, GLFWwindow *window_handle) : SwapChain(size) {
-        glfw_window = window_handle;
+        glfw_window_ = window_handle;
 
-        framebuffer = std::shared_ptr<FramebufferGl>(new FramebufferGl(size_));
+        framebuffer_ = std::shared_ptr<FramebufferGl>(new FramebufferGl(size_));
 
-        command_encoder = std::shared_ptr<CommandEncoderGl>(new CommandEncoderGl());
+        command_encoder_ = std::shared_ptr<CommandEncoderGl>(new CommandEncoderGl());
 
-        render_pass = std::shared_ptr<RenderPassGl>(new RenderPassGl(AttachmentLoadOp::Clear));
+        render_pass_ = std::shared_ptr<RenderPassGl>(new RenderPassGl(AttachmentLoadOp::Clear));
     }
 #else
     SwapChainGl(Vec2I _size) : SwapChain(_size) {
@@ -35,23 +35,23 @@ public:
 #endif
 
     std::shared_ptr<RenderPass> get_render_pass() override {
-        return render_pass;
+        return render_pass_;
     }
 
     std::shared_ptr<Framebuffer> get_framebuffer() override {
-        return framebuffer;
+        return framebuffer_;
     }
 
     bool acquire_image() override {
 #ifndef __ANDROID__
-        glfwMakeContextCurrent(glfw_window);
+        glfwMakeContextCurrent(glfw_window_);
 #endif
         return true;
     }
 
     void present() override {
 #ifndef __ANDROID__
-        glfwSwapBuffers(glfw_window);
+        glfwSwapBuffers(glfw_window_);
 #endif
     }
 
@@ -59,12 +59,12 @@ public:
 
 private:
 #ifndef __ANDROID__
-    GLFWwindow *glfw_window;
+    GLFWwindow *glfw_window_;
 #endif
 
-    std::shared_ptr<RenderPass> render_pass;
-    std::shared_ptr<Framebuffer> framebuffer;
-    std::shared_ptr<CommandEncoder> command_encoder;
+    std::shared_ptr<RenderPass> render_pass_;
+    std::shared_ptr<Framebuffer> framebuffer_;
+    std::shared_ptr<CommandEncoder> command_encoder_;
 };
 
 } // namespace Pathfinder

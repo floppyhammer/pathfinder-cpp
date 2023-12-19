@@ -3,13 +3,13 @@
 namespace Pathfinder {
 
 void QueueVk::submit_and_wait(std::shared_ptr<CommandEncoder> encoder) {
-    if (encoder->submitted) {
+    if (encoder->submitted_) {
         Logger::error("Attempted to submit an encoder that's already been submitted!");
         return;
     }
 
     // Mark the encoder as submitted.
-    encoder->submitted = true;
+    encoder->submitted_ = true;
 
     if (!encoder->finish()) {
         return;
@@ -21,26 +21,26 @@ void QueueVk::submit_and_wait(std::shared_ptr<CommandEncoder> encoder) {
     VkSubmitInfo submit_info{};
     submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submit_info.commandBufferCount = 1;
-    submit_info.pCommandBuffers = &encoder_vk->vk_command_buffer;
+    submit_info.pCommandBuffers = &encoder_vk->vk_command_buffer_;
 
-    vkQueueSubmit(graphics_queue, 1, &submit_info, VK_NULL_HANDLE);
+    vkQueueSubmit(vk_graphics_queue_, 1, &submit_info, VK_NULL_HANDLE);
 
     // Wait for the queue to finish commands.
-    vkQueueWaitIdle(graphics_queue);
+    vkQueueWaitIdle(vk_graphics_queue_);
 }
 
 void QueueVk::submit(std::shared_ptr<CommandEncoder> encoder, std::shared_ptr<SwapChain> surface) {
     // Cleanup last encoder.
-    if (encoder_of_last_frame) {
-        encoder_of_last_frame = nullptr;
+    if (encoder_of_last_frame_) {
+        encoder_of_last_frame_ = nullptr;
     }
 
-    if (encoder->submitted) {
+    if (encoder->submitted_) {
         Logger::error("Attempted to submit an encoder that's already been submitted!");
         return;
     }
 
-    encoder->submitted = true;
+    encoder->submitted_ = true;
 
     if (!encoder->finish()) {
         return;
@@ -50,7 +50,7 @@ void QueueVk::submit(std::shared_ptr<CommandEncoder> encoder, std::shared_ptr<Sw
 
     surface_vk->flush(encoder);
 
-    encoder_of_last_frame = encoder;
+    encoder_of_last_frame_ = encoder;
 }
 
 } // namespace Pathfinder

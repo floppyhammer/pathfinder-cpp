@@ -10,15 +10,14 @@ class RenderPassGl : public RenderPass {
     friend class SwapChainGl;
 
 public:
-    inline AttachmentLoadOp get_attachment_load_op() const {
-        return load_op;
+    AttachmentLoadOp get_attachment_load_op() const {
+        return load_op_;
     }
 
 private:
-    explicit RenderPassGl(AttachmentLoadOp _load_op) : load_op(_load_op) {}
+    explicit RenderPassGl(AttachmentLoadOp load_op) : load_op_(load_op) {}
 
-private:
-    AttachmentLoadOp load_op;
+    AttachmentLoadOp load_op_;
 };
 
 } // namespace Pathfinder

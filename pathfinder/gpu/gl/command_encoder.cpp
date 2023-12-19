@@ -16,12 +16,12 @@ CommandEncoderGl::~CommandEncoderGl() {
 }
 
 bool CommandEncoderGl::finish() {
-    if (commands.empty()) {
+    if (commands_.empty()) {
         return false;
     }
 
-    while (!commands.empty()) {
-        auto &cmd = commands.front();
+    while (!commands_.empty()) {
+        auto &cmd = commands_.front();
 
         switch (cmd.type) {
             case CommandType::BeginRenderPass: {
@@ -59,8 +59,8 @@ bool CommandEncoderGl::finish() {
 
                 pipeline_gl->get_program()->use();
 
-                render_pipeline = args.pipeline;
-                compute_pipeline = nullptr;
+                render_pipeline_ = args.pipeline;
+                compute_pipeline_ = nullptr;
 
                 gl_check_error("BindRenderPipeline");
             } break;
@@ -69,7 +69,7 @@ bool CommandEncoderGl::finish() {
 
                 auto &args = cmd.args.bind_vertex_buffers;
 
-                auto pipeline_gl = static_cast<RenderPipelineGl *>(render_pipeline);
+                auto pipeline_gl = static_cast<RenderPipelineGl *>(render_pipeline_);
 
                 auto buffer_count = args.buffer_count;
                 auto vertex_buffers = args.buffers;
@@ -141,11 +141,11 @@ bool CommandEncoderGl::finish() {
                 auto &args = cmd.args.bind_descriptor_set;
 
                 uint32_t program_id;
-                if (render_pipeline != nullptr) {
-                    auto pipeline_gl = static_cast<RenderPipelineGl *>(render_pipeline);
+                if (render_pipeline_ != nullptr) {
+                    auto pipeline_gl = static_cast<RenderPipelineGl *>(render_pipeline_);
                     program_id = pipeline_gl->get_program()->get_id();
                 } else {
-                    auto pipeline_gl = static_cast<ComputePipelineGl *>(compute_pipeline);
+                    auto pipeline_gl = static_cast<ComputePipelineGl *>(compute_pipeline_);
                     program_id = pipeline_gl->get_program()->get_id();
                 }
 
@@ -240,7 +240,7 @@ bool CommandEncoderGl::finish() {
                 gl_check_error("DrawInstanced");
             } break;
             case CommandType::EndRenderPass: {
-                render_pipeline = nullptr;
+                render_pipeline_ = nullptr;
             } break;
             case CommandType::BeginComputePass: {
                 assert(render_pipeline == nullptr);
@@ -252,7 +252,7 @@ bool CommandEncoderGl::finish() {
 
                 pipeline_gl->get_program()->use();
 
-                compute_pipeline = args.pipeline;
+                compute_pipeline_ = args.pipeline;
             } break;
             case CommandType::Dispatch: {
 #ifdef PATHFINDER_ENABLE_D3D11
@@ -271,7 +271,7 @@ bool CommandEncoderGl::finish() {
 #endif
             } break;
             case CommandType::EndComputePass: {
-                compute_pipeline = nullptr;
+                compute_pipeline_ = nullptr;
             } break;
             case CommandType::WriteBuffer: {
                 auto &args = cmd.args.write_buffer;
@@ -334,7 +334,7 @@ bool CommandEncoderGl::finish() {
                 break;
         }
 
-        commands.pop_front();
+        commands_.pop_front();
     }
 
     return true;

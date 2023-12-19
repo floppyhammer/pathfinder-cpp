@@ -1,10 +1,6 @@
 #ifndef PATHFINDER_GPU_DESCRIPTOR_SET_VK_H
 #define PATHFINDER_GPU_DESCRIPTOR_SET_VK_H
 
-#include <cstdint>
-#include <unordered_map>
-
-#include "../../common/global_macros.h"
 #include "../descriptor_set.h"
 #include "base.h"
 
@@ -16,20 +12,19 @@ class DescriptorSetVk : public DescriptorSet {
 public:
     ~DescriptorSetVk() override;
 
-    void update_vk_descriptor_set(VkDevice _device, VkDescriptorSetLayout descriptor_set_layout);
+    void update_vk_descriptor_set(VkDevice vk_device, VkDescriptorSetLayout vk_descriptor_set_layout);
 
     VkDescriptorSet &get_vk_descriptor_set();
 
 private:
     DescriptorSetVk() = default;
 
-private:
-    VkDescriptorPool descriptor_pool{};
-    VkDescriptorSet descriptor_set{};
+    VkDescriptorPool vk_descriptor_pool_{};
+    VkDescriptorSet vk_descriptor_set_{};
 
-    bool descriptor_set_allocated = false;
+    bool descriptor_set_allocated_ = false;
 
-    VkDevice device{};
+    VkDevice vk_device_{};
 };
 
 } // namespace Pathfinder

@@ -16,32 +16,32 @@
 
 namespace Pathfinder {
 
-DeviceVk::DeviceVk(VkDevice _device,
-                   VkPhysicalDevice _physical_device,
-                   VkQueue _graphics_queue,
-                   VkQueue _present_queue,
-                   VkCommandPool _command_pool)
-    : device(_device), physical_device(_physical_device), graphics_queue(_graphics_queue),
-      present_queue(_present_queue), command_pool(_command_pool) {}
+DeviceVk::DeviceVk(VkDevice vk_device,
+                   VkPhysicalDevice vk_physical_device,
+                   VkQueue vk_graphics_queue,
+                   VkQueue vk_present_queue,
+                   VkCommandPool vk_command_pool)
+    : vk_device_(vk_device), vk_physical_device_(vk_physical_device), vk_graphics_queue_(vk_graphics_queue),
+      vk_present_queue_(vk_present_queue), vk_command_pool_(vk_command_pool) {}
 
 VkDevice DeviceVk::get_device() const {
-    return device;
+    return vk_device_;
 }
 
 VkPhysicalDevice DeviceVk::get_physical_device() const {
-    return physical_device;
+    return vk_physical_device_;
 }
 
 VkQueue DeviceVk::get_graphics_queue() const {
-    return graphics_queue;
+    return vk_graphics_queue_;
 }
 
 VkQueue DeviceVk::get_present_queue() const {
-    return present_queue;
+    return vk_present_queue_;
 }
 
 VkCommandPool DeviceVk::get_command_pool() const {
-    return command_pool;
+    return vk_command_pool_;
 }
 
 std::shared_ptr<DescriptorSet> DeviceVk::create_descriptor_set() {
@@ -55,11 +55,11 @@ std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
     BlendState blend_state,
     const std::shared_ptr<DescriptorSet> &descriptor_set,
     const std::shared_ptr<RenderPass> &render_pass,
-    const std::string &_label) {
+    const std::string &label) {
     auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
 
     auto render_pipeline_vk =
-        std::shared_ptr<RenderPipelineVk>(new RenderPipelineVk(device, attribute_descriptions, blend_state, _label));
+        std::shared_ptr<RenderPipelineVk>(new RenderPipelineVk(vk_device_, attribute_descriptions, blend_state, label));
 
     // Create descriptor set layout.
     {
@@ -83,8 +83,10 @@ std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
         layout_info.bindingCount = bindings.size();
         layout_info.pBindings = bindings.data();
 
-        if (vkCreateDescriptorSetLayout(device, &layout_info, nullptr, &render_pipeline_vk->vk_descriptor_set_layout) !=
-            VK_SUCCESS) {
+        if (vkCreateDescriptorSetLayout(vk_device_,
+                                        &layout_info,
+                                        nullptr,
+                                        &render_pipeline_vk->vk_descriptor_set_layout_) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create descriptor set layout!");
         }
     }
@@ -94,11 +96,11 @@ std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
         VkPipelineLayoutCreateInfo pipeline_layout_info{};
         pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipeline_layout_info.setLayoutCount = 1;
-        pipeline_layout_info.pSetLayouts = &render_pipeline_vk->vk_descriptor_set_layout;
+        pipeline_layout_info.pSetLayouts = &render_pipeline_vk->vk_descriptor_set_layout_;
         pipeline_layout_info.pushConstantRangeCount = 0;
 
         // Create pipeline layout.
-        if (vkCreatePipelineLayout(device, &pipeline_layout_info, nullptr, &render_pipeline_vk->vk_layout) !=
+        if (vkCreatePipelineLayout(vk_device_, &pipeline_layout_info, nullptr, &render_pipeline_vk->vk_layout_) !=
             VK_SUCCESS) {
             throw std::runtime_error("Failed to create pipeline layout!");
         }
@@ -235,38 +237,38 @@ std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
     pipeline_info.pRasterizationState = &rasterizer;
     pipeline_info.pMultisampleState = &multisampling;
     pipeline_info.pColorBlendState = &color_blending;
-    pipeline_info.layout = render_pipeline_vk->vk_layout;
-    pipeline_info.renderPass = render_pass_vk->vk_render_pass;
+    pipeline_info.layout = render_pipeline_vk->vk_layout_;
+    pipeline_info.renderPass = render_pass_vk->vk_render_pass_;
     pipeline_info.subpass = 0;
     pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
     pipeline_info.pDynamicState = &dynamic; // Make viewport and scissor dynamic.
 
     // Create pipeline.
-    if (vkCreateGraphicsPipelines(device,
+    if (vkCreateGraphicsPipelines(vk_device_,
                                   VK_NULL_HANDLE,
                                   1,
                                   &pipeline_info,
                                   nullptr,
-                                  &render_pipeline_vk->vk_pipeline) != VK_SUCCESS) {
+                                  &render_pipeline_vk->vk_pipeline_) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create graphics pipeline!");
     }
 
     // Clean up shader modules.
-    vkDestroyShaderModule(device, vert_shader_module, nullptr);
-    vkDestroyShaderModule(device, frag_shader_module, nullptr);
+    vkDestroyShaderModule(vk_device_, vert_shader_module, nullptr);
+    vkDestroyShaderModule(vk_device_, frag_shader_module, nullptr);
 
-    DebugMarker::get_singleton()->set_object_name(device,
-                                                  (uint64_t)render_pipeline_vk->vk_pipeline,
+    DebugMarker::get_singleton()->set_object_name(vk_device_,
+                                                  (uint64_t)render_pipeline_vk->vk_pipeline_,
                                                   VK_OBJECT_TYPE_PIPELINE,
-                                                  _label);
+                                                  label);
 
     return render_pipeline_vk;
 }
 
 std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(const std::vector<char> &comp_source,
                                                                    const std::shared_ptr<DescriptorSet> &descriptor_set,
-                                                                   const std::string &_label) {
-    auto compute_pipeline_vk = std::shared_ptr<ComputePipelineVk>(new ComputePipelineVk(device, _label));
+                                                                   const std::string &label) {
+    auto compute_pipeline_vk = std::shared_ptr<ComputePipelineVk>(new ComputePipelineVk(vk_device_, label));
 
     // Create descriptor set layout.
     {
@@ -290,10 +292,10 @@ std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(const std::ve
         layout_info.bindingCount = bindings.size();
         layout_info.pBindings = bindings.data();
 
-        if (vkCreateDescriptorSetLayout(device,
+        if (vkCreateDescriptorSetLayout(vk_device_,
                                         &layout_info,
                                         nullptr,
-                                        &compute_pipeline_vk->vk_descriptor_set_layout) != VK_SUCCESS) {
+                                        &compute_pipeline_vk->vk_descriptor_set_layout_) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create descriptor set layout!");
         }
     }
@@ -303,11 +305,11 @@ std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(const std::ve
         VkPipelineLayoutCreateInfo pipeline_layout_info{};
         pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipeline_layout_info.setLayoutCount = 1;
-        pipeline_layout_info.pSetLayouts = &compute_pipeline_vk->vk_descriptor_set_layout;
+        pipeline_layout_info.pSetLayouts = &compute_pipeline_vk->vk_descriptor_set_layout_;
         pipeline_layout_info.pushConstantRangeCount = 0;
 
         // Create pipeline layout.
-        if (vkCreatePipelineLayout(device, &pipeline_layout_info, nullptr, &compute_pipeline_vk->vk_layout) !=
+        if (vkCreatePipelineLayout(vk_device_, &pipeline_layout_info, nullptr, &compute_pipeline_vk->vk_layout_) !=
             VK_SUCCESS) {
             throw std::runtime_error("Failed to create compute pipeline layout!");
         }
@@ -327,27 +329,27 @@ std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(const std::ve
     pipeline_create_info.pNext = nullptr;
     pipeline_create_info.flags = 0;
     pipeline_create_info.stage = comp_shader_stage_info;
-    pipeline_create_info.layout = compute_pipeline_vk->vk_layout;
+    pipeline_create_info.layout = compute_pipeline_vk->vk_layout_;
     pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
     pipeline_create_info.basePipelineIndex = 0;
 
     // Create pipeline.
-    if (vkCreateComputePipelines(device,
+    if (vkCreateComputePipelines(vk_device_,
                                  VK_NULL_HANDLE,
                                  1,
                                  &pipeline_create_info,
                                  nullptr,
-                                 &compute_pipeline_vk->vk_pipeline) != VK_SUCCESS) {
+                                 &compute_pipeline_vk->vk_pipeline_) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create compute pipeline!");
     }
 
     // Clean up shader module.
-    vkDestroyShaderModule(device, comp_shader_module, nullptr);
+    vkDestroyShaderModule(vk_device_, comp_shader_module, nullptr);
 
-    DebugMarker::get_singleton()->set_object_name(device,
-                                                  (uint64_t)compute_pipeline_vk->vk_pipeline,
+    DebugMarker::get_singleton()->set_object_name(vk_device_,
+                                                  (uint64_t)compute_pipeline_vk->vk_pipeline_,
                                                   VK_OBJECT_TYPE_PIPELINE,
-                                                  _label);
+                                                  label);
 
     return compute_pipeline_vk;
 }
@@ -355,28 +357,28 @@ std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(const std::ve
 std::shared_ptr<RenderPass> DeviceVk::create_render_pass(TextureFormat format,
                                                          AttachmentLoadOp load_op,
                                                          const std::string &label) {
-    return std::shared_ptr<RenderPassVk>(new RenderPassVk(device, format, load_op, false, label));
+    return std::shared_ptr<RenderPassVk>(new RenderPassVk(vk_device_, format, load_op, false, label));
 }
 
 std::shared_ptr<RenderPass> DeviceVk::create_swap_chain_render_pass(TextureFormat format, AttachmentLoadOp load_op) {
-    return std::shared_ptr<RenderPassVk>(new RenderPassVk(device, format, load_op, true, "Swap chain render pass"));
+    return std::shared_ptr<RenderPassVk>(new RenderPassVk(vk_device_, format, load_op, true, "Swap chain render pass"));
 }
 
 std::shared_ptr<Framebuffer> DeviceVk::create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
                                                           const std::shared_ptr<Texture> &texture,
-                                                          const std::string &_label) {
+                                                          const std::string &label) {
     auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
 
     auto framebuffer_vk =
-        std::shared_ptr<FramebufferVk>(new FramebufferVk(device, render_pass_vk->vk_render_pass, texture));
+        std::shared_ptr<FramebufferVk>(new FramebufferVk(vk_device_, render_pass_vk->vk_render_pass_, texture));
 
-    framebuffer_vk->set_label(_label);
+    framebuffer_vk->set_label(label);
 
     return framebuffer_vk;
 }
 
 std::shared_ptr<Buffer> DeviceVk::create_buffer(const BufferDescriptor &desc, const std::string &label) {
-    auto buffer_vk = std::shared_ptr<BufferVk>(new BufferVk(device, desc));
+    auto buffer_vk = std::shared_ptr<BufferVk>(new BufferVk(vk_device_, desc));
 
     auto vk_memory_property = to_vk_memory_property(desc.property);
 
@@ -413,7 +415,7 @@ std::shared_ptr<Buffer> DeviceVk::create_buffer(const BufferDescriptor &desc, co
 }
 
 std::shared_ptr<Texture> DeviceVk::create_texture(const TextureDescriptor &desc, const std::string &label) {
-    auto texture_vk = std::shared_ptr<TextureVk>(new TextureVk(device, desc));
+    auto texture_vk = std::shared_ptr<TextureVk>(new TextureVk(vk_device_, desc));
 
     create_vk_image(desc.size.x,
                     desc.size.y,
@@ -464,28 +466,28 @@ std::shared_ptr<Sampler> DeviceVk::create_sampler(SamplerDescriptor descriptor) 
     sampler_info.maxLod = 0.0f;
 
     VkSampler sampler;
-    if (vkCreateSampler(device, &sampler_info, nullptr, &sampler) != VK_SUCCESS) {
+    if (vkCreateSampler(vk_device_, &sampler_info, nullptr, &sampler) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create texture sampler!");
     }
 
-    return std::shared_ptr<SamplerVk>(new SamplerVk(descriptor, sampler, device));
+    return std::shared_ptr<SamplerVk>(new SamplerVk(descriptor, sampler, vk_device_));
 }
 
-std::shared_ptr<CommandEncoder> DeviceVk::create_command_encoder(const std::string &_label) {
+std::shared_ptr<CommandEncoder> DeviceVk::create_command_encoder(const std::string &label) {
     // Allocate a command buffer.
     // ----------------------------------------
     VkCommandBufferAllocateInfo alloc_info{};
     alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    alloc_info.commandPool = command_pool;
+    alloc_info.commandPool = vk_command_pool_;
     alloc_info.commandBufferCount = 1;
 
     VkCommandBuffer command_buffer;
-    vkAllocateCommandBuffers(device, &alloc_info, &command_buffer);
+    vkAllocateCommandBuffers(vk_device_, &alloc_info, &command_buffer);
     // ----------------------------------------
 
     auto command_encoder_vk = std::shared_ptr<CommandEncoderVk>(new CommandEncoderVk(command_buffer, this));
-    command_encoder_vk->label = _label;
+    command_encoder_vk->label_ = label;
 
     return command_encoder_vk;
 }
@@ -497,7 +499,7 @@ VkShaderModule DeviceVk::create_shader_module(const std::vector<char> &code) {
     create_info.pCode = reinterpret_cast<const uint32_t *>(code.data());
 
     VkShaderModule shader_module;
-    if (vkCreateShaderModule(device, &create_info, nullptr, &shader_module) != VK_SUCCESS) {
+    if (vkCreateShaderModule(vk_device_, &create_info, nullptr, &shader_module) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create shader module!");
     }
 
@@ -529,7 +531,7 @@ void DeviceVk::create_vk_image(uint32_t width,
     image_info.samples = VK_SAMPLE_COUNT_1_BIT;
     image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    if (vkCreateImage(device, &image_info, nullptr, &image) != VK_SUCCESS) {
+    if (vkCreateImage(vk_device_, &image_info, nullptr, &image) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create image!");
     }
     // -------------------------------------
@@ -538,20 +540,20 @@ void DeviceVk::create_vk_image(uint32_t width,
     // -------------------------------------
     // Get the memory requirements for the image.
     VkMemoryRequirements mem_requirements;
-    vkGetImageMemoryRequirements(device, image, &mem_requirements);
+    vkGetImageMemoryRequirements(vk_device_, image, &mem_requirements);
 
     VkMemoryAllocateInfo alloc_info{};
     alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     alloc_info.allocationSize = mem_requirements.size;
     alloc_info.memoryTypeIndex = find_memory_type(mem_requirements.memoryTypeBits, properties);
 
-    if (vkAllocateMemory(device, &alloc_info, nullptr, &image_memory) != VK_SUCCESS) {
+    if (vkAllocateMemory(vk_device_, &alloc_info, nullptr, &image_memory) != VK_SUCCESS) {
         throw std::runtime_error("Failed to allocate image memory!");
     }
     // -------------------------------------
 
     // Bind the image and memory.
-    vkBindImageMemory(device, image, image_memory, 0);
+    vkBindImageMemory(vk_device_, image, image_memory, 0);
 }
 
 VkImageView DeviceVk::create_vk_image_view(VkImage image, VkFormat format, VkImageAspectFlags aspect_flags) const {
@@ -567,7 +569,7 @@ VkImageView DeviceVk::create_vk_image_view(VkImage image, VkFormat format, VkIma
     view_info.subresourceRange.layerCount = 1;
 
     VkImageView image_view;
-    if (vkCreateImageView(device, &view_info, nullptr, &image_view) != VK_SUCCESS) {
+    if (vkCreateImageView(vk_device_, &view_info, nullptr, &image_view) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create image view!");
     }
 
@@ -604,7 +606,7 @@ VkSampler DeviceVk::create_vk_sampler() const {
     sampler_info.maxLod = 0.0f;
 
     VkSampler sampler;
-    if (vkCreateSampler(device, &sampler_info, nullptr, &sampler) != VK_SUCCESS) {
+    if (vkCreateSampler(vk_device_, &sampler_info, nullptr, &sampler) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create texture sampler!");
     }
 
@@ -625,14 +627,14 @@ void DeviceVk::create_vk_buffer(VkDeviceSize size,
                                                          // accessed by multiple queue families.
 
     // Create buffer.
-    if (vkCreateBuffer(device, &buffer_info, nullptr, &buffer) != VK_SUCCESS) {
+    if (vkCreateBuffer(vk_device_, &buffer_info, nullptr, &buffer) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create buffer!");
     }
 
     // Allocate buffer memory.
     // -------------------------------------
     VkMemoryRequirements mem_requirements;
-    vkGetBufferMemoryRequirements(device, buffer, &mem_requirements);
+    vkGetBufferMemoryRequirements(vk_device_, buffer, &mem_requirements);
 
     VkMemoryAllocateInfo alloc_info{};
     alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -640,20 +642,20 @@ void DeviceVk::create_vk_buffer(VkDeviceSize size,
     alloc_info.memoryTypeIndex = find_memory_type(mem_requirements.memoryTypeBits,
                                                   properties); // Index identifying a memory type.
 
-    if (vkAllocateMemory(device, &alloc_info, nullptr, &buffer_memory) != VK_SUCCESS) {
+    if (vkAllocateMemory(vk_device_, &alloc_info, nullptr, &buffer_memory) != VK_SUCCESS) {
         throw std::runtime_error("Failed to allocate buffer memory!");
     }
     // -------------------------------------
 
     // Bind the buffer and memory.
-    vkBindBufferMemory(device, buffer, buffer_memory, 0);
+    vkBindBufferMemory(vk_device_, buffer, buffer_memory, 0);
 }
 
 uint32_t DeviceVk::find_memory_type(uint32_t type_filter, VkMemoryPropertyFlags properties) const {
     VkPhysicalDeviceMemoryProperties mem_properties;
 
     // Reports memory information for the specified physical device.
-    vkGetPhysicalDeviceMemoryProperties(physical_device, &mem_properties);
+    vkGetPhysicalDeviceMemoryProperties(vk_physical_device_, &mem_properties);
 
     for (uint32_t i = 0; i < mem_properties.memoryTypeCount; i++) {
         if ((type_filter & (1 << i)) && (mem_properties.memoryTypes[i].propertyFlags & properties) == properties) {
@@ -669,11 +671,12 @@ VkFormat DeviceVk::find_supported_format(const std::vector<VkFormat> &candidates
                                          VkFormatFeatureFlags features) const {
     for (VkFormat format : candidates) {
         VkFormatProperties props;
-        vkGetPhysicalDeviceFormatProperties(physical_device, format, &props);
+        vkGetPhysicalDeviceFormatProperties(vk_physical_device_, format, &props);
 
         if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
             return format;
-        } else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
+        }
+        if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
             return format;
         }
     }
@@ -733,16 +736,16 @@ void DeviceVk::copy_buffer_to_image(VkCommandBuffer cmd_buffer,
 
 void DeviceVk::copy_data_to_mappable_memory(const void *src, VkDeviceMemory buffer_memory, size_t data_size) const {
     void *data;
-    vkMapMemory(device, buffer_memory, 0, data_size, 0, &data);
+    vkMapMemory(vk_device_, buffer_memory, 0, data_size, 0, &data);
     memcpy(data, src, data_size);
-    vkUnmapMemory(device, buffer_memory);
+    vkUnmapMemory(vk_device_, buffer_memory);
 }
 
 void DeviceVk::copy_data_from_mappable_memory(void *dst, VkDeviceMemory buffer_memory, size_t data_size) const {
     void *data;
-    vkMapMemory(device, buffer_memory, 0, data_size, 0, &data);
+    vkMapMemory(vk_device_, buffer_memory, 0, data_size, 0, &data);
     memcpy(dst, data, data_size);
-    vkUnmapMemory(device, buffer_memory);
+    vkUnmapMemory(vk_device_, buffer_memory);
 }
 
 } // namespace Pathfinder

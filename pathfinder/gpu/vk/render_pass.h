@@ -15,16 +15,15 @@ public:
     VkRenderPass get_vk_render_pass();
 
 private:
-    RenderPassVk(VkDevice _device,
+    RenderPassVk(VkDevice vk_device,
                  TextureFormat texture_format,
                  AttachmentLoadOp load_op,
                  bool is_swap_chain_pass,
                  const std::string &label);
 
-private:
-    VkRenderPass vk_render_pass{};
+    VkRenderPass vk_render_pass_{};
 
-    VkDevice vk_device{};
+    VkDevice vk_device_{};
 };
 
 } // namespace Pathfinder

@@ -13,19 +13,19 @@ class QueueGl : public Queue {
 
 public:
     void submit_and_wait(std::shared_ptr<CommandEncoder> encoder) override {
-        if (encoder->submitted) {
+        if (encoder->submitted_) {
             Logger::error("Attempted to submit an encoder that's already been submitted!");
             return;
         }
 
-        encoder->submitted = true;
+        encoder->submitted_ = true;
 
         encoder->finish();
-    };
+    }
 
     void submit(std::shared_ptr<CommandEncoder> encoder, std::shared_ptr<SwapChain> surface) override {
         submit_and_wait(encoder);
-    };
+    }
 };
 
 } // namespace Pathfinder

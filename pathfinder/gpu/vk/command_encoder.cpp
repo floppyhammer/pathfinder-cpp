@@ -175,28 +175,28 @@ void transition_image_layout(VkCommandBuffer command_buffer,
     vkCmdPipelineBarrier(command_buffer, src_stage, dst_stage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
-CommandEncoderVk::CommandEncoderVk(VkCommandBuffer _vk_command_buffer, DeviceVk *_device)
-    : vk_command_buffer(_vk_command_buffer), vk_device(_device->get_device()), device_vk(_device) {}
+CommandEncoderVk::CommandEncoderVk(VkCommandBuffer vk_command_buffer, DeviceVk *device)
+    : vk_command_buffer_(vk_command_buffer), vk_device_(device->get_device()), device_vk_(device) {}
 
 CommandEncoderVk::~CommandEncoderVk() {
     invoke_callbacks();
 
-    vkFreeCommandBuffers(vk_device, device_vk->get_command_pool(), 1, &vk_command_buffer);
-    vk_command_buffer = VK_NULL_HANDLE;
+    vkFreeCommandBuffers(vk_device_, device_vk_->get_command_pool(), 1, &vk_command_buffer_);
+    vk_command_buffer_ = VK_NULL_HANDLE;
 }
 
 VkCommandBuffer CommandEncoderVk::get_vk_handle() const {
-    return vk_command_buffer;
+    return vk_command_buffer_;
 }
 
 bool CommandEncoderVk::finish() {
-    if (finished) {
+    if (finished_) {
         Logger::error("Attempted to finished an encoder that's been finished previously!");
         return false;
     }
 
     // Vulkan will complain if we submit an empty command buffer.
-    if (commands.empty()) {
+    if (commands_.empty()) {
         return false;
     }
 
@@ -205,21 +205,21 @@ bool CommandEncoderVk::finish() {
     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     begin_info.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 
-    if (vkBeginCommandBuffer(vk_command_buffer, &begin_info) != VK_SUCCESS) {
+    if (vkBeginCommandBuffer(vk_command_buffer_, &begin_info) != VK_SUCCESS) {
         throw std::runtime_error("Failed to begin recording vk command buffer!");
     }
 
     // Start a new debug marker region
-    DebugMarker::get_singleton()->begin_region(vk_command_buffer, label, ColorF(1.0f, 0.78f, 0.05f, 1.0f));
+    DebugMarker::get_singleton()->begin_region(vk_command_buffer_, label_, ColorF(1.0f, 0.78f, 0.05f, 1.0f));
 
-    for (auto cmd_iter = commands.begin(); cmd_iter < commands.end(); cmd_iter++) {
+    for (auto cmd_iter = commands_.begin(); cmd_iter < commands_.end(); cmd_iter++) {
         auto &cmd = *cmd_iter;
 
         switch (cmd.type) {
             case CommandType::BeginRenderPass: {
                 assert(compute_pipeline == nullptr);
 
-                for (auto cmd_iter2 = cmd_iter; cmd_iter2 < commands.end(); cmd_iter2++) {
+                for (auto cmd_iter2 = cmd_iter; cmd_iter2 < commands_.end(); cmd_iter2++) {
                     if (cmd_iter2->type == CommandType::BindDescriptorSet) {
                         sync_descriptor_set(cmd_iter2->args.bind_descriptor_set.descriptor_set);
                     }
@@ -236,7 +236,7 @@ bool CommandEncoderVk::finish() {
                 if (framebuffer_vk->get_texture()) {
                     auto texture_vk = dynamic_cast<TextureVk *>(framebuffer_vk->get_texture().get());
 
-                    transition_image_layout(vk_command_buffer,
+                    transition_image_layout(vk_command_buffer_,
                                             texture_vk->get_image(),
                                             to_vk_layout(texture_vk->get_layout()),
                                             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -261,7 +261,7 @@ bool CommandEncoderVk::finish() {
                 render_pass_info.clearValueCount = static_cast<uint32_t>(clearValues.size());
                 render_pass_info.pClearValues = clearValues.data();
 
-                vkCmdBeginRenderPass(vk_command_buffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+                vkCmdBeginRenderPass(vk_command_buffer_, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
 
                 Vec2I framebuffer_size = framebuffer_vk->get_size();
 
@@ -273,20 +273,20 @@ bool CommandEncoderVk::finish() {
                 viewport.height = (float)framebuffer_size.y;
                 viewport.minDepth = 0.0f;
                 viewport.maxDepth = 1.0f;
-                vkCmdSetViewport(vk_command_buffer, 0, 1, &viewport);
+                vkCmdSetViewport(vk_command_buffer_, 0, 1, &viewport);
 
                 VkRect2D scissor{};
                 scissor.extent.width = framebuffer_size.x;
                 scissor.extent.height = framebuffer_size.y;
-                vkCmdSetScissor(vk_command_buffer, 0, 1, &scissor);
+                vkCmdSetScissor(vk_command_buffer_, 0, 1, &scissor);
             } break;
             case CommandType::BindRenderPipeline: {
                 auto &args = cmd.args.bind_render_pipeline;
                 auto pipeline_vk = dynamic_cast<RenderPipelineVk *>(args.pipeline);
 
-                render_pipeline = pipeline_vk;
+                render_pipeline_ = pipeline_vk;
 
-                vkCmdBindPipeline(vk_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_vk->get_pipeline());
+                vkCmdBindPipeline(vk_command_buffer_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_vk->get_pipeline());
             } break;
             case CommandType::BindVertexBuffers: {
                 auto &args = cmd.args.bind_vertex_buffers;
@@ -299,7 +299,7 @@ bool CommandEncoderVk::finish() {
                 }
 
                 // Bind vertex and index buffers.
-                vkCmdBindVertexBuffers(vk_command_buffer,
+                vkCmdBindVertexBuffers(vk_command_buffer_,
                                        0,
                                        args.buffer_count,
                                        vertex_buffers.data(),
@@ -309,14 +309,14 @@ bool CommandEncoderVk::finish() {
                 auto &args = cmd.args.bind_descriptor_set;
                 auto descriptor_set_vk = dynamic_cast<DescriptorSetVk *>(args.descriptor_set);
 
-                if (render_pipeline) {
-                    auto render_pipeline_vk = dynamic_cast<RenderPipelineVk *>(render_pipeline);
+                if (render_pipeline_) {
+                    auto render_pipeline_vk = dynamic_cast<RenderPipelineVk *>(render_pipeline_);
 
-                    descriptor_set_vk->update_vk_descriptor_set(vk_device,
+                    descriptor_set_vk->update_vk_descriptor_set(vk_device_,
                                                                 render_pipeline_vk->get_descriptor_set_layout());
 
                     // Bind uniform buffers and samplers.
-                    vkCmdBindDescriptorSets(vk_command_buffer,
+                    vkCmdBindDescriptorSets(vk_command_buffer_,
                                             VK_PIPELINE_BIND_POINT_GRAPHICS,
                                             render_pipeline_vk->get_layout(),
                                             0,
@@ -324,14 +324,14 @@ bool CommandEncoderVk::finish() {
                                             &descriptor_set_vk->get_vk_descriptor_set(),
                                             0,
                                             nullptr);
-                } else if (compute_pipeline) {
-                    auto compute_pipeline_vk = dynamic_cast<ComputePipelineVk *>(compute_pipeline);
+                } else if (compute_pipeline_) {
+                    auto compute_pipeline_vk = dynamic_cast<ComputePipelineVk *>(compute_pipeline_);
 
-                    descriptor_set_vk->update_vk_descriptor_set(vk_device,
+                    descriptor_set_vk->update_vk_descriptor_set(vk_device_,
                                                                 compute_pipeline_vk->get_descriptor_set_layout());
 
                     // Bind uniform buffers and samplers.
-                    vkCmdBindDescriptorSets(vk_command_buffer,
+                    vkCmdBindDescriptorSets(vk_command_buffer_,
                                             VK_PIPELINE_BIND_POINT_COMPUTE,
                                             compute_pipeline_vk->get_layout(),
                                             0,
@@ -346,21 +346,21 @@ bool CommandEncoderVk::finish() {
             } break;
             case CommandType::Draw: {
                 auto &args = cmd.args.draw;
-                vkCmdDraw(vk_command_buffer, args.vertex_count, 1, 0, 0);
+                vkCmdDraw(vk_command_buffer_, args.vertex_count, 1, 0, 0);
             } break;
             case CommandType::DrawInstanced: {
                 auto &args = cmd.args.draw_instanced;
-                vkCmdDraw(vk_command_buffer, args.vertex_count, args.instance_count, 0, 0);
+                vkCmdDraw(vk_command_buffer_, args.vertex_count, args.instance_count, 0, 0);
             } break;
             case CommandType::EndRenderPass: {
-                vkCmdEndRenderPass(vk_command_buffer);
+                vkCmdEndRenderPass(vk_command_buffer_);
 
-                render_pipeline = nullptr;
+                render_pipeline_ = nullptr;
             } break;
             case CommandType::BeginComputePass: {
                 assert(render_pipeline == nullptr);
 
-                for (auto cmd_iter2 = cmd_iter; cmd_iter2 < commands.end(); cmd_iter2++) {
+                for (auto cmd_iter2 = cmd_iter; cmd_iter2 < commands_.end(); cmd_iter2++) {
                     if (cmd_iter2->type == CommandType::BindDescriptorSet) {
                         sync_descriptor_set(cmd_iter2->args.bind_descriptor_set.descriptor_set);
                     }
@@ -374,18 +374,18 @@ bool CommandEncoderVk::finish() {
 
                 auto pipeline_vk = dynamic_cast<ComputePipelineVk *>(args.pipeline);
 
-                compute_pipeline = pipeline_vk;
+                compute_pipeline_ = pipeline_vk;
 
-                vkCmdBindPipeline(vk_command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline_vk->get_pipeline());
+                vkCmdBindPipeline(vk_command_buffer_, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline_vk->get_pipeline());
             } break;
             case CommandType::Dispatch: {
                 auto &args = cmd.args.dispatch;
 
                 // Dispatch compute job.
-                vkCmdDispatch(vk_command_buffer, args.group_size_x, args.group_size_y, args.group_size_z);
+                vkCmdDispatch(vk_command_buffer_, args.group_size_x, args.group_size_y, args.group_size_z);
             } break;
             case CommandType::EndComputePass: {
-                compute_pipeline = nullptr;
+                compute_pipeline_ = nullptr;
             } break;
             case CommandType::WriteBuffer: {
                 auto &args = cmd.args.write_buffer;
@@ -396,26 +396,26 @@ bool CommandEncoderVk::finish() {
                 VkBuffer staging_buffer;
                 VkDeviceMemory staging_buffer_memory;
 
-                device_vk->create_vk_buffer(args.data_size,
-                                            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                            staging_buffer,
-                                            staging_buffer_memory);
+                device_vk_->create_vk_buffer(args.data_size,
+                                             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                             staging_buffer,
+                                             staging_buffer_memory);
 
-                device_vk->copy_data_to_mappable_memory(args.data, staging_buffer_memory, args.data_size);
+                device_vk_->copy_data_to_mappable_memory(args.data, staging_buffer_memory, args.data_size);
                 // ---------------------------------
 
-                device_vk->copy_vk_buffer(vk_command_buffer,
-                                          staging_buffer,
-                                          buffer_vk->get_vk_buffer(),
-                                          args.data_size,
-                                          0,
-                                          args.offset);
+                device_vk_->copy_vk_buffer(vk_command_buffer_,
+                                           staging_buffer,
+                                           buffer_vk->get_vk_buffer(),
+                                           args.data_size,
+                                           0,
+                                           args.offset);
 
                 // Callback to clean up staging resources.
                 auto callback = [this, staging_buffer, staging_buffer_memory] {
-                    vkDestroyBuffer(vk_device, staging_buffer, nullptr);
-                    vkFreeMemory(vk_device, staging_buffer_memory, nullptr);
+                    vkDestroyBuffer(vk_device_, staging_buffer, nullptr);
+                    vkFreeMemory(vk_device_, staging_buffer_memory, nullptr);
                 };
                 add_callback(callback);
             } break;
@@ -436,7 +436,7 @@ bool CommandEncoderVk::finish() {
                 memory_barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
                 memory_barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
 
-                vkCmdPipelineBarrier(vk_command_buffer,
+                vkCmdPipelineBarrier(vk_command_buffer_,
                                      VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                                      VK_PIPELINE_STAGE_TRANSFER_BIT,
                                      0,
@@ -452,25 +452,25 @@ bool CommandEncoderVk::finish() {
                 VkBuffer staging_buffer;
                 VkDeviceMemory staging_buffer_memory;
 
-                device_vk->create_vk_buffer(args.data_size,
-                                            VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                            staging_buffer,
-                                            staging_buffer_memory);
+                device_vk_->create_vk_buffer(args.data_size,
+                                             VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                             staging_buffer,
+                                             staging_buffer_memory);
                 // ---------------------------------
 
-                device_vk->copy_vk_buffer(vk_command_buffer,
-                                          buffer_vk->get_vk_buffer(),
-                                          staging_buffer,
-                                          args.data_size);
+                device_vk_->copy_vk_buffer(vk_command_buffer_,
+                                           buffer_vk->get_vk_buffer(),
+                                           staging_buffer,
+                                           args.data_size);
 
                 // Callback to clean up staging resources.
                 auto callback = [this, staging_buffer, staging_buffer_memory, args] {
                     // Wait for the data transfer to complete before memory mapping.
-                    device_vk->copy_data_from_mappable_memory(args.data, staging_buffer_memory, args.data_size);
+                    device_vk_->copy_data_from_mappable_memory(args.data, staging_buffer_memory, args.data_size);
 
-                    vkDestroyBuffer(vk_device, staging_buffer, nullptr);
-                    vkFreeMemory(vk_device, staging_buffer_memory, nullptr);
+                    vkDestroyBuffer(vk_device_, staging_buffer, nullptr);
+                    vkFreeMemory(vk_device_, staging_buffer_memory, nullptr);
                 };
                 add_callback(callback);
             } break;
@@ -486,13 +486,13 @@ bool CommandEncoderVk::finish() {
                 VkDeviceSize data_size = args.width * args.height * pixel_size;
 
                 // Prepare staging buffer.
-                texture_vk->create_staging_buffer(device_vk);
+                texture_vk->create_staging_buffer(device_vk_);
 
                 // Copy the pixel data to the staging buffer.
-                device_vk->copy_data_to_mappable_memory(args.data, texture_vk->vk_staging_buffer_memory_, data_size);
+                device_vk_->copy_data_to_mappable_memory(args.data, texture_vk->vk_staging_buffer_memory_, data_size);
 
                 // Transition the image layout to transfer dst.
-                transition_image_layout(vk_command_buffer,
+                transition_image_layout(vk_command_buffer_,
                                         texture_vk->get_image(),
                                         to_vk_layout(texture_vk->get_layout()),
                                         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -528,7 +528,7 @@ bool CommandEncoderVk::finish() {
                     }
 
                     // Copy data from a buffer into an image.
-                    vkCmdCopyBufferToImage(vk_command_buffer,
+                    vkCmdCopyBufferToImage(vk_command_buffer_,
                                            texture_vk->vk_staging_buffer_,
                                            texture_vk->get_image(),
                                            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // Final image layout after copy.
@@ -546,10 +546,10 @@ bool CommandEncoderVk::finish() {
                 VkDeviceSize data_size = args.width * args.height * pixel_size;
 
                 // Prepare staging buffer.
-                texture_vk->create_staging_buffer(device_vk);
+                texture_vk->create_staging_buffer(device_vk_);
 
                 // Transition the image layout to transfer dst.
-                transition_image_layout(vk_command_buffer,
+                transition_image_layout(vk_command_buffer_,
                                         texture_vk->get_image(),
                                         to_vk_layout(texture_vk->get_layout()),
                                         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
@@ -585,7 +585,7 @@ bool CommandEncoderVk::finish() {
                     }
 
                     // Copy data from a buffer into an image.
-                    vkCmdCopyImageToBuffer(vk_command_buffer,
+                    vkCmdCopyImageToBuffer(vk_command_buffer_,
                                            texture_vk->get_image(),
                                            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                                            texture_vk->vk_staging_buffer_,
@@ -596,9 +596,9 @@ bool CommandEncoderVk::finish() {
                 // Callback to clean up staging resources.
                 auto callback = [this, texture_vk, data_size, args] {
                     // Copy the pixel data from the staging buffer.
-                    device_vk->copy_data_from_mappable_memory(args.data,
-                                                              texture_vk->vk_staging_buffer_memory_,
-                                                              data_size);
+                    device_vk_->copy_data_from_mappable_memory(args.data,
+                                                               texture_vk->vk_staging_buffer_memory_,
+                                                               data_size);
                 };
                 add_callback(callback);
             } break;
@@ -607,16 +607,16 @@ bool CommandEncoderVk::finish() {
         }
     }
 
-    commands.clear();
+    commands_.clear();
 
-    DebugMarker::get_singleton()->end_region(vk_command_buffer);
+    DebugMarker::get_singleton()->end_region(vk_command_buffer_);
 
     // End recording the command buffer.
-    if (vkEndCommandBuffer(vk_command_buffer) != VK_SUCCESS) {
+    if (vkEndCommandBuffer(vk_command_buffer_) != VK_SUCCESS) {
         throw std::runtime_error("Failed to end vk command buffer!");
     }
 
-    finished = true;
+    finished_ = true;
 
     return true;
 }
@@ -631,7 +631,7 @@ void CommandEncoderVk::sync_descriptor_set(DescriptorSet *descriptor_set) {
                 auto texture = d.second.texture.get();
                 auto texture_vk = dynamic_cast<TextureVk *>(texture);
 
-                transition_image_layout(vk_command_buffer,
+                transition_image_layout(vk_command_buffer_,
                                         texture_vk->get_image(),
                                         to_vk_layout(texture_vk->get_layout()),
                                         to_vk_layout(TextureLayout::ShaderReadOnly));
@@ -641,7 +641,7 @@ void CommandEncoderVk::sync_descriptor_set(DescriptorSet *descriptor_set) {
                 auto texture = d.second.texture.get();
                 auto texture_vk = dynamic_cast<TextureVk *>(texture);
 
-                transition_image_layout(vk_command_buffer,
+                transition_image_layout(vk_command_buffer_,
                                         texture_vk->get_image(),
                                         to_vk_layout(texture_vk->get_layout()),
                                         to_vk_layout(TextureLayout::General));
@@ -698,7 +698,7 @@ void CommandEncoderVk::sync_descriptor_set(DescriptorSet *descriptor_set) {
             memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
             memory_barrier.dstAccessMask = dst_access_mask;
 
-            vkCmdPipelineBarrier(vk_command_buffer,
+            vkCmdPipelineBarrier(vk_command_buffer_,
                                  VK_PIPELINE_STAGE_TRANSFER_BIT,
                                  dst_stage_mask,
                                  0,

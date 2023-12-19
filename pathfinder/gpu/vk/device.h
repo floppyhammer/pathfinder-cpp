@@ -15,6 +15,12 @@ class DeviceVk : public Device {
     friend class WindowBuilderVk;
 
 public:
+    DeviceVk(VkDevice vk_device,
+             VkPhysicalDevice vk_physical_device,
+             VkQueue vk_graphics_queue,
+             VkQueue vk_present_queue,
+             VkCommandPool vk_command_pool);
+
     std::shared_ptr<RenderPass> create_render_pass(TextureFormat format,
                                                    AttachmentLoadOp load_op,
                                                    const std::string &label) override;
@@ -23,7 +29,7 @@ public:
 
     std::shared_ptr<Framebuffer> create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
                                                     const std::shared_ptr<Texture> &texture,
-                                                    const std::string &_label) override;
+                                                    const std::string &label) override;
 
     std::shared_ptr<Buffer> create_buffer(const BufferDescriptor &desc, const std::string &label) override;
 
@@ -77,26 +83,18 @@ public:
                         VkDeviceSize src_offset = 0,
                         VkDeviceSize dst_offset = 0) const;
 
-public:
-    DeviceVk(VkDevice device,
-             VkPhysicalDevice physical_device,
-             VkQueue _graphics_queue,
-             VkQueue _present_queue,
-             VkCommandPool command_pool);
-
 private:
     /// The graphics card that we'll end up selecting will be stored in a VkPhysicalDevice handle.
-    VkPhysicalDevice physical_device{};
+    VkPhysicalDevice vk_physical_device_{};
 
-    VkDevice device{};
+    VkDevice vk_device_{};
 
-    VkQueue graphics_queue{};
+    VkQueue vk_graphics_queue_{};
 
-    VkQueue present_queue{};
+    VkQueue vk_present_queue_{};
 
-    VkCommandPool command_pool{};
+    VkCommandPool vk_command_pool_{};
 
-private:
     VkShaderModule create_shader_module(const std::vector<char> &code);
 
     void create_vk_image(uint32_t width,

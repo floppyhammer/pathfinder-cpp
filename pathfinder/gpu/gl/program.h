@@ -45,7 +45,7 @@ public:
 
 protected:
     /// Program ID.
-    unsigned int id;
+    unsigned int id_;
 
     /// Utility function for checking shader compilation/linking errors.
     static void check_compile_errors(GLuint shader, const std::string &type) {

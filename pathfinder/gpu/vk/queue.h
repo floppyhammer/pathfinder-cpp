@@ -1,8 +1,6 @@
 #ifndef PATHFINDER_GPU_QUEUE_VK_H
 #define PATHFINDER_GPU_QUEUE_VK_H
 
-#include <vector>
-
 #include "../queue.h"
 #include "swap_chain.h"
 
@@ -18,19 +16,19 @@ public:
     void submit(std::shared_ptr<CommandEncoder> encoder, std::shared_ptr<SwapChain> surface) override;
 
 private:
-    VkDevice device{};
+    VkDevice vk_device_{};
 
-    VkQueue graphics_queue{};
+    VkQueue vk_graphics_queue_{};
 
-    VkQueue present_queue{};
+    VkQueue vk_present_queue_{};
 
-    std::shared_ptr<CommandEncoder> encoder_of_last_frame;
+    std::shared_ptr<CommandEncoder> encoder_of_last_frame_;
 
 public:
-    QueueVk(VkDevice _device, VkQueue _graphics_queue, VkQueue _present_queue) {
-        device = _device;
-        graphics_queue = _graphics_queue;
-        present_queue = _present_queue;
+    QueueVk(VkDevice vk_device, VkQueue vk_graphics_queue, VkQueue vk_present_queue) {
+        vk_device_ = vk_device;
+        vk_graphics_queue_ = vk_graphics_queue;
+        vk_present_queue_ = vk_present_queue;
     }
 };
 

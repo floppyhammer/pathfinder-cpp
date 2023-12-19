@@ -21,18 +21,17 @@ public:
     VkCommandBuffer get_vk_handle() const;
 
 private:
-    CommandEncoderVk(VkCommandBuffer _vk_command_buffer, DeviceVk *_device);
+    CommandEncoderVk(VkCommandBuffer vk_command_buffer, DeviceVk *device);
 
     void sync_descriptor_set(DescriptorSet *descriptor_set);
 
     bool finish() override;
 
-private:
-    VkCommandBuffer vk_command_buffer{};
+    VkCommandBuffer vk_command_buffer_{};
 
-    VkDevice vk_device{};
+    VkDevice vk_device_{};
 
-    DeviceVk *device_vk{};
+    DeviceVk *device_vk_{};
 };
 
 } // namespace Pathfinder

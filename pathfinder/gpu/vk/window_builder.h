@@ -24,9 +24,9 @@ const std::vector<const char *> DEVICE_EXTENSIONS = {
 
 const std::vector<const char *> INSTANCE_EXTENSIONS = {
     "VK_KHR_surface",
-    #ifdef __ANDROID__
+#ifdef __ANDROID__
     "VK_KHR_android_surface",
-    #endif
+#endif
 };
 
 struct QueueFamilyIndices {
@@ -56,11 +56,11 @@ class Window;
 
 class WindowBuilderVk : public WindowBuilder {
 public:
-    #ifndef __ANDROID__
+#ifndef __ANDROID__
     explicit WindowBuilderVk(const Vec2I &size);
-    #else
+#else
     explicit WindowBuilderVk(ANativeWindow *native_window, const Vec2I &window_size);
-    #endif
+#endif
 
     ~WindowBuilderVk() override;
 
@@ -90,27 +90,27 @@ private:
     VkDebugUtilsMessengerEXT debug_messenger{};
 
     static const bool enable_validation_layers =
-    #if defined(PATHFINDER_DEBUG) && !defined(__ANDROID__)
+#if defined(PATHFINDER_DEBUG) && !defined(__ANDROID__)
         true;
-    #else
+#else
         false;
-    #endif
+#endif
 
     VkQueue graphics_queue{};
     VkQueue present_queue{};
 
     VkCommandPool command_pool{};
 
-    #ifdef __ANDROID__
+#ifdef __ANDROID__
     ANativeWindow *native_window_;
-    #endif
+#endif
 
 private:
-    #ifndef __ANDROID__
+#ifndef __ANDROID__
     static GLFWwindow *glfw_window_init(const Vec2I &size,
                                         const std::string &title,
                                         GLFWwindow *shared_window = nullptr);
-    #endif
+#endif
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
                                                          VkDebugUtilsMessageTypeFlagsEXT message_type,

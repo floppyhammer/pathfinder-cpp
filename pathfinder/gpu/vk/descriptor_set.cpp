@@ -5,11 +5,11 @@
 
 namespace Pathfinder {
 
-void DescriptorSetVk::update_vk_descriptor_set(VkDevice _device, VkDescriptorSetLayout descriptor_set_layout) {
-    device = _device;
+void DescriptorSetVk::update_vk_descriptor_set(VkDevice vk_device, VkDescriptorSetLayout vk_descriptor_set_layout) {
+    vk_device_ = vk_device;
 
     // Create descriptor pool and allocate descriptor sets.
-    if (!descriptor_set_allocated) {
+    if (!descriptor_set_allocated_) {
         // Get pool sizes.
         std::vector<VkDescriptorPoolSize> poolSizes{};
 
@@ -44,21 +44,21 @@ void DescriptorSetVk::update_vk_descriptor_set(VkDevice _device, VkDescriptorSet
         pool_info.pPoolSizes = poolSizes.data();
         pool_info.maxSets = 1;
 
-        if (vkCreateDescriptorPool(device, &pool_info, nullptr, &descriptor_pool) != VK_SUCCESS) {
+        if (vkCreateDescriptorPool(vk_device_, &pool_info, nullptr, &vk_descriptor_pool_) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create descriptor pool!");
         }
 
         VkDescriptorSetAllocateInfo alloc_info{};
         alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        alloc_info.descriptorPool = descriptor_pool;
+        alloc_info.descriptorPool = vk_descriptor_pool_;
         alloc_info.descriptorSetCount = 1;
-        alloc_info.pSetLayouts = &descriptor_set_layout;
+        alloc_info.pSetLayouts = &vk_descriptor_set_layout;
 
-        if (vkAllocateDescriptorSets(device, &alloc_info, &descriptor_set) != VK_SUCCESS) {
+        if (vkAllocateDescriptorSets(vk_device_, &alloc_info, &vk_descriptor_set_) != VK_SUCCESS) {
             throw std::runtime_error("Failed to allocate descriptor sets!");
         }
 
-        descriptor_set_allocated = true;
+        descriptor_set_allocated_ = true;
     }
 
     for (auto &pair : descriptors) {
@@ -73,7 +73,7 @@ void DescriptorSetVk::update_vk_descriptor_set(VkDevice _device, VkDescriptorSet
         VkDescriptorImageInfo image_info{};
 
         descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptor_write.dstSet = descriptor_set;
+        descriptor_write.dstSet = vk_descriptor_set_;
         descriptor_write.dstBinding = descriptor.binding;
         descriptor_write.dstArrayElement = 0;
         descriptor_write.descriptorCount = 1;
@@ -132,18 +132,18 @@ void DescriptorSetVk::update_vk_descriptor_set(VkDevice _device, VkDescriptorSet
 
         // If you want to update multiple descriptor sets at once,
         // make sure the pBufferInfo or pImageInfo pointer is still valid at this point.
-        vkUpdateDescriptorSets(device, 1, &descriptor_write, 0, nullptr);
+        vkUpdateDescriptorSets(vk_device_, 1, &descriptor_write, 0, nullptr);
     }
 }
 
 VkDescriptorSet &DescriptorSetVk::get_vk_descriptor_set() {
-    return descriptor_set;
+    return vk_descriptor_set_;
 }
 
 DescriptorSetVk::~DescriptorSetVk() {
-    if (descriptor_set_allocated) {
+    if (descriptor_set_allocated_) {
         // When we destroy the pool, the sets inside are destroyed as well.
-        vkDestroyDescriptorPool(device, descriptor_pool, nullptr);
+        vkDestroyDescriptorPool(vk_device_, vk_descriptor_pool_, nullptr);
     }
 }
 

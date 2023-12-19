@@ -42,7 +42,7 @@ public:
     }
 
 protected:
-    explicit Sampler(SamplerDescriptor descriptor) : descriptor_(descriptor) {}
+    explicit Sampler(const SamplerDescriptor& descriptor) : descriptor_(descriptor) {}
 
     SamplerDescriptor descriptor_;
 };

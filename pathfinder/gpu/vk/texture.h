@@ -17,7 +17,7 @@ public:
     ~TextureVk() override;
 
     // Wrapping an external Vulkan image.
-    static std::shared_ptr<TextureVk> from_wrapping(const TextureDescriptor& _desc,
+    static std::shared_ptr<TextureVk> from_wrapping(const TextureDescriptor& desc,
                                                     VkImage image,
                                                     VkDeviceMemory image_memory,
                                                     VkImageView image_view,
@@ -31,11 +31,11 @@ public:
 
     void set_layout(TextureLayout new_layout);
 
-    void set_label(const std::string& _label) override;
+    void set_label(const std::string& label) override;
 
 private:
     // This constructor is only a wrapper, actual GPU resource allocation is done by DeviceVk.
-    TextureVk(VkDevice _vk_device, const TextureDescriptor& _desc);
+    TextureVk(VkDevice vk_device, const TextureDescriptor& desc);
 
     void create_staging_buffer(DeviceVk* device_vk);
 

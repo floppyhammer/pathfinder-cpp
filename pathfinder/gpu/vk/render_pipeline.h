@@ -13,38 +13,37 @@ class RenderPipelineVk : public RenderPipeline {
 
 public:
     ~RenderPipelineVk() override {
-        vkDestroyDescriptorSetLayout(vk_device, vk_descriptor_set_layout, nullptr);
-        vkDestroyPipeline(vk_device, vk_pipeline, nullptr);
-        vkDestroyPipelineLayout(vk_device, vk_layout, nullptr);
+        vkDestroyDescriptorSetLayout(vk_device_, vk_descriptor_set_layout_, nullptr);
+        vkDestroyPipeline(vk_device_, vk_pipeline_, nullptr);
+        vkDestroyPipelineLayout(vk_device_, vk_layout_, nullptr);
     }
 
-    inline VkPipeline get_pipeline() const {
-        return vk_pipeline;
+    VkPipeline get_pipeline() const {
+        return vk_pipeline_;
     }
 
-    inline VkPipelineLayout get_layout() const {
-        return vk_layout;
+    VkPipelineLayout get_layout() const {
+        return vk_layout_;
     }
 
-    inline VkDescriptorSetLayout get_descriptor_set_layout() const {
-        return vk_descriptor_set_layout;
+    VkDescriptorSetLayout get_descriptor_set_layout() const {
+        return vk_descriptor_set_layout_;
     }
 
 private:
-    RenderPipelineVk(VkDevice _vk_device,
-                     const std::vector<VertexInputAttributeDescription> &_attribute_descriptions,
-                     BlendState _blend_state,
-                     std::string _label)
-        : RenderPipeline(_attribute_descriptions, _blend_state, std::move(_label)), vk_device(_vk_device) {}
+    RenderPipelineVk(VkDevice vk_device,
+                     const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
+                     BlendState blend_state,
+                     std::string label)
+        : RenderPipeline(attribute_descriptions, blend_state, std::move(label)), vk_device_(vk_device) {}
 
-private:
-    VkPipeline vk_pipeline{};
+    VkPipeline vk_pipeline_{};
 
-    VkDescriptorSetLayout vk_descriptor_set_layout{};
+    VkDescriptorSetLayout vk_descriptor_set_layout_{};
 
-    VkPipelineLayout vk_layout{};
+    VkPipelineLayout vk_layout_{};
 
-    VkDevice vk_device{};
+    VkDevice vk_device_{};
 };
 
 } // namespace Pathfinder

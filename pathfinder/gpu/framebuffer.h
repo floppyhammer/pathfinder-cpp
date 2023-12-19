@@ -3,52 +3,48 @@
 
 #include <cassert>
 #include <memory>
-#include <utility>
 
 #include "texture.h"
 
 namespace Pathfinder {
 
-/**
- * Creation of a framebuffer is render pass dependent.
- */
+/// Creation of a framebuffer is render pass dependent.
 class Framebuffer {
 public:
     virtual ~Framebuffer() = default;
 
-    inline std::shared_ptr<Texture> get_texture() const {
-        return texture;
+    std::shared_ptr<Texture> get_texture() const {
+        return texture_;
     }
 
     /// Get the unique resource ID for the framebuffer.
     virtual unsigned long long get_unique_id() = 0;
 
-    inline Vec2I get_size() const {
-        if (texture) {
-            return texture->get_size();
+    Vec2I get_size() const {
+        if (texture_) {
+            return texture_->get_size();
         }
-        return size;
+        return size_;
     }
 
     // Sometimes, we need to update label for a framebuffer as we reuse it for another purpose.
-    virtual void set_label(const std::string& _label) {
-        label = _label;
+    virtual void set_label(const std::string& label) {
+        label_ = label;
     }
 
 protected:
     /// Render to screen or swap chain.
-    explicit Framebuffer(Vec2I _size) : size(_size) {}
+    explicit Framebuffer(const Vec2I& size) : size_(size) {}
 
     /// Render to a texture.
-    explicit Framebuffer(const std::shared_ptr<Texture>& _texture) : size(_texture->get_size()), texture(_texture) {}
+    explicit Framebuffer(const std::shared_ptr<Texture>& texture) : size_(texture->get_size()), texture_(texture) {}
 
-protected:
-    Vec2I size;
+    Vec2I size_;
 
-    std::shared_ptr<Texture> texture;
+    std::shared_ptr<Texture> texture_;
 
     /// Debug label.
-    std::string label;
+    std::string label_;
 };
 
 } // namespace Pathfinder

@@ -31,7 +31,7 @@ int main() {
     {
         auto dst_texture = device->create_texture({window_size, Pathfinder::TextureFormat::Rgba8Unorm}, "dst texture");
 
-        app.canvas->set_dst_texture(dst_texture);
+        app.canvas_->set_dst_texture(dst_texture);
 
         texture_rect->set_texture(dst_texture);
     }
@@ -49,14 +49,14 @@ int main() {
 
             auto current_window_size = window->get_size();
 
-            if (current_window_size != app.canvas->get_dst_texture()->get_size() && current_window_size.area() != 0) {
+            if (current_window_size != app.canvas_->get_dst_texture()->get_size() && current_window_size.area() != 0) {
                 auto dst_texture =
                     device->create_texture({current_window_size, Pathfinder::TextureFormat::Rgba8Unorm}, "dst texture");
 
-                app.canvas->set_dst_texture(dst_texture);
+                app.canvas_->set_dst_texture(dst_texture);
                 texture_rect->set_texture(dst_texture);
 
-                app.canvas->set_size(current_window_size);
+                app.canvas_->set_size(current_window_size);
             }
 
             app.update();

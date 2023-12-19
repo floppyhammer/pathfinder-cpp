@@ -17,15 +17,6 @@
 namespace Pathfinder {
 
 class DebugMarker {
-private:
-    bool active = false;
-
-    PFN_vkSetDebugUtilsObjectTagEXT vkDebugUtilsSetObjectTag = VK_NULL_HANDLE;
-    PFN_vkSetDebugUtilsObjectNameEXT vkDebugUtilsSetObjectName = VK_NULL_HANDLE;
-    PFN_vkCmdBeginDebugUtilsLabelEXT vkCmdBeginDebugUtilsLabel = VK_NULL_HANDLE;
-    PFN_vkCmdInsertDebugUtilsLabelEXT vkCmdInsertDebugUtilsLabel = VK_NULL_HANDLE;
-    PFN_vkCmdEndDebugUtilsLabelEXT vkCmdEndDebugUtilsLabel = VK_NULL_HANDLE;
-
 public:
     static DebugMarker* get_singleton() {
         static DebugMarker singleton;
@@ -126,6 +117,15 @@ public:
                          "DebugMarker");
         }
     }
+
+private:
+    bool active = false;
+
+    PFN_vkSetDebugUtilsObjectTagEXT vkDebugUtilsSetObjectTag = VK_NULL_HANDLE;
+    PFN_vkSetDebugUtilsObjectNameEXT vkDebugUtilsSetObjectName = VK_NULL_HANDLE;
+    PFN_vkCmdBeginDebugUtilsLabelEXT vkCmdBeginDebugUtilsLabel = VK_NULL_HANDLE;
+    PFN_vkCmdInsertDebugUtilsLabelEXT vkCmdInsertDebugUtilsLabel = VK_NULL_HANDLE;
+    PFN_vkCmdEndDebugUtilsLabelEXT vkCmdEndDebugUtilsLabel = VK_NULL_HANDLE;
 };
 
 } // namespace Pathfinder

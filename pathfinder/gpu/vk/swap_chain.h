@@ -32,38 +32,38 @@ public:
 
 private:
     WindowVk *window_{};
-    DeviceVk *device_vk_{};
+    DeviceVk *device_{};
 
-    VkSwapchainKHR swapchain{};
+    VkSwapchainKHR vk_swapchain_{};
 
-    std::shared_ptr<RenderPass> render_pass;
-    std::vector<std::shared_ptr<Framebuffer>> framebuffers;
+    std::shared_ptr<RenderPass> render_pass_;
+    std::vector<std::shared_ptr<Framebuffer>> framebuffers_;
 
     /// Swap chain images are allocated differently than normal images.
     /// Number of images doesn't necessarily equal to MAX_FRAMES_IN_FLIGHT (One is expected, the other is what we
     /// actually get considering device capacity).
-    std::vector<VkImage> swapchain_images;
+    std::vector<VkImage> swapchain_images_;
 
     /// VkImageView defines which part of VkImage to use.
-    std::vector<VkImageView> swapchain_image_views;
+    std::vector<VkImageView> swapchain_image_views_;
 
     /// The format for the swap chain images.
     /// Default will be VK_FORMAT_B8G8R8A8_SRGB.
-    VkFormat swapchain_image_format{};
+    VkFormat swapchain_image_format_{};
 
     /// Each frame should have its own set of semaphores, so a list is used.
-    std::vector<VkSemaphore> image_available_semaphores; // Check before acquiring an image.
-    std::vector<VkSemaphore> render_finished_semaphores; // Check before presenting an image.
+    std::vector<VkSemaphore> image_available_semaphores_; // Check before acquiring an image.
+    std::vector<VkSemaphore> render_finished_semaphores_; // Check before presenting an image.
 
     /// To perform CPU-GPU synchronization using fences.
-    std::vector<VkFence> in_flight_fences;
-    std::vector<VkFence> images_in_flight;
+    std::vector<VkFence> in_flight_fences_;
+    std::vector<VkFence> images_in_flight_;
 
     /// To use the right pair of semaphores every time,
     /// we need to keep track of the current frame.
-    size_t current_frame = 0;
+    size_t current_frame_ = 0;
 
-    uint32_t image_index = 0;
+    uint32_t image_index_ = 0;
 
 private:
     void init_swapchain();

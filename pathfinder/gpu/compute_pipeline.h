@@ -1,10 +1,7 @@
 #ifndef PATHFINDER_GPU_COMPUTE_PIPELINE_H
 #define PATHFINDER_GPU_COMPUTE_PIPELINE_H
 
-#include <memory>
 #include <string>
-
-#include "base.h"
 
 namespace Pathfinder {
 
@@ -13,7 +10,7 @@ public:
     virtual ~ComputePipeline() = default;
 
 protected:
-    std::string label;
+    std::string label_;
 };
 
 } // namespace Pathfinder
