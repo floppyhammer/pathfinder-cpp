@@ -56,10 +56,15 @@ std::vector<char> load_file_as_bytes(const std::string &file_path) {
     }
 
     fseek(file, 0, SEEK_END);
-    long length = ftell(file);
+    const long length = ftell(file);
     std::vector<char> bytes(length);
     fseek(file, 0, SEEK_SET);
-    fread(bytes.data(), 1, length, file);
+
+    const size_t ret = fread(bytes.data(), 1, length, file);
+    if (ret != length) {
+        Logger::error("Error reading file: " + file_path);
+    }
+
     fclose(file);
 
     timer.record("Loading file as bytes: " + file_path);
