@@ -25,7 +25,7 @@ bool CommandEncoderGl::finish() {
 
         switch (cmd.type) {
             case CommandType::BeginRenderPass: {
-                assert(compute_pipeline == nullptr);
+                assert(compute_pipeline_ == nullptr);
 
                 auto &args = cmd.args.begin_render_pass;
                 auto render_pass_gl = static_cast<RenderPassGl *>(args.render_pass);
@@ -65,7 +65,7 @@ bool CommandEncoderGl::finish() {
                 gl_check_error("BindRenderPipeline");
             } break;
             case CommandType::BindVertexBuffers: {
-                assert(render_pipeline != nullptr);
+                assert(render_pipeline_ != nullptr);
 
                 auto &args = cmd.args.bind_vertex_buffers;
 
@@ -243,7 +243,7 @@ bool CommandEncoderGl::finish() {
                 render_pipeline_ = nullptr;
             } break;
             case CommandType::BeginComputePass: {
-                assert(render_pipeline == nullptr);
+                assert(render_pipeline_ == nullptr);
             } break;
             case CommandType::BindComputePipeline: {
                 auto &args = cmd.args.bind_compute_pipeline;

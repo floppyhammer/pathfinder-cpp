@@ -217,7 +217,7 @@ bool CommandEncoderVk::finish() {
 
         switch (cmd.type) {
             case CommandType::BeginRenderPass: {
-                assert(compute_pipeline == nullptr);
+                assert(compute_pipeline_ == nullptr);
 
                 for (auto cmd_iter2 = cmd_iter; cmd_iter2 < commands_.end(); cmd_iter2++) {
                     if (cmd_iter2->type == CommandType::BindDescriptorSet) {
@@ -358,7 +358,7 @@ bool CommandEncoderVk::finish() {
                 render_pipeline_ = nullptr;
             } break;
             case CommandType::BeginComputePass: {
-                assert(render_pipeline == nullptr);
+                assert(render_pipeline_ == nullptr);
 
                 for (auto cmd_iter2 = cmd_iter; cmd_iter2 < commands_.end(); cmd_iter2++) {
                     if (cmd_iter2->type == CommandType::BindDescriptorSet) {
