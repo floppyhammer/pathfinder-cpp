@@ -6,8 +6,11 @@
 
 namespace Pathfinder {
 
+class DeviceVk;
+
 class BufferVk : public Buffer {
     friend class DeviceVk;
+    friend class CommandEncoderVk;
 
 public:
     ~BufferVk() override;
@@ -25,8 +28,13 @@ public:
 private:
     BufferVk(VkDevice vk_device, const BufferDescriptor& desc);
 
+    void create_staging_buffer(DeviceVk* device_vk);
+
     VkBuffer vk_buffer_{};
     VkDeviceMemory vk_device_memory_{};
+
+    VkBuffer vk_staging_buffer_{};
+    VkDeviceMemory vk_staging_device_memory_{};
 
     VkDevice vk_device_{};
 };

@@ -87,7 +87,7 @@ void TextureVk::create_staging_buffer(DeviceVk* device_vk) {
     uint32_t max_data_size = get_size().area() * pixel_size;
 
     device_vk->create_vk_buffer(max_data_size,
-                                VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                 vk_staging_buffer_,
                                 vk_staging_buffer_memory_);

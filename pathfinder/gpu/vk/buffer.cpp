@@ -13,6 +13,11 @@ BufferVk::BufferVk(VkDevice vk_device, const BufferDescriptor& desc) : Buffer(de
 BufferVk::~BufferVk() {
     vkDestroyBuffer(vk_device_, vk_buffer_, nullptr);
     vkFreeMemory(vk_device_, vk_device_memory_, nullptr);
+
+    if (vk_staging_buffer_) {
+        vkDestroyBuffer(vk_device_, vk_staging_buffer_, nullptr);
+        vkFreeMemory(vk_device_, vk_staging_device_memory_, nullptr);
+    }
 }
 
 VkBuffer BufferVk::get_vk_buffer() {
@@ -63,6 +68,18 @@ void BufferVk::set_label(const std::string& label) {
     Buffer::set_label(label);
 
     DebugMarker::get_singleton()->set_object_name(vk_device_, (uint64_t)vk_buffer_, VK_OBJECT_TYPE_BUFFER, label);
+}
+
+void BufferVk::create_staging_buffer(DeviceVk* device_vk) {
+    if (vk_staging_buffer_ != VK_NULL_HANDLE) {
+        return;
+    }
+
+    device_vk->create_vk_buffer(get_size(),
+                                VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                vk_staging_buffer_,
+                                vk_staging_device_memory_);
 }
 
 } // namespace Pathfinder

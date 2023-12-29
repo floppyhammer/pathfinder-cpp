@@ -393,14 +393,10 @@ bool CommandEncoderVk::finish() {
 
                 // Create a host visible buffer and copy data to it by memory mapping.
                 // ---------------------------------
-                VkBuffer staging_buffer;
-                VkDeviceMemory staging_buffer_memory;
+                buffer_vk->create_staging_buffer(device_vk_);
 
-                device_vk_->create_vk_buffer(args.data_size,
-                                             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                             staging_buffer,
-                                             staging_buffer_memory);
+                VkBuffer staging_buffer = buffer_vk->vk_staging_buffer_;
+                VkDeviceMemory staging_buffer_memory = buffer_vk->vk_staging_device_memory_;
 
                 device_vk_->copy_data_to_mappable_memory(args.data, staging_buffer_memory, args.data_size);
                 // ---------------------------------
@@ -411,13 +407,6 @@ bool CommandEncoderVk::finish() {
                                            args.data_size,
                                            0,
                                            args.offset);
-
-                // Callback to clean up staging resources.
-                auto callback = [this, staging_buffer, staging_buffer_memory] {
-                    vkDestroyBuffer(vk_device_, staging_buffer, nullptr);
-                    vkFreeMemory(vk_device_, staging_buffer_memory, nullptr);
-                };
-                add_callback(callback);
             } break;
             // Only for storage buffer.
             case CommandType::ReadBuffer: {
@@ -449,14 +438,10 @@ bool CommandEncoderVk::finish() {
 
                 // Create a host visible buffer and copy data to it by memory mapping.
                 // ---------------------------------
-                VkBuffer staging_buffer;
-                VkDeviceMemory staging_buffer_memory;
+                buffer_vk->create_staging_buffer(device_vk_);
 
-                device_vk_->create_vk_buffer(args.data_size,
-                                             VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                             staging_buffer,
-                                             staging_buffer_memory);
+                VkBuffer staging_buffer = buffer_vk->vk_staging_buffer_;
+                VkDeviceMemory staging_buffer_memory = buffer_vk->vk_staging_device_memory_;
                 // ---------------------------------
 
                 device_vk_->copy_vk_buffer(vk_command_buffer_,
@@ -464,13 +449,9 @@ bool CommandEncoderVk::finish() {
                                            staging_buffer,
                                            args.data_size);
 
-                // Callback to clean up staging resources.
-                auto callback = [this, staging_buffer, staging_buffer_memory, args] {
+                auto callback = [this, staging_buffer_memory, args] {
                     // Wait for the data transfer to complete before memory mapping.
                     device_vk_->copy_data_from_mappable_memory(args.data, staging_buffer_memory, args.data_size);
-
-                    vkDestroyBuffer(vk_device_, staging_buffer, nullptr);
-                    vkFreeMemory(vk_device_, staging_buffer_memory, nullptr);
                 };
                 add_callback(callback);
             } break;

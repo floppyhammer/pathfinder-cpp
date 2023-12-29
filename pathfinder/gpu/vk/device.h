@@ -104,7 +104,8 @@ private:
                          VkImageUsageFlags usage,
                          VkMemoryPropertyFlags properties,
                          VkImage &image,
-                         VkDeviceMemory &image_memory) const;
+                         VkDeviceMemory &image_memory,
+                         size_t &memory_size) const;
 
     VkImageView create_vk_image_view(VkImage image, VkFormat format, VkImageAspectFlags aspect_flags) const;
 

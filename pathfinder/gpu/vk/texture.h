@@ -45,10 +45,13 @@ private:
     /// Device memory.
     VkDeviceMemory vk_image_memory_{};
 
+    size_t memory_size_{};
+
     /// Thin wrapper over image.
     VkImageView vk_image_view_{};
 
     /// Cache the host visible buffer used to read/write the texture.
+    /// (Mipmap level is not considered for the buffer size yet.)
     VkBuffer vk_staging_buffer_{};
     VkDeviceMemory vk_staging_buffer_memory_{};
 

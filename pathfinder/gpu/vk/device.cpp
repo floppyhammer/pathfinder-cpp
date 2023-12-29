@@ -425,7 +425,8 @@ std::shared_ptr<Texture> DeviceVk::create_texture(const TextureDescriptor &desc,
                         VK_IMAGE_USAGE_STORAGE_BIT,
                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                     texture_vk->vk_image_,
-                    texture_vk->vk_image_memory_);
+                    texture_vk->vk_image_memory_,
+                    texture_vk->memory_size_);
 
     // Create image view.
     texture_vk->vk_image_view_ =
@@ -513,7 +514,8 @@ void DeviceVk::create_vk_image(uint32_t width,
                                VkImageUsageFlags usage,
                                VkMemoryPropertyFlags properties,
                                VkImage &image,
-                               VkDeviceMemory &image_memory) const {
+                               VkDeviceMemory &image_memory,
+                               size_t &memory_size) const {
     // Create image.
     // -------------------------------------
     VkImageCreateInfo image_info{};
@@ -541,6 +543,8 @@ void DeviceVk::create_vk_image(uint32_t width,
     // Get the memory requirements for the image.
     VkMemoryRequirements mem_requirements;
     vkGetImageMemoryRequirements(vk_device_, image, &mem_requirements);
+
+    memory_size = mem_requirements.size;
 
     VkMemoryAllocateInfo alloc_info{};
     alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
