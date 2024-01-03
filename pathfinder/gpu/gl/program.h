@@ -22,7 +22,7 @@ public:
     /// Activate the shader.
     void use() const;
 
-    unsigned int get_id() const;
+    unsigned int get_handle() const;
 
     // Utility uniform functions.
     // ------------------------------------------------------
@@ -52,11 +52,12 @@ protected:
     /// Utility function for checking shader linking errors.
     void check_compile_errors() const {
         GLint success;
-        GLchar info_log[1024];
-
         glGetProgramiv(id_, GL_LINK_STATUS, &success);
+
         if (!success) {
+            GLchar info_log[1024];
             glGetProgramInfoLog(id_, 1024, nullptr, info_log);
+
             std::ostringstream string_stream;
             string_stream << "PROGRAM_LINKING_ERROR:"
                           << "\n"

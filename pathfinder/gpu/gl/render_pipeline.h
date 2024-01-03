@@ -39,7 +39,7 @@ private:
 
         gl_check_error("create_render_pipeline");
 
-        DebugMarker::label_program(program_->get_id(), label_ + " program");
+        DebugMarker::label_program(program_->get_handle(), label_ + " program");
         DebugMarker::label_vao(vao_, label_ + " VAO");
     };
 

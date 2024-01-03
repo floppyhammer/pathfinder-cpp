@@ -143,10 +143,10 @@ bool CommandEncoderGl::finish() {
                 uint32_t program_id;
                 if (render_pipeline_ != nullptr) {
                     auto pipeline_gl = static_cast<RenderPipelineGl *>(render_pipeline_);
-                    program_id = pipeline_gl->get_program()->get_id();
+                    program_id = pipeline_gl->get_program()->get_handle();
                 } else {
                     auto pipeline_gl = static_cast<ComputePipelineGl *>(compute_pipeline_);
-                    program_id = pipeline_gl->get_program()->get_id();
+                    program_id = pipeline_gl->get_program()->get_handle();
                 }
 
                 for (auto &pair : args.descriptor_set->get_descriptors()) {

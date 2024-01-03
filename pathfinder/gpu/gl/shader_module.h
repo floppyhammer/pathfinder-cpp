@@ -11,7 +11,7 @@ public:
         glDeleteShader(id_);
     }
 
-    unsigned int get_raw_handle() const {
+    unsigned int get_handle() const {
         return id_;
     }
 
@@ -55,10 +55,12 @@ private:
     /// Utility function for checking shader compilation errors.
     void check_compile_errors() const {
         GLint success;
-        GLchar info_log[1024];
         glGetShaderiv(id_, GL_COMPILE_STATUS, &success);
+
         if (!success) {
+            GLchar info_log[1024];
             glGetShaderInfoLog(id_, 1024, nullptr, info_log);
+
             std::ostringstream string_stream;
             string_stream << "SHADER_COMPILATION_ERROR of : " << label_ << "\n" << info_log;
             Logger::error(string_stream.str(), "OpenGL");

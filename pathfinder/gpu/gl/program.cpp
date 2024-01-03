@@ -11,7 +11,7 @@ void Program::use() const {
     glUseProgram(id_);
 }
 
-unsigned int Program::get_id() const {
+unsigned int Program::get_handle() const {
     return id_;
 }
 
@@ -61,8 +61,8 @@ RasterProgram::RasterProgram(const std::shared_ptr<ShaderModule> &vertex_shader_
 
     // Set up shader program.
     id_ = glCreateProgram();
-    glAttachShader(id_, vertex_shader_module_gl->get_raw_handle());
-    glAttachShader(id_, fragment_shader_module_gl->get_raw_handle());
+    glAttachShader(id_, vertex_shader_module_gl->get_handle());
+    glAttachShader(id_, fragment_shader_module_gl->get_handle());
     glLinkProgram(id_);
     check_compile_errors();
 }
@@ -74,7 +74,7 @@ ComputeProgram::ComputeProgram(const std::shared_ptr<ShaderModule> &compute_shad
 
     // Shader program.
     id_ = glCreateProgram();
-    glAttachShader(id_, compute_shader_module_gl->get_raw_handle());
+    glAttachShader(id_, compute_shader_module_gl->get_handle());
     glLinkProgram(id_);
     check_compile_errors();
 }
