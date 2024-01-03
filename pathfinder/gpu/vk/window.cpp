@@ -16,6 +16,9 @@ WindowVk::WindowVk(const Vec2I& _size, GLFWwindow* window_handle, VkSurfaceKHR s
     surface_ = surface;
     instance_ = instance;
     glfw_window_ = window_handle;
+
+    glfwSetWindowUserPointer(glfw_window_, this);
+    glfwSetFramebufferSizeCallback(glfw_window_, framebuffer_resize_callback);
 }
 #else
 WindowVk::WindowVk(const Vec2I& _size, VkSurfaceKHR surface, VkInstance instance) : Window(_size) {

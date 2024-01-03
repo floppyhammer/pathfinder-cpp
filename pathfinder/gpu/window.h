@@ -11,7 +11,7 @@ class SwapChain;
 
 class Window {
 public:
-    explicit Window(Vec2I size) : size_(size) {}
+    explicit Window(const Vec2I& size) : size_(size) {}
 
     virtual ~Window() = default;
 
