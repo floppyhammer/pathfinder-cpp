@@ -17,8 +17,8 @@ public:
     }
 
 private:
-    explicit ComputePipelineGl(const std::vector<char> &comp_source) {
-        program_ = std::make_shared<ComputeProgram>(comp_source);
+    explicit ComputePipelineGl(const std::shared_ptr<ShaderModule> &comp_shader_module) {
+        program_ = std::make_shared<ComputeProgram>(comp_shader_module);
     }
 
     std::shared_ptr<ComputeProgram> program_;

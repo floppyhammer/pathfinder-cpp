@@ -44,8 +44,8 @@ enum class TextureLayout {
 enum class ShaderStage {
     Vertex,
     Fragment,
-    VertexAndFragment,
     Compute,
+    VertexAndFragment,
 };
 
 enum class BlendFactor {

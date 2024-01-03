@@ -15,12 +15,14 @@
 
 namespace Pathfinder {
 
+class ShaderModule;
+
 class Program {
 public:
     /// Activate the shader.
     void use() const;
 
-    [[nodiscard]] unsigned int get_id() const;
+    unsigned int get_id() const;
 
     // Utility uniform functions.
     // ------------------------------------------------------
@@ -45,46 +47,34 @@ public:
 
 protected:
     /// Program ID.
-    unsigned int id_;
+    unsigned int id_{};
 
-    /// Utility function for checking shader compilation/linking errors.
-    static void check_compile_errors(GLuint shader, const std::string &type) {
+    /// Utility function for checking shader linking errors.
+    void check_compile_errors() const {
         GLint success;
         GLchar info_log[1024];
-        if (type != "PROGRAM") {
-            glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-            if (!success) {
-                glGetShaderInfoLog(shader, 1024, nullptr, info_log);
-                std::ostringstream string_stream;
-                string_stream << "SHADER_COMPILATION_ERROR of type: " << type << "\n" << info_log;
-                Logger::error(string_stream.str(), "OpenGL");
-            }
-        } else {
-            glGetProgramiv(shader, GL_LINK_STATUS, &success);
-            if (!success) {
-                glGetProgramInfoLog(shader, 1024, nullptr, info_log);
-                std::ostringstream string_stream;
-                string_stream << "PROGRAM_LINKING_ERROR of type: " << type << "\n" << info_log;
-                Logger::error(string_stream.str(), "OpenGL");
-            }
+
+        glGetProgramiv(id_, GL_LINK_STATUS, &success);
+        if (!success) {
+            glGetProgramInfoLog(id_, 1024, nullptr, info_log);
+            std::ostringstream string_stream;
+            string_stream << "PROGRAM_LINKING_ERROR:"
+                          << "\n"
+                          << info_log;
+            Logger::error(string_stream.str(), "OpenGL");
         }
     }
 };
 
 class RasterProgram : public Program {
 public:
-    RasterProgram(const std::vector<char> &vertex_code, const std::vector<char> &fragment_code);
-
-private:
-    void compile(const char *vertex_code, const char *fragment_code);
+    RasterProgram(const std::shared_ptr<ShaderModule> &vertex_shader_module,
+                  const std::shared_ptr<ShaderModule> &fragment_shader_module);
 };
 
 class ComputeProgram : public Program {
 public:
-    explicit ComputeProgram(const std::vector<char> &compute_code);
-
-private:
-    void compile(const char *compute_code);
+    explicit ComputeProgram(const std::shared_ptr<ShaderModule> &compute_shader_module);
 };
 
 } // namespace Pathfinder

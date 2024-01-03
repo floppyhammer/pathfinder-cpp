@@ -2,6 +2,9 @@
 
 #include <regex>
 
+#include "../shader_module.h"
+#include "shader_module.h"
+
 namespace Pathfinder {
 
 void Program::use() const {
@@ -50,74 +53,30 @@ void Program::set_mat4(const std::string &name, const Mat4 &mat) const {
 
 // RASTER PROGRAM
 
-RasterProgram::RasterProgram(const std::vector<char> &vertex_code, const std::vector<char> &fragment_code) : Program() {
-    /// Has to pass string.c_str(), as vector<char>.data() doesn't work.
-    std::string vert_string = {vertex_code.begin(), vertex_code.end()};
-    std::string frag_string = {fragment_code.begin(), fragment_code.end()};
-
-#ifdef PATHFINDER_MINIMUM_SHADER_VERSION_SUPPORT
-    vert_string = std::regex_replace(vert_string, std::regex("#version 310 es"), "#version 300 es");
-    frag_string = std::regex_replace(frag_string, std::regex("#version 310 es"), "#version 300 es");
-#endif
-
-    compile(vert_string.c_str(), frag_string.c_str());
-}
-
-void RasterProgram::compile(const char *vertex_code, const char *fragment_code) {
-    // Vertex shader.
-    unsigned int vertex = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex, 1, &vertex_code, nullptr);
-    glCompileShader(vertex);
-    check_compile_errors(vertex, "VERTEX");
-
-    // Fragment Shader.
-    unsigned int fragment = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment, 1, &fragment_code, nullptr);
-    glCompileShader(fragment);
-    check_compile_errors(fragment, "FRAGMENT");
+RasterProgram::RasterProgram(const std::shared_ptr<ShaderModule> &vertex_shader_module,
+                             const std::shared_ptr<ShaderModule> &fragment_shader_module)
+    : Program() {
+    auto vertex_shader_module_gl = (ShaderModuleGl *)vertex_shader_module.get();
+    auto fragment_shader_module_gl = (ShaderModuleGl *)fragment_shader_module.get();
 
     // Set up shader program.
     id_ = glCreateProgram();
-    glAttachShader(id_, vertex);
-    glAttachShader(id_, fragment);
+    glAttachShader(id_, vertex_shader_module_gl->get_raw_handle());
+    glAttachShader(id_, fragment_shader_module_gl->get_raw_handle());
     glLinkProgram(id_);
-    check_compile_errors(id_, "PROGRAM");
-
-    // Delete the shaders as they're linked into our program now and no longer necessary.
-    glDeleteShader(vertex);
-    glDeleteShader(fragment);
+    check_compile_errors();
 }
 
 // COMPUTE PROGRAM
 
-ComputeProgram::ComputeProgram(const std::vector<char> &compute_code) : Program() {
-    /// Has to pass string.c_str(), as vector<char>.data() doesn't work.
-    std::string compute_string = {compute_code.begin(), compute_code.end()};
-
-#ifdef PATHFINDER_MINIMUM_SHADER_VERSION_SUPPORT
-    compute_string = std::regex_replace(compute_string, std::regex("#version 430"), "#version 310 es");
-#endif
-
-    compile(compute_string.c_str());
-}
-
-void ComputeProgram::compile(const char *compute_code) {
-#ifdef PATHFINDER_ENABLE_D3D11
-    // Compile shaders.
-    unsigned int compute = glCreateShader(GL_COMPUTE_SHADER);
-    glShaderSource(compute, 1, &compute_code, nullptr);
-    glCompileShader(compute);
-    check_compile_errors(compute, "COMPUTE");
+ComputeProgram::ComputeProgram(const std::shared_ptr<ShaderModule> &compute_shader_module) : Program() {
+    auto compute_shader_module_gl = (ShaderModuleGl *)compute_shader_module.get();
 
     // Shader program.
     id_ = glCreateProgram();
-    glAttachShader(id_, compute);
+    glAttachShader(id_, compute_shader_module_gl->get_raw_handle());
     glLinkProgram(id_);
-    check_compile_errors(id_, "PROGRAM");
-
-    // Delete the shaders as they're linked into our program now and no longer necessary.
-    glDeleteShader(compute);
-#endif
+    check_compile_errors();
 }
 
 } // namespace Pathfinder

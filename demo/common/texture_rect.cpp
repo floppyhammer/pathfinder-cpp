@@ -65,8 +65,8 @@ TextureRect::TextureRect(const std::shared_ptr<Device> &_device,
             Descriptor::sampled(1, ShaderStage::Fragment, "uTexture"),
         });
 
-        pipeline = device->create_render_pipeline(vert_source,
-                                                  frag_source,
+        pipeline = device->create_render_pipeline(device->create_shader_module(vert_source, ShaderStage::Vertex),
+                                                  device->create_shader_module(frag_source, ShaderStage::Fragment),
                                                   attribute_descriptions,
                                                   blend_state,
                                                   descriptor_set,

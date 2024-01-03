@@ -8,6 +8,7 @@
 #include "framebuffer.h"
 #include "render_pass.h"
 #include "render_pipeline.h"
+#include "shader_module.h"
 
 namespace Pathfinder {
 
@@ -38,9 +39,13 @@ public:
     virtual std::shared_ptr<RenderPass> create_swap_chain_render_pass(TextureFormat format,
                                                                       AttachmentLoadOp load_op) = 0;
 
+    virtual std::shared_ptr<ShaderModule> create_shader_module(const std::vector<char> &source_code,
+                                                               ShaderStage shader_stage,
+                                                               const std::string &label = "") = 0;
+
     virtual std::shared_ptr<RenderPipeline> create_render_pipeline(
-        const std::vector<char> &vert_source,
-        const std::vector<char> &frag_source,
+        const std::shared_ptr<ShaderModule> &vert_shader_module,
+        const std::shared_ptr<ShaderModule> &frag_shader_module,
         const std::vector<VertexInputAttributeDescription> &_attribute_descriptions,
         BlendState _blend_state,
         const std::shared_ptr<DescriptorSet> &descriptor_set,
@@ -48,7 +53,7 @@ public:
         const std::string &label) = 0;
 
     virtual std::shared_ptr<ComputePipeline> create_compute_pipeline(
-        const std::vector<char> &comp_source,
+        const std::shared_ptr<ShaderModule> &comp_shader_module,
         const std::shared_ptr<DescriptorSet> &descriptor_set,
         const std::string &label) = 0;
 };

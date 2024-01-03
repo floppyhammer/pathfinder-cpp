@@ -11,6 +11,7 @@
 #include "framebuffer.h"
 #include "render_pass.h"
 #include "render_pipeline.h"
+#include "shader_module.h"
 #include "swap_chain.h"
 #include "texture.h"
 
@@ -48,15 +49,30 @@ std::shared_ptr<DescriptorSet> DeviceVk::create_descriptor_set() {
     return std::shared_ptr<DescriptorSetVk>(new DescriptorSetVk());
 }
 
+std::shared_ptr<ShaderModule> DeviceVk::create_shader_module(const std::vector<char> &source_code,
+                                                             ShaderStage shader_stage,
+                                                             const std::string &label) {
+    VkShaderModule vk_shader_module = create_shader_module(source_code);
+
+    auto shader_module = std::shared_ptr<ShaderModuleVk>(new ShaderModuleVk());
+    shader_module->vk_shader_module_ = vk_shader_module;
+    shader_module->vk_device_ = vk_device_;
+    shader_module->label_ = label;
+
+    return shader_module;
+}
+
 std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
-    const std::vector<char> &vert_source,
-    const std::vector<char> &frag_source,
+    const std::shared_ptr<ShaderModule> &vert_shader_module,
+    const std::shared_ptr<ShaderModule> &frag_shader_module,
     const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
     BlendState blend_state,
     const std::shared_ptr<DescriptorSet> &descriptor_set,
     const std::shared_ptr<RenderPass> &render_pass,
     const std::string &label) {
     auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
+    auto vert_shader_module_vk = (ShaderModuleVk *)vert_shader_module.get();
+    auto frag_shader_module_vk = (ShaderModuleVk *)frag_shader_module.get();
 
     auto render_pipeline_vk =
         std::shared_ptr<RenderPipelineVk>(new RenderPipelineVk(vk_device_, attribute_descriptions, blend_state, label));
@@ -106,20 +122,17 @@ std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
         }
     }
 
-    VkShaderModule vert_shader_module = create_shader_module(vert_source);
-    VkShaderModule frag_shader_module = create_shader_module(frag_source);
-
     // Specify shader stages.
     VkPipelineShaderStageCreateInfo vert_shader_stage_info{};
     vert_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     vert_shader_stage_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
-    vert_shader_stage_info.module = vert_shader_module;
+    vert_shader_stage_info.module = vert_shader_module_vk->get_raw_handle();
     vert_shader_stage_info.pName = "main";
 
     VkPipelineShaderStageCreateInfo frag_shader_stage_info{};
     frag_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     frag_shader_stage_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    frag_shader_stage_info.module = frag_shader_module;
+    frag_shader_stage_info.module = frag_shader_module_vk->get_raw_handle();
     frag_shader_stage_info.pName = "main";
 
     VkPipelineShaderStageCreateInfo shader_stages[] = {vert_shader_stage_info, frag_shader_stage_info};
@@ -253,10 +266,6 @@ std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
         throw std::runtime_error("Failed to create graphics pipeline!");
     }
 
-    // Clean up shader modules.
-    vkDestroyShaderModule(vk_device_, vert_shader_module, nullptr);
-    vkDestroyShaderModule(vk_device_, frag_shader_module, nullptr);
-
     DebugMarker::get_singleton()->set_object_name(vk_device_,
                                                   (uint64_t)render_pipeline_vk->vk_pipeline_,
                                                   VK_OBJECT_TYPE_PIPELINE,
@@ -265,10 +274,13 @@ std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
     return render_pipeline_vk;
 }
 
-std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(const std::vector<char> &comp_source,
-                                                                   const std::shared_ptr<DescriptorSet> &descriptor_set,
-                                                                   const std::string &label) {
+std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(
+    const std::shared_ptr<ShaderModule> &comp_shader_module,
+    const std::shared_ptr<DescriptorSet> &descriptor_set,
+    const std::string &label) {
     auto compute_pipeline_vk = std::shared_ptr<ComputePipelineVk>(new ComputePipelineVk(vk_device_, label));
+
+    auto comp_shader_module_vk = (ShaderModuleVk *)comp_shader_module.get();
 
     // Create descriptor set layout.
     {
@@ -315,13 +327,11 @@ std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(const std::ve
         }
     }
 
-    VkShaderModule comp_shader_module = create_shader_module(comp_source);
-
     // Specify shader stages.
     VkPipelineShaderStageCreateInfo comp_shader_stage_info{};
     comp_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     comp_shader_stage_info.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-    comp_shader_stage_info.module = comp_shader_module;
+    comp_shader_stage_info.module = comp_shader_module_vk->get_raw_handle();
     comp_shader_stage_info.pName = "main";
 
     VkComputePipelineCreateInfo pipeline_create_info = {};
@@ -342,9 +352,6 @@ std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(const std::ve
                                  &compute_pipeline_vk->vk_pipeline_) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create compute pipeline!");
     }
-
-    // Clean up shader module.
-    vkDestroyShaderModule(vk_device_, comp_shader_module, nullptr);
 
     DebugMarker::get_singleton()->set_object_name(vk_device_,
                                                   (uint64_t)compute_pipeline_vk->vk_pipeline_,

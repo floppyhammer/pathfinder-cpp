@@ -6,6 +6,7 @@
 #include "framebuffer.h"
 #include "render_pass.h"
 #include "render_pipeline.h"
+#include "shader_module.h"
 
 namespace Pathfinder {
 
@@ -47,26 +48,33 @@ std::shared_ptr<RenderPass> DeviceGl::create_swap_chain_render_pass(TextureForma
     return std::shared_ptr<RenderPassGl>(new RenderPassGl(load_op));
 }
 
+std::shared_ptr<ShaderModule> DeviceGl::create_shader_module(const std::vector<char> &source_code,
+                                                             ShaderStage shader_stage,
+                                                             const std::string &label) {
+    return std::shared_ptr<ShaderModuleGl>(new ShaderModuleGl(source_code, shader_stage, label));
+}
+
 std::shared_ptr<RenderPipeline> DeviceGl::create_render_pipeline(
-    const std::vector<char> &vert_source,
-    const std::vector<char> &frag_source,
+    const std::shared_ptr<ShaderModule> &vert_shader_module,
+    const std::shared_ptr<ShaderModule> &frag_shader_module,
     const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
     BlendState blend_state,
     const std::shared_ptr<DescriptorSet> &descriptor_set,
     const std::shared_ptr<RenderPass> &render_pass,
     const std::string &label) {
     return std::shared_ptr<RenderPipelineGl>(
-        new RenderPipelineGl(vert_source, frag_source, attribute_descriptions, blend_state, label));
+        new RenderPipelineGl(vert_shader_module, frag_shader_module, attribute_descriptions, blend_state, label));
 }
 
 std::shared_ptr<DescriptorSet> DeviceGl::create_descriptor_set() {
     return std::shared_ptr<DescriptorSet>(new DescriptorSet());
 }
 
-std::shared_ptr<ComputePipeline> DeviceGl::create_compute_pipeline(const std::vector<char> &comp_source,
-                                                                   const std::shared_ptr<DescriptorSet> &descriptor_set,
-                                                                   const std::string &label) {
-    return std::shared_ptr<ComputePipelineGl>(new ComputePipelineGl(comp_source));
+std::shared_ptr<ComputePipeline> DeviceGl::create_compute_pipeline(
+    const std::shared_ptr<ShaderModule> &comp_shader_module,
+    const std::shared_ptr<DescriptorSet> &descriptor_set,
+    const std::string &label) {
+    return std::shared_ptr<ComputePipelineGl>(new ComputePipelineGl(comp_shader_module));
 }
 
 } // namespace Pathfinder

@@ -36,16 +36,20 @@ public:
 
     std::shared_ptr<DescriptorSet> create_descriptor_set() override;
 
+    std::shared_ptr<ShaderModule> create_shader_module(const std::vector<char> &source_code,
+                                                       ShaderStage shader_stage,
+                                                       const std::string &label) override;
+
     std::shared_ptr<RenderPipeline> create_render_pipeline(
-        const std::vector<char> &vert_source,
-        const std::vector<char> &frag_source,
+        const std::shared_ptr<ShaderModule> &vert_shader_module,
+        const std::shared_ptr<ShaderModule> &frag_shader_module,
         const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
         BlendState blend_state,
         const std::shared_ptr<DescriptorSet> &descriptor_set,
         const std::shared_ptr<RenderPass> &render_pass,
         const std::string &label) override;
 
-    std::shared_ptr<ComputePipeline> create_compute_pipeline(const std::vector<char> &comp_source,
+    std::shared_ptr<ComputePipeline> create_compute_pipeline(const std::shared_ptr<ShaderModule> &comp_shader_module,
                                                              const std::shared_ptr<DescriptorSet> &descriptor_set,
                                                              const std::string &label) override;
 };

@@ -235,14 +235,28 @@ void RendererD3D11::set_up_pipelines() {
     });
 
     // These pipelines will be called by order.
-    dice_pipeline = device->create_compute_pipeline(dice_source, dice_descriptor_set, "Dice pipeline");     // 1
-    bound_pipeline = device->create_compute_pipeline(bound_source, bound_descriptor_set, "Bound pipeline"); // 2
-    bin_pipeline = device->create_compute_pipeline(bin_source, bin_descriptor_set, "Bin pipeline");         // 3
+    dice_pipeline = device->create_compute_pipeline(device->create_shader_module(dice_source, ShaderStage::Compute),
+                                                    dice_descriptor_set,
+                                                    "Dice pipeline"); // 1
+    bound_pipeline = device->create_compute_pipeline(device->create_shader_module(bound_source, ShaderStage::Compute),
+                                                     bound_descriptor_set,
+                                                     "Bound pipeline"); // 2
+    bin_pipeline = device->create_compute_pipeline(device->create_shader_module(bin_source, ShaderStage::Compute),
+                                                   bin_descriptor_set,
+                                                   "Bin pipeline"); // 3
     propagate_pipeline =
-        device->create_compute_pipeline(propagate_source, propagate_descriptor_set, "Propagate pipeline"); // 4
-    fill_pipeline = device->create_compute_pipeline(fill_source, fill_descriptor_set, "Fill pipeline");    // 5
-    sort_pipeline = device->create_compute_pipeline(sort_source, sort_descriptor_set, "Sort pipeline");    // 6
-    tile_pipeline = device->create_compute_pipeline(tile_source, tile_descriptor_set, "Tile pipeline");    // 7
+        device->create_compute_pipeline(device->create_shader_module(propagate_source, ShaderStage::Compute),
+                                        propagate_descriptor_set,
+                                        "Propagate pipeline"); // 4
+    fill_pipeline = device->create_compute_pipeline(device->create_shader_module(fill_source, ShaderStage::Compute),
+                                                    fill_descriptor_set,
+                                                    "Fill pipeline"); // 5
+    sort_pipeline = device->create_compute_pipeline(device->create_shader_module(sort_source, ShaderStage::Compute),
+                                                    sort_descriptor_set,
+                                                    "Sort pipeline"); // 6
+    tile_pipeline = device->create_compute_pipeline(device->create_shader_module(tile_source, ShaderStage::Compute),
+                                                    tile_descriptor_set,
+                                                    "Tile pipeline"); // 7
 }
 
 void RendererD3D11::draw(const std::shared_ptr<SceneBuilder> &_scene_builder, bool _clear_dst_texture) {

@@ -11,8 +11,6 @@ class TextureGl : public Texture {
     friend class DeviceGl;
 
 public:
-    explicit TextureGl(const TextureDescriptor& desc);
-
     ~TextureGl() override;
 
     uint32_t get_texture_id() const;
@@ -20,6 +18,8 @@ public:
     void set_label(const std::string& label) override;
 
 private:
+    explicit TextureGl(const TextureDescriptor& desc);
+
     uint32_t gl_id_ = 0;
 };
 

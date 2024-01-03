@@ -27,13 +27,13 @@ public:
     }
 
 private:
-    RenderPipelineGl(const std::vector<char> &vert_source,
-                     const std::vector<char> &frag_source,
+    RenderPipelineGl(const std::shared_ptr<ShaderModule> &vert_shader_module,
+                     const std::shared_ptr<ShaderModule> &frag_shader_module,
                      const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
                      BlendState blend_state,
                      std::string label)
         : RenderPipeline(attribute_descriptions, blend_state, std::move(label)) {
-        program_ = std::make_shared<RasterProgram>(vert_source, frag_source);
+        program_ = std::make_shared<RasterProgram>(vert_shader_module, frag_shader_module);
 
         glGenVertexArrays(1, &vao_);
 

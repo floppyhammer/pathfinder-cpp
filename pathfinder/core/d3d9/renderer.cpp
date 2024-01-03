@@ -123,8 +123,11 @@ void RendererD3D9::set_up_pipelines() {
                                 get_default_sampler()),
         });
 
-        fill_pipeline = device->create_render_pipeline(fill_vert_source,
-                                                       fill_frag_source,
+        auto fill_vert_shader = device->create_shader_module(fill_vert_source, ShaderStage::Vertex);
+        auto fill_frag_shader = device->create_shader_module(fill_frag_source, ShaderStage::Fragment);
+
+        fill_pipeline = device->create_render_pipeline(fill_vert_shader,
+                                                       fill_frag_shader,
                                                        attribute_descriptions,
                                                        BlendState::from_equal(),
                                                        fill_descriptor_set,
@@ -190,8 +193,11 @@ void RendererD3D9::set_up_pipelines() {
                                 get_default_sampler()),
         });
 
-        tile_pipeline = device->create_render_pipeline(tile_vert_source,
-                                                       tile_frag_source,
+        auto tile_vert_shader = device->create_shader_module(tile_vert_source, ShaderStage::Vertex);
+        auto tile_frag_shader = device->create_shader_module(tile_frag_source, ShaderStage::Fragment);
+
+        tile_pipeline = device->create_render_pipeline(tile_vert_shader,
+                                                       tile_frag_shader,
                                                        attribute_descriptions,
                                                        BlendState::from_over(),
                                                        tile_descriptor_set,
@@ -265,9 +271,12 @@ void RendererD3D9::create_tile_clip_copy_pipeline() {
         Descriptor::sampled(1, ShaderStage::Fragment, "uSrc", nullptr, get_default_sampler()),
     });
 
+    auto tile_clip_copy_vert_shader = device->create_shader_module(tile_clip_copy_vert_source, ShaderStage::Vertex);
+    auto tile_clip_copy_frag_shader = device->create_shader_module(tile_clip_copy_frag_source, ShaderStage::Fragment);
+
     // We have to disable blend for tile clip copy.
-    tile_clip_copy_pipeline = device->create_render_pipeline(tile_clip_copy_vert_source,
-                                                             tile_clip_copy_frag_source,
+    tile_clip_copy_pipeline = device->create_render_pipeline(tile_clip_copy_vert_shader,
+                                                             tile_clip_copy_frag_shader,
                                                              attribute_descriptions,
                                                              {false},
                                                              tile_clip_copy_descriptor_set,
@@ -310,9 +319,12 @@ void RendererD3D9::create_tile_clip_combine_pipeline() {
         Descriptor::sampled(1, ShaderStage::Fragment, "uSrc", nullptr, nullptr),
     });
 
+    auto tile_clip_combine_vert_shader = device->create_shader_module(vert_source, ShaderStage::Vertex);
+    auto tile_clip_combine_frag_shader = device->create_shader_module(frag_source, ShaderStage::Fragment);
+
     // We have to disable blend for tile clip combine.
-    tile_clip_combine_pipeline = device->create_render_pipeline(vert_source,
-                                                                frag_source,
+    tile_clip_combine_pipeline = device->create_render_pipeline(tile_clip_combine_vert_shader,
+                                                                tile_clip_combine_frag_shader,
                                                                 attribute_descriptions,
                                                                 {false},
                                                                 tile_clip_combine_descriptor_set,
