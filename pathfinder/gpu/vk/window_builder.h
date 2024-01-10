@@ -78,29 +78,29 @@ public:
     VkDevice get_device() const;
 
 private:
-    bool initialized = false;
+    bool initialized_ = false;
 
     /// The graphics card that we'll end up selecting will be stored in a VkPhysicalDevice handle.
-    VkPhysicalDevice physical_device{};
+    VkPhysicalDevice physical_device_{};
 
     /// Logical device.
-    VkDevice vk_device{};
+    VkDevice device_{};
 
-    VkInstance instance{};
-    VkDebugUtilsMessengerEXT debug_messenger{};
+    VkInstance instance_{};
+    VkDebugUtilsMessengerEXT debug_messenger_{};
 
     // See https://developer.android.com/ndk/guides/graphics/validation-layer for enabling validation layer on Android.
-    static const bool enable_validation_layers =
+    static const bool enable_validation_layers_ =
 #if defined(PATHFINDER_DEBUG) && !defined(__ANDROID__)
         true;
 #else
         false;
 #endif
 
-    VkQueue graphics_queue{};
-    VkQueue present_queue{};
+    VkQueue graphics_queue_{};
+    VkQueue present_queue_{};
 
-    VkCommandPool command_pool{};
+    VkCommandPool command_pool_{};
 
 #ifdef __ANDROID__
     ANativeWindow *native_window_;
@@ -117,7 +117,14 @@ private:
                                                          VkDebugUtilsMessageTypeFlagsEXT message_type,
                                                          const VkDebugUtilsMessengerCallbackDataEXT *callback_data,
                                                          void *user_data) {
-        Logger::error(callback_data->pMessage, "Vulkan");
+        if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
+            Logger::error(callback_data->pMessage, "Vulkan");
+        } else if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+            Logger::warn(callback_data->pMessage, "Vulkan");
+        } else {
+            Logger::info(callback_data->pMessage, "Vulkan");
+        }
+
         return VK_FALSE;
     }
 
@@ -141,12 +148,8 @@ private:
 
     bool check_device_extension_support(VkPhysicalDevice physical_device) const;
 
-    /**
-     * Check if a physical device is suitable.
-     * @param pPhysicalDevice
-     * @return
-     */
-    bool is_device_suitable(VkPhysicalDevice _physical_device, VkSurfaceKHR surface) const;
+    /// Check if a physical device is suitable for the target surface.
+    bool is_device_suitable(VkPhysicalDevice physical_device, VkSurfaceKHR surface) const;
 
     void pick_physical_device(VkSurfaceKHR surface);
 

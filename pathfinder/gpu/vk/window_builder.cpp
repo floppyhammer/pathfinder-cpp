@@ -52,13 +52,13 @@ WindowBuilderVk::WindowBuilderVk(const Vec2I &size) {
     auto glfw_window = glfw_window_init(size, PRIMARY_WINDOW_TITLE);
 
     VkSurfaceKHR surface{};
-    if (glfwCreateWindowSurface(instance, glfw_window, nullptr, &surface) != VK_SUCCESS) {
+    if (glfwCreateWindowSurface(instance_, glfw_window, nullptr, &surface) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create window surface!");
     }
 
     initialize_after_surface_creation(surface);
 
-    primary_window = std::make_shared<WindowVk>(size, glfw_window, surface, instance);
+    primary_window = std::make_shared<WindowVk>(size, glfw_window, surface, instance_);
 }
 #else
 WindowBuilderVk::WindowBuilderVk(ANativeWindow *native_window, const Vec2I &window_size) {
@@ -101,16 +101,16 @@ WindowBuilderVk::~WindowBuilderVk() {
     }
 #endif
 
-    vkDestroyCommandPool(vk_device, command_pool, nullptr);
+    vkDestroyCommandPool(device_, command_pool_, nullptr);
 
     // Destroy the logical device.
-    vkDestroyDevice(vk_device, nullptr);
+    vkDestroyDevice(device_, nullptr);
 
-    if (enable_validation_layers) {
-        destroy_debug_utils_messenger_ext(instance, debug_messenger, nullptr);
+    if (enable_validation_layers_) {
+        destroy_debug_utils_messenger_ext(instance_, debug_messenger_, nullptr);
     }
 
-    vkDestroyInstance(instance, nullptr);
+    vkDestroyInstance(instance_, nullptr);
 
 #ifndef __ANDROID__
     glfwTerminate();
@@ -176,12 +176,12 @@ std::shared_ptr<Window> WindowBuilderVk::create_window(const Vec2I &size, const 
     auto glfw_window = glfw_window_init(size, title);
 
     VkSurfaceKHR surface{};
-    if (glfwCreateWindowSurface(instance, glfw_window, nullptr, &surface) != VK_SUCCESS) {
+    if (glfwCreateWindowSurface(instance_, glfw_window, nullptr, &surface) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create window surface!");
     }
     initialize_after_surface_creation(surface);
 
-    auto new_window = std::make_shared<WindowVk>(size, glfw_window, surface, instance);
+    auto new_window = std::make_shared<WindowVk>(size, glfw_window, surface, instance_);
 
     sub_windows.push_back(new_window);
 
@@ -192,7 +192,7 @@ std::shared_ptr<Window> WindowBuilderVk::create_window(const Vec2I &size, const 
 }
 
 void WindowBuilderVk::initialize_after_surface_creation(VkSurfaceKHR surface) {
-    if (initialized) {
+    if (initialized_) {
         return;
     }
 
@@ -206,44 +206,44 @@ void WindowBuilderVk::initialize_after_surface_creation(VkSurfaceKHR surface) {
 
     create_queues(surface);
 
-    initialized = true;
+    initialized_ = true;
 }
 
 void WindowBuilderVk::create_queues(VkSurfaceKHR surface) {
-    QueueFamilyIndices qf_indices = find_queue_families(physical_device, surface);
+    QueueFamilyIndices qf_indices = find_queue_families(physical_device_, surface);
 
     // Get a queue handle from a device.
-    vkGetDeviceQueue(vk_device, *qf_indices.graphics_family, 0, &graphics_queue);
-    vkGetDeviceQueue(vk_device, *qf_indices.present_family, 0, &present_queue);
+    vkGetDeviceQueue(device_, *qf_indices.graphics_family, 0, &graphics_queue_);
+    vkGetDeviceQueue(device_, *qf_indices.present_family, 0, &present_queue_);
 }
 
 std::shared_ptr<Device> WindowBuilderVk::request_device() {
     auto device = std::shared_ptr<DeviceVk>(
-        new DeviceVk(vk_device, physical_device, graphics_queue, present_queue, command_pool));
+        new DeviceVk(device_, physical_device_, graphics_queue_, present_queue_, command_pool_));
     return device;
 }
 
 std::shared_ptr<Queue> WindowBuilderVk::create_queue() {
-    auto queue = std::shared_ptr<QueueVk>(new QueueVk(vk_device, graphics_queue, present_queue));
+    auto queue = std::shared_ptr<QueueVk>(new QueueVk(device_, graphics_queue_, present_queue_));
     return queue;
 }
 
 void WindowBuilderVk::create_command_pool(VkSurfaceKHR surface) {
-    QueueFamilyIndices qf_indices = find_queue_families(physical_device, surface);
+    QueueFamilyIndices qf_indices = find_queue_families(physical_device_, surface);
 
     VkCommandPoolCreateInfo pool_info{};
     pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     pool_info.queueFamilyIndex = *qf_indices.graphics_family;
     pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // So we can reset command buffers.
 
-    if (vkCreateCommandPool(vk_device, &pool_info, nullptr, &command_pool) != VK_SUCCESS) {
+    if (vkCreateCommandPool(device_, &pool_info, nullptr, &command_pool_) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create command pool!");
     }
 }
 
 void WindowBuilderVk::create_instance() {
 #ifndef __ANDROID__
-    if (enable_validation_layers && !check_validation_layer_support()) {
+    if (enable_validation_layers_ && !check_validation_layer_support()) {
         throw std::runtime_error("Validation layers requested, but not available!");
     }
 #endif
@@ -269,7 +269,7 @@ void WindowBuilderVk::create_instance() {
     create_info.ppEnabledExtensionNames = extensions.data();
 
     VkDebugUtilsMessengerCreateInfoEXT debug_create_info;
-    if (enable_validation_layers) {
+    if (enable_validation_layers_) {
         create_info.enabledLayerCount = static_cast<uint32_t>(VALIDATION_LAYERS.size());
         create_info.ppEnabledLayerNames = VALIDATION_LAYERS.data();
 
@@ -284,11 +284,11 @@ void WindowBuilderVk::create_instance() {
     }
 
     // Create a new Vulkan instance.
-    if (vkCreateInstance(&create_info, nullptr, &instance) != VK_SUCCESS) {
+    if (vkCreateInstance(&create_info, nullptr, &instance_) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create a Vulkan instance!");
     }
 
-    DebugMarker::get_singleton()->setup(instance);
+    DebugMarker::get_singleton()->setup(instance_);
 }
 
 void WindowBuilderVk::populate_debug_messenger_create_info(VkDebugUtilsMessengerCreateInfoEXT &create_info) {
@@ -304,14 +304,14 @@ void WindowBuilderVk::populate_debug_messenger_create_info(VkDebugUtilsMessenger
 }
 
 void WindowBuilderVk::setup_debug_messenger() {
-    if (!enable_validation_layers) {
+    if (!enable_validation_layers_) {
         return;
     }
 
     VkDebugUtilsMessengerCreateInfoEXT create_info;
     populate_debug_messenger_create_info(create_info);
 
-    if (create_debug_utils_messenger_ext(instance, &create_info, nullptr, &debug_messenger) != VK_SUCCESS) {
+    if (create_debug_utils_messenger_ext(instance_, &create_info, nullptr, &debug_messenger_) != VK_SUCCESS) {
         throw std::runtime_error("Failed to set up debug messenger!");
     }
 }
@@ -359,19 +359,19 @@ SwapchainSupportDetails query_swapchain_support(VkPhysicalDevice _physical_devic
     return details;
 }
 
-bool WindowBuilderVk::is_device_suitable(VkPhysicalDevice _physical_device, VkSurfaceKHR surface) const {
-    QueueFamilyIndices indices = find_queue_families(_physical_device, surface);
+bool WindowBuilderVk::is_device_suitable(VkPhysicalDevice physical_device, VkSurfaceKHR surface) const {
+    QueueFamilyIndices indices = find_queue_families(physical_device, surface);
 
-    bool extensions_supported = check_device_extension_support(_physical_device);
+    bool extensions_supported = check_device_extension_support(physical_device);
 
     bool swapchain_adequate = false;
     if (extensions_supported) {
-        SwapchainSupportDetails swapChainSupport = query_swapchain_support(_physical_device, surface);
+        SwapchainSupportDetails swapChainSupport = query_swapchain_support(physical_device, surface);
         swapchain_adequate = !swapChainSupport.formats.empty() && !swapChainSupport.present_modes.empty();
     }
 
     VkPhysicalDeviceFeatures supported_features;
-    vkGetPhysicalDeviceFeatures(_physical_device, &supported_features);
+    vkGetPhysicalDeviceFeatures(physical_device, &supported_features);
 
     return indices.is_complete() && extensions_supported && swapchain_adequate && supported_features.samplerAnisotropy;
 }
@@ -379,7 +379,7 @@ bool WindowBuilderVk::is_device_suitable(VkPhysicalDevice _physical_device, VkSu
 void WindowBuilderVk::pick_physical_device(VkSurfaceKHR surface) {
     // Enumerates the physical devices accessible to a Vulkan instance.
     uint32_t device_count = 0;
-    vkEnumeratePhysicalDevices(instance, &device_count, nullptr);
+    vkEnumeratePhysicalDevices(instance_, &device_count, nullptr);
 
     if (device_count == 0) {
         throw std::runtime_error("Failed to find a GPU with Vulkan support!");
@@ -387,17 +387,17 @@ void WindowBuilderVk::pick_physical_device(VkSurfaceKHR surface) {
 
     // Call again to get the physical devices.
     std::vector<VkPhysicalDevice> devices(device_count);
-    vkEnumeratePhysicalDevices(instance, &device_count, devices.data());
+    vkEnumeratePhysicalDevices(instance_, &device_count, devices.data());
 
     // Pick a suitable one among the physical devices.
     for (const auto &d : devices) {
         if (is_device_suitable(d, surface)) {
-            physical_device = d;
+            physical_device_ = d;
             break;
         }
     }
 
-    if (physical_device == VK_NULL_HANDLE) {
+    if (physical_device_ == VK_NULL_HANDLE) {
         throw std::runtime_error("Failed to find a suitable GPU!");
     }
 }
@@ -423,16 +423,16 @@ VkPresentModeKHR choose_swap_present_mode(const std::vector<VkPresentModeKHR> &a
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-QueueFamilyIndices find_queue_families(VkPhysicalDevice _physical_device, VkSurfaceKHR surface) {
+QueueFamilyIndices find_queue_families(VkPhysicalDevice physical_device, VkSurfaceKHR surface) {
     QueueFamilyIndices qf_indices;
 
     // Reports properties of the queues of the specified physical device.
     uint32_t queue_family_count = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(_physical_device, &queue_family_count, nullptr);
+    vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, nullptr);
 
     // Structure providing information about a queue family.
     std::vector<VkQueueFamilyProperties> queue_families(queue_family_count);
-    vkGetPhysicalDeviceQueueFamilyProperties(_physical_device, &queue_family_count, queue_families.data());
+    vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, queue_families.data());
 
     int i = 0;
     for (const auto &queue_family : queue_families) {
@@ -443,7 +443,7 @@ QueueFamilyIndices find_queue_families(VkPhysicalDevice _physical_device, VkSurf
 
         // Query if presentation is supported.
         VkBool32 present_support = false;
-        vkGetPhysicalDeviceSurfaceSupportKHR(_physical_device, i, surface, &present_support);
+        vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, i, surface, &present_support);
 
         if (present_support) {
             qf_indices.present_family = std::make_shared<uint32_t>(i);
@@ -468,7 +468,7 @@ std::vector<const char *> WindowBuilderVk::get_required_instance_extensions() {
 
     std::vector<const char *> extensions(glfw_extensions, glfw_extensions + glfw_extension_count);
 
-    if (enable_validation_layers) {
+    if (enable_validation_layers_) {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
 #else
@@ -508,7 +508,7 @@ bool WindowBuilderVk::check_validation_layer_support() {
 }
 
 void WindowBuilderVk::create_logical_device(VkSurfaceKHR surface) {
-    QueueFamilyIndices qf_indices = find_queue_families(physical_device, surface);
+    QueueFamilyIndices qf_indices = find_queue_families(physical_device_, surface);
 
     // Structure specifying parameters of a newly created device queue.
     std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
@@ -544,7 +544,7 @@ void WindowBuilderVk::create_logical_device(VkSurfaceKHR surface) {
     create_info.ppEnabledExtensionNames = DEVICE_EXTENSIONS.data();
 
     // enabledLayerCount and ppEnabledLayerNames are deprecated and ignored.
-    if (enable_validation_layers) {
+    if (enable_validation_layers_) {
         create_info.enabledLayerCount = static_cast<uint32_t>(VALIDATION_LAYERS.size());
         create_info.ppEnabledLayerNames = VALIDATION_LAYERS.data();
     } else {
@@ -552,13 +552,13 @@ void WindowBuilderVk::create_logical_device(VkSurfaceKHR surface) {
     }
 
     // A logical device is created as a connection to a physical device.
-    if (vkCreateDevice(physical_device, &create_info, nullptr, &vk_device) != VK_SUCCESS) {
+    if (vkCreateDevice(physical_device_, &create_info, nullptr, &device_) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create logical device!");
     }
 
     // Get a queue handle from a device.
-    vkGetDeviceQueue(vk_device, *qf_indices.graphics_family, 0, &graphics_queue);
-    vkGetDeviceQueue(vk_device, *qf_indices.present_family, 0, &present_queue);
+    vkGetDeviceQueue(device_, *qf_indices.graphics_family, 0, &graphics_queue_);
+    vkGetDeviceQueue(device_, *qf_indices.present_family, 0, &present_queue_);
 }
 
 VkFormat WindowBuilderVk::find_supported_format(const std::vector<VkFormat> &candidates,
@@ -566,7 +566,7 @@ VkFormat WindowBuilderVk::find_supported_format(const std::vector<VkFormat> &can
                                                 VkFormatFeatureFlags features) const {
     for (VkFormat format : candidates) {
         VkFormatProperties props;
-        vkGetPhysicalDeviceFormatProperties(physical_device, format, &props);
+        vkGetPhysicalDeviceFormatProperties(physical_device_, format, &props);
 
         if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
             return format;
@@ -585,11 +585,11 @@ VkFormat WindowBuilderVk::find_depth_format() const {
 }
 
 VkPhysicalDevice WindowBuilderVk::get_physical_device() const {
-    return physical_device;
+    return physical_device_;
 }
 
 VkDevice WindowBuilderVk::get_device() const {
-    return vk_device;
+    return device_;
 }
 
 } // namespace Pathfinder
