@@ -80,7 +80,7 @@ WindowBuilderVk::WindowBuilderVk(ANativeWindow *native_window, const Vec2I &wind
 
     initialize_after_surface_creation(surface);
 
-    main_window = std::make_shared<WindowVk>(window_size, surface, instance);
+    primary_window = std::make_shared<WindowVk>(window_size, surface, instance);
 }
 #endif
 
@@ -473,6 +473,10 @@ std::vector<const char *> WindowBuilderVk::get_required_instance_extensions() {
     }
 #else
     std::vector<const char *> extensions = INSTANCE_EXTENSIONS;
+
+    if (enable_validation_layers) {
+        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    }
 #endif
 
     return extensions;

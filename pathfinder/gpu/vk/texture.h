@@ -45,6 +45,8 @@ private:
     /// Device memory.
     VkDeviceMemory vk_image_memory_{};
 
+    /// Memory size is not necessarily equal to WIDTH * HEIGHT * PIXEL_SIZE due to
+    /// alignment and mipmaps.
     size_t memory_size_{};
 
     /// Thin wrapper over image.

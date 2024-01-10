@@ -39,14 +39,14 @@ bool InitVulkan(android_app *app) {
 
     window_builder = new Pathfinder::WindowBuilderVk(app->window, window_size);
 
-    pf_window = window_builder->get_main_window();
+    pf_window = window_builder->get_primary_window();
 
     // Create device and queue.
     pf_device = window_builder->request_device();
     pf_queue = window_builder->create_queue();
 
     // Create swap chains for windows.
-    pf_swapchain = pf_window->create_swap_chain(pf_device);
+    pf_swapchain = pf_window->get_swap_chain(pf_device);
 
     auto svg_input = Pathfinder::load_asset(androidAppCtx->activity->assetManager, "features.svg");
     auto img_input = Pathfinder::load_asset(androidAppCtx->activity->assetManager, "sea.png");
@@ -65,7 +65,7 @@ bool InitVulkan(android_app *app) {
         auto dst_texture = pf_device->create_texture(
                 {window_size, Pathfinder::TextureFormat::Rgba8Unorm}, "dst texture");
 
-        pf_app->canvas->set_dst_texture(dst_texture);
+        pf_app->canvas_->set_dst_texture(dst_texture);
 
         pf_text_rect->set_texture(dst_texture);
     }
@@ -89,17 +89,17 @@ bool VulkanDrawFrame(void) {
 
     auto current_window_size = pf_window->get_size();
 
-    if (current_window_size != pf_app->canvas->get_dst_texture()->get_size() &&
+    if (current_window_size != pf_app->canvas_->get_dst_texture()->get_size() &&
         current_window_size.area() != 0) {
         auto dst_texture =
                 pf_device->create_texture(
                         {current_window_size, Pathfinder::TextureFormat::Rgba8Unorm},
                         "dst texture");
 
-        pf_app->canvas->set_dst_texture(dst_texture);
+        pf_app->canvas_->set_dst_texture(dst_texture);
         pf_text_rect->set_texture(dst_texture);
 
-        pf_app->canvas->set_size(current_window_size);
+        pf_app->canvas_->set_size(current_window_size);
     }
 
     pf_app->update();

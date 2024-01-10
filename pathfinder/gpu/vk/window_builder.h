@@ -89,6 +89,7 @@ private:
     VkInstance instance{};
     VkDebugUtilsMessengerEXT debug_messenger{};
 
+    // See https://developer.android.com/ndk/guides/graphics/validation-layer for enabling validation layer on Android.
     static const bool enable_validation_layers =
 #if defined(PATHFINDER_DEBUG) && !defined(__ANDROID__)
         true;
@@ -116,7 +117,7 @@ private:
                                                          VkDebugUtilsMessageTypeFlagsEXT message_type,
                                                          const VkDebugUtilsMessengerCallbackDataEXT *callback_data,
                                                          void *user_data) {
-        std::cerr << "Validation layer: " << callback_data->pMessage << std::endl;
+        Logger::error(callback_data->pMessage, "Vulkan");
         return VK_FALSE;
     }
 
