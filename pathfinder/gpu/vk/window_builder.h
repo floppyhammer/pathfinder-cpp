@@ -1,8 +1,6 @@
 #ifndef PATHFINDER_WINDOW_BUILDER_VK_H
 #define PATHFINDER_WINDOW_BUILDER_VK_H
 
-#include <cstring>
-#include <iostream>
 #include <memory>
 #include <vector>
 
@@ -17,7 +15,6 @@ namespace Pathfinder {
 const std::vector<const char *> VALIDATION_LAYERS = {"VK_LAYER_KHRONOS_validation"};
 
 /// List of required device extensions.
-/// VK_EXT_DEBUG_MARKER_EXTENSION_NAME shouldn't go here as it's optional and is only used for debug reason.
 const std::vector<const char *> DEVICE_EXTENSIONS = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 };
@@ -80,13 +77,14 @@ public:
 private:
     bool initialized_ = false;
 
-    /// The graphics card that we'll end up selecting will be stored in a VkPhysicalDevice handle.
+    /// The graphics card that we'll end up selecting.
     VkPhysicalDevice physical_device_{};
 
     /// Logical device.
     VkDevice device_{};
 
     VkInstance instance_{};
+
     VkDebugUtilsMessengerEXT debug_messenger_{};
 
     // See https://developer.android.com/ndk/guides/graphics/validation-layer for enabling validation layer on Android.
@@ -103,11 +101,8 @@ private:
     VkCommandPool command_pool_{};
 
 #ifdef __ANDROID__
-    ANativeWindow *native_window_;
-#endif
-
-private:
-#ifndef __ANDROID__
+    ANativeWindow *native_window_{};
+#else
     static GLFWwindow *glfw_window_init(const Vec2I &size,
                                         const std::string &title,
                                         GLFWwindow *shared_window = nullptr);

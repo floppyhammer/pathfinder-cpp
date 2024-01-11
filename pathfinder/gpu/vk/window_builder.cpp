@@ -58,7 +58,7 @@ WindowBuilderVk::WindowBuilderVk(const Vec2I &size) {
 
     initialize_after_surface_creation(surface);
 
-    primary_window = std::make_shared<WindowVk>(size, glfw_window, surface, instance_);
+    primary_window_ = std::make_shared<WindowVk>(size, glfw_window, surface, instance_);
 }
 #else
 WindowBuilderVk::WindowBuilderVk(ANativeWindow *native_window, const Vec2I &window_size) {
@@ -74,13 +74,13 @@ WindowBuilderVk::WindowBuilderVk(ANativeWindow *native_window, const Vec2I &wind
                                               .flags = 0,
                                               .window = native_window_};
 
-    if (vkCreateAndroidSurfaceKHR(instance, &create_info, nullptr, &surface) != VK_SUCCESS) {
+    if (vkCreateAndroidSurfaceKHR(instance_, &create_info, nullptr, &surface) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create a Android surface!");
     }
 
     initialize_after_surface_creation(surface);
 
-    primary_window = std::make_shared<WindowVk>(window_size, surface, instance);
+    primary_window_ = std::make_shared<WindowVk>(window_size, surface, instance_);
 }
 #endif
 
@@ -88,16 +88,16 @@ WindowBuilderVk::~WindowBuilderVk() {
 #ifndef __ANDROID__
     // Destroy windows.
     {
-        for (auto &w : sub_windows) {
+        for (auto &w : sub_windows_) {
             if (!w.expired()) {
                 // We need to destroy a window explicitly in case its smart pointer is held elsewhere.
                 w.lock()->destroy();
             }
         }
-        sub_windows.clear();
+        sub_windows_.clear();
 
-        primary_window->destroy();
-        primary_window.reset();
+        primary_window_->destroy();
+        primary_window_.reset();
     }
 #endif
 
@@ -120,14 +120,14 @@ WindowBuilderVk::~WindowBuilderVk() {
 void WindowBuilderVk::preapre_destruction() {
     // Stop and destroy swapchains.
     {
-        for (auto &w : sub_windows) {
+        for (auto &w : sub_windows_) {
             if (!w.expired()) {
                 // We need to destroy a window explicitly in case its smart pointer is held elsewhere.
                 w.lock()->swapchain_->destroy();
             }
         }
 
-        primary_window->swapchain_->destroy();
+        primary_window_->swapchain_->destroy();
     }
 }
 
@@ -183,7 +183,7 @@ std::shared_ptr<Window> WindowBuilderVk::create_window(const Vec2I &size, const 
 
     auto new_window = std::make_shared<WindowVk>(size, glfw_window, surface, instance_);
 
-    sub_windows.push_back(new_window);
+    sub_windows_.push_back(new_window);
 
     return new_window;
 #else
@@ -316,13 +316,15 @@ void WindowBuilderVk::setup_debug_messenger() {
     }
 }
 
-bool WindowBuilderVk::check_device_extension_support(VkPhysicalDevice _physical_device) const {
+bool WindowBuilderVk::check_device_extension_support(VkPhysicalDevice physical_device) const {
+    // Get available device extensions.
     uint32_t extension_count;
-    vkEnumerateDeviceExtensionProperties(_physical_device, nullptr, &extension_count, nullptr);
+    vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &extension_count, nullptr);
 
     std::vector<VkExtensionProperties> available_extensions(extension_count);
-    vkEnumerateDeviceExtensionProperties(_physical_device, nullptr, &extension_count, available_extensions.data());
+    vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &extension_count, available_extensions.data());
 
+    // Check if the required extensions are available.
     std::set<std::string> required_extensions(DEVICE_EXTENSIONS.begin(), DEVICE_EXTENSIONS.end());
 
     for (const auto &extension : available_extensions) {
@@ -360,7 +362,7 @@ SwapchainSupportDetails query_swapchain_support(VkPhysicalDevice _physical_devic
 }
 
 bool WindowBuilderVk::is_device_suitable(VkPhysicalDevice physical_device, VkSurfaceKHR surface) const {
-    QueueFamilyIndices indices = find_queue_families(physical_device, surface);
+    QueueFamilyIndices qf_indices = find_queue_families(physical_device, surface);
 
     bool extensions_supported = check_device_extension_support(physical_device);
 
@@ -373,11 +375,12 @@ bool WindowBuilderVk::is_device_suitable(VkPhysicalDevice physical_device, VkSur
     VkPhysicalDeviceFeatures supported_features;
     vkGetPhysicalDeviceFeatures(physical_device, &supported_features);
 
-    return indices.is_complete() && extensions_supported && swapchain_adequate && supported_features.samplerAnisotropy;
+    return qf_indices.is_complete() && extensions_supported && swapchain_adequate &&
+           supported_features.samplerAnisotropy;
 }
 
 void WindowBuilderVk::pick_physical_device(VkSurfaceKHR surface) {
-    // Enumerates the physical devices accessible to a Vulkan instance.
+    // Ger the number of the physical devices accessible to a Vulkan instance.
     uint32_t device_count = 0;
     vkEnumeratePhysicalDevices(instance_, &device_count, nullptr);
 
@@ -389,7 +392,7 @@ void WindowBuilderVk::pick_physical_device(VkSurfaceKHR surface) {
     std::vector<VkPhysicalDevice> devices(device_count);
     vkEnumeratePhysicalDevices(instance_, &device_count, devices.data());
 
-    // Pick a suitable one among the physical devices.
+    // Pick a suitable physical device for the target surface.
     for (const auto &d : devices) {
         if (is_device_suitable(d, surface)) {
             physical_device_ = d;
@@ -398,15 +401,14 @@ void WindowBuilderVk::pick_physical_device(VkSurfaceKHR surface) {
     }
 
     if (physical_device_ == VK_NULL_HANDLE) {
-        throw std::runtime_error("Failed to find a suitable GPU!");
+        throw std::runtime_error("Failed to pick a suitable GPU!");
     }
 }
 
 VkSurfaceFormatKHR choose_swap_surface_format(const std::vector<VkSurfaceFormatKHR> &available_formats) {
-    for (const auto &available_format : available_formats) {
-        if (available_format.format == VK_FORMAT_R8G8B8A8_UNORM &&
-            available_format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
-            return available_format;
+    for (const auto &format : available_formats) {
+        if (format.format == VK_FORMAT_R8G8B8A8_UNORM && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+            return format;
         }
     }
 
@@ -414,9 +416,9 @@ VkSurfaceFormatKHR choose_swap_surface_format(const std::vector<VkSurfaceFormatK
 }
 
 VkPresentModeKHR choose_swap_present_mode(const std::vector<VkPresentModeKHR> &available_present_modes) {
-    for (const auto &available_present_mode : available_present_modes) {
-        if (available_present_mode == VK_PRESENT_MODE_MAILBOX_KHR) {
-            return available_present_mode;
+    for (const auto &present_mode : available_present_modes) {
+        if (present_mode == VK_PRESENT_MODE_MAILBOX_KHR) {
+            return present_mode;
         }
     }
 
@@ -463,32 +465,29 @@ QueueFamilyIndices find_queue_families(VkPhysicalDevice physical_device, VkSurfa
 std::vector<const char *> WindowBuilderVk::get_required_instance_extensions() {
 #ifndef __ANDROID__
     uint32_t glfw_extension_count = 0;
-    const char **glfw_extensions;
-    glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
+    const char **glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
 
     std::vector<const char *> extensions(glfw_extensions, glfw_extensions + glfw_extension_count);
+#else
+    std::vector<const char *> extensions = INSTANCE_EXTENSIONS;
+#endif
 
     if (enable_validation_layers_) {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
-#else
-    std::vector<const char *> extensions = INSTANCE_EXTENSIONS;
-
-    if (enable_validation_layers) {
-        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-    }
-#endif
 
     return extensions;
 }
 
 bool WindowBuilderVk::check_validation_layer_support() {
+    // Get available layers.
     uint32_t layer_count;
     vkEnumerateInstanceLayerProperties(&layer_count, nullptr);
 
     std::vector<VkLayerProperties> available_layers(layer_count);
     vkEnumerateInstanceLayerProperties(&layer_count, available_layers.data());
 
+    // Check if our specified layers are among the available layers.
     for (const char *layer_name : VALIDATION_LAYERS) {
         bool layer_found = false;
 
@@ -510,13 +509,14 @@ bool WindowBuilderVk::check_validation_layer_support() {
 void WindowBuilderVk::create_logical_device(VkSurfaceKHR surface) {
     QueueFamilyIndices qf_indices = find_queue_families(physical_device_, surface);
 
-    // Structure specifying parameters of a newly created device queue.
-    std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
-
     std::set<uint32_t> unique_queue_families = {*qf_indices.graphics_family, *qf_indices.present_family};
 
     float queue_priority = 1.0f;
+
+    std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
+
     for (uint32_t queue_family : unique_queue_families) {
+        // Structure specifying parameters of a newly created device queue.
         VkDeviceQueueCreateInfo queue_create_info{};
         queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         queue_create_info.queueFamilyIndex = queue_family;
@@ -540,6 +540,7 @@ void WindowBuilderVk::create_logical_device(VkSurfaceKHR surface) {
 
     create_info.pEnabledFeatures = &device_features;
 
+    // Specify needed device extensions.
     create_info.enabledExtensionCount = static_cast<uint32_t>(DEVICE_EXTENSIONS.size());
     create_info.ppEnabledExtensionNames = DEVICE_EXTENSIONS.data();
 
@@ -564,13 +565,14 @@ void WindowBuilderVk::create_logical_device(VkSurfaceKHR surface) {
 VkFormat WindowBuilderVk::find_supported_format(const std::vector<VkFormat> &candidates,
                                                 VkImageTiling tiling,
                                                 VkFormatFeatureFlags features) const {
-    for (VkFormat format : candidates) {
+    for (const VkFormat &format : candidates) {
         VkFormatProperties props;
         vkGetPhysicalDeviceFormatProperties(physical_device_, format, &props);
 
         if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
             return format;
-        } else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
+        }
+        if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
             return format;
         }
     }

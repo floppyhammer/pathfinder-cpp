@@ -1,6 +1,8 @@
 #ifndef PATHFINDER_GPU_SHADER_MODULE_GL_H
 #define PATHFINDER_GPU_SHADER_MODULE_GL_H
 
+#include <regex>
+
 namespace Pathfinder {
 
 class ShaderModuleGl : public ShaderModule {

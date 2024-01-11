@@ -1,5 +1,7 @@
 #include "window_builder.h"
 
+#include <memory>
+
 #include "../../common/logger.h"
 #include "base.h"
 #include "device.h"
@@ -33,7 +35,7 @@ WindowBuilderGl::WindowBuilderGl(const Vec2I &size) {
     #endif
 
     auto glfw_window = glfw_window_init(size, PRIMARY_WINDOW_TITLE);
-    primary_window = std::make_shared<WindowGl>(size, glfw_window);
+    primary_window_ = std::make_shared<WindowGl>(size, glfw_window);
 
     // Have to make the window context current before calling gladLoadGL().
     glfwMakeContextCurrent(glfw_window);
@@ -52,7 +54,7 @@ WindowBuilderGl::WindowBuilderGl(const Vec2I &size) {
     }
     #endif
 #else
-    primary_window = std::make_shared<WindowGl>(size);
+    primary_window_ = std::make_shared<WindowGl>(size);
 #endif
 
     // Print GL version.
@@ -68,16 +70,16 @@ WindowBuilderGl::WindowBuilderGl(const Vec2I &size) {
 WindowBuilderGl::~WindowBuilderGl() {
     // Destroy windows.
     {
-        for (auto &w : sub_windows) {
+        for (auto &w : sub_windows_) {
             if (!w.expired()) {
                 // We need to destroy a window explicitly in case its smart pointer is held elsewhere.
                 w.lock()->destroy();
             }
         }
-        sub_windows.clear();
+        sub_windows_.clear();
 
-        primary_window->destroy();
-        primary_window.reset();
+        primary_window_->destroy();
+        primary_window_.reset();
     }
 
 #ifndef __ANDROID__
@@ -127,12 +129,12 @@ GLFWwindow *WindowBuilderGl::glfw_window_init(const Vec2I &size, const std::stri
 
 std::shared_ptr<Window> WindowBuilderGl::create_window(const Vec2I &size, const std::string &title) {
 #ifndef __ANDROID__
-    auto window_gl = (WindowGl *)primary_window.get();
+    auto window_gl = (WindowGl *)primary_window_.get();
 
     auto glfw_window = glfw_window_init(size, title, (GLFWwindow *)window_gl->get_raw_handle());
 
     auto new_window = std::make_shared<WindowGl>(size, glfw_window);
-    sub_windows.push_back(new_window);
+    sub_windows_.push_back(new_window);
 
     return new_window;
 #else

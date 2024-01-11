@@ -1,9 +1,6 @@
 #ifndef PATHFINDER_WINDOW_BUILDER_GL_H
 #define PATHFINDER_WINDOW_BUILDER_GL_H
 
-#include <memory>
-#include <vector>
-
 #include "../window_builder.h"
 
 struct GLFWwindow;

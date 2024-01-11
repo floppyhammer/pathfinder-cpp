@@ -19,10 +19,10 @@ void RendererES3::init(int width, int height) {
     window_size = {width, height};
 
     pf_window_builder = Pathfinder::WindowBuilder::new_impl(window_size);
-    pf_window = pf_window_builder->get_main_window();
+    pf_window = pf_window_builder->get_primary_window();
     pf_device = pf_window_builder->request_device();
     pf_queue = pf_window_builder->create_queue();
-    pf_swapchain = pf_window->create_swap_chain(pf_device);
+    pf_swapchain = pf_window->get_swap_chain(pf_device);
 
     auto svg_input = Pathfinder::load_asset(asset_manager, "features.svg");
     auto img_input = Pathfinder::load_asset(asset_manager, "sea.png");
@@ -32,7 +32,7 @@ void RendererES3::init(int width, int height) {
     auto dst_texture = pf_device->create_texture(
             {window_size, Pathfinder::TextureFormat::Rgba8Unorm}, "dst texture");
 
-    pf_app->canvas->set_dst_texture(dst_texture);
+    pf_app->canvas_->set_dst_texture(dst_texture);
 
     pf_texture_rect = std::make_shared<TextureRect>(pf_device, pf_queue, nullptr);
     pf_texture_rect->set_texture(dst_texture);

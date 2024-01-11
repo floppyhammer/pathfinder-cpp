@@ -30,8 +30,8 @@ public:
     virtual std::shared_ptr<Queue> create_queue() = 0;
 
 protected:
-    std::shared_ptr<Window> primary_window;
-    std::vector<std::weak_ptr<Window>> sub_windows;
+    std::shared_ptr<Window> primary_window_;
+    std::vector<std::weak_ptr<Window>> sub_windows_;
 };
 
 } // namespace Pathfinder
