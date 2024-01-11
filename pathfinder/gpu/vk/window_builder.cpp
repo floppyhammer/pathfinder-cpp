@@ -2,7 +2,6 @@
 
 #include <set>
 
-#include "../../common/logger.h"
 #include "../window_builder.h"
 #include "debug_marker.h"
 #include "queue.h"
@@ -42,19 +41,17 @@ std::shared_ptr<WindowBuilder> WindowBuilder::new_impl(const Vec2I &size) {
 WindowBuilderVk::WindowBuilderVk(const Vec2I &size) {
     glfwInit();
 
+    // To not create an OpenGL context (as we're using Vulkan).
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+
     create_instance();
 
     setup_debug_messenger();
 
-    // To not create an OpenGL context (as we're using Vulkan).
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-
     auto glfw_window = glfw_window_init(size, PRIMARY_WINDOW_TITLE);
 
     VkSurfaceKHR surface{};
-    if (glfwCreateWindowSurface(instance_, glfw_window, nullptr, &surface) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create window surface!");
-    }
+    VK_CHECK_RESULT(glfwCreateWindowSurface(instance_, glfw_window, nullptr, &surface))
 
     initialize_after_surface_creation(surface);
 
@@ -74,9 +71,7 @@ WindowBuilderVk::WindowBuilderVk(ANativeWindow *native_window, const Vec2I &wind
                                               .flags = 0,
                                               .window = native_window_};
 
-    if (vkCreateAndroidSurfaceKHR(instance_, &create_info, nullptr, &surface) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create a Android surface!");
-    }
+    VK_CHECK_RESULT(vkCreateAndroidSurfaceKHR(instance_, &create_info, nullptr, &surface))
 
     initialize_after_surface_creation(surface);
 
@@ -154,7 +149,7 @@ GLFWwindow *WindowBuilderVk::glfw_window_init(const Vec2I &size, const std::stri
 
     auto glfw_window = glfwCreateWindow(size.x, size.y, title.c_str(), nullptr, shared_window);
     if (glfw_window == nullptr) {
-        throw std::runtime_error("Failed to create GLFW window!");
+        throw std::runtime_error("Failed to create a GLFW window!");
     }
 
     #ifndef __EMSCRIPTEN__
@@ -176,10 +171,7 @@ std::shared_ptr<Window> WindowBuilderVk::create_window(const Vec2I &size, const 
     auto glfw_window = glfw_window_init(size, title);
 
     VkSurfaceKHR surface{};
-    if (glfwCreateWindowSurface(instance_, glfw_window, nullptr, &surface) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create window surface!");
-    }
-    initialize_after_surface_creation(surface);
+    VK_CHECK_RESULT(glfwCreateWindowSurface(instance_, glfw_window, nullptr, &surface))
 
     auto new_window = std::make_shared<WindowVk>(size, glfw_window, surface, instance_);
 
@@ -229,64 +221,49 @@ std::shared_ptr<Queue> WindowBuilderVk::create_queue() {
 }
 
 void WindowBuilderVk::create_command_pool(VkSurfaceKHR surface) {
-    QueueFamilyIndices qf_indices = find_queue_families(physical_device_, surface);
+    const QueueFamilyIndices qf_indices = find_queue_families(physical_device_, surface);
 
     VkCommandPoolCreateInfo pool_info{};
     pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     pool_info.queueFamilyIndex = *qf_indices.graphics_family;
     pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // So we can reset command buffers.
 
-    if (vkCreateCommandPool(device_, &pool_info, nullptr, &command_pool_) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create command pool!");
-    }
+    VK_CHECK_RESULT(vkCreateCommandPool(device_, &pool_info, nullptr, &command_pool_))
 }
 
 void WindowBuilderVk::create_instance() {
-#ifndef __ANDROID__
     if (enable_validation_layers_ && !check_validation_layer_support()) {
         throw std::runtime_error("Validation layers requested, but not available!");
     }
-#endif
 
     // Structure specifying application information.
-    VkApplicationInfo app_info;
+    VkApplicationInfo app_info{};
     app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    app_info.pApplicationName = "Simple Vulkan Renderer";
     app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-    app_info.pEngineName = "No Engine"; // Name of the engine (if any) used to create the application.
     app_info.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     app_info.apiVersion = VK_API_VERSION_1_0;
-    app_info.pNext = nullptr;
 
-    // Structure specifying parameters of a newly created instance.
-    VkInstanceCreateInfo create_info;
-    create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    create_info.pApplicationInfo = &app_info;
-    create_info.flags = 0;
+    // Structure specifying parameters of a new instance.
+    VkInstanceCreateInfo instance_info{};
+    instance_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    instance_info.pApplicationInfo = &app_info;
 
-    auto extensions = get_required_instance_extensions();
-    create_info.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-    create_info.ppEnabledExtensionNames = extensions.data();
+    // Required instance extensions.
+    const auto extensions = get_required_instance_extensions();
+    instance_info.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+    instance_info.ppEnabledExtensionNames = extensions.data();
 
     VkDebugUtilsMessengerCreateInfoEXT debug_create_info;
     if (enable_validation_layers_) {
-        create_info.enabledLayerCount = static_cast<uint32_t>(VALIDATION_LAYERS.size());
-        create_info.ppEnabledLayerNames = VALIDATION_LAYERS.data();
+        instance_info.enabledLayerCount = static_cast<uint32_t>(VALIDATION_LAYERS.size());
+        instance_info.ppEnabledLayerNames = VALIDATION_LAYERS.data();
 
         populate_debug_messenger_create_info(debug_create_info);
 
-        // Pointer to a structure extending this structure.
-        create_info.pNext = (VkDebugUtilsMessengerCreateInfoEXT *)&debug_create_info;
-    } else {
-        create_info.enabledLayerCount = 0;
-
-        create_info.pNext = nullptr;
+        instance_info.pNext = &debug_create_info;
     }
 
-    // Create a new Vulkan instance.
-    if (vkCreateInstance(&create_info, nullptr, &instance_) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create a Vulkan instance!");
-    }
+    VK_CHECK_RESULT(vkCreateInstance(&instance_info, nullptr, &instance_))
 
     DebugMarker::get_singleton()->setup(instance_);
 }
@@ -311,9 +288,7 @@ void WindowBuilderVk::setup_debug_messenger() {
     VkDebugUtilsMessengerCreateInfoEXT create_info;
     populate_debug_messenger_create_info(create_info);
 
-    if (create_debug_utils_messenger_ext(instance_, &create_info, nullptr, &debug_messenger_) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to set up debug messenger!");
-    }
+    VK_CHECK_RESULT(create_debug_utils_messenger_ext(instance_, &create_info, nullptr, &debug_messenger_))
 }
 
 bool WindowBuilderVk::check_device_extension_support(VkPhysicalDevice physical_device) const {
@@ -553,9 +528,7 @@ void WindowBuilderVk::create_logical_device(VkSurfaceKHR surface) {
     }
 
     // A logical device is created as a connection to a physical device.
-    if (vkCreateDevice(physical_device_, &create_info, nullptr, &device_) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create logical device!");
-    }
+    VK_CHECK_RESULT(vkCreateDevice(physical_device_, &create_info, nullptr, &device_))
 
     // Get a queue handle from a device.
     vkGetDeviceQueue(device_, *qf_indices.graphics_family, 0, &graphics_queue_);

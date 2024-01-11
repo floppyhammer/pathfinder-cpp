@@ -1,5 +1,7 @@
 #include "descriptor_set.h"
 
+#include <cassert>
+
 #include "buffer.h"
 #include "texture.h"
 
@@ -44,9 +46,7 @@ void DescriptorSetVk::update_vk_descriptor_set(VkDevice vk_device, VkDescriptorS
         pool_info.pPoolSizes = poolSizes.data();
         pool_info.maxSets = 1;
 
-        if (vkCreateDescriptorPool(vk_device_, &pool_info, nullptr, &vk_descriptor_pool_) != VK_SUCCESS) {
-            throw std::runtime_error("Failed to create descriptor pool!");
-        }
+        VK_CHECK_RESULT(vkCreateDescriptorPool(vk_device_, &pool_info, nullptr, &vk_descriptor_pool_))
 
         VkDescriptorSetAllocateInfo alloc_info{};
         alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -54,9 +54,7 @@ void DescriptorSetVk::update_vk_descriptor_set(VkDevice vk_device, VkDescriptorS
         alloc_info.descriptorSetCount = 1;
         alloc_info.pSetLayouts = &vk_descriptor_set_layout;
 
-        if (vkAllocateDescriptorSets(vk_device_, &alloc_info, &vk_descriptor_set_) != VK_SUCCESS) {
-            throw std::runtime_error("Failed to allocate descriptor sets!");
-        }
+        VK_CHECK_RESULT(vkAllocateDescriptorSets(vk_device_, &alloc_info, &vk_descriptor_set_))
 
         descriptor_set_allocated_ = true;
     }

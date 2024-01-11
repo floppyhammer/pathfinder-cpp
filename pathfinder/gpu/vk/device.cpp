@@ -99,12 +99,10 @@ std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
         layout_info.bindingCount = bindings.size();
         layout_info.pBindings = bindings.data();
 
-        if (vkCreateDescriptorSetLayout(vk_device_,
-                                        &layout_info,
-                                        nullptr,
-                                        &render_pipeline_vk->vk_descriptor_set_layout_) != VK_SUCCESS) {
-            throw std::runtime_error("Failed to create descriptor set layout!");
-        }
+        VK_CHECK_RESULT(vkCreateDescriptorSetLayout(vk_device_,
+                                                    &layout_info,
+                                                    nullptr,
+                                                    &render_pipeline_vk->vk_descriptor_set_layout_))
     }
 
     // Create pipeline layout.
@@ -116,10 +114,8 @@ std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
         pipeline_layout_info.pushConstantRangeCount = 0;
 
         // Create pipeline layout.
-        if (vkCreatePipelineLayout(vk_device_, &pipeline_layout_info, nullptr, &render_pipeline_vk->vk_layout_) !=
-            VK_SUCCESS) {
-            throw std::runtime_error("Failed to create pipeline layout!");
-        }
+        VK_CHECK_RESULT(
+            vkCreatePipelineLayout(vk_device_, &pipeline_layout_info, nullptr, &render_pipeline_vk->vk_layout_))
     }
 
     // Specify shader stages.
@@ -257,14 +253,12 @@ std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
     pipeline_info.pDynamicState = &dynamic; // Make viewport and scissor dynamic.
 
     // Create pipeline.
-    if (vkCreateGraphicsPipelines(vk_device_,
-                                  VK_NULL_HANDLE,
-                                  1,
-                                  &pipeline_info,
-                                  nullptr,
-                                  &render_pipeline_vk->vk_pipeline_) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create graphics pipeline!");
-    }
+    VK_CHECK_RESULT(vkCreateGraphicsPipelines(vk_device_,
+                                              VK_NULL_HANDLE,
+                                              1,
+                                              &pipeline_info,
+                                              nullptr,
+                                              &render_pipeline_vk->vk_pipeline_))
 
     DebugMarker::get_singleton()->set_object_name(vk_device_,
                                                   (uint64_t)render_pipeline_vk->vk_pipeline_,
@@ -304,12 +298,10 @@ std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(
         layout_info.bindingCount = bindings.size();
         layout_info.pBindings = bindings.data();
 
-        if (vkCreateDescriptorSetLayout(vk_device_,
-                                        &layout_info,
-                                        nullptr,
-                                        &compute_pipeline_vk->vk_descriptor_set_layout_) != VK_SUCCESS) {
-            throw std::runtime_error("Failed to create descriptor set layout!");
-        }
+        VK_CHECK_RESULT(vkCreateDescriptorSetLayout(vk_device_,
+                                                    &layout_info,
+                                                    nullptr,
+                                                    &compute_pipeline_vk->vk_descriptor_set_layout_))
     }
 
     // Create pipeline layout.
@@ -321,10 +313,8 @@ std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(
         pipeline_layout_info.pushConstantRangeCount = 0;
 
         // Create pipeline layout.
-        if (vkCreatePipelineLayout(vk_device_, &pipeline_layout_info, nullptr, &compute_pipeline_vk->vk_layout_) !=
-            VK_SUCCESS) {
-            throw std::runtime_error("Failed to create compute pipeline layout!");
-        }
+        VK_CHECK_RESULT(
+            vkCreatePipelineLayout(vk_device_, &pipeline_layout_info, nullptr, &compute_pipeline_vk->vk_layout_))
     }
 
     // Specify shader stages.
@@ -344,14 +334,12 @@ std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(
     pipeline_create_info.basePipelineIndex = 0;
 
     // Create pipeline.
-    if (vkCreateComputePipelines(vk_device_,
-                                 VK_NULL_HANDLE,
-                                 1,
-                                 &pipeline_create_info,
-                                 nullptr,
-                                 &compute_pipeline_vk->vk_pipeline_) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create compute pipeline!");
-    }
+    VK_CHECK_RESULT(vkCreateComputePipelines(vk_device_,
+                                             VK_NULL_HANDLE,
+                                             1,
+                                             &pipeline_create_info,
+                                             nullptr,
+                                             &compute_pipeline_vk->vk_pipeline_))
 
     DebugMarker::get_singleton()->set_object_name(vk_device_,
                                                   (uint64_t)compute_pipeline_vk->vk_pipeline_,
@@ -474,9 +462,7 @@ std::shared_ptr<Sampler> DeviceVk::create_sampler(SamplerDescriptor descriptor) 
     sampler_info.maxLod = 0.0f;
 
     VkSampler sampler;
-    if (vkCreateSampler(vk_device_, &sampler_info, nullptr, &sampler) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create texture sampler!");
-    }
+    VK_CHECK_RESULT(vkCreateSampler(vk_device_, &sampler_info, nullptr, &sampler))
 
     return std::shared_ptr<SamplerVk>(new SamplerVk(descriptor, sampler, vk_device_));
 }
@@ -507,9 +493,7 @@ VkShaderModule DeviceVk::create_shader_module(const std::vector<char> &code) {
     create_info.pCode = reinterpret_cast<const uint32_t *>(code.data());
 
     VkShaderModule shader_module;
-    if (vkCreateShaderModule(vk_device_, &create_info, nullptr, &shader_module) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create shader module!");
-    }
+    VK_CHECK_RESULT(vkCreateShaderModule(vk_device_, &create_info, nullptr, &shader_module))
 
     return shader_module;
 }
@@ -540,9 +524,7 @@ void DeviceVk::create_vk_image(uint32_t width,
     image_info.samples = VK_SAMPLE_COUNT_1_BIT;
     image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    if (vkCreateImage(vk_device_, &image_info, nullptr, &image) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create image!");
-    }
+    VK_CHECK_RESULT(vkCreateImage(vk_device_, &image_info, nullptr, &image))
     // -------------------------------------
 
     // Create image memory.
@@ -558,9 +540,7 @@ void DeviceVk::create_vk_image(uint32_t width,
     alloc_info.allocationSize = mem_requirements.size;
     alloc_info.memoryTypeIndex = find_memory_type(mem_requirements.memoryTypeBits, properties);
 
-    if (vkAllocateMemory(vk_device_, &alloc_info, nullptr, &image_memory) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to allocate image memory!");
-    }
+    VK_CHECK_RESULT(vkAllocateMemory(vk_device_, &alloc_info, nullptr, &image_memory))
     // -------------------------------------
 
     // Bind the image and memory.
@@ -580,9 +560,7 @@ VkImageView DeviceVk::create_vk_image_view(VkImage image, VkFormat format, VkIma
     view_info.subresourceRange.layerCount = 1;
 
     VkImageView image_view;
-    if (vkCreateImageView(vk_device_, &view_info, nullptr, &image_view) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create image view!");
-    }
+    VK_CHECK_RESULT(vkCreateImageView(vk_device_, &view_info, nullptr, &image_view))
 
     return image_view;
 }
@@ -617,9 +595,7 @@ VkSampler DeviceVk::create_vk_sampler() const {
     sampler_info.maxLod = 0.0f;
 
     VkSampler sampler;
-    if (vkCreateSampler(vk_device_, &sampler_info, nullptr, &sampler) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create texture sampler!");
-    }
+    VK_CHECK_RESULT(vkCreateSampler(vk_device_, &sampler_info, nullptr, &sampler))
 
     return sampler;
 }
@@ -638,9 +614,7 @@ void DeviceVk::create_vk_buffer(VkDeviceSize size,
                                                          // accessed by multiple queue families.
 
     // Create buffer.
-    if (vkCreateBuffer(vk_device_, &buffer_info, nullptr, &buffer) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create buffer!");
-    }
+    VK_CHECK_RESULT(vkCreateBuffer(vk_device_, &buffer_info, nullptr, &buffer))
 
     // Allocate buffer memory.
     // -------------------------------------
@@ -653,9 +627,7 @@ void DeviceVk::create_vk_buffer(VkDeviceSize size,
     alloc_info.memoryTypeIndex = find_memory_type(mem_requirements.memoryTypeBits,
                                                   properties); // Index identifying a memory type.
 
-    if (vkAllocateMemory(vk_device_, &alloc_info, nullptr, &buffer_memory) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to allocate buffer memory!");
-    }
+    VK_CHECK_RESULT(vkAllocateMemory(vk_device_, &alloc_info, nullptr, &buffer_memory))
     // -------------------------------------
 
     // Bind the buffer and memory.

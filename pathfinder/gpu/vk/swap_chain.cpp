@@ -157,9 +157,7 @@ void SwapChainVk::create_swapchain(VkPhysicalDevice physical_device) {
     create_info.oldSwapchain = VK_NULL_HANDLE;
 
     // Create a swap chain.
-    if (vkCreateSwapchainKHR(vk_device, &create_info, nullptr, &vk_swapchain_) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create swap chain!");
-    }
+    VK_CHECK_RESULT(vkCreateSwapchainKHR(vk_device, &create_info, nullptr, &vk_swapchain_))
 
     // Get the number of presentable images for swap chain.
     vkGetSwapchainImagesKHR(vk_device, vk_swapchain_, &image_count, nullptr);
@@ -219,11 +217,9 @@ void SwapChainVk::create_sync_objects() {
     fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT; // Initialize it in the signaled state
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        if (vkCreateSemaphore(vk_device, &semaphore_info, nullptr, &image_available_semaphores_[i]) != VK_SUCCESS ||
-            vkCreateSemaphore(vk_device, &semaphore_info, nullptr, &render_finished_semaphores_[i]) != VK_SUCCESS ||
-            vkCreateFence(vk_device, &fence_info, nullptr, &in_flight_fences_[i]) != VK_SUCCESS) {
-            throw std::runtime_error("Failed to create synchronization objects for a frame!");
-        }
+        VK_CHECK_RESULT(vkCreateSemaphore(vk_device, &semaphore_info, nullptr, &image_available_semaphores_[i]))
+        VK_CHECK_RESULT(vkCreateSemaphore(vk_device, &semaphore_info, nullptr, &render_finished_semaphores_[i]))
+        VK_CHECK_RESULT(vkCreateFence(vk_device, &fence_info, nullptr, &in_flight_fences_[i]))
     }
 }
 
@@ -258,9 +254,7 @@ void SwapChainVk::flush(const std::shared_ptr<CommandEncoder> &encoder) {
 
     vkResetFences(vk_device, 1, &in_flight_fences_[current_frame_]);
 
-    if (vkQueueSubmit(vk_graphics_queue, 1, &submit_info, in_flight_fences_[current_frame_]) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to submit queue!");
-    }
+    VK_CHECK_RESULT(vkQueueSubmit(vk_graphics_queue, 1, &submit_info, in_flight_fences_[current_frame_]))
     // -------------------------------------
 }
 

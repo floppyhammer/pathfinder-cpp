@@ -24,9 +24,7 @@ FramebufferVk::FramebufferVk(VkDevice vk_device, VkRenderPass vk_render_pass, co
     framebufferInfo.height = size_.y;
     framebufferInfo.layers = 1;
 
-    if (vkCreateFramebuffer(vk_device, &framebufferInfo, nullptr, &vk_framebuffer_) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create framebuffer!");
-    }
+    VK_CHECK_RESULT(vkCreateFramebuffer(vk_device, &framebufferInfo, nullptr, &vk_framebuffer_))
 }
 
 FramebufferVk::FramebufferVk(VkDevice vk_device, VkRenderPass vk_render_pass, Vec2I size, VkImageView vk_image_view)
@@ -45,9 +43,7 @@ FramebufferVk::FramebufferVk(VkDevice vk_device, VkRenderPass vk_render_pass, Ve
     framebufferInfo.height = size.y;
     framebufferInfo.layers = 1;
 
-    if (vkCreateFramebuffer(vk_device, &framebufferInfo, nullptr, &vk_framebuffer_) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create framebuffer!");
-    }
+    VK_CHECK_RESULT(vkCreateFramebuffer(vk_device, &framebufferInfo, nullptr, &vk_framebuffer_))
 }
 
 FramebufferVk::~FramebufferVk() {

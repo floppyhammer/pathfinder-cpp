@@ -64,7 +64,7 @@ public:
     // Call this right after the render loop is stopped.
     void preapre_destruction() override;
 
-    std::shared_ptr<Window> create_window(const Vec2I &_size, const std::string &title) override;
+    std::shared_ptr<Window> create_window(const Vec2I &size, const std::string &title) override;
 
     std::shared_ptr<Device> request_device() override;
 
@@ -125,14 +125,15 @@ private:
 
     static bool check_validation_layer_support();
 
-    [[nodiscard]] VkFormat find_depth_format() const;
+    VkFormat find_depth_format() const;
 
-    [[nodiscard]] VkFormat find_supported_format(const std::vector<VkFormat> &candidates,
-                                                 VkImageTiling tiling,
-                                                 VkFormatFeatureFlags features) const;
+    VkFormat find_supported_format(const std::vector<VkFormat> &candidates,
+                                   VkImageTiling tiling,
+                                   VkFormatFeatureFlags features) const;
 
     static std::vector<const char *> get_required_instance_extensions();
 
+    /// Should be called every time a surface is (re)created.
     void initialize_after_surface_creation(VkSurfaceKHR surface);
 
     void setup_debug_messenger();

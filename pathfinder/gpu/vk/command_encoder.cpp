@@ -205,9 +205,7 @@ bool CommandEncoderVk::finish() {
     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     begin_info.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 
-    if (vkBeginCommandBuffer(vk_command_buffer_, &begin_info) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to begin recording vk command buffer!");
-    }
+    VK_CHECK_RESULT(vkBeginCommandBuffer(vk_command_buffer_, &begin_info))
 
     // Start a new debug marker region
     DebugMarker::get_singleton()->begin_region(vk_command_buffer_, label_, ColorF(1.0f, 0.78f, 0.05f, 1.0f));
@@ -593,9 +591,7 @@ bool CommandEncoderVk::finish() {
     DebugMarker::get_singleton()->end_region(vk_command_buffer_);
 
     // End recording the command buffer.
-    if (vkEndCommandBuffer(vk_command_buffer_) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to end vk command buffer!");
-    }
+    VK_CHECK_RESULT(vkEndCommandBuffer(vk_command_buffer_))
 
     finished_ = true;
 

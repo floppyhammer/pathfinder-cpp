@@ -4,6 +4,7 @@
 #include <array>
 
 #include "../../common/global_macros.h"
+#include "../../common/logger.h"
 #include "../base.h"
 
 // Vulkan header.
@@ -14,6 +15,17 @@
     #define GLFW_INCLUDE_VULKAN
     #include <GLFW/glfw3.h>
 #endif
+
+#define VK_CHECK_RESULT(f)                                                                                       \
+    {                                                                                                            \
+        VkResult res = (f);                                                                                      \
+        if (res != VK_SUCCESS) {                                                                                 \
+            std::ostringstream string_stream;                                                                    \
+            string_stream << "Fatal : VkResult is \"" << res << "\" in " << __FILE__ << " at line " << __LINE__; \
+            Pathfinder::Logger::error(string_stream.str(), "Vulkan");                                            \
+            assert(res == VK_SUCCESS);                                                                           \
+        }                                                                                                        \
+    }
 
 namespace Pathfinder {
 

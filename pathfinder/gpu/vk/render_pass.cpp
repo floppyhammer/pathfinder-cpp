@@ -1,5 +1,7 @@
 #include "render_pass.h"
 
+#include <cassert>
+
 #include "debug_marker.h"
 
 namespace Pathfinder {
@@ -63,9 +65,7 @@ RenderPassVk::RenderPassVk(VkDevice vk_device,
     renderPassInfo.dependencyCount = 1;
     renderPassInfo.pDependencies = &dependency;
 
-    if (vkCreateRenderPass(vk_device, &renderPassInfo, nullptr, &vk_render_pass_) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create render pass!");
-    }
+    VK_CHECK_RESULT(vkCreateRenderPass(vk_device, &renderPassInfo, nullptr, &vk_render_pass_))
 
     DebugMarker::get_singleton()->set_object_name(vk_device,
                                                   (uint64_t)vk_render_pass_,
