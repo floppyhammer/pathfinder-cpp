@@ -1,5 +1,6 @@
 #include "window_builder.h"
 
+#include <cstring>
 #include <memory>
 
 #include "../../common/logger.h"
@@ -9,6 +10,22 @@
 #include "window.h"
 
 namespace Pathfinder {
+
+bool is_extension_supported(const char *name) {
+    Logger::debug("Supported extensions:", "OpenGL");
+
+    GLint num_extensions = 0;
+    glGetIntegerv(GL_NUM_EXTENSIONS, &num_extensions);
+
+    for (GLint i = 0; i < num_extensions; i++) {
+        const auto extension = (const char *)glGetStringi(GL_EXTENSIONS, i);
+        Logger::debug(std::string(extension), "OpenGL");
+        if (!strcmp(name, extension)) {
+            return true;
+        }
+    }
+    return false;
+}
 
 std::shared_ptr<WindowBuilder> WindowBuilder::new_impl(const Vec2I &size) {
     return std::make_shared<WindowBuilderGl>(size);
