@@ -1,6 +1,8 @@
 #ifndef PATHFINDER_GPU_SHADER_MODULE_H
 #define PATHFINDER_GPU_SHADER_MODULE_H
 
+#include <string>
+
 namespace Pathfinder {
 
 class ShaderModule {
