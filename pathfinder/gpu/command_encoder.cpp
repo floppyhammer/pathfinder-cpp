@@ -16,7 +16,7 @@ void CommandEncoder::begin_render_pass(const std::shared_ptr<RenderPass> &render
     }
     framebuffers_.push_back(framebuffer);
 
-    Command cmd;
+    Command cmd{};
     cmd.type = CommandType::BeginRenderPass;
 
     auto &args = cmd.args.begin_render_pass;
@@ -28,7 +28,7 @@ void CommandEncoder::begin_render_pass(const std::shared_ptr<RenderPass> &render
 }
 
 void CommandEncoder::set_viewport(const RectI &viewport) {
-    Command cmd;
+    Command cmd{};
     cmd.type = CommandType::SetViewport;
 
     auto &args = cmd.args.set_viewport;
@@ -38,7 +38,7 @@ void CommandEncoder::set_viewport(const RectI &viewport) {
 }
 
 void CommandEncoder::bind_render_pipeline(const std::shared_ptr<RenderPipeline> &pipeline) {
-    Command cmd;
+    Command cmd{};
     cmd.type = CommandType::BindRenderPipeline;
 
     auto &args = cmd.args.bind_render_pipeline;
@@ -48,7 +48,7 @@ void CommandEncoder::bind_render_pipeline(const std::shared_ptr<RenderPipeline> 
 }
 
 void CommandEncoder::bind_vertex_buffers(std::vector<std::shared_ptr<Buffer>> vertex_buffers) {
-    Command cmd;
+    Command cmd{};
     cmd.type = CommandType::BindVertexBuffers;
 
     auto &args = cmd.args.bind_vertex_buffers;
@@ -63,7 +63,7 @@ void CommandEncoder::bind_vertex_buffers(std::vector<std::shared_ptr<Buffer>> ve
 }
 
 void CommandEncoder::bind_descriptor_set(const std::shared_ptr<DescriptorSet> &descriptor_set) {
-    Command cmd;
+    Command cmd{};
     cmd.type = CommandType::BindDescriptorSet;
 
     auto &args = cmd.args.bind_descriptor_set;
@@ -73,7 +73,7 @@ void CommandEncoder::bind_descriptor_set(const std::shared_ptr<DescriptorSet> &d
 }
 
 void CommandEncoder::bind_compute_pipeline(const std::shared_ptr<ComputePipeline> &pipeline) {
-    Command cmd;
+    Command cmd{};
     cmd.type = CommandType::BindComputePipeline;
 
     auto &args = cmd.args.bind_compute_pipeline;
@@ -83,7 +83,7 @@ void CommandEncoder::bind_compute_pipeline(const std::shared_ptr<ComputePipeline
 }
 
 void CommandEncoder::draw(uint32_t first_vertex, uint32_t vertex_count) {
-    Command cmd;
+    Command cmd{};
     cmd.type = CommandType::Draw;
 
     auto &args = cmd.args.draw;
@@ -94,7 +94,7 @@ void CommandEncoder::draw(uint32_t first_vertex, uint32_t vertex_count) {
 }
 
 void CommandEncoder::draw_instanced(uint32_t vertex_count, uint32_t instance_count) {
-    Command cmd;
+    Command cmd{};
     cmd.type = CommandType::DrawInstanced;
 
     auto &args = cmd.args.draw_instanced;
@@ -105,14 +105,14 @@ void CommandEncoder::draw_instanced(uint32_t vertex_count, uint32_t instance_cou
 }
 
 void CommandEncoder::end_render_pass() {
-    Command cmd;
+    Command cmd{};
     cmd.type = CommandType::EndRenderPass;
 
     commands_.push_back(cmd);
 }
 
 void CommandEncoder::begin_compute_pass() {
-    Command cmd;
+    Command cmd{};
     cmd.type = CommandType::BeginComputePass;
 
     commands_.push_back(cmd);
@@ -124,7 +124,7 @@ void CommandEncoder::dispatch(uint32_t group_size_x, uint32_t group_size_y, uint
         return;
     }
 
-    Command cmd;
+    Command cmd{};
     cmd.type = CommandType::Dispatch;
 
     auto &args = cmd.args.dispatch;
@@ -136,7 +136,7 @@ void CommandEncoder::dispatch(uint32_t group_size_x, uint32_t group_size_y, uint
 }
 
 void CommandEncoder::end_compute_pass() {
-    Command cmd;
+    Command cmd{};
     cmd.type = CommandType::EndComputePass;
 
     commands_.push_back(cmd);
@@ -162,7 +162,7 @@ void CommandEncoder::write_buffer(const std::shared_ptr<Buffer> &buffer,
         return;
     }
 
-    Command cmd;
+    Command cmd{};
     cmd.type = CommandType::WriteBuffer;
 
     auto &args = cmd.args.write_buffer;
@@ -191,7 +191,7 @@ void CommandEncoder::read_buffer(const std::shared_ptr<Buffer> &buffer,
                 return;
             }
 
-            Command cmd;
+            Command cmd{};
             cmd.type = CommandType::ReadBuffer;
 
             auto &args = cmd.args.read_buffer;
@@ -220,7 +220,7 @@ void CommandEncoder::write_texture(const std::shared_ptr<Texture> &texture, Rect
         return;
     }
 
-    Command cmd;
+    Command cmd{};
     cmd.type = CommandType::WriteTexture;
 
     auto &args = cmd.args.write_texture;
@@ -246,7 +246,7 @@ void CommandEncoder::read_texture(const std::shared_ptr<Texture> &texture, RectI
         return;
     }
 
-    Command cmd;
+    Command cmd{};
     cmd.type = CommandType::ReadTexture;
 
     auto &args = cmd.args.read_texture;
