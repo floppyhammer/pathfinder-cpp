@@ -38,12 +38,6 @@ struct TextureAllocation {
     std::string tag;
 };
 
-struct FramebufferAllocation {
-    std::shared_ptr<Framebuffer> framebuffer;
-    TextureDescriptor descriptor;
-    std::string tag;
-};
-
 enum class FreeObjectKind {
     Buffer,
     Texture,
@@ -58,7 +52,6 @@ struct FreeObject {
 
     BufferAllocation buffer_allocation;
     TextureAllocation texture_allocation;
-    FramebufferAllocation framebuffer_allocation;
 };
 
 /// GPU memory management.
@@ -70,19 +63,13 @@ public:
 
     uint64_t allocate_texture(Vec2I size, TextureFormat format, const std::string& tag);
 
-    uint64_t allocate_framebuffer(Vec2I size, TextureFormat format, const std::string& tag);
-
     std::shared_ptr<Buffer> get_buffer(uint64_t id);
 
     std::shared_ptr<Texture> get_texture(uint64_t id);
 
-    std::shared_ptr<Framebuffer> get_framebuffer(uint64_t id);
-
     void free_buffer(uint64_t id);
 
     void free_texture(uint64_t id);
-
-    void free_framebuffer(uint64_t id);
 
     void purge_if_needed();
 
@@ -93,11 +80,9 @@ private:
 
     std::unordered_map<uint64_t, BufferAllocation> buffers_in_use;
     std::unordered_map<uint64_t, TextureAllocation> textures_in_use;
-    std::unordered_map<uint64_t, FramebufferAllocation> framebuffers_in_use;
 
     uint64_t next_buffer_id = 0;
     uint64_t next_texture_id = 0;
-    uint64_t next_framebuffer_id = 0;
 
     // Framebuffers are render pass dependent.
     std::unordered_map<TextureFormat, std::shared_ptr<RenderPass>> render_pass_cache;

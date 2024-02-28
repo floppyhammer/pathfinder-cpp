@@ -14,7 +14,7 @@ namespace Pathfinder {
 
 /// We only need to provide a Driver to Canvas for rendering,
 /// which means Window and SwapChain aren't needed for platforms like Android.
-class Device {
+class Device : public std::enable_shared_from_this<Device> {
 public:
     virtual ~Device() = default;
 

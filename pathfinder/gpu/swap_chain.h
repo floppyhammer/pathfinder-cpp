@@ -24,10 +24,10 @@ public:
     virtual std::shared_ptr<RenderPass> get_render_pass() = 0;
 
     /**
-     * Get current framebuffer.
-     * @return Framebuffer
+     * Get current texture.
+     * @return Texture
      */
-    virtual std::shared_ptr<Framebuffer> get_framebuffer() = 0;
+    virtual std::shared_ptr<Texture> get_surface_texture() = 0;
 
     /// Acquire current texture in the swap chain.
     virtual bool acquire_image() = 0;

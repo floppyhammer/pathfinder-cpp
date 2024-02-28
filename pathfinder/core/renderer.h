@@ -21,7 +21,7 @@ const uint32_t MASK_FRAMEBUFFER_WIDTH = TILE_WIDTH * MASK_TILES_ACROSS;
 const uint32_t MASK_FRAMEBUFFER_HEIGHT = TILE_HEIGHT / 4 * MASK_TILES_DOWN;
 
 struct RenderTarget {
-    std::shared_ptr<Framebuffer> framebuffer;
+    std::shared_ptr<Texture> texture;
 };
 
 void upload_texture_metadata(const std::shared_ptr<Texture> &metadata_texture,
@@ -31,18 +31,15 @@ void upload_texture_metadata(const std::shared_ptr<Texture> &metadata_texture,
 /// Pattern GPU textures.
 class PatternTexturePage {
 public:
-    PatternTexturePage(uint64_t framebuffer_id, bool must_preserve_contents)
-        : framebuffer_id_(framebuffer_id), must_preserve_contents_(must_preserve_contents) {}
+    PatternTexturePage(uint64_t texture_id, bool must_preserve_contents)
+        : texture_id_(texture_id), must_preserve_contents_(must_preserve_contents) {}
 
-    uint64_t framebuffer_id_;
+    uint64_t texture_id_;
     /// Should preserve framebuffer content.
     bool must_preserve_contents_;
 };
 
 struct MaskStorage {
-    /// For Dx9.
-    std::shared_ptr<uint64_t> framebuffer_id;
-    /// For Dx11.
     std::shared_ptr<uint64_t> texture_id;
     uint32_t allocated_page_count = 0;
 };

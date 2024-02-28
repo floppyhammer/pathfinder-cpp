@@ -64,6 +64,10 @@ public:
         label_ = label;
     }
 
+    std::string get_label() const {
+        return label_;
+    }
+
 protected:
     explicit Texture(TextureDescriptor desc) : desc_(desc) {}
 

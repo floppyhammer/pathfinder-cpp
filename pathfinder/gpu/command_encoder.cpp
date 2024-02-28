@@ -1,12 +1,21 @@
 #include "command_encoder.h"
 
 #include "../common/logger.h"
+#include "device.h"
 
 namespace Pathfinder {
 
 void CommandEncoder::begin_render_pass(const std::shared_ptr<RenderPass> &render_pass,
-                                       const std::shared_ptr<Framebuffer> &framebuffer,
+                                       const std::shared_ptr<Texture> &texture,
                                        ColorF clear_color) {
+    std::shared_ptr<Framebuffer> framebuffer;
+    if (texture) {
+        framebuffer = device_.lock()->create_framebuffer(render_pass, texture, texture->get_label() + " framebuffer");
+    } else {
+        framebuffer = device_.lock()->create_framebuffer(render_pass, nullptr, "screen framebuffer");
+    }
+    framebuffers_.push_back(framebuffer);
+
     Command cmd;
     cmd.type = CommandType::BeginRenderPass;
 
@@ -14,7 +23,16 @@ void CommandEncoder::begin_render_pass(const std::shared_ptr<RenderPass> &render
     args.render_pass = render_pass.get();
     args.framebuffer = framebuffer.get();
     args.clear_color = clear_color;
-    args.viewport = {Vec2I(), framebuffer->get_size()};
+
+    commands_.push_back(cmd);
+}
+
+void CommandEncoder::set_viewport(const RectI &viewport) {
+    Command cmd;
+    cmd.type = CommandType::SetViewport;
+
+    auto &args = cmd.args.set_viewport;
+    args.viewport = viewport;
 
     commands_.push_back(cmd);
 }

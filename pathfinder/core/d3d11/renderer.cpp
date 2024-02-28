@@ -339,7 +339,7 @@ void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
         clear_dest_texture = false;
     } else {
         auto render_target = get_render_target(*render_target_id);
-        target_texture = render_target.framebuffer->get_texture();
+        target_texture = render_target.texture;
         clear_op = LOAD_ACTION_CLEAR;
     }
 
@@ -353,7 +353,7 @@ void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
     if (color_texture_info) {
         auto color_texture_page = pattern_texture_pages[color_texture_info->page_id];
         if (color_texture_page) {
-            color_texture = allocator->get_framebuffer(color_texture_page->framebuffer_id_)->get_texture();
+            color_texture = allocator->get_texture(color_texture_page->texture_id_);
             color_texture_sampler = get_or_create_sampler(color_texture_info->sampling_flags);
 
             if (color_texture == nullptr) {
@@ -1049,7 +1049,6 @@ void RendererD3D11::reallocate_alpha_tile_pages_if_necessary() {
     auto mask_texture_id = allocator->allocate_texture(new_size, format, "Mask texture");
 
     mask_storage = MaskStorage{
-        nullptr,
         std::make_shared<uint64_t>(mask_texture_id),
         alpha_tile_pages_needed,
     };

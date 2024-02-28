@@ -482,6 +482,7 @@ std::shared_ptr<CommandEncoder> DeviceVk::create_command_encoder(const std::stri
 
     auto command_encoder_vk = std::shared_ptr<CommandEncoderVk>(new CommandEncoderVk(command_buffer, this));
     command_encoder_vk->label_ = label;
+    command_encoder_vk->device_ = shared_from_this();
 
     return command_encoder_vk;
 }

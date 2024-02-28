@@ -63,16 +63,17 @@ int main() {
 
             auto encoder = device->create_command_encoder("Main encoder");
 
-            auto framebuffer = swap_chain->get_framebuffer();
+            auto surface_texture = swap_chain->get_surface_texture();
 
             // Swap chain render pass.
             {
                 encoder->begin_render_pass(swap_chain->get_render_pass(),
-                                           framebuffer,
+                                           surface_texture,
                                            Pathfinder::ColorF(0.2, 0.2, 0.2, 1.0));
+                encoder->set_viewport({{0, 0}, swap_chain->size_});
 
                 // Draw canvas to screen.
-                texture_rect->draw(encoder, framebuffer->get_size());
+                texture_rect->draw(encoder, swap_chain->size_);
 
                 encoder->end_render_pass();
             }

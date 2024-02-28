@@ -62,7 +62,7 @@ private:
 
     /// Where the final rendering output goes.
     /// This is not managed by the memory allocator.
-    std::shared_ptr<Framebuffer> dest_framebuffer;
+    std::shared_ptr<Texture> dest_texture;
 
     std::shared_ptr<RenderPass> mask_render_pass_clear, mask_render_pass_load;
     std::shared_ptr<RenderPass> dest_render_pass_clear, dest_render_pass_load;

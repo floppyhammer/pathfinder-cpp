@@ -13,7 +13,14 @@ namespace Pathfinder {
 std::shared_ptr<Framebuffer> DeviceGl::create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
                                                           const std::shared_ptr<Texture> &texture,
                                                           const std::string &label) {
-    auto framebuffer_gl = std::shared_ptr<FramebufferGl>(new FramebufferGl(texture));
+    std::shared_ptr<FramebufferGl> framebuffer_gl;
+
+    if (texture) {
+        framebuffer_gl = std::shared_ptr<FramebufferGl>(new FramebufferGl(texture));
+    } else {
+        framebuffer_gl = std::shared_ptr<FramebufferGl>(new FramebufferGl());
+    }
+
     framebuffer_gl->set_label(label);
     return framebuffer_gl;
 }
@@ -35,7 +42,9 @@ std::shared_ptr<Sampler> DeviceGl::create_sampler(SamplerDescriptor descriptor) 
 }
 
 std::shared_ptr<CommandEncoder> DeviceGl::create_command_encoder(const std::string &label) {
-    return std::shared_ptr<CommandEncoderGl>(new CommandEncoderGl());
+    auto cmd_encoder = std::shared_ptr<CommandEncoderGl>(new CommandEncoderGl());
+    cmd_encoder->device_ = shared_from_this();
+    return cmd_encoder;
 }
 
 std::shared_ptr<RenderPass> DeviceGl::create_render_pass(TextureFormat format,

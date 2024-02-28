@@ -8,7 +8,7 @@
 
 namespace Pathfinder {
 
-FramebufferGl::FramebufferGl(Vec2I size) : Framebuffer(size) {
+FramebufferGl::FramebufferGl() {
     gl_framebuffer_ = 0;
     label_ = "Screen framebuffer";
 }
@@ -35,16 +35,12 @@ FramebufferGl::~FramebufferGl() {
     }
 }
 
-uint32_t FramebufferGl::get_gl_framebuffer() const {
+uint32_t FramebufferGl::get_gl_handle() const {
     return gl_framebuffer_;
 }
 
-unsigned long long FramebufferGl::get_unique_id() {
-    return gl_framebuffer_;
-}
-
-void FramebufferGl::set_label(const std::string &_label) {
-    Framebuffer::set_label(_label);
+void FramebufferGl::set_label(const std::string &label) {
+    Framebuffer::set_label(label);
 
     DebugMarker::label_framebuffer(gl_framebuffer_, label_);
 }

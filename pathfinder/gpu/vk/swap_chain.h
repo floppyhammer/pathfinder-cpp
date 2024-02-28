@@ -26,7 +26,7 @@ public:
 
     std::shared_ptr<RenderPass> get_render_pass() override;
 
-    std::shared_ptr<Framebuffer> get_framebuffer() override;
+    std::shared_ptr<Texture> get_surface_texture() override;
 
     bool acquire_image() override;
 
@@ -96,12 +96,6 @@ private:
      * @dependency Swap chain image format.
      */
     void create_render_pass();
-
-    /**
-     *
-     * @dependency Swap chain extent, render pass, swap chain image views.
-     */
-    void create_framebuffers();
 
     void create_sync_objects();
 

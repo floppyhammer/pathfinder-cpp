@@ -71,15 +71,12 @@ RendererD3D9::RendererD3D9(const std::shared_ptr<Device> &_device, const std::sh
 }
 
 void RendererD3D9::set_dest_texture(const std::shared_ptr<Texture> &texture) {
-    dest_framebuffer = device->create_framebuffer(dest_render_pass_clear, texture, "Dest framebuffer");
+    assert(texture != nullptr);
+    dest_texture = texture;
 }
 
 std::shared_ptr<Texture> RendererD3D9::get_dest_texture() {
-    // In case there's no destination texture set before.
-    if (!dest_framebuffer) {
-        return nullptr;
-    }
-    return dest_framebuffer->get_texture();
+    return dest_texture;
 }
 
 void RendererD3D9::set_up_pipelines() {
@@ -223,19 +220,18 @@ void RendererD3D9::reallocate_alpha_tile_pages_if_necessary() {
         return;
     }
 
-    auto old_mask_framebuffer_id = mask_storage.framebuffer_id;
-    if (old_mask_framebuffer_id) {
-        allocator->free_framebuffer(*old_mask_framebuffer_id);
+    auto old_mask_texture_id = mask_storage.texture_id;
+    if (old_mask_texture_id) {
+        allocator->free_texture(*old_mask_texture_id);
     }
 
     auto new_size = Vec2I(MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT * alpha_tile_pages_needed);
     auto format = mask_texture_format();
 
-    auto mask_framebuffer_id = allocator->allocate_framebuffer(new_size, format, "Mask framebuffer");
+    auto mask_texture_id = allocator->allocate_texture(new_size, format, "Mask texture");
 
     mask_storage = MaskStorage{
-        std::make_shared<uint64_t>(mask_framebuffer_id),
-        nullptr,
+        std::make_shared<uint64_t>(mask_texture_id),
         alpha_tile_pages_needed,
     };
 }
@@ -454,9 +450,9 @@ void RendererD3D9::draw_fills(uint64_t fill_vertex_buffer_id,
 
     encoder->write_buffer(allocator->get_buffer(fill_ub_id), 0, sizeof(FillUniformDx9), &fill_uniform);
 
-    encoder->begin_render_pass(mask_render_pass_clear,
-                               allocator->get_framebuffer(*mask_storage.framebuffer_id),
-                               ColorF());
+    encoder->begin_render_pass(mask_render_pass_clear, allocator->get_texture(*mask_storage.texture_id), ColorF());
+
+    encoder->set_viewport({{0, 0}, fill_uniform.framebuffer_size.to_i32()});
 
     encoder->bind_render_pipeline(fill_pipeline);
 
@@ -486,12 +482,12 @@ ClipBufferInfo RendererD3D9::upload_clip_tiles(const std::vector<Clip> &clips,
 
 void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std::shared_ptr<CommandEncoder> &encoder) {
     // A temporary mask framebuffer for clipping.
-    auto temp_mask_framebuffer_id = allocator->allocate_framebuffer(
+    auto temp_mask_texture_id = allocator->allocate_texture(
         Vec2I(MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT * mask_storage.allocated_page_count),
         TextureFormat::Rgba16Float,
-        "Temp mask framebuffer");
+        "Temp mask texture");
 
-    auto temp_mask_framebuffer = allocator->get_framebuffer(temp_mask_framebuffer_id);
+    auto temp_mask_texture = allocator->get_texture(temp_mask_texture_id);
 
     auto clip_vertex_buffer = allocator->get_buffer(clip_buffer_info.clip_buffer_id);
 
@@ -499,14 +495,16 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std:
         Descriptor::sampled(1,
                             ShaderStage::Fragment,
                             "uSrc",
-                            allocator->get_framebuffer(*mask_storage.framebuffer_id)->get_texture(),
+                            allocator->get_texture(*mask_storage.texture_id),
                             get_default_sampler()),
     });
 
     // Copy out tiles.
     // TODO(pcwalton): Don't do this on GL4.
     {
-        encoder->begin_render_pass(mask_render_pass_clear, temp_mask_framebuffer, ColorF());
+        encoder->begin_render_pass(mask_render_pass_clear, temp_mask_texture, ColorF());
+
+        encoder->set_viewport({{0, 0}, temp_mask_texture->get_size()});
 
         encoder->bind_render_pipeline(tile_clip_copy_pipeline);
 
@@ -523,16 +521,12 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std:
     // Combine clip tiles.
     {
         tile_clip_combine_descriptor_set->add_or_update({
-            Descriptor::sampled(1,
-                                ShaderStage::Fragment,
-                                "uSrc",
-                                temp_mask_framebuffer->get_texture(),
-                                get_default_sampler()),
+            Descriptor::sampled(1, ShaderStage::Fragment, "uSrc", temp_mask_texture, get_default_sampler()),
         });
 
-        encoder->begin_render_pass(mask_render_pass_load,
-                                   allocator->get_framebuffer(*mask_storage.framebuffer_id),
-                                   ColorF());
+        encoder->begin_render_pass(mask_render_pass_load, allocator->get_texture(*mask_storage.texture_id), ColorF());
+
+        encoder->set_viewport({{0, 0}, temp_mask_texture->get_size()});
 
         encoder->bind_render_pipeline(tile_clip_combine_pipeline);
 
@@ -545,7 +539,7 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std:
         encoder->end_render_pass();
     }
 
-    allocator->free_framebuffer(temp_mask_framebuffer_id);
+    allocator->free_texture(temp_mask_texture_id);
 }
 
 void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
@@ -554,16 +548,16 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
                               const std::shared_ptr<TileBatchTextureInfo> &color_texture_info,
                               uint64_t z_buffer_texture_id,
                               const std::shared_ptr<CommandEncoder> &encoder) {
-    std::shared_ptr<Framebuffer> target_framebuffer;
+    std::shared_ptr<Texture> target_texture;
 
     // If no specific RenderTarget is given, we render to the dst framebuffer.
     if (render_target_id == nullptr) {
         // Check if we should clear the dst framebuffer.
         encoder->begin_render_pass(clear_dest_texture ? dest_render_pass_clear : dest_render_pass_load,
-                                   dest_framebuffer,
+                                   dest_texture,
                                    ColorF());
 
-        target_framebuffer = dest_framebuffer;
+        target_texture = dest_texture;
 
         // Disable clear for draw calls after this one.
         clear_dest_texture = false;
@@ -572,15 +566,17 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
     else {
         auto render_target = get_render_target(*render_target_id);
 
-        auto framebuffer = render_target.framebuffer;
+        auto texture = render_target.texture;
 
         // We always clear a render target.
-        encoder->begin_render_pass(dest_render_pass_clear, framebuffer, ColorF());
+        encoder->begin_render_pass(dest_render_pass_clear, texture, ColorF());
 
-        target_framebuffer = framebuffer;
+        target_texture = texture;
     }
 
-    Vec2F target_framebuffer_size = target_framebuffer->get_size().to_f32();
+    Vec2F target_texture_size = target_texture->get_size().to_f32();
+
+    encoder->set_viewport({{0, 0}, target_texture_size.to_i32()});
 
     auto z_buffer_texture = allocator->get_texture(z_buffer_texture_id);
     auto color_texture = allocator->get_texture(dummy_texture_id);
@@ -599,16 +595,16 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
         // Transform matrix (i.e. the model matrix).
         Mat4 model_mat = Mat4(1.f);
         model_mat = model_mat.translate(Vec3F(-1.f, -1.f, 0.f)); // Move to top-left.
-        model_mat = model_mat.scale(Vec3F(2.f / target_framebuffer_size.x, 2.f / target_framebuffer_size.y, 1.f));
+        model_mat = model_mat.scale(Vec3F(2.f / target_texture_size.x, 2.f / target_texture_size.y, 1.f));
         tile_uniform.transform = model_mat;
 
-        tile_uniform.framebuffer_size = target_framebuffer_size.to_f32();
+        tile_uniform.framebuffer_size = target_texture_size.to_f32();
         tile_uniform.z_buffer_size = z_buffer_texture->get_size().to_f32();
 
         if (color_texture_info) {
             auto color_texture_page = pattern_texture_pages[color_texture_info->page_id];
             if (color_texture_page) {
-                color_texture = allocator->get_framebuffer(color_texture_page->framebuffer_id_)->get_texture();
+                color_texture = allocator->get_texture(color_texture_page->texture_id_);
                 color_texture_sampler = get_or_create_sampler(color_texture_info->sampling_flags);
 
                 if (color_texture == nullptr) {
@@ -637,7 +633,7 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
         Descriptor::sampled(4,
                             ShaderStage::Fragment,
                             "uMaskTexture0",
-                            allocator->get_framebuffer(*mask_storage.framebuffer_id)->get_texture(),
+                            allocator->get_texture(*mask_storage.texture_id),
                             get_default_sampler()),
     });
 

@@ -37,7 +37,7 @@ Renderer::Renderer(const std::shared_ptr<Device> &_device, const std::shared_ptr
 Renderer::~Renderer() {
     for (const auto &texture_page : pattern_texture_pages) {
         if (texture_page != nullptr) {
-            allocator->free_framebuffer(texture_page->framebuffer_id_);
+            allocator->free_texture(texture_page->texture_id_);
         }
     }
 }
@@ -52,11 +52,11 @@ void Renderer::allocate_pattern_texture_page(uint64_t page_id, Vec2I texture_siz
     auto old_texture_page = pattern_texture_pages[page_id];
     if (old_texture_page != nullptr) {
         pattern_texture_pages[page_id] = nullptr;
-        allocator->free_framebuffer(old_texture_page->framebuffer_id_);
+        allocator->free_texture(old_texture_page->texture_id_);
     }
 
     // Allocate texture.
-    auto framebuffer_id = allocator->allocate_framebuffer(texture_size, TextureFormat::Rgba8Unorm, "Pattern page");
+    auto framebuffer_id = allocator->allocate_texture(texture_size, TextureFormat::Rgba8Unorm, "Pattern page");
     pattern_texture_pages[page_id] = std::make_shared<PatternTexturePage>(framebuffer_id, false);
 }
 
@@ -83,7 +83,7 @@ RenderTarget Renderer::get_render_target(RenderTargetId render_target_id) {
         return {nullptr};
     }
 
-    return {allocator->get_framebuffer(texture_page->framebuffer_id_)};
+    return {allocator->get_texture(texture_page->texture_id_)};
 }
 
 void Renderer::upload_texel_data(std::vector<ColorU> &texels, TextureLocation location) {
@@ -98,8 +98,7 @@ void Renderer::upload_texel_data(std::vector<ColorU> &texels, TextureLocation lo
         return;
     }
 
-    auto framebuffer = allocator->get_framebuffer(texture_page->framebuffer_id_);
-    auto texture = framebuffer->get_texture();
+    auto texture = allocator->get_texture(texture_page->texture_id_);
 
     auto encoder = device->create_command_encoder("Upload data of the pattern texture pages");
     encoder->write_texture(texture, location.rect, texels.data());

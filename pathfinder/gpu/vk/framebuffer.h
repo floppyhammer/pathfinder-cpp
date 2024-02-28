@@ -15,9 +15,7 @@ class FramebufferVk : public Framebuffer {
 public:
     ~FramebufferVk() override;
 
-    unsigned long long get_unique_id() override;
-
-    VkFramebuffer get_vk_framebuffer() const;
+    VkFramebuffer get_vk_handle() const;
 
     void set_label(const std::string& label) override;
 

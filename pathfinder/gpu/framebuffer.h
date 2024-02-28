@@ -17,14 +17,11 @@ public:
         return texture_;
     }
 
-    /// Get the unique resource ID for the framebuffer.
-    virtual unsigned long long get_unique_id() = 0;
-
     Vec2I get_size() const {
         if (texture_) {
             return texture_->get_size();
         }
-        return size_;
+        return {};
     }
 
     // Sometimes, we need to update label for a framebuffer as we reuse it for another purpose.
@@ -34,12 +31,10 @@ public:
 
 protected:
     /// Render to screen or swap chain.
-    explicit Framebuffer(const Vec2I& size) : size_(size) {}
+    Framebuffer(){}
 
     /// Render to a texture.
-    explicit Framebuffer(const std::shared_ptr<Texture>& texture) : size_(texture->get_size()), texture_(texture) {}
-
-    Vec2I size_;
+    explicit Framebuffer(const std::shared_ptr<Texture>& texture) : texture_(texture) {}
 
     std::shared_ptr<Texture> texture_;
 

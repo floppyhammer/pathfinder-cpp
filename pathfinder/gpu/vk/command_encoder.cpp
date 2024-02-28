@@ -245,11 +245,11 @@ bool CommandEncoderVk::finish() {
                 VkRenderPassBeginInfo render_pass_info{};
                 render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
                 render_pass_info.renderPass = render_pass_vk->get_vk_render_pass();
-                render_pass_info.framebuffer = framebuffer_vk->get_vk_framebuffer(); // Set target framebuffer.
-                render_pass_info.renderArea.offset = {args.viewport.min_x(), args.viewport.min_y()};
+                render_pass_info.framebuffer = framebuffer_vk->get_vk_handle(); // Set target framebuffer.
+                render_pass_info.renderArea.offset = {0, 0};
                 // Has to be larger than the area we're going to draw.
                 render_pass_info.renderArea.extent =
-                    VkExtent2D{uint32_t(args.viewport.width()), uint32_t(args.viewport.height())};
+                    VkExtent2D{uint32_t(framebuffer_vk->get_size().x), uint32_t(framebuffer_vk->get_size().y)};
 
                 // Clear color.
                 std::array<VkClearValue, 1> clearValues{};
@@ -260,22 +260,23 @@ bool CommandEncoderVk::finish() {
                 render_pass_info.pClearValues = clearValues.data();
 
                 vkCmdBeginRenderPass(vk_command_buffer_, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
-
-                Vec2I framebuffer_size = framebuffer_vk->get_size();
+            } break;
+            case CommandType::SetViewport: {
+                auto &args = cmd.args.set_viewport;
 
                 // Set viewport and scissor dynamically.
                 VkViewport viewport{};
-                viewport.x = 0.0f;
-                viewport.y = 0.0f;
-                viewport.width = (float)framebuffer_size.x;
-                viewport.height = (float)framebuffer_size.y;
+                viewport.x = args.viewport.min_x();
+                viewport.y = args.viewport.min_y();
+                viewport.width = args.viewport.width();
+                viewport.height = args.viewport.height();
                 viewport.minDepth = 0.0f;
                 viewport.maxDepth = 1.0f;
                 vkCmdSetViewport(vk_command_buffer_, 0, 1, &viewport);
 
                 VkRect2D scissor{};
-                scissor.extent.width = framebuffer_size.x;
-                scissor.extent.height = framebuffer_size.y;
+                scissor.extent.width = args.viewport.width();
+                scissor.extent.height = args.viewport.height();
                 vkCmdSetScissor(vk_command_buffer_, 0, 1, &scissor);
             } break;
             case CommandType::BindRenderPipeline: {

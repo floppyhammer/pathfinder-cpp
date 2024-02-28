@@ -18,8 +18,6 @@ public:
     SwapChainGl(Vec2I size, GLFWwindow *window_handle) : SwapChain(size) {
         glfw_window_ = window_handle;
 
-        framebuffer_ = std::shared_ptr<FramebufferGl>(new FramebufferGl(size_));
-
         command_encoder_ = std::shared_ptr<CommandEncoderGl>(new CommandEncoderGl());
 
         render_pass_ = std::shared_ptr<RenderPassGl>(new RenderPassGl(AttachmentLoadOp::Clear));
@@ -38,8 +36,8 @@ public:
         return render_pass_;
     }
 
-    std::shared_ptr<Framebuffer> get_framebuffer() override {
-        return framebuffer_;
+    std::shared_ptr<Texture> get_surface_texture() override {
+        return nullptr;
     }
 
     bool acquire_image() override {
@@ -63,7 +61,6 @@ private:
 #endif
 
     std::shared_ptr<RenderPass> render_pass_;
-    std::shared_ptr<Framebuffer> framebuffer_;
     std::shared_ptr<CommandEncoder> command_encoder_;
 };
 

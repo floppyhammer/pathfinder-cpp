@@ -24,6 +24,8 @@ public:
 
     std::shared_ptr<Texture> create_texture(const TextureDescriptor &desc, const std::string &label) override;
 
+    std::shared_ptr<Texture> wrap_texture(const TextureDescriptor &desc, const std::string &label);
+
     std::shared_ptr<Sampler> create_sampler(SamplerDescriptor descriptor) override;
 
     std::shared_ptr<CommandEncoder> create_command_encoder(const std::string &label) override;

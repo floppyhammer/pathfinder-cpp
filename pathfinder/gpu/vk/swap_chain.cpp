@@ -24,8 +24,18 @@ std::shared_ptr<RenderPass> SwapChainVk::get_render_pass() {
     return render_pass_;
 }
 
-std::shared_ptr<Framebuffer> SwapChainVk::get_framebuffer() {
-    return framebuffers_[image_index_];
+std::shared_ptr<Texture> SwapChainVk::get_surface_texture() {
+    TextureDescriptor desc{};
+    desc.size = size_;
+    desc.format = vk_to_texture_format(swapchain_image_format_);
+
+    auto texture = TextureVk::from_wrapping(desc,
+                                            swapchain_images_[image_index_],
+                                            VK_NULL_HANDLE,
+                                            swapchain_image_views_[image_index_],
+                                            TextureLayout::ColorAttachment);
+
+    return texture;
 }
 
 bool SwapChainVk::acquire_image() {
@@ -66,8 +76,6 @@ void SwapChainVk::init_swapchain() {
     create_image_views();
 
     create_render_pass();
-
-    create_framebuffers();
 }
 
 void SwapChainVk::recreate_swapchain() {
@@ -182,22 +190,6 @@ void SwapChainVk::create_image_views() {
 void SwapChainVk::create_render_pass() {
     render_pass_ =
         device_->create_swap_chain_render_pass(vk_to_texture_format(swapchain_image_format_), AttachmentLoadOp::Clear);
-}
-
-void SwapChainVk::create_framebuffers() {
-    auto vk_device = device_->get_device();
-
-    framebuffers_.clear();
-
-    for (size_t i = 0; i < swapchain_images_.size(); i++) {
-        auto render_pass_vk = static_cast<RenderPassVk *>(render_pass_.get());
-
-        // No texture for swap chain framebuffer.
-        auto framebuffer_vk = std::shared_ptr<FramebufferVk>(
-            new FramebufferVk(vk_device, render_pass_vk->get_vk_render_pass(), size_, swapchain_image_views_[i]));
-
-        framebuffers_.push_back(framebuffer_vk);
-    }
 }
 
 void SwapChainVk::create_sync_objects() {

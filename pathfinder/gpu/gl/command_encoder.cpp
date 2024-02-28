@@ -32,17 +32,23 @@ bool CommandEncoderGl::finish() {
                 auto &args = cmd.args.begin_render_pass;
                 auto render_pass_gl = static_cast<RenderPassGl *>(args.render_pass);
                 auto framebuffer_gl = static_cast<FramebufferGl *>(args.framebuffer);
-
-                glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_gl->get_gl_framebuffer());
+                int aa = framebuffer_gl->get_gl_handle();
+                glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_gl->get_gl_handle());
 
                 if (render_pass_gl->get_attachment_load_op() == AttachmentLoadOp::Clear) {
                     glClearColor(args.clear_color.r_, args.clear_color.g_, args.clear_color.b_, args.clear_color.a_);
                     glClear(GL_COLOR_BUFFER_BIT);
                 }
 
-                glViewport(args.viewport.min_x(), args.viewport.min_y(), args.viewport.max_x(), args.viewport.max_y());
-
                 gl_check_error("BeginRenderPass");
+
+                int a = 1;
+            } break;
+            case CommandType::SetViewport: {
+                auto &args = cmd.args.set_viewport;
+                glViewport(args.viewport.min_x(), args.viewport.min_y(), args.viewport.width(), args.viewport.height());
+
+                gl_check_error("SetViewport");
             } break;
             case CommandType::BindRenderPipeline: {
                 auto &args = cmd.args.bind_render_pipeline;

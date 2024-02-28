@@ -15,9 +15,7 @@ class FramebufferGl : public Framebuffer {
 public:
     ~FramebufferGl() override;
 
-    uint32_t get_gl_framebuffer() const;
-
-    unsigned long long get_unique_id() override;
+    uint32_t get_gl_handle() const;
 
     void set_label(const std::string& label) override;
 
@@ -26,7 +24,7 @@ private:
     explicit FramebufferGl(const std::shared_ptr<Texture>& texture);
 
     /// Swap chain framebuffer.
-    explicit FramebufferGl(Vec2I size);
+    FramebufferGl();
 
     uint32_t gl_framebuffer_{};
 };

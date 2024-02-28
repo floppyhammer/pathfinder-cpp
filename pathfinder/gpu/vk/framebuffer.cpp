@@ -20,15 +20,14 @@ FramebufferVk::FramebufferVk(VkDevice vk_device, VkRenderPass vk_render_pass, co
     framebufferInfo.renderPass = vk_render_pass;
     framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
     framebufferInfo.pAttachments = attachments.data();
-    framebufferInfo.width = size_.x;
-    framebufferInfo.height = size_.y;
+    framebufferInfo.width = texture->get_size().x;
+    framebufferInfo.height = texture->get_size().y;
     framebufferInfo.layers = 1;
 
     VK_CHECK_RESULT(vkCreateFramebuffer(vk_device, &framebufferInfo, nullptr, &vk_framebuffer_))
 }
 
-FramebufferVk::FramebufferVk(VkDevice vk_device, VkRenderPass vk_render_pass, Vec2I size, VkImageView vk_image_view)
-    : Framebuffer(size) {
+FramebufferVk::FramebufferVk(VkDevice vk_device, VkRenderPass vk_render_pass, Vec2I size, VkImageView vk_image_view) {
     vk_device_ = vk_device;
     label_ = "Swapchain framebuffer";
 
@@ -50,12 +49,8 @@ FramebufferVk::~FramebufferVk() {
     vkDestroyFramebuffer(vk_device_, vk_framebuffer_, nullptr);
 }
 
-VkFramebuffer FramebufferVk::get_vk_framebuffer() const {
+VkFramebuffer FramebufferVk::get_vk_handle() const {
     return vk_framebuffer_;
-}
-
-unsigned long long FramebufferVk::get_unique_id() {
-    return reinterpret_cast<unsigned long long>(vk_framebuffer_);
 }
 
 void FramebufferVk::set_label(const std::string &label) {

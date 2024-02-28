@@ -19,10 +19,13 @@
 
 namespace Pathfinder {
 
+class Device;
+
 enum class CommandType {
     // RENDER PASS
 
     BeginRenderPass = 0,
+    SetViewport,
     BindRenderPipeline,
     BindVertexBuffers,
     BindDescriptorSet,
@@ -54,9 +57,11 @@ struct Command {
         struct {
             RenderPass *render_pass;
             Framebuffer *framebuffer;
-            RectI viewport;
             ColorF clear_color;
         } begin_render_pass{};
+        struct {
+            RectI viewport;
+        } set_viewport;
         struct {
             RenderPipeline *pipeline;
         } bind_render_pipeline;
@@ -131,8 +136,10 @@ public:
     // RENDER PASS
 
     void begin_render_pass(const std::shared_ptr<RenderPass> &render_pass,
-                           const std::shared_ptr<Framebuffer> &framebuffer,
+                           const std::shared_ptr<Texture> &texture,
                            ColorF clear_color);
+
+    void set_viewport(const RectI &viewport);
 
     /// Bind pipeline.
     void bind_render_pipeline(const std::shared_ptr<RenderPipeline> &pipeline);
@@ -216,6 +223,10 @@ protected:
     /// Currently bound pipeline.
     RenderPipeline *render_pipeline_{};
     ComputePipeline *compute_pipeline_{};
+
+    std::weak_ptr<Device> device_;
+
+    std::vector<std::shared_ptr<Framebuffer>> framebuffers_;
 };
 
 } // namespace Pathfinder
