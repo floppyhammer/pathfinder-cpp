@@ -20,6 +20,8 @@ private:
     CommandEncoderGl() = default;
 
     bool finish() override;
+
+    std::vector<uint32_t> vao_;
 };
 
 } // namespace Pathfinder

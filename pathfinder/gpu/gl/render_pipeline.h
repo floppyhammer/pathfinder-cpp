@@ -14,16 +14,8 @@ class RenderPipelineGl : public RenderPipeline {
     friend class DeviceGl;
 
 public:
-    ~RenderPipelineGl() override {
-        glDeleteVertexArrays(1, &vao_);
-    };
-
     std::shared_ptr<Program> get_program() {
         return program_;
-    }
-
-    uint32_t get_vao() const {
-        return vao_;
     }
 
 private:
@@ -35,17 +27,12 @@ private:
         : RenderPipeline(attribute_descriptions, blend_state, std::move(label)) {
         program_ = std::make_shared<RasterProgram>(vert_shader_module, frag_shader_module);
 
-        glGenVertexArrays(1, &vao_);
-
         gl_check_error("create_render_pipeline");
 
         DebugMarker::label_program(program_->get_handle(), label_ + " program");
-        DebugMarker::label_vao(vao_, label_ + " VAO");
-    };
+    }
 
     std::shared_ptr<RasterProgram> program_;
-
-    uint32_t vao_{};
 };
 
 } // namespace Pathfinder

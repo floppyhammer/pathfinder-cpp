@@ -13,6 +13,8 @@ namespace Pathfinder {
 
 CommandEncoderGl::~CommandEncoderGl() {
     invoke_callbacks();
+
+    glDeleteVertexArrays(vao_.size(), vao_.data());
 }
 
 bool CommandEncoderGl::finish() {
@@ -63,6 +65,12 @@ bool CommandEncoderGl::finish() {
                 compute_pipeline_ = nullptr;
 
                 gl_check_error("BindRenderPipeline");
+
+                uint32_t vao;
+                glGenVertexArrays(1, &vao);
+                DebugMarker::label_vao(vao, label_ + " VAO");
+                vao_.push_back(vao);
+                gl_check_error("GenVAO");
             } break;
             case CommandType::BindVertexBuffers: {
                 assert(render_pipeline_ != nullptr);
@@ -74,7 +82,8 @@ bool CommandEncoderGl::finish() {
                 auto buffer_count = args.buffer_count;
                 auto vertex_buffers = args.buffers;
 
-                glBindVertexArray(pipeline_gl->get_vao());
+                assert(!vao_.empty() && "Must bind a render pipeline before binding vertex buffers!");
+                glBindVertexArray(vao_.back());
 
                 auto &attribute_descriptions = pipeline_gl->get_attribute_descriptions();
 
