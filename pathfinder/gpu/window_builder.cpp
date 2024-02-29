@@ -1,10 +1,12 @@
 #include "window_builder.h"
 
-#ifndef __ANDROID__
-    #include "GLFW/glfw3.h"
-#endif
-
 #include "window.h"
+
+#ifdef PATHFINDER_USE_VULKAN
+    #include "vk/base.h"
+#else
+    #include "gl/base.h"
+#endif
 
 namespace Pathfinder {
 
@@ -27,10 +29,6 @@ void WindowBuilder::poll_events() {
 #ifndef __ANDROID__
     glfwPollEvents();
 #endif
-
-    // if (glfwGetKey(glfw_window_, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-    //     glfwSetWindowShouldClose(glfw_window_, true);
-    // }
 }
 
 } // namespace Pathfinder

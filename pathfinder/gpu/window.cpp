@@ -1,7 +1,9 @@
 #include "window.h"
 
-#ifndef __ANDROID__
-    #include "GLFW/glfw3.h"
+#ifdef PATHFINDER_USE_VULKAN
+    #include "vk/base.h"
+#else
+    #include "gl/base.h"
 #endif
 
 namespace Pathfinder {
