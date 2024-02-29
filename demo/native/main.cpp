@@ -38,50 +38,47 @@ int main() {
 
     // Main loop.
     while (!window->should_close()) {
-        // Currently, multiple window does not work properly for the GL backend.
-        for (int i = 0; i < 1; i++) {
-            window->poll_events();
+        window_builder->poll_events();
 
-            // Acquire next swap chain image.
-            if (!swap_chain->acquire_image()) {
-                continue;
-            }
-
-            auto current_window_size = window->get_size();
-
-            if (current_window_size != app.canvas_->get_dst_texture()->get_size() && current_window_size.area() != 0) {
-                auto dst_texture =
-                    device->create_texture({current_window_size, Pathfinder::TextureFormat::Rgba8Unorm}, "dst texture");
-
-                app.canvas_->set_dst_texture(dst_texture);
-                texture_rect->set_texture(dst_texture);
-
-                app.canvas_->set_size(current_window_size);
-            }
-
-            app.update();
-
-            auto encoder = device->create_command_encoder("Main encoder");
-
-            auto surface_texture = swap_chain->get_surface_texture();
-
-            // Swap chain render pass.
-            {
-                encoder->begin_render_pass(swap_chain->get_render_pass(),
-                                           surface_texture,
-                                           Pathfinder::ColorF(0.2, 0.2, 0.2, 1.0));
-                encoder->set_viewport({{0, 0}, swap_chain->size_});
-
-                // Draw canvas to screen.
-                texture_rect->draw(encoder, swap_chain->size_);
-
-                encoder->end_render_pass();
-            }
-
-            queue->submit(encoder, swap_chain);
-
-            swap_chain->present();
+        // Acquire next swap chain image.
+        if (!swap_chain->acquire_image()) {
+            continue;
         }
+
+        auto current_window_size = window->get_size();
+
+        if (current_window_size != app.canvas_->get_dst_texture()->get_size() && current_window_size.area() != 0) {
+            auto dst_texture =
+                device->create_texture({current_window_size, Pathfinder::TextureFormat::Rgba8Unorm}, "dst texture");
+
+            app.canvas_->set_dst_texture(dst_texture);
+            texture_rect->set_texture(dst_texture);
+
+            app.canvas_->set_size(current_window_size);
+        }
+
+        app.update();
+
+        auto encoder = device->create_command_encoder("Main encoder");
+
+        auto surface_texture = swap_chain->get_surface_texture();
+
+        // Swap chain render pass.
+        {
+            encoder->begin_render_pass(swap_chain->get_render_pass(),
+                                       surface_texture,
+                                       Pathfinder::ColorF(0.2, 0.2, 0.2, 1.0));
+            encoder->set_viewport({{0, 0}, swap_chain->size_});
+
+            // Draw canvas to screen.
+            texture_rect->draw(encoder, swap_chain->size_);
+
+            encoder->end_render_pass();
+        }
+
+        queue->submit(encoder, swap_chain);
+
+        swap_chain->present();
     }
 
     window_builder->preapre_destruction();

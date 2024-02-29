@@ -11,53 +11,15 @@
 namespace Pathfinder {
 
 #ifndef __ANDROID__
-WindowVk::WindowVk(const Vec2I& _size, GLFWwindow* window_handle, VkSurfaceKHR surface, VkInstance instance)
-    : Window(_size) {
+WindowVk::WindowVk(const Vec2I& size, GLFWwindow* window_handle, VkSurfaceKHR surface, VkInstance instance)
+    : Window(size, window_handle) {
     surface_ = surface;
     instance_ = instance;
-    glfw_window_ = window_handle;
-
-    glfwSetWindowUserPointer(glfw_window_, this);
-    glfwSetFramebufferSizeCallback(glfw_window_, framebuffer_resize_callback);
 }
 #else
 WindowVk::WindowVk(const Vec2I& _size, VkSurfaceKHR surface, VkInstance instance) : Window(_size) {
     surface_ = surface;
     instance_ = instance;
-}
-#endif
-
-#ifndef __ANDROID__
-void WindowVk::framebuffer_resize_callback(GLFWwindow* glfw_window, int width, int height) {
-    auto window = reinterpret_cast<WindowVk*>(glfwGetWindowUserPointer(glfw_window));
-
-    if (window) {
-        window->just_resized_ = true;
-        window->size_ = {width, height};
-        window->minimized_ = window->size_.area() == 0;
-
-        Logger::info("Window resized to " + window->size_.to_string());
-    } else {
-        Logger::error("glfwGetWindowUserPointer is NULL!");
-    }
-}
-
-void WindowVk::poll_events() {
-    just_resized_ = false;
-
-    glfwPollEvents();
-
-    if (glfwGetKey(glfw_window_, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-        glfwSetWindowShouldClose(glfw_window_, true);
-    }
-}
-
-bool WindowVk::should_close() {
-    return glfwWindowShouldClose(glfw_window_);
-}
-
-void* WindowVk::get_raw_handle() const {
-    return glfw_window_;
 }
 #endif
 

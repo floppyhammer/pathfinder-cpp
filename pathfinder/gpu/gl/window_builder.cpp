@@ -148,7 +148,7 @@ std::shared_ptr<Window> WindowBuilderGl::create_window(const Vec2I &size, const 
 #ifndef __ANDROID__
     auto window_gl = (WindowGl *)primary_window_.get();
 
-    auto glfw_window = glfw_window_init(size, title, (GLFWwindow *)window_gl->get_raw_handle());
+    auto glfw_window = glfw_window_init(size, title, (GLFWwindow *)window_gl->get_glfw_handle());
 
     auto new_window = std::make_shared<WindowGl>(size, glfw_window);
     sub_windows_.push_back(new_window);

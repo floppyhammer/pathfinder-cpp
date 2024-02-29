@@ -29,6 +29,8 @@ public:
 
     virtual std::shared_ptr<Queue> create_queue() = 0;
 
+    void poll_events();
+
 protected:
     std::shared_ptr<Window> primary_window_;
     std::vector<std::weak_ptr<Window>> sub_windows_;

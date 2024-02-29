@@ -5,13 +5,22 @@
 #include "queue.h"
 #include "swap_chain.h"
 
+struct GLFWwindow;
+
 namespace Pathfinder {
 
 class SwapChain;
 
 class Window {
+    friend class WindowBuilder;
+    friend class WindowBuilderGl;
+
 public:
-    explicit Window(const Vec2I& size) : size_(size) {}
+#ifdef __ANDROID__
+    explicit Window(const Vec2I& size);
+#else
+    explicit Window(const Vec2I& size, GLFWwindow* window_handle);
+#endif
 
     virtual ~Window() = default;
 
@@ -21,20 +30,22 @@ public:
 
     Vec2I get_size() const;
 
+    void hide();
+
+    void show();
+
     bool get_resize_flag() const;
 
     bool is_minimized() const;
 
-    virtual void* get_raw_handle() const;
+    void* get_glfw_handle() const;
 
 #ifndef __ANDROID__
-    /// Process input events: query GLFW whether relevant keys are pressed/released this frame and react accordingly.
-    virtual void poll_events() {}
-
-    virtual bool should_close() {
-        return false;
-    }
+    bool should_close();
 #endif
+
+    /// GLFW: whenever the window size changed (by OS or user) this callback function executes.
+    static void framebuffer_resize_callback(GLFWwindow* glfw_window, int width, int height);
 
     std::shared_ptr<SwapChain> swapchain_;
 
@@ -42,6 +53,10 @@ protected:
     Vec2I size_;
     bool just_resized_ = false;
     bool minimized_ = false;
+
+#ifndef __ANDROID__
+    GLFWwindow* glfw_window_{};
+#endif
 };
 
 } // namespace Pathfinder
