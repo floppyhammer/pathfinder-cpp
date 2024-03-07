@@ -13,6 +13,7 @@ RenderPassVk::RenderPassVk(VkDevice vk_device,
                            const std::string &label) {
     vk_device_ = vk_device;
     label_ = label;
+    load_op_ = load_op;
 
     // Color attachment.
     // ----------------------------------------

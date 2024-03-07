@@ -217,12 +217,17 @@ bool CommandEncoderVk::finish() {
             case CommandType::BeginRenderPass: {
                 assert(compute_pipeline_ == nullptr);
 
-                for (auto cmd_iter2 = cmd_iter; cmd_iter2 < commands_.end(); cmd_iter2++) {
-                    if (cmd_iter2->type == CommandType::BindDescriptorSet) {
-                        sync_descriptor_set(cmd_iter2->args.bind_descriptor_set.descriptor_set);
+                bool pass_has_draw_call = false;
+
+                for (auto pass_cmd_iter = cmd_iter; pass_cmd_iter < commands_.end(); pass_cmd_iter++) {
+                    if (pass_cmd_iter->type == CommandType::BindDescriptorSet) {
+                        sync_descriptor_set(pass_cmd_iter->args.bind_descriptor_set.descriptor_set);
                     }
-                    if (cmd_iter2->type == CommandType::EndRenderPass) {
+                    if (pass_cmd_iter->type == CommandType::EndRenderPass) {
                         break;
+                    }
+                    if (pass_cmd_iter->type == CommandType::Draw || pass_cmd_iter->type == CommandType::DrawInstanced) {
+                        pass_has_draw_call = true;
                     }
                 }
 
@@ -260,6 +265,26 @@ bool CommandEncoderVk::finish() {
                 render_pass_info.pClearValues = clearValues.data();
 
                 vkCmdBeginRenderPass(vk_command_buffer_, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+
+                // In case we need to clear a framebuffer even when nothing is drawn.
+                // This is to keep consistency with OpgnGL.
+                if (pass_has_draw_call && render_pass_vk->get_attachment_load_op() == AttachmentLoadOp::Clear) {
+                    std::array<VkClearAttachment, 1> clear_attachments{};
+
+                    clear_attachments[0] = {VK_IMAGE_ASPECT_COLOR_BIT, 0, clearValues[0]};
+
+                    std::array<VkClearRect, 1> clear_rects{};
+                    clear_rects[0] = {
+                        VkRect2D{0, 0, (uint32_t)framebuffer_vk->get_size().x, (uint32_t)framebuffer_vk->get_size().y},
+                        0,
+                        1};
+
+                    vkCmdClearAttachments(vk_command_buffer_,
+                                          clear_attachments.size(),
+                                          clear_attachments.data(),
+                                          clear_rects.size(),
+                                          clear_rects.data());
+                }
             } break;
             case CommandType::SetViewport: {
                 auto &args = cmd.args.set_viewport;
