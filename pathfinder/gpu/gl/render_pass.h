@@ -10,7 +10,9 @@ class RenderPassGl : public RenderPass {
     friend class SwapChainGl;
 
 private:
-    explicit RenderPassGl(AttachmentLoadOp load_op) : load_op_(load_op) {}
+    explicit RenderPassGl(AttachmentLoadOp load_op) {
+        load_op_ = load_op;
+    }
 };
 
 } // namespace Pathfinder
