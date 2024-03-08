@@ -53,6 +53,7 @@ protected:
     Vec2I size_;
     bool just_resized_ = false;
     bool minimized_ = false;
+    bool hiden_ = false;
 
 #ifndef __ANDROID__
     GLFWwindow* glfw_window_{};

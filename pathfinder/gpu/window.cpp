@@ -54,11 +54,17 @@ bool Window::should_close() {
 }
 
 void Window::hide() {
-    glfwHideWindow(glfw_window_);
+    if (!hiden_) {
+        glfwHideWindow(glfw_window_);
+        hiden_ = true;
+    }
 }
 
 void Window::show() {
-    glfwShowWindow(glfw_window_);
+    if (hiden_) {
+        glfwShowWindow(glfw_window_);
+        hiden_ = false;
+    }
 }
 
 #endif
