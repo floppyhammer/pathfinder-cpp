@@ -5,7 +5,7 @@
 
 #include <chrono>
 
-#include "texture_rect.h"
+#include "blit.h"
 
 class App {
 public:

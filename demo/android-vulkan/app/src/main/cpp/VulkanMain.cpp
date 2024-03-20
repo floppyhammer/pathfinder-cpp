@@ -16,7 +16,7 @@ android_app *androidAppCtx = nullptr;
 Pathfinder::WindowBuilderVk *window_builder{};
 
 std::shared_ptr<App> pf_app;
-std::shared_ptr<TextureRect> pf_text_rect;
+std::shared_ptr<Blit> pf_blit;
 
 std::shared_ptr<Pathfinder::Window> pf_window;
 std::shared_ptr<Pathfinder::Device> pf_device;
@@ -58,8 +58,8 @@ bool InitVulkan(android_app *app) {
                                    svg_input,
                                    img_input);
 
-    pf_text_rect = std::make_shared<TextureRect>(pf_device, pf_queue,
-                                                 pf_swapchain->get_render_pass());
+    pf_blit = std::make_shared<Blit>(pf_device, pf_queue,
+                                     pf_swapchain->get_render_pass());
 
     {
         auto dst_texture = pf_device->create_texture(
@@ -67,7 +67,7 @@ bool InitVulkan(android_app *app) {
 
         pf_app->canvas_->set_dst_texture(dst_texture);
 
-        pf_text_rect->set_texture(dst_texture);
+        pf_blit->set_texture(dst_texture);
     }
 
     return true;
@@ -97,24 +97,26 @@ bool VulkanDrawFrame(void) {
                         "dst texture");
 
         pf_app->canvas_->set_dst_texture(dst_texture);
-        pf_text_rect->set_texture(dst_texture);
+        pf_blit->set_texture(dst_texture);
 
         pf_app->canvas_->set_size(current_window_size);
     }
 
     pf_app->update();
 
-    auto encoder = pf_device->create_command_encoder("Main encoder");
+    auto encoder = pf_device->create_command_encoder("main encoder");
 
-    auto framebuffer = pf_swapchain->get_framebuffer();
+    auto surface = pf_swapchain->get_surface_texture();
 
     // Swap chain render pass.
     {
-        encoder->begin_render_pass(pf_swapchain->get_render_pass(), framebuffer,
+        encoder->begin_render_pass(pf_swapchain->get_render_pass(), surface,
                                    Pathfinder::ColorF(0.2, 0.2, 0.2, 1.0));
 
+        encoder->set_viewport({{0, 0}, pf_swapchain->size_});
+
         // Draw canvas to screen.
-        pf_text_rect->draw(encoder, framebuffer->get_size());
+        pf_blit->draw(encoder);
 
         encoder->end_render_pass();
     }

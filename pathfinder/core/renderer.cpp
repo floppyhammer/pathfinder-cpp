@@ -18,16 +18,16 @@ Renderer::Renderer(const std::shared_ptr<Device> &_device, const std::shared_ptr
     auto image_buffer = ImageBuffer::from_memory({std::begin(area_lut_png), std::end(area_lut_png)}, false);
 
     area_lut_texture_id =
-        allocator->allocate_texture(image_buffer->get_size(), TextureFormat::Rgba8Unorm, "Area-lut texture");
+        allocator->allocate_texture(image_buffer->get_size(), TextureFormat::Rgba8Unorm, "area-lut texture");
 
     // Dummy texture.
-    dummy_texture_id = allocator->allocate_texture({1, 1}, TextureFormat::Rgba8Unorm, "Dummy texture");
+    dummy_texture_id = allocator->allocate_texture({1, 1}, TextureFormat::Rgba8Unorm, "dummy texture");
 
     metadata_texture_id = allocator->allocate_texture({TEXTURE_METADATA_TEXTURE_WIDTH, TEXTURE_METADATA_TEXTURE_HEIGHT},
                                                       TextureFormat::Rgba16Float,
-                                                      "Metadata texture");
+                                                      "metadata texture");
 
-    auto encoder = device->create_command_encoder("Upload common renderer data");
+    auto encoder = device->create_command_encoder("upload common renderer data");
 
     encoder->write_texture(allocator->get_texture(area_lut_texture_id), {}, image_buffer->get_data());
 
@@ -56,7 +56,7 @@ void Renderer::allocate_pattern_texture_page(uint64_t page_id, Vec2I texture_siz
     }
 
     // Allocate texture.
-    auto framebuffer_id = allocator->allocate_texture(texture_size, TextureFormat::Rgba8Unorm, "Pattern page");
+    auto framebuffer_id = allocator->allocate_texture(texture_size, TextureFormat::Rgba8Unorm, "pattern page");
     pattern_texture_pages[page_id] = std::make_shared<PatternTexturePage>(framebuffer_id, false);
 }
 
@@ -100,7 +100,7 @@ void Renderer::upload_texel_data(std::vector<ColorU> &texels, TextureLocation lo
 
     auto texture = allocator->get_texture(texture_page->texture_id_);
 
-    auto encoder = device->create_command_encoder("Upload data of the pattern texture pages");
+    auto encoder = device->create_command_encoder("upload data of the pattern texture pages");
     encoder->write_texture(texture, location.rect, texels.data());
     queue->submit_and_wait(encoder);
 
@@ -246,7 +246,7 @@ void Renderer::upload_texture_metadata(const std::vector<TextureMetadataEntry> &
     // Callback to clean up staging resources.
     auto callback = [raw_texels] { delete[] raw_texels; };
 
-    auto encoder = device->create_command_encoder("Upload to metadata texture");
+    auto encoder = device->create_command_encoder("upload to metadata texture");
     encoder->add_callback(callback);
     encoder->write_texture(allocator->get_texture(metadata_texture_id), region_rect, raw_texels);
     queue->submit_and_wait(encoder);

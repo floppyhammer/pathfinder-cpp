@@ -20,7 +20,7 @@ void render(void* _swap_chain) {
 
     auto* swap_chain = static_cast<SwapChain*>(_swap_chain);
 
-    auto encoder = app->device->create_command_encoder("Main encoder");
+    auto encoder = app->device->create_command_encoder("main encoder");
 
     auto framebuffer = swap_chain->get_framebuffer();
 

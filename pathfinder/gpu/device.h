@@ -41,7 +41,7 @@ public:
 
     virtual std::shared_ptr<ShaderModule> create_shader_module(const std::vector<char> &source_code,
                                                                ShaderStage shader_stage,
-                                                               const std::string &label = "") = 0;
+                                                               const std::string &label) = 0;
 
     virtual std::shared_ptr<RenderPipeline> create_render_pipeline(
         const std::shared_ptr<ShaderModule> &vert_shader_module,

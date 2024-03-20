@@ -34,8 +34,8 @@ void RendererES3::init(int width, int height) {
 
     pf_app->canvas_->set_dst_texture(dst_texture);
 
-    pf_texture_rect = std::make_shared<TextureRect>(pf_device, pf_queue, nullptr);
-    pf_texture_rect->set_texture(dst_texture);
+    pf_blit = std::make_shared<Blit>(pf_device, pf_queue, nullptr);
+    pf_blit->set_texture(dst_texture);
 }
 
 RendererES3::~RendererES3() {
@@ -58,17 +58,19 @@ void RendererES3::render() {
 
     pf_app->update();
 
-    auto encoder = pf_device->create_command_encoder("Main encoder");
+    auto encoder = pf_device->create_command_encoder("main encoder");
 
-    auto framebuffer = pf_swapchain->get_framebuffer();
+    auto surface = pf_swapchain->get_surface_texture();
 
     // Swap chain render pass.
     {
-        encoder->begin_render_pass(pf_swapchain->get_render_pass(), framebuffer,
+        encoder->begin_render_pass(pf_swapchain->get_render_pass(), surface,
                                    Pathfinder::ColorF(0.2, 0.2, 0.2, 1.0));
 
+        encoder->set_viewport({{0, 0}, pf_swapchain->size_});
+
         // Draw canvas to screen.
-        pf_texture_rect->draw(encoder, framebuffer->get_size());
+        pf_blit->draw(encoder);
 
         encoder->end_render_pass();
     }

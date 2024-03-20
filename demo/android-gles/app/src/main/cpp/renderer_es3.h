@@ -23,7 +23,7 @@ private:
     Pathfinder::Vec2I window_size;
 
     std::shared_ptr<App> pf_app;
-    std::shared_ptr<TextureRect> pf_texture_rect;
+    std::shared_ptr<Blit> pf_blit;
 
     std::shared_ptr<Pathfinder::WindowBuilder> pf_window_builder;
     std::shared_ptr<Pathfinder::Window> pf_window;

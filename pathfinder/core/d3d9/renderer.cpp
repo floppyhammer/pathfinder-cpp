@@ -45,23 +45,23 @@ const size_t MAX_FILLS_PER_BATCH = 0x10000;
 RendererD3D9::RendererD3D9(const std::shared_ptr<Device> &_device, const std::shared_ptr<Queue> &_queue)
     : Renderer(_device, _queue) {
     mask_render_pass_clear =
-        device->create_render_pass(TextureFormat::Rgba16Float, AttachmentLoadOp::Clear, "Mask render pass clear");
+        device->create_render_pass(TextureFormat::Rgba16Float, AttachmentLoadOp::Clear, "mask render pass clear");
 
     mask_render_pass_load =
-        device->create_render_pass(TextureFormat::Rgba16Float, AttachmentLoadOp::Load, "Mask render pass load");
+        device->create_render_pass(TextureFormat::Rgba16Float, AttachmentLoadOp::Load, "mask render pass load");
 
     dest_render_pass_clear =
-        device->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Clear, "Dest render pass clear");
+        device->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Clear, "dest render pass clear");
 
     dest_render_pass_load =
-        device->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Load, "Dest render pass load");
+        device->create_render_pass(TextureFormat::Rgba8Unorm, AttachmentLoadOp::Load, "dest render pass load");
 
     auto quad_vertex_data_size = sizeof(QUAD_VERTEX_POSITIONS);
 
     // Quad vertex buffer. Shared by fills and tiles drawing.
-    quad_vertex_buffer_id = allocator->allocate_buffer(quad_vertex_data_size, BufferType::Vertex, "Quad vertex buffer");
+    quad_vertex_buffer_id = allocator->allocate_buffer(quad_vertex_data_size, BufferType::Vertex, "quad vertex buffer");
 
-    auto encoder = device->create_command_encoder("Upload quad vertex data");
+    auto encoder = device->create_command_encoder("upload quad vertex data");
     encoder->write_buffer(allocator->get_buffer(quad_vertex_buffer_id),
                           0,
                           quad_vertex_data_size,
@@ -107,7 +107,7 @@ void RendererD3D9::set_up_pipelines() {
                 {1, 1, DataType::u32, stride, offsetof(Fill, link), VertexInputRate::Instance});
         }
 
-        fill_ub_id = allocator->allocate_buffer(sizeof(FillUniformDx9), BufferType::Uniform, "Fill uniform buffer");
+        fill_ub_id = allocator->allocate_buffer(sizeof(FillUniformDx9), BufferType::Uniform, "fill uniform buffer");
 
         // Set descriptor set.
         fill_descriptor_set = device->create_descriptor_set();
@@ -120,8 +120,8 @@ void RendererD3D9::set_up_pipelines() {
                                 get_default_sampler()),
         });
 
-        auto fill_vert_shader = device->create_shader_module(fill_vert_source, ShaderStage::Vertex);
-        auto fill_frag_shader = device->create_shader_module(fill_frag_source, ShaderStage::Fragment);
+        auto fill_vert_shader = device->create_shader_module(fill_vert_source, ShaderStage::Vertex, "fill vert");
+        auto fill_frag_shader = device->create_shader_module(fill_frag_source, ShaderStage::Fragment, "fill frag");
 
         fill_pipeline = device->create_render_pipeline(fill_vert_shader,
                                                        fill_frag_shader,
@@ -129,7 +129,7 @@ void RendererD3D9::set_up_pipelines() {
                                                        BlendState::from_equal(),
                                                        fill_descriptor_set,
                                                        mask_render_pass_clear,
-                                                       "Fill pipeline");
+                                                       "fill pipeline");
     }
 
     // Tile pipeline.
@@ -166,7 +166,7 @@ void RendererD3D9::set_up_pipelines() {
         }
 
         // Create uniform buffer.
-        tile_ub_id = allocator->allocate_buffer(sizeof(TileUniformDx9), BufferType::Uniform, "Tile uniform buffer");
+        tile_ub_id = allocator->allocate_buffer(sizeof(TileUniformDx9), BufferType::Uniform, "tile uniform buffer");
 
         // Set descriptor set.
         tile_descriptor_set = device->create_descriptor_set();
@@ -190,8 +190,8 @@ void RendererD3D9::set_up_pipelines() {
                                 get_default_sampler()),
         });
 
-        auto tile_vert_shader = device->create_shader_module(tile_vert_source, ShaderStage::Vertex);
-        auto tile_frag_shader = device->create_shader_module(tile_frag_source, ShaderStage::Fragment);
+        auto tile_vert_shader = device->create_shader_module(tile_vert_source, ShaderStage::Vertex, "tile vert");
+        auto tile_frag_shader = device->create_shader_module(tile_frag_source, ShaderStage::Fragment, "tile frag");
 
         tile_pipeline = device->create_render_pipeline(tile_vert_shader,
                                                        tile_frag_shader,
@@ -199,7 +199,7 @@ void RendererD3D9::set_up_pipelines() {
                                                        BlendState::from_over(),
                                                        tile_descriptor_set,
                                                        dest_render_pass_clear,
-                                                       "Tile pipeline");
+                                                       "tile pipeline");
     }
 
     create_tile_clip_copy_pipeline();
@@ -228,7 +228,7 @@ void RendererD3D9::reallocate_alpha_tile_pages_if_necessary() {
     auto new_size = Vec2I(MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT * alpha_tile_pages_needed);
     auto format = mask_texture_format();
 
-    auto mask_texture_id = allocator->allocate_texture(new_size, format, "Mask texture");
+    auto mask_texture_id = allocator->allocate_texture(new_size, format, "mask texture");
 
     mask_storage = MaskStorage{
         std::make_shared<uint64_t>(mask_texture_id),
@@ -267,8 +267,10 @@ void RendererD3D9::create_tile_clip_copy_pipeline() {
         Descriptor::sampled(1, ShaderStage::Fragment, "uSrc", nullptr, get_default_sampler()),
     });
 
-    auto tile_clip_copy_vert_shader = device->create_shader_module(tile_clip_copy_vert_source, ShaderStage::Vertex);
-    auto tile_clip_copy_frag_shader = device->create_shader_module(tile_clip_copy_frag_source, ShaderStage::Fragment);
+    auto tile_clip_copy_vert_shader =
+        device->create_shader_module(tile_clip_copy_vert_source, ShaderStage::Vertex, "tile clip copy vert");
+    auto tile_clip_copy_frag_shader =
+        device->create_shader_module(tile_clip_copy_frag_source, ShaderStage::Fragment, "tile clip copy frag");
 
     // We have to disable blend for tile clip copy.
     tile_clip_copy_pipeline = device->create_render_pipeline(tile_clip_copy_vert_shader,
@@ -277,7 +279,7 @@ void RendererD3D9::create_tile_clip_copy_pipeline() {
                                                              {false},
                                                              tile_clip_copy_descriptor_set,
                                                              mask_render_pass_clear,
-                                                             "Tile clip copy pipeline");
+                                                             "tile clip copy pipeline");
 }
 
 void RendererD3D9::create_tile_clip_combine_pipeline() {
@@ -315,8 +317,10 @@ void RendererD3D9::create_tile_clip_combine_pipeline() {
         Descriptor::sampled(1, ShaderStage::Fragment, "uSrc", nullptr, nullptr),
     });
 
-    auto tile_clip_combine_vert_shader = device->create_shader_module(vert_source, ShaderStage::Vertex);
-    auto tile_clip_combine_frag_shader = device->create_shader_module(frag_source, ShaderStage::Fragment);
+    auto tile_clip_combine_vert_shader =
+        device->create_shader_module(vert_source, ShaderStage::Vertex, "tile clip combine vert");
+    auto tile_clip_combine_frag_shader =
+        device->create_shader_module(frag_source, ShaderStage::Fragment, "tile clip combine frag");
 
     // We have to disable blend for tile clip combine.
     tile_clip_combine_pipeline = device->create_render_pipeline(tile_clip_combine_vert_shader,
@@ -325,7 +329,7 @@ void RendererD3D9::create_tile_clip_combine_pipeline() {
                                                                 {false},
                                                                 tile_clip_combine_descriptor_set,
                                                                 mask_render_pass_clear,
-                                                                "Tile clip combine pipeline");
+                                                                "tile clip combine pipeline");
 }
 
 void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &_scene_builder, bool _clear_dst_texture) {
@@ -347,7 +351,7 @@ void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &_scene_builder, boo
 
     // No fills to draw.
     if (!scene_builder->pending_fills.empty()) {
-        auto encoder = device->create_command_encoder("Upload & draw fills");
+        auto encoder = device->create_command_encoder("upload & draw fills");
 
         // Upload fills to buffer.
         auto fill_vertex_buffer_id = upload_fills(scene_builder->pending_fills, encoder);
@@ -367,9 +371,9 @@ void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &_scene_builder, boo
 uint64_t RendererD3D9::upload_fills(const std::vector<Fill> &fills, const std::shared_ptr<CommandEncoder> &encoder) {
     auto byte_size = sizeof(Fill) * fills.size();
 
-    auto fill_vertex_buffer_id = allocator->allocate_buffer(byte_size, BufferType::Vertex, "Fill vertex buffer");
+    auto fill_vertex_buffer_id = allocator->allocate_buffer(byte_size, BufferType::Vertex, "fill vertex buffer");
 
-    encoder->write_buffer(allocator->get_buffer(fill_vertex_buffer_id), 0, byte_size, (void *)fills.data());
+    encoder->write_buffer(allocator->get_buffer(fill_vertex_buffer_id), 0, byte_size, fills.data());
 
     return fill_vertex_buffer_id;
 }
@@ -380,7 +384,7 @@ uint64_t RendererD3D9::upload_z_buffer(const DenseTileMap<uint32_t> &z_buffer_ma
     // Its size is always the same as the dst framebuffer size.
     // Its size should depend on the batch's dst framebuffer, but it's easier to cache it this way.
     auto z_buffer_texture_id =
-        allocator->allocate_texture(z_buffer_map.rect.size(), TextureFormat::Rgba8Unorm, "Z buffer texture");
+        allocator->allocate_texture(z_buffer_map.rect.size(), TextureFormat::Rgba8Unorm, "z buffer texture");
 
     auto z_buffer_texture = allocator->get_texture(z_buffer_texture_id);
     encoder->write_texture(z_buffer_texture, {}, z_buffer_map.data.data());
@@ -392,9 +396,9 @@ uint64_t RendererD3D9::upload_tiles(const std::vector<TileObjectPrimitive> &tile
                                     const std::shared_ptr<CommandEncoder> &encoder) {
     auto byte_size = sizeof(TileObjectPrimitive) * tiles.size();
 
-    auto tile_vertex_buffer_id = allocator->allocate_buffer(byte_size, BufferType::Vertex, "Tile vertex buffer");
+    auto tile_vertex_buffer_id = allocator->allocate_buffer(byte_size, BufferType::Vertex, "tile vertex buffer");
 
-    encoder->write_buffer(allocator->get_buffer(tile_vertex_buffer_id), 0, byte_size, (void *)tiles.data());
+    encoder->write_buffer(allocator->get_buffer(tile_vertex_buffer_id), 0, byte_size, tiles.data());
 
     return tile_vertex_buffer_id;
 }
@@ -411,7 +415,7 @@ void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &t
 
         // Different batches will use the same tile vertex buffer, so we need to make sure
         // that a batch is down drawing before processing the next batch.
-        auto encoder = device->create_command_encoder("Upload & draw tiles");
+        auto encoder = device->create_command_encoder("upload & draw tiles");
 
         // Apply clip paths.
         if (!batch.clips.empty()) {
@@ -473,9 +477,9 @@ ClipBufferInfo RendererD3D9::upload_clip_tiles(const std::vector<Clip> &clips,
 
     auto byte_size = sizeof(Clip) * clip_count;
 
-    auto clip_buffer_id = allocator->allocate_buffer(byte_size, BufferType::Vertex, "Clip buffer");
+    auto clip_buffer_id = allocator->allocate_buffer(byte_size, BufferType::Vertex, "clip buffer");
 
-    encoder->write_buffer(allocator->get_buffer(clip_buffer_id), 0, byte_size, (void *)clips.data());
+    encoder->write_buffer(allocator->get_buffer(clip_buffer_id), 0, byte_size, clips.data());
 
     return {clip_buffer_id, clip_count};
 }
@@ -485,7 +489,7 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std:
     auto temp_mask_texture_id = allocator->allocate_texture(
         Vec2I(MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT * mask_storage.allocated_page_count),
         TextureFormat::Rgba16Float,
-        "Temp mask texture");
+        "temp mask texture");
 
     auto temp_mask_texture = allocator->get_texture(temp_mask_texture_id);
 

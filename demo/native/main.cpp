@@ -26,14 +26,14 @@ int main() {
             Pathfinder::load_file_as_bytes("../assets/features.svg"),
             Pathfinder::load_file_as_bytes("../assets/sea.png"));
 
-    auto texture_rect = std::make_shared<TextureRect>(device, queue, swap_chain->get_render_pass());
+    auto blit = std::make_shared<Blit>(device, queue, swap_chain->get_render_pass());
 
     {
         auto dst_texture = device->create_texture({window_size, Pathfinder::TextureFormat::Rgba8Unorm}, "dst texture");
 
         app.canvas_->set_dst_texture(dst_texture);
 
-        texture_rect->set_texture(dst_texture);
+        blit->set_texture(dst_texture);
     }
 
     // Main loop.
@@ -52,14 +52,14 @@ int main() {
                 device->create_texture({current_window_size, Pathfinder::TextureFormat::Rgba8Unorm}, "dst texture");
 
             app.canvas_->set_dst_texture(dst_texture);
-            texture_rect->set_texture(dst_texture);
+            blit->set_texture(dst_texture);
 
             app.canvas_->set_size(current_window_size);
         }
 
         app.update();
 
-        auto encoder = device->create_command_encoder("Main encoder");
+        auto encoder = device->create_command_encoder("main encoder");
 
         auto surface_texture = swap_chain->get_surface_texture();
 
@@ -71,7 +71,7 @@ int main() {
             encoder->set_viewport({{0, 0}, swap_chain->size_});
 
             // Draw canvas to screen.
-            texture_rect->draw(encoder, swap_chain->size_);
+            blit->draw(encoder);
 
             encoder->end_render_pass();
         }
@@ -85,7 +85,7 @@ int main() {
 
     // Do this after swap chain cleanup.
     app.destroy();
-    texture_rect.reset();
+    blit.reset();
 
     return 0;
 }

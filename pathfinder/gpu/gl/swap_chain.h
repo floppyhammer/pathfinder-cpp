@@ -24,8 +24,6 @@ public:
     }
 #else
     SwapChainGl(Vec2I _size) : SwapChain(_size) {
-        framebuffer_ = std::shared_ptr<FramebufferGl>(new FramebufferGl(size_));
-
         command_encoder_ = std::shared_ptr<CommandEncoderGl>(new CommandEncoderGl());
 
         render_pass_ = std::shared_ptr<RenderPassGl>(new RenderPassGl(AttachmentLoadOp::Clear));

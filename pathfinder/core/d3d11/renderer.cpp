@@ -72,7 +72,7 @@ void SceneSourceBuffers::upload(SegmentsD3D11 &segments,
         }
 
         points_buffer = std::make_shared<uint64_t>(
-            allocator->allocate_buffer(needed_points_capacity * sizeof(Vec2F), BufferType::Storage, "Points buffer"));
+            allocator->allocate_buffer(needed_points_capacity * sizeof(Vec2F), BufferType::Storage, "points buffer"));
 
         points_capacity = needed_points_capacity;
     }
@@ -86,7 +86,7 @@ void SceneSourceBuffers::upload(SegmentsD3D11 &segments,
         point_indices_buffer = std::make_shared<uint64_t>(
             allocator->allocate_buffer(needed_point_indices_capacity * sizeof(SegmentIndicesD3D11),
                                        BufferType::Storage,
-                                       "Point indices buffer"));
+                                       "point indices buffer"));
 
         point_indices_capacity = needed_point_indices_capacity;
     }
@@ -122,14 +122,14 @@ RendererD3D11::RendererD3D11(const std::shared_ptr<Device> &device, const std::s
     allocated_fill_count = INITIAL_ALLOCATED_FILL_COUNT;
 
     // Create uniform buffers.
-    bin_ub_id = allocator->allocate_buffer(4 * sizeof(int32_t), BufferType::Uniform, "Bin uniform buffer");
-    bound_ub_id = allocator->allocate_buffer(4 * sizeof(int32_t), BufferType::Uniform, "Bound uniform buffer");
-    dice_ub0_id = allocator->allocate_buffer(12 * sizeof(float), BufferType::Uniform, "Dice uniform buffer 0");
-    dice_ub1_id = allocator->allocate_buffer(4 * sizeof(int32_t), BufferType::Uniform, "Dice uniform buffer 1");
-    fill_ub_id = allocator->allocate_buffer(4 * sizeof(int32_t), BufferType::Uniform, "Fill uniform buffer");
-    propagate_ub_id = allocator->allocate_buffer(4 * sizeof(int32_t), BufferType::Uniform, "Propagate uniform buffer");
-    sort_ub_id = allocator->allocate_buffer(4 * sizeof(int32_t), BufferType::Uniform, "Sort uniform buffer");
-    tile_ub_id = allocator->allocate_buffer(sizeof(TileUniformDx11), BufferType::Uniform, "Tile uniform buffer");
+    bin_ub_id = allocator->allocate_buffer(4 * sizeof(int32_t), BufferType::Uniform, "bin uniform buffer");
+    bound_ub_id = allocator->allocate_buffer(4 * sizeof(int32_t), BufferType::Uniform, "bound uniform buffer");
+    dice_ub0_id = allocator->allocate_buffer(12 * sizeof(float), BufferType::Uniform, "dice uniform buffer 0");
+    dice_ub1_id = allocator->allocate_buffer(4 * sizeof(int32_t), BufferType::Uniform, "dice uniform buffer 1");
+    fill_ub_id = allocator->allocate_buffer(4 * sizeof(int32_t), BufferType::Uniform, "fill uniform buffer");
+    propagate_ub_id = allocator->allocate_buffer(4 * sizeof(int32_t), BufferType::Uniform, "propagate uniform buffer");
+    sort_ub_id = allocator->allocate_buffer(4 * sizeof(int32_t), BufferType::Uniform, "sort uniform buffer");
+    tile_ub_id = allocator->allocate_buffer(sizeof(TileUniformDx11), BufferType::Uniform, "tile uniform buffer");
 }
 
 void RendererD3D11::set_up_pipelines() {
@@ -235,28 +235,34 @@ void RendererD3D11::set_up_pipelines() {
     });
 
     // These pipelines will be called by order.
-    dice_pipeline = device->create_compute_pipeline(device->create_shader_module(dice_source, ShaderStage::Compute),
-                                                    dice_descriptor_set,
-                                                    "Dice pipeline"); // 1
-    bound_pipeline = device->create_compute_pipeline(device->create_shader_module(bound_source, ShaderStage::Compute),
-                                                     bound_descriptor_set,
-                                                     "Bound pipeline"); // 2
-    bin_pipeline = device->create_compute_pipeline(device->create_shader_module(bin_source, ShaderStage::Compute),
-                                                   bin_descriptor_set,
-                                                   "Bin pipeline"); // 3
-    propagate_pipeline =
-        device->create_compute_pipeline(device->create_shader_module(propagate_source, ShaderStage::Compute),
-                                        propagate_descriptor_set,
-                                        "Propagate pipeline"); // 4
-    fill_pipeline = device->create_compute_pipeline(device->create_shader_module(fill_source, ShaderStage::Compute),
-                                                    fill_descriptor_set,
-                                                    "Fill pipeline"); // 5
-    sort_pipeline = device->create_compute_pipeline(device->create_shader_module(sort_source, ShaderStage::Compute),
-                                                    sort_descriptor_set,
-                                                    "Sort pipeline"); // 6
-    tile_pipeline = device->create_compute_pipeline(device->create_shader_module(tile_source, ShaderStage::Compute),
-                                                    tile_descriptor_set,
-                                                    "Tile pipeline"); // 7
+    dice_pipeline =
+        device->create_compute_pipeline(device->create_shader_module(dice_source, ShaderStage::Compute, "dice comp"),
+                                        dice_descriptor_set,
+                                        "dice pipeline"); // 1
+    bound_pipeline =
+        device->create_compute_pipeline(device->create_shader_module(bound_source, ShaderStage::Compute, "bound comp"),
+                                        bound_descriptor_set,
+                                        "bound pipeline"); // 2
+    bin_pipeline =
+        device->create_compute_pipeline(device->create_shader_module(bin_source, ShaderStage::Compute, "bin comp"),
+                                        bin_descriptor_set,
+                                        "bin pipeline"); // 3
+    propagate_pipeline = device->create_compute_pipeline(
+        device->create_shader_module(propagate_source, ShaderStage::Compute, "propagate comp"),
+        propagate_descriptor_set,
+        "propagate pipeline"); // 4
+    fill_pipeline =
+        device->create_compute_pipeline(device->create_shader_module(fill_source, ShaderStage::Compute, "fill comp"),
+                                        fill_descriptor_set,
+                                        "fill pipeline"); // 5
+    sort_pipeline =
+        device->create_compute_pipeline(device->create_shader_module(sort_source, ShaderStage::Compute, "sort comp"),
+                                        sort_descriptor_set,
+                                        "sort pipeline"); // 6
+    tile_pipeline =
+        device->create_compute_pipeline(device->create_shader_module(tile_source, ShaderStage::Compute, "tile comp"),
+                                        tile_descriptor_set,
+                                        "tile pipeline"); // 7
 }
 
 void RendererD3D11::draw(const std::shared_ptr<SceneBuilder> &_scene_builder, bool _clear_dst_texture) {
@@ -302,7 +308,7 @@ void RendererD3D11::set_dest_texture(const std::shared_ptr<Texture> &new_texture
 }
 
 void RendererD3D11::upload_scene(SegmentsD3D11 &draw_segments, SegmentsD3D11 &clip_segments) {
-    auto encoder = device->create_command_encoder("Upload scene");
+    auto encoder = device->create_command_encoder("upload scene");
     scene_buffers.upload(draw_segments, clip_segments, allocator, device, encoder);
     queue->submit_and_wait(encoder);
 }
@@ -375,7 +381,7 @@ void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
                                       (float)(MASK_FRAMEBUFFER_HEIGHT * mask_storage.allocated_page_count)};
     uniform_data.texture_metadata_size = {TEXTURE_METADATA_TEXTURE_WIDTH, TEXTURE_METADATA_TEXTURE_HEIGHT};
 
-    auto encoder = device->create_command_encoder("Draw tiles");
+    auto encoder = device->create_command_encoder("draw tiles");
 
     encoder->write_buffer(allocator->get_buffer(tile_ub_id), 0, sizeof(TileUniformDx11), &uniform_data);
 
@@ -427,7 +433,7 @@ uint64_t RendererD3D11::allocate_z_buffer() {
     // SSBOs to 8 (#373).
     // Add FILL_INDIRECT_DRAW_PARAMS_SIZE in case tile size is zero.
     auto size = tile_size().area() + FILL_INDIRECT_DRAW_PARAMS_SIZE;
-    auto buffer_id = allocator->allocate_buffer(size * sizeof(int32_t), BufferType::Storage, "Z buffer");
+    auto buffer_id = allocator->allocate_buffer(size * sizeof(int32_t), BufferType::Storage, "z buffer");
 
     return buffer_id;
 }
@@ -435,14 +441,14 @@ uint64_t RendererD3D11::allocate_z_buffer() {
 uint64_t RendererD3D11::allocate_first_tile_map() {
     auto size = tile_size().area();
     auto buffer_id =
-        allocator->allocate_buffer(size * sizeof(FirstTileD3D11), BufferType::Storage, "First tile map buffer");
+        allocator->allocate_buffer(size * sizeof(FirstTileD3D11), BufferType::Storage, "first tile map buffer");
 
     return buffer_id;
 }
 
 uint64_t RendererD3D11::allocate_alpha_tile_info(uint32_t index_count) {
     auto buffer_id =
-        allocator->allocate_buffer(index_count * sizeof(AlphaTileD3D11), BufferType::Storage, "Alpha tile buffer");
+        allocator->allocate_buffer(index_count * sizeof(AlphaTileD3D11), BufferType::Storage, "alpha tile buffer");
 
     return buffer_id;
 }
@@ -453,13 +459,13 @@ PropagateMetadataBufferIDsD3D11 RendererD3D11::upload_propagate_metadata(
     auto propagate_metadata_storage_id =
         allocator->allocate_buffer(propagate_metadata.size() * sizeof(PropagateMetadataD3D11),
                                    BufferType::Storage,
-                                   "Propagate metadata buffer");
+                                   "propagate metadata buffer");
 
     auto backdrops_storage_id = allocator->allocate_buffer(backdrops.size() * sizeof(BackdropInfoD3D11),
                                                            BufferType::Storage,
-                                                           "Backdrops buffer");
+                                                           "backdrops buffer");
 
-    auto encoder = device->create_command_encoder("Upload to propagate metadata buffer");
+    auto encoder = device->create_command_encoder("upload to propagate metadata buffer");
     encoder->write_buffer(allocator->get_buffer(propagate_metadata_storage_id),
                           0,
                           propagate_metadata.size() * sizeof(PropagateMetadataD3D11),
@@ -472,7 +478,7 @@ PropagateMetadataBufferIDsD3D11 RendererD3D11::upload_propagate_metadata(
 void RendererD3D11::upload_initial_backdrops(uint64_t backdrops_buffer_id, std::vector<BackdropInfoD3D11> &backdrops) {
     auto backdrops_buffer = allocator->get_buffer(backdrops_buffer_id);
 
-    auto encoder = device->create_command_encoder("Upload initial backdrops");
+    auto encoder = device->create_command_encoder("upload initial backdrops");
     encoder->write_buffer(backdrops_buffer, 0, backdrops.size() * sizeof(BackdropInfoD3D11), backdrops.data());
     queue->submit_and_wait(encoder);
 }
@@ -480,7 +486,7 @@ void RendererD3D11::upload_initial_backdrops(uint64_t backdrops_buffer_id, std::
 void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
     // Upload tiles to GPU or allocate them as appropriate.
     auto tiles_d3d11_buffer_id =
-        allocator->allocate_buffer(batch.tile_count * sizeof(TileD3D11), BufferType::Storage, "Tiles d3d11 buffer");
+        allocator->allocate_buffer(batch.tile_count * sizeof(TileD3D11), BufferType::Storage, "tiles d3d11 buffer");
 
     // Fetch and/or allocate clip storage as needed.
     shared_ptr<ClipBufferIDs> clip_buffer_ids;
@@ -593,13 +599,13 @@ std::shared_ptr<MicrolinesBufferIDsD3D11> RendererD3D11::dice_segments(std::vect
     // Allocate some general buffers.
     auto microlines_buffer_id = allocator->allocate_buffer(allocated_microline_count * sizeof(MicrolineD3D11),
                                                            BufferType::Storage,
-                                                           "Microline buffer");
+                                                           "microline buffer");
     auto dice_metadata_buffer_id = allocator->allocate_buffer(dice_metadata.size() * sizeof(DiceMetadataD3D11),
                                                               BufferType::Storage,
-                                                              "Dice metadata buffer");
+                                                              "dice metadata buffer");
     auto indirect_draw_params_buffer_id = allocator->allocate_buffer(FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
                                                                      BufferType::Storage,
-                                                                     "Indirect draw params buffer");
+                                                                     "indirect draw params buffer");
 
     auto microlines_buffer = allocator->get_buffer(microlines_buffer_id);
     auto dice_metadata_buffer = allocator->get_buffer(dice_metadata_buffer_id);
@@ -613,7 +619,7 @@ std::shared_ptr<MicrolinesBufferIDsD3D11> RendererD3D11::dice_segments(std::vect
 
     uint32_t indirect_compute_params[8] = {0, 0, 0, 0, point_indices_count, 0, 0, 0};
 
-    auto encoder = device->create_command_encoder("Dice segments");
+    auto encoder = device->create_command_encoder("dice segments");
 
     // Upload dice indirect draw params, which will be read later.
     encoder->write_buffer(indirect_draw_params_buffer,
@@ -707,9 +713,9 @@ void RendererD3D11::bound(uint64_t tiles_d3d11_buffer_id,
     // This is a staging buffer, which will be freed at the end of this function.
     auto path_info_buffer_id = allocator->allocate_buffer(tile_path_info.size() * sizeof(TilePathInfoD3D11),
                                                           BufferType::Storage,
-                                                          "Path info buffer");
+                                                          "path info buffer");
 
-    auto encoder = device->create_command_encoder("Bound");
+    auto encoder = device->create_command_encoder("bound");
 
     // Upload buffer data.
     auto tile_path_info_buffer = allocator->get_buffer(path_info_buffer_id);
@@ -752,11 +758,11 @@ std::shared_ptr<FillBufferInfoD3D11> RendererD3D11::bin_segments(
     uint64_t z_buffer_id) {
     // What will be the output of this function.
     auto fill_vertex_buffer_id =
-        allocator->allocate_buffer(allocated_fill_count * sizeof(Fill), BufferType::Storage, "Fill vertex buffer");
+        allocator->allocate_buffer(allocated_fill_count * sizeof(Fill), BufferType::Storage, "fill vertex buffer");
 
     uint32_t indirect_draw_params[FILL_INDIRECT_DRAW_PARAMS_SIZE] = {6, 0, 0, 0, 0, microlines_storage.count, 0, 0};
 
-    auto encoder = device->create_command_encoder("Bin segments");
+    auto encoder = device->create_command_encoder("bin segments");
 
     auto z_buffer = allocator->get_buffer(z_buffer_id);
 
@@ -834,7 +840,7 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
     auto z_buffer = allocator->get_buffer(z_buffer_id);
     auto alpha_tiles_buffer = allocator->get_buffer(alpha_tiles_buffer_id);
 
-    auto encoder = device->create_command_encoder("Propagate tiles");
+    auto encoder = device->create_command_encoder("propagate tiles");
 
     // Upload data to buffers.
     // TODO(pcwalton): Zero out the Z-buffer on GPU?
@@ -936,7 +942,7 @@ void RendererD3D11::draw_fills(FillBufferInfoD3D11 &fill_storage_info,
     // This setup is a workaround for the annoying 64K limit of compute invocation in OpenGL.
     uint32_t _alpha_tile_count = alpha_tile_range.end - alpha_tile_range.start;
 
-    auto encoder = device->create_command_encoder("Draw fills");
+    auto encoder = device->create_command_encoder("draw fills");
 
     // Update uniform buffer.
     auto framebuffer_tile_size0 = framebuffer_tile_size();
@@ -981,7 +987,7 @@ void RendererD3D11::sort_tiles(uint64_t tiles_d3d11_buffer_id,
 
     auto tile_count = framebuffer_tile_size().area();
 
-    auto encoder = device->create_command_encoder("Sort tiles");
+    auto encoder = device->create_command_encoder("sort tiles");
 
     // Update uniform buffer.
     encoder->write_buffer(allocator->get_buffer(sort_ub_id), 0, sizeof(int32_t), &tile_count);
@@ -1046,7 +1052,7 @@ void RendererD3D11::reallocate_alpha_tile_pages_if_necessary() {
     auto new_size = Vec2I(MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT * alpha_tile_pages_needed);
     auto format = mask_texture_format();
 
-    auto mask_texture_id = allocator->allocate_texture(new_size, format, "Mask texture");
+    auto mask_texture_id = allocator->allocate_texture(new_size, format, "mask texture");
 
     mask_storage = MaskStorage{
         std::make_shared<uint64_t>(mask_texture_id),
