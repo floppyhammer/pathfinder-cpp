@@ -38,6 +38,10 @@ std::shared_ptr<Texture> SwapChainVk::get_surface_texture() {
     return texture;
 }
 
+TextureFormat SwapChainVk::get_surface_format() const {
+    return vk_to_texture_format(swapchain_image_format_);
+}
+
 bool SwapChainVk::acquire_image() {
     if (window_->is_minimized()) {
         return false;

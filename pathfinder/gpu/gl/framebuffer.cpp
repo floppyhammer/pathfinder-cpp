@@ -10,7 +10,7 @@ namespace Pathfinder {
 
 FramebufferGl::FramebufferGl() {
     gl_framebuffer_ = 0;
-    label_ = "Screen framebuffer";
+    label_ = "screen framebuffer";
 }
 
 FramebufferGl::FramebufferGl(const std::shared_ptr<Texture> &texture) : Framebuffer(texture) {
@@ -40,8 +40,11 @@ uint32_t FramebufferGl::get_gl_handle() const {
 }
 
 void FramebufferGl::set_label(const std::string &label) {
-    Framebuffer::set_label(label);
+    if (gl_framebuffer_ == 0) {
+        return;
+    }
 
+    Framebuffer::set_label(label);
     DebugMarker::label_framebuffer(gl_framebuffer_, label_);
 }
 

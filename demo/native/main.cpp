@@ -26,7 +26,7 @@ int main() {
             Pathfinder::load_file_as_bytes("../assets/features.svg"),
             Pathfinder::load_file_as_bytes("../assets/sea.png"));
 
-    auto blit = std::make_shared<Blit>(device, queue, swap_chain->get_render_pass());
+    auto blit = std::make_shared<Blit>(device, queue, swap_chain->get_surface_format());
 
     {
         auto dst_texture = device->create_texture({window_size, Pathfinder::TextureFormat::Rgba8Unorm}, "dst texture");

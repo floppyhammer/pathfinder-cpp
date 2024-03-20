@@ -128,7 +128,7 @@ void RendererD3D9::set_up_pipelines() {
                                                        attribute_descriptions,
                                                        BlendState::from_equal(),
                                                        fill_descriptor_set,
-                                                       mask_render_pass_clear,
+                                                       mask_texture_format(),
                                                        "fill pipeline");
     }
 
@@ -198,7 +198,7 @@ void RendererD3D9::set_up_pipelines() {
                                                        attribute_descriptions,
                                                        BlendState::from_over(),
                                                        tile_descriptor_set,
-                                                       dest_render_pass_clear,
+                                                       TextureFormat::Rgba8Unorm,
                                                        "tile pipeline");
     }
 
@@ -278,7 +278,7 @@ void RendererD3D9::create_tile_clip_copy_pipeline() {
                                                              attribute_descriptions,
                                                              {false},
                                                              tile_clip_copy_descriptor_set,
-                                                             mask_render_pass_clear,
+                                                             mask_texture_format(),
                                                              "tile clip copy pipeline");
 }
 
@@ -328,7 +328,7 @@ void RendererD3D9::create_tile_clip_combine_pipeline() {
                                                                 attribute_descriptions,
                                                                 {false},
                                                                 tile_clip_combine_descriptor_set,
-                                                                mask_render_pass_clear,
+                                                                mask_texture_format(),
                                                                 "tile clip combine pipeline");
 }
 

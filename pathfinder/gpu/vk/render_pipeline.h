@@ -37,6 +37,9 @@ private:
                      std::string label)
         : RenderPipeline(attribute_descriptions, blend_state, std::move(label)), vk_device_(vk_device) {}
 
+    // A walkaround of pass denpendency.
+    std::shared_ptr<RenderPassVk> render_pass_vk_;
+
     VkPipeline vk_pipeline_{};
 
     VkDescriptorSetLayout vk_descriptor_set_layout_{};

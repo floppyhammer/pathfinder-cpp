@@ -38,6 +38,10 @@ public:
         return nullptr;
     }
 
+    TextureFormat get_surface_format() const override {
+        return TextureFormat::Rgba8Unorm;
+    }
+
     bool acquire_image() override {
 #ifndef __ANDROID__
         glfwMakeContextCurrent(glfw_window_);

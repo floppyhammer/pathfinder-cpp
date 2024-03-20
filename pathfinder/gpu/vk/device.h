@@ -51,7 +51,7 @@ public:
         const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
         BlendState blend_state,
         const std::shared_ptr<DescriptorSet> &descriptor_set,
-        const std::shared_ptr<RenderPass> &render_pass,
+        TextureFormat target_format,
         const std::string &label) override;
 
     std::shared_ptr<ComputePipeline> create_compute_pipeline(const std::shared_ptr<ShaderModule> &comp_shader_module,

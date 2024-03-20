@@ -28,6 +28,8 @@ public:
 
     std::shared_ptr<Texture> get_surface_texture() override;
 
+    TextureFormat get_surface_format() const override;
+
     bool acquire_image() override;
 
 private:

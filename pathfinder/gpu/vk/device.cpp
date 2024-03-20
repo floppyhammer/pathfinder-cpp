@@ -68,14 +68,17 @@ std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
     const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
     BlendState blend_state,
     const std::shared_ptr<DescriptorSet> &descriptor_set,
-    const std::shared_ptr<RenderPass> &render_pass,
+    TextureFormat target_format,
     const std::string &label) {
-    auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
     auto vert_shader_module_vk = (ShaderModuleVk *)vert_shader_module.get();
     auto frag_shader_module_vk = (ShaderModuleVk *)frag_shader_module.get();
 
     auto render_pipeline_vk =
         std::shared_ptr<RenderPipelineVk>(new RenderPipelineVk(vk_device_, attribute_descriptions, blend_state, label));
+
+    auto render_pass_vk = std::shared_ptr<RenderPassVk>(
+        new RenderPassVk(vk_device_, target_format, AttachmentLoadOp::Load, false, label + " pass"));
+    render_pipeline_vk->render_pass_vk_ = render_pass_vk;
 
     // Create descriptor set layout.
     {

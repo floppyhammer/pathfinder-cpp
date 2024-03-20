@@ -69,7 +69,7 @@ std::shared_ptr<RenderPipeline> DeviceGl::create_render_pipeline(
     const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
     BlendState blend_state,
     const std::shared_ptr<DescriptorSet> &descriptor_set,
-    const std::shared_ptr<RenderPass> &render_pass,
+    TextureFormat target_format,
     const std::string &label) {
     return std::shared_ptr<RenderPipelineGl>(
         new RenderPipelineGl(vert_shader_module, frag_shader_module, attribute_descriptions, blend_state, label));

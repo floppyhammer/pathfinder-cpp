@@ -29,6 +29,8 @@ public:
      */
     virtual std::shared_ptr<Texture> get_surface_texture() = 0;
 
+    virtual TextureFormat get_surface_format() const = 0;
+
     /// Acquire current texture in the swap chain.
     virtual bool acquire_image() = 0;
 
