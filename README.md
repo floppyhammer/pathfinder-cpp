@@ -5,10 +5,10 @@ This is a C++ port of [Pathfinder 3](https://github.com/servo/pathfinder) with a
 ## Requirements
 
 * C++14.
-* Dx9 mode: `Vulkan` / `OpenGL 3.3 (or higher)` / `OpenGL ES 3.0 (or higher)` / `WebGL2`.
-* Dx11 mode: `Vulkan` / `OpenGL 4.3 (or higher)` / `OpenGL ES 3.1 (or higher)`.
+* D3d9 mode: `Vulkan` / `OpenGL 3.3 (or higher)` / `OpenGL ES 3.0 (or higher)` / `WebGL2`.
+* D3d11 mode: `Vulkan` / `OpenGL 4.3 (or higher)` / `OpenGL ES 3.1 (or higher)`.
 
-Notable: The Dx11 mode has some limits in an OpenGL ES context because, for ES, it's impossible to read & write
+Notable: The D3d11 mode has some limits in an OpenGL ES context because, for ES, it's impossible to read & write
 the same image in a single compute invocation.
 
 ## Run demo

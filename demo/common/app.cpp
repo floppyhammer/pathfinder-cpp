@@ -16,7 +16,7 @@ App::App(const std::shared_ptr<Device> &device,
     queue_ = queue;
 
     // Set up a canvas.
-    canvas_ = std::make_shared<Canvas>(canvas_size, device, queue, RenderLevel::Dx9);
+    canvas_ = std::make_shared<Canvas>(canvas_size, device, queue, RenderLevel::D3d9);
 
     // TEST: View box clipping.
     if (true) {
@@ -76,7 +76,7 @@ App::App(const std::shared_ptr<Device> &device,
     // TEST: Render target pattern.
     if (true) {
         auto render_target_size = Vec2I(400, 300);
-        auto render_target_desc = RenderTargetDesc{render_target_size, "Sub render target"};
+        auto render_target_desc = RenderTargetDesc{render_target_size, "sub render target"};
         auto render_target_id = canvas_->get_scene()->push_render_target(render_target_desc);
 
         Path2d path;

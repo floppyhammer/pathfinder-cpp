@@ -21,10 +21,10 @@
     #endif
 #endif
 
-// Enable Dx11 render level.
+// Enable D3d11 render level.
 #define PATHFINDER_ENABLE_D3D11
 
-// Dx11 level is not available in Web.
+// D3d11 level is not available in Web.
 #ifdef PATHFINDER_EMSCRIPTEN
     #undef PATHFINDER_ENABLE_D3D11
 #endif
@@ -42,7 +42,7 @@
 // For Vulkan , the validation layers are enabled.
 #define PATHFINDER_DEBUG
 
-/// Enable building scenes (dx9) in parallel.
+/// Enable building scenes (on D3d9 level) in parallel.
 #define PATHFINDER_THREADS 4
 
 /// Enable SIMD.

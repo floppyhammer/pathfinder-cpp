@@ -129,7 +129,7 @@ RendererD3D11::RendererD3D11(const std::shared_ptr<Device> &device, const std::s
     fill_ub_id = allocator->allocate_buffer(4 * sizeof(int32_t), BufferType::Uniform, "fill uniform buffer");
     propagate_ub_id = allocator->allocate_buffer(4 * sizeof(int32_t), BufferType::Uniform, "propagate uniform buffer");
     sort_ub_id = allocator->allocate_buffer(4 * sizeof(int32_t), BufferType::Uniform, "sort uniform buffer");
-    tile_ub_id = allocator->allocate_buffer(sizeof(TileUniformDx11), BufferType::Uniform, "tile uniform buffer");
+    tile_ub_id = allocator->allocate_buffer(sizeof(TileUniformD3d11), BufferType::Uniform, "tile uniform buffer");
 }
 
 void RendererD3D11::set_up_pipelines() {
@@ -371,7 +371,7 @@ void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
     Vec2F color_texture_size = color_texture->get_size().to_f32();
 
     // Update uniform buffers.
-    TileUniformDx11 uniform_data;
+    TileUniformD3d11 uniform_data;
     uniform_data.load_action = clear_op;
     uniform_data.tile_size = {TILE_WIDTH, TILE_HEIGHT};
     uniform_data.color_texture_size = color_texture_size.to_f32();
@@ -383,7 +383,7 @@ void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
 
     auto encoder = device->create_command_encoder("draw tiles");
 
-    encoder->write_buffer(allocator->get_buffer(tile_ub_id), 0, sizeof(TileUniformDx11), &uniform_data);
+    encoder->write_buffer(allocator->get_buffer(tile_ub_id), 0, sizeof(TileUniformD3d11), &uniform_data);
 
     // Update descriptor set.
     tile_descriptor_set->add_or_update({

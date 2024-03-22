@@ -45,8 +45,8 @@ struct MaskStorage {
 };
 
 enum class RenderLevel {
-    Dx9,
-    Dx11,
+    D3d9,
+    D3d11,
 };
 
 /// In most cases, we have only one renderer set up, while having

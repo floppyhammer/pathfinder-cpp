@@ -20,12 +20,12 @@ struct ClipBufferInfo {
     uint32_t clip_count;
 };
 
-struct FillUniformDx9 {
+struct FillUniformD3d9 {
     Vec2F tile_size;        // Fixed as (16, 16).
     Vec2F framebuffer_size; // Mask framebuffer size. Dynamic as (4096, 1024 * page_count).
 };
 
-struct TileUniformDx9 {
+struct TileUniformD3d9 {
     Vec2F tile_size; // Fixed as (16, 16).
     Vec2F texture_metadata_size;
     Vec2F z_buffer_size;

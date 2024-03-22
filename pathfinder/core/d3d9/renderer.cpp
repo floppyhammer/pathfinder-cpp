@@ -107,7 +107,7 @@ void RendererD3D9::set_up_pipelines() {
                 {1, 1, DataType::u32, stride, offsetof(Fill, link), VertexInputRate::Instance});
         }
 
-        fill_ub_id = allocator->allocate_buffer(sizeof(FillUniformDx9), BufferType::Uniform, "fill uniform buffer");
+        fill_ub_id = allocator->allocate_buffer(sizeof(FillUniformD3d9), BufferType::Uniform, "fill uniform buffer");
 
         // Set descriptor set.
         fill_descriptor_set = device->create_descriptor_set();
@@ -166,7 +166,7 @@ void RendererD3D9::set_up_pipelines() {
         }
 
         // Create uniform buffer.
-        tile_ub_id = allocator->allocate_buffer(sizeof(TileUniformDx9), BufferType::Uniform, "tile uniform buffer");
+        tile_ub_id = allocator->allocate_buffer(sizeof(TileUniformD3d9), BufferType::Uniform, "tile uniform buffer");
 
         // Set descriptor set.
         tile_descriptor_set = device->create_descriptor_set();
@@ -447,12 +447,12 @@ void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &t
 void RendererD3D9::draw_fills(uint64_t fill_vertex_buffer_id,
                               uint32_t fills_count,
                               const std::shared_ptr<CommandEncoder> &encoder) {
-    FillUniformDx9 fill_uniform;
+    FillUniformD3d9 fill_uniform;
     fill_uniform.tile_size = {TILE_WIDTH, TILE_HEIGHT};
     fill_uniform.framebuffer_size = {MASK_FRAMEBUFFER_WIDTH,
                                      (float)(MASK_FRAMEBUFFER_HEIGHT * mask_storage.allocated_page_count)};
 
-    encoder->write_buffer(allocator->get_buffer(fill_ub_id), 0, sizeof(FillUniformDx9), &fill_uniform);
+    encoder->write_buffer(allocator->get_buffer(fill_ub_id), 0, sizeof(FillUniformD3d9), &fill_uniform);
 
     encoder->begin_render_pass(mask_render_pass_clear, allocator->get_texture(*mask_storage.texture_id), ColorF());
 
@@ -590,7 +590,7 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
 
     // Update uniform buffers.
     {
-        TileUniformDx9 tile_uniform;
+        TileUniformD3d9 tile_uniform;
         tile_uniform.tile_size = {TILE_WIDTH, TILE_HEIGHT};
         tile_uniform.texture_metadata_size = {TEXTURE_METADATA_TEXTURE_WIDTH, TEXTURE_METADATA_TEXTURE_HEIGHT};
         tile_uniform.mask_texture_size = {MASK_FRAMEBUFFER_WIDTH,
@@ -622,7 +622,7 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
 
         // We don't need to preserve the data until the upload commands are implemented because
         // these uniform buffers are host-visible/coherent.
-        encoder->write_buffer(allocator->get_buffer(tile_ub_id), 0, sizeof(TileUniformDx9), &tile_uniform);
+        encoder->write_buffer(allocator->get_buffer(tile_ub_id), 0, sizeof(TileUniformD3d9), &tile_uniform);
     }
 
     // Update descriptor set.

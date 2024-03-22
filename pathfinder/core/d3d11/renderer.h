@@ -74,7 +74,7 @@ struct ClipBufferIDs {
     uint64_t tiles;
 };
 
-struct TileUniformDx11 {
+struct TileUniformD3d11 {
     float clear_color[4]{};
     int32_t load_action{}, pad0, pad1, pad2;
     Vec2F tile_size;
