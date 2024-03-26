@@ -50,7 +50,7 @@ public:
 
     BuiltSegments built_segments;
 
-    shared_ptr<ClipBatchesD3D11> clip_batches_d3d11;
+    std::shared_ptr<ClipBatchesD3D11> clip_batches_d3d11;
 
     // Will be sent to renderer to draw tiles.
     std::vector<DrawTileBatchD3D11> tile_batches;

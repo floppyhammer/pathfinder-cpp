@@ -368,7 +368,8 @@ void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &_scene_builder, boo
     upload_and_draw_tiles(scene_builder->tile_batches);
 }
 
-uint64_t RendererD3D9::upload_fills(const std::vector<Fill> &fills, const std::shared_ptr<CommandEncoder> &encoder) {
+uint64_t RendererD3D9::upload_fills(const std::vector<Fill> &fills,
+                                    const std::shared_ptr<CommandEncoder> &encoder) const {
     auto byte_size = sizeof(Fill) * fills.size();
 
     auto fill_vertex_buffer_id = allocator->allocate_buffer(byte_size, BufferType::Vertex, "fill vertex buffer");
@@ -379,7 +380,7 @@ uint64_t RendererD3D9::upload_fills(const std::vector<Fill> &fills, const std::s
 }
 
 uint64_t RendererD3D9::upload_z_buffer(const DenseTileMap<uint32_t> &z_buffer_map,
-                                       const std::shared_ptr<CommandEncoder> &encoder) {
+                                       const std::shared_ptr<CommandEncoder> &encoder) const {
     // Prepare the Z buffer texture.
     // Its size is always the same as the dst framebuffer size.
     // Its size should depend on the batch's dst framebuffer, but it's easier to cache it this way.
@@ -393,7 +394,7 @@ uint64_t RendererD3D9::upload_z_buffer(const DenseTileMap<uint32_t> &z_buffer_ma
 }
 
 uint64_t RendererD3D9::upload_tiles(const std::vector<TileObjectPrimitive> &tiles,
-                                    const std::shared_ptr<CommandEncoder> &encoder) {
+                                    const std::shared_ptr<CommandEncoder> &encoder) const {
     auto byte_size = sizeof(TileObjectPrimitive) * tiles.size();
 
     auto tile_vertex_buffer_id = allocator->allocate_buffer(byte_size, BufferType::Vertex, "tile vertex buffer");
@@ -446,7 +447,7 @@ void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &t
 
 void RendererD3D9::draw_fills(uint64_t fill_vertex_buffer_id,
                               uint32_t fills_count,
-                              const std::shared_ptr<CommandEncoder> &encoder) {
+                              const std::shared_ptr<CommandEncoder> &encoder) const {
     FillUniformD3d9 fill_uniform;
     fill_uniform.tile_size = {TILE_WIDTH, TILE_HEIGHT};
     fill_uniform.framebuffer_size = {MASK_FRAMEBUFFER_WIDTH,
@@ -472,7 +473,7 @@ void RendererD3D9::draw_fills(uint64_t fill_vertex_buffer_id,
 
 // Uploads clip tiles from CPU to GPU.
 ClipBufferInfo RendererD3D9::upload_clip_tiles(const std::vector<Clip> &clips,
-                                               const std::shared_ptr<CommandEncoder> &encoder) {
+                                               const std::shared_ptr<CommandEncoder> &encoder) const {
     uint32_t clip_count = clips.size();
 
     auto byte_size = sizeof(Clip) * clip_count;
@@ -548,8 +549,8 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std:
 
 void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
                               uint32_t tiles_count,
-                              const std::shared_ptr<RenderTargetId> &render_target_id,
-                              const std::shared_ptr<TileBatchTextureInfo> &color_texture_info,
+                              const std::shared_ptr<const RenderTargetId> &render_target_id,
+                              const std::shared_ptr<const TileBatchTextureInfo> &color_texture_info,
                               uint64_t z_buffer_texture_id,
                               const std::shared_ptr<CommandEncoder> &encoder) {
     std::shared_ptr<Texture> target_texture;

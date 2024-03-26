@@ -11,16 +11,16 @@ namespace Pathfinder {
 
 struct PreparedClipPath {
     BuiltPath built_path;
-    shared_ptr<GlobalPathId> subclip_id;
+    std::shared_ptr<GlobalPathId> subclip_id;
 };
 
 // Forward declaration.
-shared_ptr<GlobalPathId> add_clip_path_to_batch(Scene &scene,
-                                                const shared_ptr<uint32_t> &clip_path_id,
-                                                uint32_t clip_level,
-                                                const Transform2 &transform,
-                                                LastSceneInfo &last_scene,
-                                                ClipBatchesD3D11 &clip_batches_d3d11);
+std::shared_ptr<GlobalPathId> add_clip_path_to_batch(Scene &scene,
+                                                     const std::shared_ptr<uint32_t> &clip_path_id,
+                                                     uint32_t clip_level,
+                                                     const Transform2 &transform,
+                                                     LastSceneInfo &last_scene,
+                                                     ClipBatchesD3D11 &clip_batches_d3d11);
 
 std::shared_ptr<BuiltDrawPath> prepare_draw_path_for_gpu_binning(Scene &scene,
                                                                  uint32_t draw_path_id,
@@ -82,12 +82,12 @@ PreparedClipPath prepare_clip_path_for_gpu_binning(Scene &scene,
     return PreparedClipPath{built_path, subclip_id};
 }
 
-shared_ptr<GlobalPathId> add_clip_path_to_batch(Scene &scene,
-                                                const shared_ptr<uint32_t> &clip_path_id,
-                                                uint32_t clip_level,
-                                                const Transform2 &transform,
-                                                LastSceneInfo &last_scene,
-                                                ClipBatchesD3D11 &clip_batches_d3d11) {
+std::shared_ptr<GlobalPathId> add_clip_path_to_batch(Scene &scene,
+                                                     const std::shared_ptr<uint32_t> &clip_path_id,
+                                                     uint32_t clip_level,
+                                                     const Transform2 &transform,
+                                                     LastSceneInfo &last_scene,
+                                                     ClipBatchesD3D11 &clip_batches_d3d11) {
     if (clip_path_id) {
         auto &map = clip_batches_d3d11.clip_id_to_path_batch_index;
 
@@ -132,11 +132,11 @@ std::vector<DrawTileBatchD3D11> build_tile_batches_for_draw_path_display_item(
     const std::vector<PaintMetadata> &paint_metadata,
     LastSceneInfo &last_scene,
     uint32_t &next_batch_id,
-    const shared_ptr<ClipBatchesD3D11> &clip_batches_d3d11) {
+    const std::shared_ptr<ClipBatchesD3D11> &clip_batches_d3d11) {
     std::vector<DrawTileBatchD3D11> flushed_draw_tile_batches;
 
     // New draw tile batch.
-    shared_ptr<DrawTileBatchD3D11> draw_tile_batch;
+    std::shared_ptr<DrawTileBatchD3D11> draw_tile_batch;
 
     for (auto draw_path_id = draw_path_id_range.start; draw_path_id < draw_path_id_range.end; draw_path_id++) {
         // FIXME: This is a temporary value for test.
@@ -174,7 +174,7 @@ std::vector<DrawTileBatchD3D11> build_tile_batches_for_draw_path_display_item(
         }
 
         // Add clip path if necessary.
-        shared_ptr<GlobalPathId> clip_path;
+        std::shared_ptr<GlobalPathId> clip_path;
         if (clip_batches_d3d11) {
             clip_path =
                 add_clip_path_to_batch(scene, draw_path->clip_path_id, 0, transform, last_scene, *clip_batches_d3d11);

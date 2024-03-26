@@ -147,7 +147,7 @@ private:
                                             uint64_t first_tile_map_buffer_id,
                                             uint64_t alpha_tiles_buffer_id,
                                             PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids,
-                                            const shared_ptr<ClipBufferIDs> &clip_buffer_ids);
+                                            const std::shared_ptr<const ClipBufferIDs> &clip_buffer_ids);
 
     void draw_fills(FillBufferInfoD3D11 &fill_storage_info,
                     uint64_t tiles_d3d11_buffer_id,
@@ -161,8 +161,8 @@ private:
 
     void draw_tiles(uint64_t tiles_d3d11_buffer_id,
                     uint64_t first_tile_map_buffer_id,
-                    const std::shared_ptr<RenderTargetId> &render_target_id,
-                    const std::shared_ptr<TileBatchTextureInfo> &color_texture_info);
+                    const std::shared_ptr<const RenderTargetId> &render_target_id,
+                    const std::shared_ptr<const TileBatchTextureInfo> &color_texture_info);
 
     void upload_initial_backdrops(uint64_t backdrops_buffer_id, std::vector<BackdropInfoD3D11> &backdrops);
 

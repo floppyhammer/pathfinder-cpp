@@ -12,8 +12,6 @@
 #include "dense_tile_map.h"
 #include "path.h"
 
-using std::shared_ptr;
-
 namespace Pathfinder {
 
 struct BuiltPathData {
@@ -21,7 +19,7 @@ struct BuiltPathData {
     /// for tile columns above the viewport.
     std::vector<int32_t> backdrops;
     DenseTileMap<TileObjectPrimitive> tiles;
-    shared_ptr<DenseTileMap<Clip>> clip_tiles;
+    std::shared_ptr<DenseTileMap<Clip>> clip_tiles;
 };
 
 struct BuiltPath {
@@ -45,7 +43,7 @@ struct BuiltPath {
 /// This stores a built path with extra info related to its drawing.
 struct BuiltDrawPath {
     BuiltPath path;
-    shared_ptr<uint32_t> clip_path_id;
+    std::shared_ptr<uint32_t> clip_path_id;
     BlendMode blend_mode;
     //    Filter filter;
     std::shared_ptr<TileBatchTextureInfo> color_texture_info; // Will be used in tile batch building.

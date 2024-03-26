@@ -4,8 +4,6 @@
 #include "d3d9/scene_builder.h"
 #include "renderer.h"
 
-using std::vector;
-
 namespace Pathfinder {
 
 SceneEpoch::SceneEpoch(uint64_t _hi, uint64_t _lo) {
@@ -88,7 +86,7 @@ void Scene::append_scene(const Scene &scene, const Transform2 &transform) {
     auto merged_palette_info = palette.append_palette(scene.palette, transform);
 
     // Merge clip paths.
-    vector<size_t> clip_path_mapping;
+    std::vector<size_t> clip_path_mapping;
     clip_path_mapping.reserve(scene.clip_paths.size());
     for (auto &clip_path : scene.clip_paths) {
         clip_path_mapping.push_back(clip_paths.size());
@@ -100,7 +98,7 @@ void Scene::append_scene(const Scene &scene, const Transform2 &transform) {
     }
 
     // Merge draw paths.
-    vector<size_t> draw_path_mapping;
+    std::vector<size_t> draw_path_mapping;
     draw_path_mapping.reserve(scene.draw_paths.size());
     for (auto &draw_path : scene.draw_paths) {
         draw_path_mapping.push_back(draw_paths.size());
@@ -181,7 +179,7 @@ void Scene::set_view_box(const RectF &new_view_box) {
     epoch.next();
 }
 
-RectF Scene::get_bounds() {
+RectF Scene::get_bounds() const {
     return bounds;
 }
 

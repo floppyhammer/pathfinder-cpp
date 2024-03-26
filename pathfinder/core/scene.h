@@ -122,7 +122,7 @@ public:
     /// Changes the view box.
     void set_view_box(const RectF &new_view_box);
 
-    RectF get_bounds();
+    RectF get_bounds() const;
 
     void set_bounds(const RectF &new_bounds);
 

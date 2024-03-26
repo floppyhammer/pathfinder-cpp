@@ -32,7 +32,7 @@ struct ShadowBlurRenderTargetInfo {
  * @param outline_bounds Original path bounds.
  */
 ShadowBlurRenderTargetInfo push_shadow_blur_render_targets(Scene &scene,
-                                                           BrushState &current_state,
+                                                           const BrushState &current_state,
                                                            RectF outline_bounds) {
     ShadowBlurRenderTargetInfo shadow_blur_info;
 
@@ -45,8 +45,8 @@ ShadowBlurRenderTargetInfo push_shadow_blur_render_targets(Scene &scene,
     // Bounds expansion caused by blurring.
     auto bounds = outline_bounds.dilate(sigma * 3.f).round_out().to_i32();
 
-    shadow_blur_info.id_y = scene.push_render_target(RenderTargetDesc{bounds.size(), "Shadow Blur X"});
-    shadow_blur_info.id_x = scene.push_render_target(RenderTargetDesc{bounds.size(), "Shadow Blur Y"});
+    shadow_blur_info.id_y = scene.push_render_target(RenderTargetDesc{bounds.size(), "shadow blur x"});
+    shadow_blur_info.id_x = scene.push_render_target(RenderTargetDesc{bounds.size(), "shadow blur y"});
 
     shadow_blur_info.sigma = sigma;
     shadow_blur_info.bounds = bounds;

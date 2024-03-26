@@ -328,8 +328,8 @@ void RendererD3D11::prepare_and_draw_tiles(DrawTileBatchD3D11 &batch) {
 
 void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
                                uint64_t first_tile_map_buffer_id,
-                               const std::shared_ptr<RenderTargetId> &render_target_id,
-                               const std::shared_ptr<TileBatchTextureInfo> &color_texture_info) {
+                               const std::shared_ptr<const RenderTargetId> &render_target_id,
+                               const std::shared_ptr<const TileBatchTextureInfo> &color_texture_info) {
     // The framebuffer mentioned here is different from the target viewport.
     // This doesn't change as long as the destination texture's size doesn't change.
     auto framebuffer_tile_size0 = framebuffer_tile_size();
@@ -489,7 +489,7 @@ void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
         allocator->allocate_buffer(batch.tile_count * sizeof(TileD3D11), BufferType::Storage, "tiles d3d11 buffer");
 
     // Fetch and/or allocate clip storage as needed.
-    shared_ptr<ClipBufferIDs> clip_buffer_ids;
+    std::shared_ptr<ClipBufferIDs> clip_buffer_ids;
     if (batch.clipped_path_info) {
         auto clip_batch_id = batch.clipped_path_info->clip_batch_id;
 
@@ -833,7 +833,7 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
                                                        uint64_t first_tile_map_buffer_id,
                                                        uint64_t alpha_tiles_buffer_id,
                                                        PropagateMetadataBufferIDsD3D11 &propagate_metadata_buffer_ids,
-                                                       const shared_ptr<ClipBufferIDs> &clip_buffer_ids) {
+                                                       const std::shared_ptr<const ClipBufferIDs> &clip_buffer_ids) {
     auto tiles_d3d11_buffer = allocator->get_buffer(tiles_d3d11_buffer_id);
     auto propagate_metadata_buffer = allocator->get_buffer(propagate_metadata_buffer_ids.propagate_metadata);
     auto backdrops_buffer = allocator->get_buffer(propagate_metadata_buffer_ids.backdrops);

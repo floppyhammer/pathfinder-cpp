@@ -91,32 +91,33 @@ private:
     void upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &tile_batches);
 
     /// Upload fills data to GPU.
-    uint64_t upload_fills(const std::vector<Fill> &fills, const std::shared_ptr<CommandEncoder> &encoder);
+    uint64_t upload_fills(const std::vector<Fill> &fills, const std::shared_ptr<CommandEncoder> &encoder) const;
 
-    ClipBufferInfo upload_clip_tiles(const std::vector<Clip> &clips, const std::shared_ptr<CommandEncoder> &encoder);
+    ClipBufferInfo upload_clip_tiles(const std::vector<Clip> &clips,
+                                     const std::shared_ptr<CommandEncoder> &encoder) const;
 
     /// Apply clip paths.
     void clip_tiles(const ClipBufferInfo &clip_buffer_info, const std::shared_ptr<CommandEncoder> &encoder);
 
     uint64_t upload_z_buffer(const DenseTileMap<uint32_t> &z_buffer_map,
-                             const std::shared_ptr<CommandEncoder> &encoder);
+                             const std::shared_ptr<CommandEncoder> &encoder) const;
 
     /// Upload tiles data to GPU.
     uint64_t upload_tiles(const std::vector<TileObjectPrimitive> &tiles,
-                          const std::shared_ptr<CommandEncoder> &encoder);
+                          const std::shared_ptr<CommandEncoder> &encoder) const;
 
     /// Draw tiles.
     void draw_tiles(uint64_t tile_vertex_buffer_id,
                     uint32_t tile_count,
-                    const std::shared_ptr<RenderTargetId> &render_target_id,
-                    const std::shared_ptr<TileBatchTextureInfo> &color_texture_info,
+                    const std::shared_ptr<const RenderTargetId> &render_target_id,
+                    const std::shared_ptr<const TileBatchTextureInfo> &color_texture_info,
                     uint64_t z_buffer_texture_id,
                     const std::shared_ptr<CommandEncoder> &encoder);
 
     /// Draw the mask texture. Use Renderer::buffered_fills.
     void draw_fills(uint64_t fill_vertex_buffer_id,
                     uint32_t fills_count,
-                    const std::shared_ptr<CommandEncoder> &encoder);
+                    const std::shared_ptr<CommandEncoder> &encoder) const;
 };
 
 } // namespace Pathfinder

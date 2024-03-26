@@ -134,7 +134,7 @@ struct ClippedPathInfo {
     uint32_t max_clipped_tile_count;
 
     /// The actual clips, if calculated on CPU.
-    shared_ptr<std::vector<Clip>> clips;
+    std::shared_ptr<std::vector<Clip>> clips;
 };
 
 /// Information about a batch of tiles to be prepared (post-processed).
@@ -169,7 +169,7 @@ struct TileBatchDataD3D11 {
     PathSource path_source = PathSource::Draw;
 
     /// Information about clips applied to paths, if any of the paths have clips.
-    shared_ptr<ClippedPathInfo> clipped_path_info;
+    std::shared_ptr<ClippedPathInfo> clipped_path_info;
 };
 
 struct TileBatchTexture {
