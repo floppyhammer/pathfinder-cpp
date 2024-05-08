@@ -112,18 +112,15 @@ WindowBuilderVk::~WindowBuilderVk() {
 #endif
 }
 
-void WindowBuilderVk::preapre_destruction() {
-    // Stop and destroy swapchains.
-    {
-        for (auto &w : sub_windows_) {
-            if (!w.expired()) {
-                // We need to destroy a window explicitly in case its smart pointer is held elsewhere.
-                w.lock()->swapchain_->destroy();
-            }
+void WindowBuilderVk::stop_and_destroy_swapchains() {
+    for (auto &w : sub_windows_) {
+        if (!w.expired()) {
+            // We need to destroy a window explicitly in case its smart pointer is held elsewhere.
+            w.lock()->swapchain_->destroy();
         }
-
-        primary_window_->swapchain_->destroy();
     }
+
+    primary_window_->swapchain_->destroy();
 }
 
 #ifndef __ANDROID__

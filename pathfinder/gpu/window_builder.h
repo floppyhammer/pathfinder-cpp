@@ -18,7 +18,8 @@ public:
     virtual ~WindowBuilder() = default;
 
     /// Wait for the swapchains to finish the current frame, then destroy them.
-    virtual void preapre_destruction() {}
+    /// Call this right after the render loop is stopped.
+    virtual void stop_and_destroy_swapchains() {}
 
     /// Create a new sub-window.
     virtual std::shared_ptr<Window> create_window(const Vec2I &size, const std::string &title) = 0;

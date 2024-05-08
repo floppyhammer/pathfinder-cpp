@@ -81,7 +81,7 @@ int main() {
         swap_chain->present();
     }
 
-    window_builder->preapre_destruction();
+    window_builder->stop_and_destroy_swapchains();
 
     // Do this after swap chain cleanup.
     app.destroy();

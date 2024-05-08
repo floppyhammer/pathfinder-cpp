@@ -61,8 +61,7 @@ public:
 
     ~WindowBuilderVk() override;
 
-    // Call this right after the render loop is stopped.
-    void preapre_destruction() override;
+    void stop_and_destroy_swapchains() override;
 
     std::shared_ptr<Window> create_window(const Vec2I &size, const std::string &title) override;
 
