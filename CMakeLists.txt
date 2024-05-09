@@ -30,6 +30,8 @@ elseif (LINUX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1")
 endif ()
 
+add_subdirectory(pathfinder)
+
 if (PATHFINDER_VULKAN_SUPPORT)
     message("[Pathfinder] Will use Vulkan")
 
@@ -44,13 +46,13 @@ if (PATHFINDER_VULKAN_SUPPORT)
     find_package(Vulkan REQUIRED)
 
     # We need to include Vulkan headers manually because of the above reason.
-    include_directories(${Vulkan_INCLUDE_DIRS})
+    target_include_directories(pathfinder PUBLIC "${Vulkan_INCLUDE_DIRS}")
 else ()
     message("[Pathfinder] Will use OpenGL")
 endif ()
 
 # Include third_party headers.
-include_directories(third_party third_party/glad/include)
+target_include_directories(pathfinder PUBLIC "third_party" "third_party/glad/include")
 
 if ((WIN32 OR LINUX OR APPLE) AND NOT (EMSCRIPTEN OR ANDROID))
     include(FetchContent)
@@ -67,10 +69,8 @@ if ((WIN32 OR LINUX OR APPLE) AND NOT (EMSCRIPTEN OR ANDROID))
 
     # Include GLFW headers.
     # (Emscripten has its own version of GLFW.)
-    include_directories(${glfw_SOURCE_DIR}/include)
+    target_include_directories(pathfinder PUBLIC "${glfw_SOURCE_DIR}/include")
 endif ()
-
-add_subdirectory(pathfinder)
 
 # Add some macros.
 if (PATHFINDER_VULKAN_SUPPORT)

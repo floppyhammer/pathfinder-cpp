@@ -1,6 +1,3 @@
-# Include Pathfinder headers.
-include_directories(../../)
-
 # Build executable.
 add_executable(pathfinder_demo_native ${SOURCE_FILES} main.cpp)
 
