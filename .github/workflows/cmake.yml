@@ -23,7 +23,8 @@ jobs:
         submodules: recursive
 
     - name: Install GLFW dependency
-      run: sudo apt-get install -y libxinerama-dev
+      run: sudo apt install libxinerama-dev
+           sudo apt install libxcursor-dev
 
     - name: Prepare Vulkan SDK
       uses: humbletim/setup-vulkan-sdk@v1.2.0
