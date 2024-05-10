@@ -10,5 +10,4 @@ else ()
 endif ()
 
 # Compile as static library.
-add_library(pathfinder ${SOURCE_FILES}
-        ../third_party/glad/src/gl.c)
+add_library(pathfinder ${SOURCE_FILES} ../third_party/glad/src/gl.c)

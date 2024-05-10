@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16.1)
+cmake_minimum_required(VERSION 3.16)
 
 project(pathfinder)
 
@@ -19,7 +19,7 @@ endif ()
 
 # Should handle EMSCRIPTEN before other platforms.
 if (EMSCRIPTEN)
-    message("[Pathfinder] Will build for Web")
+    message("[Pathfinder] Build for Web")
 
     # No Vulkan support for web.
     set(PATHFINDER_VULKAN_SUPPORT OFF)
@@ -33,7 +33,7 @@ endif ()
 add_subdirectory(pathfinder)
 
 if (PATHFINDER_VULKAN_SUPPORT)
-    message("[Pathfinder] Will use Vulkan")
+    message("[Pathfinder] Use Vulkan")
 
     # In case Vulkan is found but Vulkan_LIBRARY is not.
     #    set(Vulkan_LIBRARY "C:/VulkanSDK/1.3.224.1/Lib/vulkan-1.lib")
@@ -48,7 +48,7 @@ if (PATHFINDER_VULKAN_SUPPORT)
     # We need to include Vulkan headers manually because of the above reason.
     target_include_directories(pathfinder PUBLIC "${Vulkan_INCLUDE_DIRS}")
 else ()
-    message("[Pathfinder] Will use OpenGL")
+    message("[Pathfinder] Use OpenGL")
 endif ()
 
 # Include third_party headers.
@@ -78,8 +78,25 @@ if (PATHFINDER_VULKAN_SUPPORT)
     target_compile_definitions(pathfinder PUBLIC PATHFINDER_USE_VULKAN)
 endif ()
 
+# Link libraries.
+if (WIN32)
+    target_link_libraries(pathfinder PUBLIC glfw)
+    if (PATHFINDER_VULKAN_SUPPORT)
+        target_link_libraries(pathfinder PUBLIC Vulkan::Vulkan)
+    endif ()
+elseif (LINUX)
+    target_link_libraries(pathfinder PUBLIC glfw)
+    if (PATHFINDER_VULKAN_SUPPORT)
+        target_link_libraries(pathfinder PUBLIC -lvulkan)
+    else ()
+        target_link_libraries(pathfinder PUBLIC -lGL)
+    endif ()
+elseif (APPLE)
+    target_link_libraries(pathfinder PUBLIC glfw Vulkan::Vulkan)
+endif ()
+
 if (PATHFINDER_BUILD_DEMO)
-    message("[Pathfinder] Will build demo")
+    message("[Pathfinder] Build demo")
 
     # target_compile_definitions only added PATHFINDER_USE_VULKAN to the Pathfinder library.
     # We need to define PATHFINDER_USE_VULKAN for the demo as well.
