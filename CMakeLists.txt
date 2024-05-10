@@ -62,7 +62,6 @@ if ((WIN32 OR LINUX OR APPLE) AND NOT (EMSCRIPTEN OR ANDROID))
         FetchContent_Populate(glfw)
     endif ()
 
-    add_subdirectory("${glfw_SOURCE_DIR}" glfw)
     target_include_directories(pathfinder PUBLIC "${glfw_SOURCE_DIR}/include")
     target_link_libraries(pathfinder PUBLIC glfw)
 endif ()
