@@ -35,18 +35,10 @@ add_subdirectory(pathfinder)
 if (PATHFINDER_VULKAN_SUPPORT)
     message("[Pathfinder] Use Vulkan")
 
-    # In case Vulkan is found but Vulkan_LIBRARY is not.
-    #    set(Vulkan_LIBRARY "C:/VulkanSDK/1.3.224.1/Lib/vulkan-1.lib")
-
-    # More generally, you are using find_package and then later you're using add_subdirectory
-    # to try to incorporate these external projects. That's not how it works. find_package will
-    # look for a pre-existing binary of the package, while add_subdirectory isn't designed to
-    # just swallow entire existing external CMake projects.
-    # Cf. https://stackoverflow.com/questions/56795645/how-can-i-add-vulkan-to-a-cross-platform-cmake-project
     find_package(Vulkan REQUIRED)
 
-    # We need to include Vulkan headers manually because of the above reason.
-#    target_include_directories(pathfinder PUBLIC "${Vulkan_INCLUDE_DIRS}")
+    # This is to please GitHub Actions.
+    target_include_directories(pathfinder PUBLIC "${Vulkan_INCLUDE_DIRS}")
 else ()
     message("[Pathfinder] Use OpenGL")
 endif ()
