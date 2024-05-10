@@ -22,6 +22,9 @@ jobs:
       with:
         submodules: recursive
 
+    - name: Install X11
+      run: sudo apt-get install xorg openbox
+
     - name: Prepare Vulkan SDK
       uses: humbletim/setup-vulkan-sdk@v1.2.0
       with:
