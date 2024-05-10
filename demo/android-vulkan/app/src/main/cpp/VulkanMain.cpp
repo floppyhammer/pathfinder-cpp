@@ -59,7 +59,7 @@ bool InitVulkan(android_app *app) {
                                    img_input);
 
     pf_blit = std::make_shared<Blit>(pf_device, pf_queue,
-                                     pf_swapchain->get_render_pass());
+                                     pf_swapchain->get_surface_format());
 
     {
         auto dst_texture = pf_device->create_texture(

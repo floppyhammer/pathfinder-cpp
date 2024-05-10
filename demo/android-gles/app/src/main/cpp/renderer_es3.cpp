@@ -34,7 +34,7 @@ void RendererES3::init(int width, int height) {
 
     pf_app->canvas_->set_dst_texture(dst_texture);
 
-    pf_blit = std::make_shared<Blit>(pf_device, pf_queue, nullptr);
+    pf_blit = std::make_shared<Blit>(pf_device, pf_queue, Pathfinder::TextureFormat::Rgba8Unorm);
     pf_blit->set_texture(dst_texture);
 }
 

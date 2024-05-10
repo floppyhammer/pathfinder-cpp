@@ -13,7 +13,7 @@ elseif (${ANDROID_PLATFORM_LEVEL} LESS 18)
     set(OPENGL_LIB GLESv2)
 else ()
     set(OPENGL_LIB GLESv3)
-endif (${ANDROID_PLATFORM_LEVEL} LESS 12)
+endif ()
 
 include_directories(../../../../../../)
 include_directories(../../../../../../third_party)

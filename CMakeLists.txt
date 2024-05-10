@@ -13,7 +13,7 @@ option(PATHFINDER_VULKAN_SUPPORT "Use Vulkan instead of OpenGL" OFF)
 option(PATHFINDER_BUILD_DEMO "Build demo" OFF)
 
 # Identify Linux.
-if (UNIX AND NOT APPLE)
+if (UNIX AND NOT APPLE AND NOT ANDROID)
     set(LINUX ON)
 endif ()
 
@@ -46,7 +46,7 @@ if (PATHFINDER_VULKAN_SUPPORT)
     find_package(Vulkan REQUIRED)
 
     # We need to include Vulkan headers manually because of the above reason.
-    target_include_directories(pathfinder PUBLIC "${Vulkan_INCLUDE_DIRS}")
+#    target_include_directories(pathfinder PUBLIC "${Vulkan_INCLUDE_DIRS}")
 else ()
     message("[Pathfinder] Use OpenGL")
 endif ()
