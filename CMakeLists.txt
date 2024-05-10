@@ -39,6 +39,11 @@ if (PATHFINDER_VULKAN_SUPPORT)
 
     find_package(Vulkan REQUIRED)
 
+    # Don't use add_compile_definitions, which doesn't propagate to parent projects.
+    target_compile_definitions(pathfinder PUBLIC PATHFINDER_USE_VULKAN)
+
+    target_link_libraries(pathfinder PUBLIC Vulkan::Vulkan)
+
     # This is to please GitHub Actions.
     target_include_directories(pathfinder PUBLIC "${Vulkan_INCLUDE_DIRS}")
 else ()
@@ -61,27 +66,6 @@ if ((WIN32 OR LINUX OR APPLE) AND NOT (EMSCRIPTEN OR ANDROID))
 
     target_include_directories(pathfinder PUBLIC "${glfw_SOURCE_DIR}/include")
     target_link_libraries(pathfinder PUBLIC glfw)
-endif ()
-
-# Add some macros.
-if (PATHFINDER_VULKAN_SUPPORT)
-    # Don't use add_compile_definitions, which doesn't propagate to parent projects.
-    target_compile_definitions(pathfinder PUBLIC PATHFINDER_USE_VULKAN)
-endif ()
-
-# Link libraries.
-if (WIN32)
-    if (PATHFINDER_VULKAN_SUPPORT)
-        target_link_libraries(pathfinder PUBLIC Vulkan::Vulkan)
-    endif ()
-elseif (LINUX)
-    if (PATHFINDER_VULKAN_SUPPORT)
-        target_link_libraries(pathfinder PUBLIC -lvulkan)
-    else ()
-        target_link_libraries(pathfinder PUBLIC -lGL)
-    endif ()
-elseif (APPLE)
-    target_link_libraries(pathfinder PUBLIC Vulkan::Vulkan)
 endif ()
 
 if (PATHFINDER_BUILD_DEMO)
