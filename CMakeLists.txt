@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(pathfinder)
-
-set(CMAKE_CXX_STANDARD 14)
+project(pathfinder
+        VERSION 0.1
+        LANGUAGES C CXX)
 
 # Set binary output directory.
 # (Using CMAKE_CURRENT_SOURCE_DIR is necessary.)
@@ -31,6 +31,8 @@ elseif (LINUX)
 endif ()
 
 add_subdirectory(pathfinder)
+
+target_compile_features(pathfinder PUBLIC cxx_std_14)
 
 if (PATHFINDER_VULKAN_SUPPORT)
     message("[Pathfinder] Use Vulkan")
