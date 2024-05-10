@@ -48,6 +48,7 @@ endif ()
 # Include third_party headers.
 target_include_directories(pathfinder PUBLIC "third_party" "third_party/glad/include")
 
+# We don't need GLFW on Android, and Emscripten has its own version of GLFW.
 if ((WIN32 OR LINUX OR APPLE) AND NOT (EMSCRIPTEN OR ANDROID))
     include(FetchContent)
     FetchContent_Declare(glfw
@@ -61,9 +62,9 @@ if ((WIN32 OR LINUX OR APPLE) AND NOT (EMSCRIPTEN OR ANDROID))
         FetchContent_Populate(glfw)
     endif ()
 
-    # Include GLFW headers.
-    # (Emscripten has its own version of GLFW.)
+    add_subdirectory("${glfw_SOURCE_DIR}" glfw)
     target_include_directories(pathfinder PUBLIC "${glfw_SOURCE_DIR}/include")
+    target_link_libraries(pathfinder PUBLIC glfw)
 endif ()
 
 # Add some macros.
@@ -74,19 +75,17 @@ endif ()
 
 # Link libraries.
 if (WIN32)
-    target_link_libraries(pathfinder PUBLIC glfw)
     if (PATHFINDER_VULKAN_SUPPORT)
         target_link_libraries(pathfinder PUBLIC Vulkan::Vulkan)
     endif ()
 elseif (LINUX)
-    target_link_libraries(pathfinder PUBLIC glfw)
     if (PATHFINDER_VULKAN_SUPPORT)
         target_link_libraries(pathfinder PUBLIC -lvulkan)
     else ()
         target_link_libraries(pathfinder PUBLIC -lGL)
     endif ()
 elseif (APPLE)
-    target_link_libraries(pathfinder PUBLIC glfw Vulkan::Vulkan)
+    target_link_libraries(pathfinder PUBLIC Vulkan::Vulkan)
 endif ()
 
 if (PATHFINDER_BUILD_DEMO)
