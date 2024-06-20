@@ -28,7 +28,9 @@ public:
 
     virtual std::shared_ptr<SwapChain> get_swap_chain(const std::shared_ptr<Device>& device) = 0;
 
-    Vec2I get_size() const;
+    Vec2I get_physical_size() const;
+
+    Vec2I get_logical_size() const;
 
     void hide();
 
@@ -49,11 +51,17 @@ public:
 
     std::shared_ptr<SwapChain> swapchain_;
 
+    float get_dpi_scaling_factor() const;
+
+    void set_dpi_scaling_factor(float scale);
+
 protected:
-    Vec2I size_;
+    Vec2I logical_size_;
     bool just_resized_ = false;
     bool minimized_ = false;
-    bool hiden_ = false;
+    bool hidden_ = false;
+
+    float dpi_scaling_factor_ = 1.0f;
 
 #ifndef __ANDROID__
     GLFWwindow* glfw_window_{};

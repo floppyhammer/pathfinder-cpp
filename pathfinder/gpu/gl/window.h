@@ -12,7 +12,7 @@ class WindowGl : public Window {
 
 public:
 #ifndef __ANDROID__
-    explicit WindowGl(const Vec2I &size, GLFWwindow *window_handle);
+    WindowGl(const Vec2I &size, GLFWwindow *window_handle);
 #else
     explicit WindowGl(const Vec2I &size);
 #endif

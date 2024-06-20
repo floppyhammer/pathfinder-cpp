@@ -16,13 +16,13 @@ TextureGl::TextureGl(const TextureDescriptor& desc) : Texture(desc) {
     glTexStorage2D(GL_TEXTURE_2D, 1, to_gl_texture_format(desc.format), desc.size.x, desc.size.y);
 #else
     // We can deduce the pixel data type by the texture format.
-    DataType type = texture_format_to_data_type(_desc.format);
+    DataType type = texture_format_to_data_type(desc.format);
 
     glTexImage2D(GL_TEXTURE_2D,
                  0,
-                 to_gl_texture_format(_desc.format),
-                 _desc.size.x,
-                 _desc.size.y,
+                 to_gl_texture_format(desc.format),
+                 desc.size.x,
+                 desc.size.y,
                  0,
                  GL_RGBA,
                  to_gl_data_type(type),

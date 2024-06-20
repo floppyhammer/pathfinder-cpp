@@ -23,8 +23,9 @@ public:
 
 private:
 #ifndef __ANDROID__
-    static GLFWwindow *glfw_window_init(const Vec2I &size,
+    static GLFWwindow *glfw_window_init(const Vec2I &logical_size,
                                         const std::string &title,
+                                        float &dpi_scaling_factor,
                                         GLFWwindow *shared_window = nullptr);
 #endif
 };

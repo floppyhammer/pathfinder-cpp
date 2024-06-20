@@ -48,7 +48,8 @@ WindowBuilderVk::WindowBuilderVk(const Vec2I &size) {
 
     setup_debug_messenger();
 
-    auto glfw_window = glfw_window_init(size, PRIMARY_WINDOW_TITLE);
+    float dpi_scaling_factor;
+    auto glfw_window = glfw_window_init(size, PRIMARY_WINDOW_TITLE, dpi_scaling_factor);
 
     VkSurfaceKHR surface{};
     VK_CHECK_RESULT(glfwCreateWindowSurface(instance_, glfw_window, nullptr, &surface))
@@ -56,6 +57,7 @@ WindowBuilderVk::WindowBuilderVk(const Vec2I &size) {
     initialize_after_surface_creation(surface);
 
     primary_window_ = std::make_shared<WindowVk>(size, glfw_window, surface, instance_);
+    primary_window_->set_dpi_scaling_factor(dpi_scaling_factor);
 }
 #else
 WindowBuilderVk::WindowBuilderVk(ANativeWindow *native_window, const Vec2I &window_size) {
@@ -124,7 +126,10 @@ void WindowBuilderVk::stop_and_destroy_swapchains() {
 }
 
 #ifndef __ANDROID__
-GLFWwindow *WindowBuilderVk::glfw_window_init(const Vec2I &size, const std::string &title, GLFWwindow *shared_window) {
+GLFWwindow *WindowBuilderVk::glfw_window_init(const Vec2I &logical_size,
+                                              const std::string &title,
+                                              float &dpi_scaling_factor,
+                                              GLFWwindow *shared_window) {
     #ifndef __EMSCRIPTEN__
     // Enable window resizing.
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
@@ -142,9 +147,17 @@ GLFWwindow *WindowBuilderVk::glfw_window_init(const Vec2I &size, const std::stri
     // Get DPI scale.
     float dpi_scale_x, dpi_scale_y;
     glfwGetMonitorContentScale(monitors[0], &dpi_scale_x, &dpi_scale_y);
+    assert(dpi_scale_x == dpi_scale_y);
+    dpi_scaling_factor = dpi_scale_x;
     #endif
 
-    auto glfw_window = glfwCreateWindow(size.x, size.y, title.c_str(), nullptr, shared_window);
+    #if defined(__linux__) || defined(_WIN32)
+    auto physical_size = (logical_size.to_f32() * dpi_scaling_factor).to_i32();
+    #else ifdef __APPLE__
+    auto physical_size = logical_size;
+    #endif
+
+    auto glfw_window = glfwCreateWindow(physical_size.x, physical_size.y, title.c_str(), nullptr, shared_window);
     if (glfw_window == nullptr) {
         throw std::runtime_error("Failed to create a GLFW window!");
     }
@@ -152,8 +165,8 @@ GLFWwindow *WindowBuilderVk::glfw_window_init(const Vec2I &size, const std::stri
     #ifndef __EMSCRIPTEN__
     // Center the window.
     glfwSetWindowPos(glfw_window,
-                     monitor_x + (video_mode->width - size.x) / 2,
-                     monitor_y + (video_mode->height - size.y) / 2);
+                     monitor_x + (video_mode->width - physical_size.x) / 2,
+                     monitor_y + (video_mode->height - physical_size.y) / 2);
 
     // Show the window.
     glfwShowWindow(glfw_window);
@@ -165,12 +178,14 @@ GLFWwindow *WindowBuilderVk::glfw_window_init(const Vec2I &size, const std::stri
 
 std::shared_ptr<Window> WindowBuilderVk::create_window(const Vec2I &size, const std::string &title) {
 #ifndef __ANDROID__
-    auto glfw_window = glfw_window_init(size, title);
+    float dpi_scaling_factor;
+    auto glfw_window = glfw_window_init(size, title, dpi_scaling_factor);
 
     VkSurfaceKHR surface{};
     VK_CHECK_RESULT(glfwCreateWindowSurface(instance_, glfw_window, nullptr, &surface))
 
     auto new_window = std::make_shared<WindowVk>(size, glfw_window, surface, instance_);
+    new_window->set_dpi_scaling_factor(dpi_scaling_factor);
 
     sub_windows_.push_back(new_window);
 
