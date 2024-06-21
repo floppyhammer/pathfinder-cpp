@@ -4,6 +4,8 @@
 #include "device.h"
 #include "queue.h"
 
+struct GLFWwindow;
+
 namespace Pathfinder {
 
 class Window;
@@ -19,7 +21,8 @@ public:
 
     /// Wait for the swapchains to finish the current frame, then destroy them.
     /// Call this right after the render loop is stopped.
-    virtual void stop_and_destroy_swapchains() {}
+    virtual void stop_and_destroy_swapchains() {
+    }
 
     /// Create a new sub-window.
     virtual std::shared_ptr<Window> create_window(const Vec2I &size, const std::string &title) = 0;
@@ -33,6 +36,13 @@ public:
     void poll_events();
 
 protected:
+#ifndef __ANDROID__
+    static GLFWwindow *glfw_window_init(const Vec2I &logical_size,
+                                        const std::string &title,
+                                        float &dpi_scaling_factor,
+                                        GLFWwindow *shared_window = nullptr);
+#endif
+
     std::shared_ptr<Window> primary_window_;
     std::vector<std::weak_ptr<Window>> sub_windows_;
 };

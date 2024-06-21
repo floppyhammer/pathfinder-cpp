@@ -20,14 +20,6 @@ public:
     std::shared_ptr<Device> request_device() override;
 
     std::shared_ptr<Queue> create_queue() override;
-
-private:
-#ifndef __ANDROID__
-    static GLFWwindow *glfw_window_init(const Vec2I &logical_size,
-                                        const std::string &title,
-                                        float &dpi_scaling_factor,
-                                        GLFWwindow *shared_window = nullptr);
-#endif
 };
 
 } // namespace Pathfinder

@@ -101,11 +101,6 @@ private:
 
 #ifdef __ANDROID__
     ANativeWindow *native_window_{};
-#else
-    static GLFWwindow *glfw_window_init(const Vec2I &logical_size,
-                                        const std::string &title,
-                                        float &dpi_scaling_factor,
-                                        GLFWwindow *shared_window = nullptr);
 #endif
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
