@@ -72,40 +72,54 @@ void Path2d::add_rect(const RectF &rect, float corner_radius) {
         return;
     }
 
+    add_rect_with_corners(rect, RectF(corner_radius, corner_radius, corner_radius, corner_radius));
+}
+
+void Path2d::add_rect_with_corners(const RectF &rect, const RectF &corner_radius) {
+    if (rect.size().x == 0 || rect.size().y == 0) {
+        return;
+    }
+
     // Corner radius can't be greater than the half of the shorter line of the rect.
-    corner_radius = std::min(corner_radius, std::min(rect.width(), rect.height()) * 0.5f);
+    float top_left = std::min(corner_radius.left, std::min(rect.width(), rect.height()) * 0.5f);
+    float top_right = std::min(corner_radius.top, std::min(rect.width(), rect.height()) * 0.5f);
+    float bottom_left = std::min(corner_radius.right, std::min(rect.width(), rect.height()) * 0.5f);
+    float bottom_right = std::min(corner_radius.bottom, std::min(rect.width(), rect.height()) * 0.5f);
 
     // See https://stackoverflow.com/questions/1734745/how-to-create-circle-with-b%C3%A9zier-curves.
-    float adjusted_radius = corner_radius * CIRCLE_RATIO;
+    float adjusted_top_left = top_left * CIRCLE_RATIO;
+    float adjusted_top_right = top_right * CIRCLE_RATIO;
+    float adjusted_bottom_left = bottom_left * CIRCLE_RATIO;
+    float adjusted_bottom_right = bottom_right * CIRCLE_RATIO;
 
-    move_to(rect.min_x(), rect.min_y() + corner_radius);
+    move_to(rect.min_x(), rect.min_y() + top_left);
     cubic_to(rect.min_x(),
-             rect.min_y() + corner_radius - adjusted_radius,
-             rect.min_x() + corner_radius - adjusted_radius,
+             rect.min_y() + top_left - adjusted_top_left,
+             rect.min_x() + top_left - adjusted_top_left,
              rect.min_y(),
-             rect.min_x() + corner_radius,
+             rect.min_x() + top_left,
              rect.min_y());
-    line_to(rect.max_x() - corner_radius, rect.min_y());
-    cubic_to(rect.max_x() - corner_radius + adjusted_radius,
+    line_to(rect.max_x() - top_right, rect.min_y());
+    cubic_to(rect.max_x() - top_right + adjusted_top_right,
              rect.min_y(),
              rect.max_x(),
-             rect.min_y() + corner_radius - adjusted_radius,
+             rect.min_y() + top_right - adjusted_top_right,
              rect.max_x(),
-             rect.min_y() + corner_radius);
-    line_to(rect.max_x(), rect.max_y() - corner_radius);
+             rect.min_y() + top_right);
+    line_to(rect.max_x(), rect.max_y() - bottom_left);
     cubic_to(rect.max_x(),
-             rect.max_y() - corner_radius + adjusted_radius,
-             rect.max_x() - corner_radius + adjusted_radius,
+             rect.max_y() - bottom_left + adjusted_bottom_left,
+             rect.max_x() - bottom_left + adjusted_bottom_left,
              rect.max_y(),
-             rect.max_x() - corner_radius,
+             rect.max_x() - bottom_left,
              rect.max_y());
-    line_to(rect.min_x() + corner_radius, rect.max_y());
-    cubic_to(rect.min_x() + corner_radius - adjusted_radius,
+    line_to(rect.min_x() + bottom_right, rect.max_y());
+    cubic_to(rect.min_x() + bottom_right - adjusted_bottom_right,
              rect.max_y(),
              rect.min_x(),
-             rect.max_y() - corner_radius + adjusted_radius,
+             rect.max_y() - bottom_right + adjusted_bottom_right,
              rect.min_x(),
-             rect.max_y() - corner_radius);
+             rect.max_y() - bottom_right);
     close_path();
 }
 

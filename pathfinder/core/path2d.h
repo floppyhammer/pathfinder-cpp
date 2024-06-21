@@ -28,6 +28,8 @@ public:
 
     void add_rect(const RectF &rect, float corner_radius = 0);
 
+    void add_rect_with_corners(const RectF &rect, const RectF &corner_radius);
+
     void add_circle(const Vec2F &center, float radius);
     // -----------------------------------------------
 
