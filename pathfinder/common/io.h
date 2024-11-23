@@ -25,6 +25,7 @@ inline std::vector<char> load_asset(AAssetManager *asset_manager, const std::str
     assert(asset_manager);
 
     AAsset *file = AAssetManager_open(asset_manager, filename.c_str(), AASSET_MODE_BUFFER);
+    assert(file);
 
     size_t file_length = AAsset_getLength(file);
 

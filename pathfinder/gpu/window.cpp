@@ -9,7 +9,7 @@
 namespace Pathfinder {
 
 #ifdef __ANDROID__
-Window::Window(const Vec2I& size) : size_(size) {
+Window::Window(const Vec2I& size) : logical_size_(size) {
 }
 #else
 Window::Window(const Vec2I& size, GLFWwindow* window_handle) : logical_size_(size), glfw_window_(window_handle) {

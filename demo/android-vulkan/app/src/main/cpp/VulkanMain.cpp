@@ -87,7 +87,7 @@ bool VulkanDrawFrame(void) {
         return false;
     }
 
-    auto current_window_size = pf_window->get_size();
+    auto current_window_size = pf_window->get_logical_size();
 
     if (current_window_size != pf_app->canvas_->get_dst_texture()->get_size() &&
         current_window_size.area() != 0) {
