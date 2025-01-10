@@ -24,15 +24,27 @@ enum class PaintCompositeOp {
 };
 
 struct TileBatchTextureInfo {
+    // Only for Image & RenderTarget.
     uint32_t page_id;
+
+    // Only for Texture.
+    std::weak_ptr<Texture> raw_texture;
+
     TextureSamplingFlags sampling_flags;
     PaintCompositeOp composite_op;
 
-    inline bool operator==(const TileBatchTextureInfo &rhs) const {
-        return page_id == rhs.page_id && sampling_flags == rhs.sampling_flags && composite_op == rhs.composite_op;
+    bool operator==(const TileBatchTextureInfo &rhs) const {
+        bool r = page_id == rhs.page_id && sampling_flags == rhs.sampling_flags && composite_op == rhs.composite_op;
+
+        if (!raw_texture.expired() || !rhs.raw_texture.expired()) {
+            if (!raw_texture.expired() && !rhs.raw_texture.expired()) {
+                r = r && raw_texture.lock().get() == rhs.raw_texture.lock().get();
+            }
+        }
+        return r;
     }
 
-    inline bool operator!=(const TileBatchTextureInfo &rhs) const {
+    bool operator!=(const TileBatchTextureInfo &rhs) const {
         return !(*this == rhs);
     }
 };
@@ -50,7 +62,7 @@ struct PaintContents {
     Pattern pattern;
 
     // For being used as key in ordered maps.
-    inline bool operator<(const PaintContents &rhs) const {
+    bool operator<(const PaintContents &rhs) const {
         if (type == rhs.type) {
             if (type == PaintContents::Type::Gradient) {
                 return gradient < rhs.gradient;
@@ -83,14 +95,14 @@ private:
 
 public:
     /// Creates a simple paint from a single base color.
-    inline static Paint from_color(const ColorU &color) {
+    static Paint from_color(const ColorU &color) {
         Paint paint;
         paint.base_color = color;
         return paint;
     }
 
     /// Creates a paint from a gradient.
-    inline static Paint from_gradient(const Gradient &gradient) {
+    static Paint from_gradient(const Gradient &gradient) {
         PaintContents contents;
         contents.type = PaintContents::Type::Gradient;
         contents.gradient = gradient;
@@ -106,7 +118,7 @@ public:
     }
 
     /// Creates a paint from a raster pattern.
-    inline static Paint from_pattern(const Pattern &pattern) {
+    static Paint from_pattern(const Pattern &pattern) {
         PaintContents contents;
         contents.type = PaintContents::Type::Pattern;
         contents.pattern = pattern;
@@ -135,7 +147,7 @@ public:
 
     /// In order to use Paint as Map keys.
     /// See https://stackoverflow.com/questions/1102392/how-can-i-use-stdmaps-with-user-defined-types-as-key.
-    inline bool operator<(const Paint &rhs) const {
+    bool operator<(const Paint &rhs) const {
         if (overlay && rhs.overlay) {
             return overlay->contents < rhs.overlay->contents;
         } else if (overlay && !rhs.overlay) {
@@ -186,6 +198,9 @@ struct PaintColorTextureMetadata {
     ///
     /// The border ensures clamp-to-edge yields the right result.
     Vec2I border;
+
+    /// Only for raw texture.
+    std::weak_ptr<Texture> raw_texture;
 };
 
 /// Built from paints.

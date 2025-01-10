@@ -32,7 +32,7 @@ bool CommandEncoderGl::finish() {
                 auto &args = cmd.args.begin_render_pass;
                 auto render_pass_gl = static_cast<RenderPassGl *>(args.render_pass);
                 auto framebuffer_gl = static_cast<FramebufferGl *>(args.framebuffer);
-                int aa = framebuffer_gl->get_gl_handle();
+
                 glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_gl->get_gl_handle());
 
                 if (render_pass_gl->get_attachment_load_op() == AttachmentLoadOp::Clear) {
@@ -224,13 +224,8 @@ bool CommandEncoderGl::finish() {
                         case DescriptorType::Image: {
                             auto texture_gl = static_cast<TextureGl *>(descriptor.texture.get());
 
-                            glBindImageTexture(binding_point,
-                                               texture_gl->get_texture_id(),
-                                               0,
-                                               GL_FALSE,
-                                               0,
-                                               GL_READ_WRITE,
-                                               GL_RGBA8);
+                            glBindImageTexture(
+                                binding_point, texture_gl->get_texture_id(), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA8);
                         } break;
 #endif
                         default:
@@ -310,7 +305,7 @@ bool CommandEncoderGl::finish() {
                                 (GLint)args.offset_y,
                                 (GLint)args.width,
                                 (GLint)args.height,
-                                GL_RGBA,
+                                to_gl_pixel_data_format(args.texture->get_format()),
                                 to_gl_data_type(texture_format_to_data_type(args.texture->get_format())),
                                 args.data);
                 glBindTexture(GL_TEXTURE_2D, 0); // Unbind.
@@ -326,11 +321,8 @@ bool CommandEncoderGl::finish() {
                 glGenFramebuffers(1, &temp_fbo);
                 glBindFramebuffer(GL_FRAMEBUFFER, temp_fbo);
 
-                glFramebufferTexture2D(GL_FRAMEBUFFER,
-                                       GL_COLOR_ATTACHMENT0,
-                                       GL_TEXTURE_2D,
-                                       texture_gl->get_texture_id(),
-                                       0);
+                glFramebufferTexture2D(
+                    GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_gl->get_texture_id(), 0);
 
                 glReadPixels(args.offset_x,
                              args.offset_y,

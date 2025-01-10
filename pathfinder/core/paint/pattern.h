@@ -11,6 +11,7 @@
 #include "../../common/math/basic.h"
 #include "../../common/math/transform2.h"
 #include "../../common/math/vec2.h"
+#include "../../gpu/texture.h"
 #include "effects.h"
 
 namespace Pathfinder {
@@ -21,6 +22,8 @@ struct RenderTargetId {
     uint32_t scene;
     /// The ID of the render target within this scene.
     uint32_t render_target;
+
+    std::shared_ptr<uint64_t> raw_texture_id;
 
     bool operator<(const RenderTargetId &rhs) const {
         return scene < rhs.scene && render_target < rhs.render_target;
@@ -46,7 +49,7 @@ public:
     }
 
     // For being used as key in ordered maps.
-    inline bool operator<(const Image &rhs) const {
+    bool operator<(const Image &rhs) const {
         bool res = size.x < rhs.size.x;
         res = res && size.y < rhs.size.y;
         res = res && pixels_hash < rhs.pixels_hash;
@@ -64,6 +67,8 @@ struct RenderTargetDesc {
     Vec2I size;
 
     std::string name;
+
+    bool is_raw_texture = false;
 };
 
 /// Where a raster image pattern comes from.
@@ -73,6 +78,8 @@ struct PatternSource {
         Image,
         /// GPU framebuffer.
         RenderTarget,
+        /// GPU texture.
+        Texture,
     } type = Type::Image;
 
     /// An image whose pixels are stored in CPU memory.
@@ -84,21 +91,25 @@ struct PatternSource {
     RenderTargetId render_target_id{};
     Vec2I size;
 
+    std::weak_ptr<Texture> texture;
+
     /// Returns true if this pattern is obviously opaque.
-    inline bool is_opaque() const {
+    bool is_opaque() const {
         // We assume all images and render targets are opaque for the sake of simplicity.
         return true;
     }
 
     // For being used as key in ordered maps.
-    inline bool operator<(const PatternSource &rhs) const {
+    bool operator<(const PatternSource &rhs) const {
         if (type == rhs.type) {
-            if (type == PatternSource::Type::RenderTarget) {
+            if (type == Type::Image) {
                 return *image < *rhs.image;
-            } else {
+            } else if (type == Type::RenderTarget) {
                 bool res = render_target_id < rhs.render_target_id;
                 res = res && size < rhs.size;
                 return res;
+            } else {
+                return texture.lock().get() < rhs.texture.lock().get();
             }
         } else {
             return type < rhs.type;
@@ -131,14 +142,14 @@ struct Pattern {
     std::shared_ptr<PatternFilter> filter;
     PatternFlags flags;
 
-    static inline Pattern from_source(const PatternSource &source) {
+    static Pattern from_source(const PatternSource &source) {
         return {source, Transform2()};
     }
 
     /// Creates a new pattern from the given image.
     ///
     /// The transform is initialized to the identity transform. There is no filter.
-    static inline Pattern from_image(const std::shared_ptr<Image> &image) {
+    static Pattern from_image(const std::shared_ptr<Image> &image) {
         PatternSource source;
         source.type = PatternSource::Type::Image;
         source.image = image;
@@ -149,29 +160,38 @@ struct Pattern {
     /// Creates a new pattern from the given render target with the given size.
     ///
     /// The transform is initialized to the identity transform. There is no filter.
-    static inline Pattern from_render_target(RenderTargetId id, Vec2I size) {
+    static Pattern from_render_target(RenderTargetId id, Vec2I size) {
         PatternSource source;
         source.type = PatternSource::Type::RenderTarget;
         source.render_target_id = id;
         source.size = size;
 
-        return Pattern::from_source(source);
+        return from_source(source);
+    }
+
+    static Pattern from_raw_texture(const std::shared_ptr<Texture> &texture) {
+        PatternSource source;
+        source.type = PatternSource::Type::Texture;
+        source.size = texture->get_size();
+        source.texture = texture;
+
+        return from_source(source);
     }
 
     /// Returns the affine transform applied to this pattern.
-    inline Transform2 get_transform() const {
+    Transform2 get_transform() const {
         return transform;
     }
 
     /// Applies the given transform to this pattern.
     ///
     /// The transform is applied after any existing transform.
-    inline void apply_transform(const Transform2 &_transform) {
+    void apply_transform(const Transform2 &_transform) {
         transform = _transform * transform;
     }
 
     /// Returns the underlying pixel size of this pattern, not taking transforms into account.
-    inline Vec2I get_size() const {
+    Vec2I get_size() const {
         switch (source.type) {
             case PatternSource::Type::Image:
                 return source.image->size;
@@ -181,7 +201,7 @@ struct Pattern {
     }
 
     /// Applies a filter to this pattern, replacing any previous filter if any.
-    inline void set_filter(const PatternFilter &_filter) {
+    void set_filter(const PatternFilter &_filter) {
         filter = std::make_shared<PatternFilter>(_filter);
     }
 
@@ -212,7 +232,7 @@ struct Pattern {
     void set_smoothing_enabled(bool enable);
 
     /// Returns true if this pattern is obviously fully opaque.
-    inline bool is_opaque() const {
+    bool is_opaque() const {
         return source.is_opaque();
     }
 };

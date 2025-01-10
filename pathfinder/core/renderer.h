@@ -32,7 +32,8 @@ void upload_texture_metadata(const std::shared_ptr<Texture> &metadata_texture,
 class PatternTexturePage {
 public:
     PatternTexturePage(uint64_t texture_id, bool must_preserve_contents)
-        : texture_id_(texture_id), must_preserve_contents_(must_preserve_contents) {}
+        : texture_id_(texture_id), must_preserve_contents_(must_preserve_contents) {
+    }
 
     uint64_t texture_id_;
     /// Should preserve framebuffer content.

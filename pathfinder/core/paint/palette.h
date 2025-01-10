@@ -12,6 +12,14 @@ const int32_t TEXTURE_METADATA_ENTRIES_PER_ROW = 128;
 const int32_t TEXTURE_METADATA_TEXTURE_WIDTH = TEXTURE_METADATA_ENTRIES_PER_ROW * 10;
 const int32_t TEXTURE_METADATA_TEXTURE_HEIGHT = 65536 / TEXTURE_METADATA_ENTRIES_PER_ROW;
 
+struct RawTexture {
+    uint64_t texture_id;
+
+    Vec2I size;
+
+    std::string name;
+};
+
 struct MergedPaletteInfo {
     std::map<RenderTargetId, RenderTargetId> render_target_mapping;
     std::map<uint16_t, uint16_t> paint_mapping;

@@ -9,9 +9,11 @@
 namespace Pathfinder {
 
 #ifndef __ANDROID__
-WindowGl::WindowGl(const Vec2I &size, GLFWwindow *window_handle) : Window(size, window_handle) {}
+WindowGl::WindowGl(const Vec2I &size, GLFWwindow *window_handle) : Window(size, window_handle) {
+}
 #else
-WindowGl::WindowGl(const Vec2I &size) : Window(size) {}
+WindowGl::WindowGl(const Vec2I &size) : Window(size) {
+}
 #endif
 
 std::shared_ptr<SwapChain> WindowGl::get_swap_chain(const std::shared_ptr<Device> &device) {

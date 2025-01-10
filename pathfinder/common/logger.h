@@ -58,6 +58,7 @@ public:
         Info,
         Warn,
         Error,
+        Silence,
     } level;
 
     static void set_level(Level _level) {

@@ -89,7 +89,7 @@ bool LineSegmentF::intersection_t(const LineSegmentF &other, float &output) cons
 }
 
 LineSegmentF LineSegmentF::offset(float distance) const {
-    if (vector().is_zero()) {
+    if (vector().is_all_zero()) {
         return *this;
     } else {
         return *this + vector().yx().normalize() * Vec2F(-distance, distance);

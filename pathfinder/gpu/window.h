@@ -55,6 +55,8 @@ public:
 
     void set_dpi_scaling_factor(float scale);
 
+    void set_window_title(const std::string& title) const;
+
 protected:
     Vec2I logical_size_;
     bool just_resized_ = false;

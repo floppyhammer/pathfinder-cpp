@@ -73,7 +73,7 @@ struct TexturePage {
     TexturePage(TexturePageAllocator _allocator, bool _is_new) : allocator(_allocator), is_new(_is_new) {}
 };
 
-enum AllocationMode {
+enum class AllocationMode {
     Atlas,
     OwnPage,
 };

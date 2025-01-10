@@ -451,6 +451,27 @@ void Canvas::draw_sub_render_target(const RenderTargetId &render_target_id,
     current_state.fill_paint = old_fill_paint;
 }
 
+void Canvas::draw_raw_texture(std::shared_ptr<Texture> texture, const RectF &dst_rect) {
+    auto src_rect = RectF({}, texture->get_size().to_f32());
+
+    auto dst_size = dst_rect.size();
+    auto scale = dst_size / src_rect.size();
+    auto offset = dst_rect.origin() - src_rect.origin() * scale;
+    auto transform = Transform2::from_scale(scale).translate(offset);
+
+    auto pattern = Pattern::from_raw_texture(texture);
+    pattern.apply_transform(current_state.transform * transform);
+
+    // Save the current fill paint.
+    auto old_fill_paint = current_state.fill_paint;
+
+    current_state.fill_paint = Paint::from_pattern(pattern);
+    fill_rect(dst_rect);
+
+    // Restore the previous fill paint.
+    current_state.fill_paint = old_fill_paint;
+}
+
 std::shared_ptr<Scene> Canvas::get_scene() const {
     return scene;
 }

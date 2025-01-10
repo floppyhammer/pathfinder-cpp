@@ -62,6 +62,8 @@ uint64_t GpuMemoryAllocator::allocate_buffer(size_t byte_size, BufferType type, 
 }
 
 uint64_t GpuMemoryAllocator::allocate_texture(Vec2I size, TextureFormat format, const std::string& tag) {
+    assert(!size.is_any_zero());
+
     auto descriptor = TextureDescriptor{size, format};
 
     auto byte_size = descriptor.byte_size();

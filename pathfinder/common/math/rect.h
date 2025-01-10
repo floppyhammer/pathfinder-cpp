@@ -52,6 +52,11 @@ struct Rect {
     }
 
     template <typename U>
+    Rect operator*(U v) const {
+        return {left * v, top * v, right * v, bottom * v};
+    }
+
+    template <typename U>
     void operator+=(const Vec2<U> &v) {
         left += v.x;
         top += v.y;

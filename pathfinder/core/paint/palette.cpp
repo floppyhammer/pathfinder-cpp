@@ -275,7 +275,7 @@ PaintLocationsInfo Palette::assign_paint_locations(const std::shared_ptr<PaintTe
                     location = render_target_metadata[index];
                 }
                 // Image
-                else {
+                else if (pattern.source.type == PatternSource::Type::Image) {
                     auto image = pattern.source.image;
 
                     // TODO(pcwalton): We should be able to use tile cleverness to
@@ -326,8 +326,16 @@ PaintLocationsInfo Palette::assign_paint_locations(const std::shared_ptr<PaintTe
                     paint_filter.pattern_filter = *pattern.filter;
                 }
 
+                // Texture
+                if (pattern.source.type == PatternSource::Type::Texture) {
+                    color_texture_metadata->raw_texture = pattern.source.texture;
+                    location.rect = RectI({}, pattern.source.texture.lock()->get_size());
+                    // No page info for raw textures.
+                } else {
+                    color_texture_metadata->page_scale = allocator.page_scale(location.page);
+                }
+
                 color_texture_metadata->location = location;
-                color_texture_metadata->page_scale = allocator.page_scale(location.page);
                 color_texture_metadata->sampling_flags = sampling_flags;
                 color_texture_metadata->filter = paint_filter;
                 color_texture_metadata->transform = Transform2::from_translation(border.to_f32());

@@ -148,6 +148,8 @@ public:
 
     void draw_sub_render_target(const RenderTargetId &render_target_id, const RectF &src_rect, const RectF &dst_rect);
 
+    void draw_raw_texture(std::shared_ptr<Texture> texture, const RectF &dst_rect);
+
     /// Set the inner scene's view box.
     void set_size(const Vec2I &size);
 
@@ -183,7 +185,6 @@ private:
      */
     void push_path(Outline &outline, PathOp path_op, FillRule fill_rule);
 
-private:
     /// Brush state management.
     BrushState current_state;
     std::vector<BrushState> saved_states;

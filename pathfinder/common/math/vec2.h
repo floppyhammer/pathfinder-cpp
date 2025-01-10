@@ -19,9 +19,9 @@ struct Vec2 {
 
     Vec2() = default;
 
-    explicit Vec2(T s) : x(s), y(s){};
+    explicit Vec2(T s) : x(s), y(s) {};
 
-    Vec2(T x, T y) : x(x), y(y){};
+    Vec2(T x, T y) : x(x), y(y) {};
 
     Vec2<int32_t> floor() const {
         return {(int32_t)std::floor(x), (int32_t)std::floor(y)};
@@ -73,8 +73,12 @@ struct Vec2 {
         return {std::sqrt(x), std::sqrt(y)};
     }
 
-    bool is_zero() const {
+    bool is_all_zero() const {
         return x == 0 && y == 0;
+    }
+
+    bool is_any_zero() const {
+        return x == 0 || y == 0;
     }
 
     T area() const {

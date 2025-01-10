@@ -62,10 +62,8 @@ RendererD3D9::RendererD3D9(const std::shared_ptr<Device> &_device, const std::sh
     quad_vertex_buffer_id = allocator->allocate_buffer(quad_vertex_data_size, BufferType::Vertex, "quad vertex buffer");
 
     auto encoder = device->create_command_encoder("upload quad vertex data");
-    encoder->write_buffer(allocator->get_buffer(quad_vertex_buffer_id),
-                          0,
-                          quad_vertex_data_size,
-                          QUAD_VERTEX_POSITIONS);
+    encoder->write_buffer(
+        allocator->get_buffer(quad_vertex_buffer_id), 0, quad_vertex_data_size, QUAD_VERTEX_POSITIONS);
 
     queue->submit_and_wait(encoder);
 }
@@ -183,11 +181,8 @@ void RendererD3D9::set_up_pipelines() {
                                 allocator->get_texture(dummy_texture_id),
                                 get_default_sampler()),
             // Unused binding.
-            Descriptor::sampled(6,
-                                ShaderStage::Fragment,
-                                "uGammaLUT",
-                                allocator->get_texture(dummy_texture_id),
-                                get_default_sampler()),
+            Descriptor::sampled(
+                6, ShaderStage::Fragment, "uGammaLUT", allocator->get_texture(dummy_texture_id), get_default_sampler()),
         });
 
         auto tile_vert_shader = device->create_shader_module(tile_vert_source, ShaderStage::Vertex, "tile vert");
@@ -497,11 +492,8 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std:
     auto clip_vertex_buffer = allocator->get_buffer(clip_buffer_info.clip_buffer_id);
 
     tile_clip_copy_descriptor_set->add_or_update({
-        Descriptor::sampled(1,
-                            ShaderStage::Fragment,
-                            "uSrc",
-                            allocator->get_texture(*mask_storage.texture_id),
-                            get_default_sampler()),
+        Descriptor::sampled(
+            1, ShaderStage::Fragment, "uSrc", allocator->get_texture(*mask_storage.texture_id), get_default_sampler()),
     });
 
     // Copy out tiles.
@@ -558,9 +550,8 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
     // If no specific RenderTarget is given, we render to the dst framebuffer.
     if (render_target_id == nullptr) {
         // Check if we should clear the dst framebuffer.
-        encoder->begin_render_pass(clear_dest_texture ? dest_render_pass_clear : dest_render_pass_load,
-                                   dest_texture,
-                                   ColorF());
+        encoder->begin_render_pass(
+            clear_dest_texture ? dest_render_pass_clear : dest_render_pass_load, dest_texture, ColorF());
 
         target_texture = dest_texture;
 
@@ -607,15 +598,20 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
         tile_uniform.z_buffer_size = z_buffer_texture->get_size().to_f32();
 
         if (color_texture_info) {
-            auto color_texture_page = pattern_texture_pages[color_texture_info->page_id];
-            if (color_texture_page) {
-                color_texture = allocator->get_texture(color_texture_page->texture_id_);
-                color_texture_sampler = get_or_create_sampler(color_texture_info->sampling_flags);
+            if (color_texture_info->raw_texture.expired()) {
+                auto color_texture_page = pattern_texture_pages[color_texture_info->page_id];
+                if (color_texture_page) {
+                    color_texture = allocator->get_texture(color_texture_page->texture_id_);
+                    color_texture_sampler = get_or_create_sampler(color_texture_info->sampling_flags);
 
-                if (color_texture == nullptr) {
-                    Logger::error("Failed to obtain color texture!", "RendererD3D9");
-                    return;
+                    if (color_texture == nullptr) {
+                        Logger::error("Failed to obtain color texture!", "RendererD3D9");
+                        return;
+                    }
                 }
+            } else {
+                color_texture = color_texture_info->raw_texture.lock();
+                color_texture_sampler = get_or_create_sampler(color_texture_info->sampling_flags);
             }
         }
 
@@ -628,11 +624,8 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
 
     // Update descriptor set.
     tile_descriptor_set->add_or_update({
-        Descriptor::sampled(0,
-                            ShaderStage::Vertex,
-                            "uTextureMetadata",
-                            allocator->get_texture(metadata_texture_id),
-                            default_sampler),
+        Descriptor::sampled(
+            0, ShaderStage::Vertex, "uTextureMetadata", allocator->get_texture(metadata_texture_id), default_sampler),
         Descriptor::sampled(1, ShaderStage::Vertex, "uZBuffer", z_buffer_texture, default_sampler),
         Descriptor::sampled(3, ShaderStage::Fragment, "uColorTexture0", color_texture, color_texture_sampler),
         Descriptor::sampled(4,

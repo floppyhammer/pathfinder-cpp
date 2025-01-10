@@ -19,6 +19,8 @@ enum class DataType {
 
 /// Texture format in GPU memory.
 enum class TextureFormat {
+    R8,
+    Rg8,
     Rgba8Unorm,
     Bgra8Unorm,
     Rgba8Srgb,
@@ -169,6 +171,8 @@ inline uint32_t get_pixel_size(TextureFormat format) {
 
 inline DataType texture_format_to_data_type(TextureFormat format) {
     switch (format) {
+        case TextureFormat::R8:
+        case TextureFormat::Rg8:
         case TextureFormat::Rgba8Unorm:
         case TextureFormat::Bgra8Unorm:
         case TextureFormat::Rgba8Srgb:

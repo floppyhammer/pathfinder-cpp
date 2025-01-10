@@ -66,6 +66,7 @@ std::shared_ptr<TileBatchTextureInfo> PaintMetadata::tile_batch_texture_info() c
         info->page_id = color_texture_metadata->location.page;
         info->sampling_flags = color_texture_metadata->sampling_flags;
         info->composite_op = color_texture_metadata->composite_op;
+        info->raw_texture = color_texture_metadata->raw_texture;
         return info;
     }
 

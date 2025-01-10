@@ -218,6 +218,8 @@ TextureLocation TextureAllocator::allocate(Vec2I requested_size, AllocationMode 
 }
 
 TextureLocation TextureAllocator::allocate_image(Vec2I requested_size) {
+    assert(!requested_size.is_any_zero());
+
     uint32_t page = get_first_free_page_id();
 
     auto rect = RectI(Vec2I(), requested_size);
