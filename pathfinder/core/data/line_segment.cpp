@@ -99,7 +99,7 @@ LineSegmentF LineSegmentF::offset(float distance) const {
 bool LineSegmentF::is_valid() const {
     if (std::isnan(value.get<0>()) || std::isnan(value.get<1>()) || std::isnan(value.get<2>()) ||
         std::isnan(value.get<3>())) {
-        Logger::error("NaN encountered!", "LineSegmentF");
+        Logger::error("NaN encountered!");
         return false;
     }
     return true;

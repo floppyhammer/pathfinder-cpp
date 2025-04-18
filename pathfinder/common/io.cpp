@@ -15,7 +15,7 @@ namespace Pathfinder {
 
 #ifndef __ANDROID__
 std::string load_file_as_string(const std::string &file_path) {
-    Timestamp timer;
+    auto timer = Timestamp("");
 
     std::string output;
     std::ifstream file;
@@ -47,7 +47,7 @@ std::string load_file_as_string(const std::string &file_path) {
 }
 
 std::vector<char> load_file_as_bytes(const std::string &file_path) {
-    Timestamp timer;
+    auto timer = Timestamp("");
 
     FILE *file = fopen(file_path.c_str(), "rb");
     if (!file) {
@@ -87,12 +87,12 @@ std::shared_ptr<ImageBuffer> ImageBuffer::from_memory(const std::vector<char> &b
                                                     STBI_rgb_alpha);
 
     if (channels != 4) {
-        Logger::info("Converted non-RGBA pixels to RGBA ones", "ImageBuffer");
+        Logger::info("Converted non-RGBA pixels to RGBA ones");
     }
 
     // Generate a texture using the previously loaded image data.
     if (!img_data) {
-        Logger::error("Failed to load image from memory!", "ImageBuffer");
+        Logger::error("Failed to load image from memory!");
         return nullptr;
     }
 
@@ -124,7 +124,7 @@ Vec2I ImageBuffer::get_size() const {
 
 unsigned char *ImageBuffer::get_data() const {
     if (data == nullptr) {
-        Logger::error("Try to get data from an invalid image buffer!", "ImageBuffer");
+        Logger::error("Try to get data from an invalid image buffer!");
     }
     return data;
 }

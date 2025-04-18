@@ -15,7 +15,7 @@ void Contour::push_segment(const Segment &segment, PushSegmentFlags _flags) {
     }
 
     if (!segment.is_valid()) {
-        Logger::error("Attempted to push an invalid segment!", "Contour");
+        Logger::error("Attempted to push an invalid segment!");
         return;
     }
 

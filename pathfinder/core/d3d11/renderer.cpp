@@ -363,7 +363,7 @@ void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
             color_texture_sampler = get_or_create_sampler(color_texture_info->sampling_flags);
 
             if (color_texture == nullptr) {
-                Logger::error("Failed to obtain color texture!", "RendererD3D11");
+                Logger::error("Failed to obtain color texture!");
                 return;
             }
         }
@@ -525,7 +525,7 @@ void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
         }
     }
     if (microlines_storage == nullptr) {
-        Logger::error("Ran out of space for microlines when dicing!", "RendererD3D11");
+        Logger::error("Ran out of space for microlines when dicing!");
     }
 
     // Initialize tiles, bin segments. We might have to do this twice if our first

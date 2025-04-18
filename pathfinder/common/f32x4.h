@@ -99,7 +99,7 @@ struct F32x4 {
         // which might be caused by using std::vector to hold Segments.
         // Check if the memory address is 16-byte aligned.
         if (((intptr_t)&v & 0xF) != 0) {
-            // Logger::error("__m128 memory is not 16-byte aligned!", "SIMD");
+            // Logger::error("__m128 memory is not 16-byte aligned!");
             auto aligned = v;
             return F32x4(_mm_shuffle_ps(aligned, aligned, 78));
         }

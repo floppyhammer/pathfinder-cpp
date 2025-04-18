@@ -115,7 +115,7 @@ Outline OutlineStrokeToFill::into_outline() const {
         }
     }
     if (!every_point_is_valid) {
-        Logger::error("Something went wrong during the stroke->fill conversion!", "OutlineStrokeToFill");
+        Logger::error("Something went wrong during the stroke->fill conversion!");
     }
 
     return output;

@@ -129,12 +129,12 @@ Canvas::Canvas(Vec2I size,
     : device(_device), render_level(_render_level) {
     // Create the renderer and scene builder.
     if (render_level == RenderLevel::D3d9) {
-        Logger::info("Created new canvas using D3d9 render level", "Canvas");
+        Logger::info("Created new canvas using D3d9 render level");
         renderer = std::make_shared<RendererD3D9>(device, _queue);
         scene_builder = std::make_shared<SceneBuilderD3D9>();
     } else {
 #ifdef PATHFINDER_ENABLE_D3D11
-        Logger::info("Created new canvas using D3d11 render level", "Canvas");
+        Logger::info("Created new canvas using D3d11 render level");
         renderer = std::make_shared<RendererD3D11>(device, _queue);
         scene_builder = std::make_shared<SceneBuilderD3D11>();
 #else
@@ -509,7 +509,7 @@ void Canvas::draw(bool clear_dst_texture) {
 
 void Canvas::set_scene(const std::shared_ptr<Scene> &new_scene) {
     if (!new_scene) {
-        Logger::warn("Attempted to set a NULL scene!", "Canvas");
+        Logger::warn("Attempted to set a NULL scene!");
     }
 
     scene = new_scene;

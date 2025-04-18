@@ -32,6 +32,8 @@ public:
 
     Vec2I get_logical_size() const;
 
+    Vec2I get_position() const;
+
     void hide();
 
     void show();
@@ -57,9 +59,13 @@ public:
 
     void set_window_title(const std::string& title) const;
 
+    uint8_t window_index{};
+
 protected:
     Vec2I logical_size_;
+
     bool just_resized_ = false;
+    bool fullscreen_ = false;
     bool minimized_ = false;
     bool hidden_ = false;
 

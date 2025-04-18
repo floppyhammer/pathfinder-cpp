@@ -10,8 +10,20 @@
 
 namespace Pathfinder {
 
-std::shared_ptr<Window> WindowBuilder::get_primary_window() const {
+std::weak_ptr<Window> WindowBuilder::get_window(uint8_t window_index) const {
+    if (window_index == 0) {
+        return primary_window_;
+    }
+
+    if (window_index <= sub_windows_.size()) {
+        return sub_windows_[window_index - 1];
+    }
+
     return primary_window_;
+}
+
+float WindowBuilder::get_dpi_scaling_factor(uint8_t window_index) const {
+    return get_window(window_index).lock()->get_dpi_scaling_factor();
 }
 
 void WindowBuilder::poll_events() {
@@ -20,9 +32,7 @@ void WindowBuilder::poll_events() {
         primary_window_->just_resized_ = false;
 
         for (auto w : sub_windows_) {
-            if (!w.expired()) {
-                w.lock()->just_resized_ = false;
-            }
+            w->just_resized_ = false;
         }
     }
 
@@ -31,10 +41,51 @@ void WindowBuilder::poll_events() {
 #endif
 }
 
+void WindowBuilder::set_fullscreen(bool fullscreen) {
+    if (primary_window_->fullscreen_ == fullscreen) {
+        return;
+    }
+
+    primary_window_->fullscreen_ = fullscreen;
+
+    if (fullscreen) {
+        reserved_window_logical_size_ = primary_window_->get_logical_size();
+        reserved_window_position_ = primary_window_->get_position();
+
+        const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+
+        auto physical_size = Vec2I(mode->width, mode->height);
+
+        glfwSetWindowMonitor(primary_window_->glfw_window_,
+                             glfwGetPrimaryMonitor(),
+                             0,
+                             0,
+                             physical_size.x,
+                             physical_size.y,
+                             GLFW_DONT_CARE);
+
+        auto logical_size = (physical_size.to_f32() / get_dpi_scaling_factor(0)).to_i32();
+        primary_window_->logical_size_ = logical_size;
+    } else {
+        auto physical_size = (reserved_window_logical_size_.to_f32() * get_dpi_scaling_factor(0)).to_i32();
+
+        glfwSetWindowMonitor(primary_window_->glfw_window_,
+                             NULL,
+                             reserved_window_position_.x,
+                             reserved_window_position_.y,
+                             physical_size.x,
+                             physical_size.y,
+                             GLFW_DONT_CARE);
+
+        primary_window_->logical_size_ = reserved_window_logical_size_;
+    }
+}
+
 #ifndef __ANDROID__
 GLFWwindow *WindowBuilder::glfw_window_init(const Vec2I &logical_size,
                                             const std::string &title,
                                             float &dpi_scaling_factor,
+                                            bool fullscreen,
                                             GLFWwindow *shared_window) {
     #ifndef __EMSCRIPTEN__
     // Enable window resizing.
@@ -63,7 +114,8 @@ GLFWwindow *WindowBuilder::glfw_window_init(const Vec2I &logical_size,
     auto physical_size = logical_size;
     #endif
 
-    auto glfw_window = glfwCreateWindow(physical_size.x, physical_size.y, title.c_str(), nullptr, shared_window);
+    auto glfw_window = glfwCreateWindow(
+        physical_size.x, physical_size.y, title.c_str(), fullscreen ? glfwGetPrimaryMonitor() : nullptr, shared_window);
     if (glfw_window == nullptr) {
         throw std::runtime_error("Failed to create GLFW window!");
     }

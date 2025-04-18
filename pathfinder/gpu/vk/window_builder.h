@@ -63,7 +63,7 @@ public:
 
     void stop_and_destroy_swapchains() override;
 
-    std::shared_ptr<Window> create_window(const Vec2I &size, const std::string &title) override;
+    uint8_t create_window(const Vec2I &size, const std::string &title) override;
 
     std::shared_ptr<Device> request_device() override;
 
@@ -108,11 +108,11 @@ private:
                                                          const VkDebugUtilsMessengerCallbackDataEXT *callback_data,
                                                          void *user_data) {
         if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
-            Logger::error(callback_data->pMessage, "Vulkan");
+            Logger::error(callback_data->pMessage);
         } else if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
-            Logger::warn(callback_data->pMessage, "Vulkan");
+            Logger::warn(callback_data->pMessage);
         } else {
-            Logger::info(callback_data->pMessage, "Vulkan");
+            Logger::info(callback_data->pMessage);
         }
 
         return VK_FALSE;

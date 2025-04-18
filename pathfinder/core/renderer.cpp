@@ -1,8 +1,7 @@
 #include "renderer.h"
 
-#include <umHalf.h>
-
 #include <array>
+#include <half.hpp>
 
 #include "../common/io.h"
 #include "../shaders/generated/area_lut_png.h"
@@ -79,7 +78,7 @@ RenderTarget Renderer::get_render_target(RenderTargetId render_target_id) {
 
     auto texture_page = pattern_texture_pages[texture_page_id];
     if (texture_page == nullptr) {
-        Logger::error("Texture page not allocated!", "Renderer");
+        Logger::error("Texture page not allocated!");
         return {nullptr};
     }
 
@@ -88,13 +87,13 @@ RenderTarget Renderer::get_render_target(RenderTargetId render_target_id) {
 
 void Renderer::upload_texel_data(std::vector<ColorU> &texels, TextureLocation location) {
     if (location.page >= pattern_texture_pages.size()) {
-        Logger::error("Texture page ID is invalid!", "Renderer");
+        Logger::error("Texture page ID is invalid!");
         return;
     }
 
     auto texture_page = pattern_texture_pages[location.page];
     if (texture_page == nullptr) {
-        Logger::error("Texture page not allocated!", "Renderer");
+        Logger::error("Texture page not allocated!");
         return;
     }
 
@@ -165,7 +164,7 @@ void Renderer::upload_texture_metadata(const std::vector<TextureMetadataEntry> &
     auto padded_texel_size =
         alignup_i32((int32_t)metadata.size(), TEXTURE_METADATA_ENTRIES_PER_ROW) * TEXTURE_METADATA_TEXTURE_WIDTH * 4;
 
-    std::vector<half> texels;
+    std::vector<half_float::half> texels;
     texels.reserve(padded_texel_size);
 
     for (const auto &entry : metadata) {
@@ -174,57 +173,57 @@ void Renderer::upload_texture_metadata(const std::vector<TextureMetadataEntry> &
         auto filter_params = compute_filter_params(entry.filter, entry.blend_mode, entry.color_combine_mode);
 
         // 40 f16 points, 10 RGBA pixels in total.
-        std::array<half, 40> slice = {
+        std::array<half_float::half, 40> slice = {
             // 0 pixel
-            entry.color_transform.m11(),
-            entry.color_transform.m21(),
-            entry.color_transform.m12(),
-            entry.color_transform.m22(),
+            half_float::half(entry.color_transform.m11()),
+            half_float::half(entry.color_transform.m21()),
+            half_float::half(entry.color_transform.m12()),
+            half_float::half(entry.color_transform.m22()),
             // 1 pixel
-            entry.color_transform.m13(),
-            entry.color_transform.m23(),
-            0.0f,
-            0.0f,
+            half_float::half(entry.color_transform.m13()),
+            half_float::half(entry.color_transform.m23()),
+            half_float::half(0.0f),
+            half_float::half(0.0f),
             // 2 pixel
-            base_color.r_,
-            base_color.g_,
-            base_color.b_,
-            base_color.a_,
+            half_float::half(base_color.r_),
+            half_float::half(base_color.g_),
+            half_float::half(base_color.b_),
+            half_float::half(base_color.a_),
             // 3 pixel
-            filter_params.p0.xy().x,
-            filter_params.p0.xy().y,
-            filter_params.p0.zw().x,
-            filter_params.p0.zw().y,
+            half_float::half(filter_params.p0.xy().x),
+            half_float::half(filter_params.p0.xy().y),
+            half_float::half(filter_params.p0.zw().x),
+            half_float::half(filter_params.p0.zw().y),
             // 4 pixel
-            filter_params.p1.xy().x,
-            filter_params.p1.xy().y,
-            filter_params.p1.zw().x,
-            filter_params.p1.zw().y,
+            half_float::half(filter_params.p1.xy().x),
+            half_float::half(filter_params.p1.xy().y),
+            half_float::half(filter_params.p1.zw().x),
+            half_float::half(filter_params.p1.zw().y),
             // 5 pixel
-            filter_params.p2.xy().x,
-            filter_params.p2.xy().y,
-            filter_params.p2.zw().x,
-            filter_params.p2.zw().y,
+            half_float::half(filter_params.p2.xy().x),
+            half_float::half(filter_params.p2.xy().y),
+            half_float::half(filter_params.p2.zw().x),
+            half_float::half(filter_params.p2.zw().y),
             // 6 pixel
-            filter_params.p3.xy().x,
-            filter_params.p3.xy().y,
-            filter_params.p3.zw().x,
-            filter_params.p3.zw().y,
+            half_float::half(filter_params.p3.xy().x),
+            half_float::half(filter_params.p3.xy().y),
+            half_float::half(filter_params.p3.zw().x),
+            half_float::half(filter_params.p3.zw().y),
             // 7 pixel
-            filter_params.p4.xy().x,
-            filter_params.p4.xy().y,
-            filter_params.p4.zw().x,
-            filter_params.p4.zw().y,
+            half_float::half(filter_params.p4.xy().x),
+            half_float::half(filter_params.p4.xy().y),
+            half_float::half(filter_params.p4.zw().x),
+            half_float::half(filter_params.p4.zw().y),
             // 8 pixel
-            (float)filter_params.ctrl,
-            0.0f,
-            0.0f,
-            0.0f,
+            half_float::half(filter_params.ctrl),
+            half_float::half(0.0f),
+            half_float::half(0.0f),
+            half_float::half(0.0f),
             // 9 pixel
-            0.0f,
-            0.0f,
-            0.0f,
-            0.0f,
+            half_float::half(0.0f),
+            half_float::half(0.0f),
+            half_float::half(0.0f),
+            half_float::half(0.0f),
         };
 
         texels.insert(texels.end(), slice.begin(), slice.end());
@@ -239,8 +238,8 @@ void Renderer::upload_texture_metadata(const std::vector<TextureMetadataEntry> &
     auto region_rect =
         RectI(0, 0, TEXTURE_METADATA_TEXTURE_WIDTH, texels.size() / (4 * TEXTURE_METADATA_TEXTURE_WIDTH));
 
-    // Don't use a vector as we need to delay the de-allocation until the image data is uploaded to GPU.
-    auto raw_texels = new half[texels.size()];
+    // Don't use a vector as we need to delay the deallocation until the image data is uploaded to GPU.
+    auto raw_texels = new half_float::half[texels.size()];
     std::copy(texels.begin(), texels.end(), raw_texels);
 
     // Callback to clean up staging resources.

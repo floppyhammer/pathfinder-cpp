@@ -39,8 +39,8 @@ inline unsigned long upper_power_of_two(unsigned long v) {
     return v;
 }
 
-inline float lerp(float a, float b, float t) {
-    return a + (b - a) * t;
+inline float lerp(float current, float target, float t) {
+    return current + (target - current) * t;
 }
 
 template <class T>
@@ -73,7 +73,7 @@ struct Range {
 
     Range() = default;
 
-    Range(unsigned long long start, unsigned long long end) : start(start), end(end){};
+    Range(unsigned long long start, unsigned long long end) : start(start), end(end) {};
 
     unsigned long long length() const {
         // Detect implicit conversion into zero of possible negative lengths.

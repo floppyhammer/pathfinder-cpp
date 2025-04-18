@@ -73,7 +73,7 @@ void ShaderModuleGl::check_compile_errors() const {
 
         std::ostringstream string_stream;
         string_stream << "SHADER_COMPILATION_ERROR of : " << label_ << "\n" << info_log;
-        Logger::error(string_stream.str(), "OpenGL");
+        Logger::error(string_stream.str());
     }
 }
 

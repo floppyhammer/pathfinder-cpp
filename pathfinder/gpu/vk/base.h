@@ -23,7 +23,7 @@
         if (res != VK_SUCCESS) {                                                                                 \
             std::ostringstream string_stream;                                                                    \
             string_stream << "Fatal : VkResult is \"" << res << "\" in " << __FILE__ << " at line " << __LINE__; \
-            Pathfinder::Logger::error(string_stream.str(), "Vulkan");                                            \
+            Pathfinder::Logger::error(string_stream.str());                                            \
             assert(res == VK_SUCCESS);                                                                           \
         }                                                                                                        \
     }

@@ -73,7 +73,7 @@ void BufferGl::upload_via_mapping(size_t data_size, size_t offset, const void *d
 void BufferGl::download_via_mapping(size_t data_size, size_t offset, void *data) {
     // We can only read from storage buffers.
     if (desc_.type != BufferType::Storage) {
-        Logger::error("Tried to read from a non-storage buffer!", "BufferGl");
+        Logger::error("Tried to read from a non-storage buffer!");
         return;
     }
 

@@ -9,7 +9,8 @@
 namespace Pathfinder {
 
 #ifdef __ANDROID__
-Window::Window(const Vec2I& size) : logical_size_(size) {}
+Window::Window(const Vec2I& size) : logical_size_(size) {
+}
 #else
 Window::Window(const Vec2I& size, GLFWwindow* window_handle) : logical_size_(size), glfw_window_(window_handle) {
     // Assign this to window user, so we can fetch it when window size changes.
@@ -26,6 +27,12 @@ Vec2I Window::get_logical_size() const {
     return logical_size_;
 }
 
+Vec2I Window::get_position() const {
+    int xpos, ypos;
+    glfwGetWindowPos(glfw_window_, &xpos, &ypos);
+    return {xpos, ypos};
+}
+
 bool Window::get_resize_flag() const {
     return just_resized_;
 }
@@ -40,10 +47,11 @@ void Window::framebuffer_resize_callback(GLFWwindow* glfw_window, int width, int
 
     if (window) {
         window->just_resized_ = true;
-        window->logical_size_ = (Vec2F(width, height) / window->dpi_scaling_factor_).to_i32();
+        window->logical_size_ = (Vec2F(width, height) / window->get_dpi_scaling_factor()).to_i32();
         window->minimized_ = window->logical_size_.area() == 0;
 
-        Logger::info("Window resized to " + window->logical_size_.to_string());
+        Logger::info("Window physical resized to " + Vec2I(width, height).to_string());
+        Logger::info("Window logical resized to " + window->logical_size_.to_string());
     } else {
         Logger::error("glfwGetWindowUserPointer is NULL!");
     }

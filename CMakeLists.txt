@@ -55,16 +55,8 @@ target_include_directories(pathfinder PUBLIC "third_party" "third_party/glad/inc
 
 # We don't need GLFW on Android, and Emscripten has its own version of GLFW.
 if ((WIN32 OR LINUX OR APPLE) AND NOT (EMSCRIPTEN OR ANDROID))
-    include(FetchContent)
-    FetchContent_Declare(glfw
-            GIT_REPOSITORY https://github.com/floppyhammer/glfw.git
-            GIT_TAG master
-    )
-
-    message("[Pathfinder] Fetching external git repositories")
-    FetchContent_MakeAvailable(glfw)
-
-    target_include_directories(pathfinder PUBLIC "${glfw_SOURCE_DIR}/include")
+    add_subdirectory("third_party/glfw")
+    target_include_directories(pathfinder PUBLIC "third_party/glfw/include")
     target_link_libraries(pathfinder PUBLIC glfw)
 endif ()
 

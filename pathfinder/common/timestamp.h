@@ -15,8 +15,10 @@ class Timestamp {
 
     bool enabled_ = true;
 
+    std::string logger_tag_;
+
 public:
-    Timestamp();
+    Timestamp(const std::string &logger_tag);
 
     void record(const std::string &label);
 

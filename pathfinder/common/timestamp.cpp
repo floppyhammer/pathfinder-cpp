@@ -10,7 +10,8 @@
 
 namespace Pathfinder {
 
-Timestamp::Timestamp() {
+Timestamp::Timestamp(const std::string &logger_tag) {
+    logger_tag_ = logger_tag;
     start_time = std::chrono::steady_clock::now();
 }
 
@@ -45,7 +46,7 @@ void Timestamp::print() const {
     for (int i = 0; i < records.size(); i++) {
         std::ostringstream string_stream;
         string_stream << i << " " << labels[i] << " " << records[i] << " ms";
-        Logger::info(string_stream.str(), "Timestamp");
+        Logger::info(string_stream.str(), logger_tag_);
     }
 }
 

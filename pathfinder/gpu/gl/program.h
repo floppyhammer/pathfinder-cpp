@@ -62,7 +62,7 @@ protected:
             string_stream << "PROGRAM_LINKING_ERROR:"
                           << "\n"
                           << info_log;
-            Logger::error(string_stream.str(), "OpenGL");
+            Logger::error(string_stream.str());
         }
     }
 };

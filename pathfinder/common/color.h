@@ -1,11 +1,14 @@
 #ifndef PATHFINDER_COLOR_H
 #define PATHFINDER_COLOR_H
 
+#include <algorithm>
 #include <cstdint>
 
 #include "color.h"
+#include "math/basic.h"
 
 namespace Pathfinder {
+
 /// Color(0~1, 0~1, 0~1, 0~1).
 struct ColorF {
     float r_ = 0;
@@ -42,6 +45,11 @@ struct ColorF {
     ColorF operator*(ColorF other) const {
         return {r_ * other.r_, g_ * other.g_, b_ * other.b_, a_ * other.a_};
     }
+
+    ColorF operator*(float alpha) const {
+        alpha = clamp(alpha, 0.0f, 1.0f);
+        return {r_ * alpha, g_ * alpha, b_ * alpha, a_ * alpha};
+    }
 };
 
 /// Color(0~255, 0~255, 0~255, 0~255).
@@ -65,6 +73,18 @@ struct ColorU {
 
     ColorF to_f32() const;
 
+    ColorU apply_alpha(float alpha) const {
+        alpha = clamp(alpha, 0.0f, 1.0f);
+        auto new_color = *this;
+        new_color.a_ *= alpha;
+        return ColorU(new_color);
+    }
+
+    ColorU apply_value(float value) const {
+        auto new_color = this->to_f32() * value;
+        return ColorU(new_color);
+    }
+
     /// Check for transparency.
     bool is_opaque() const;
 
@@ -82,6 +102,10 @@ struct ColorU {
 
     static ColorU blue() {
         return {0, 0, 255, 255};
+    }
+
+    static ColorU yellow() {
+        return {255, 255, 0, 255};
     }
 
     static ColorU white() {

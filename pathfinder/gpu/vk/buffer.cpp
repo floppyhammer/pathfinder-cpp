@@ -37,7 +37,7 @@ void BufferVk::upload_via_mapping(size_t data_size, size_t offset, const void* d
     auto res = vkMapMemory(vk_device_, vk_device_memory_, offset, data_size, 0, &mapped_data);
 
     if (res != VK_SUCCESS) {
-        Logger::error("Failed to map memory!", "BufferVk");
+        Logger::error("Failed to map memory!");
         return;
     }
 
@@ -54,7 +54,7 @@ void BufferVk::download_via_mapping(size_t data_size, size_t offset, void* data)
     auto res = vkMapMemory(vk_device_, vk_device_memory_, offset, data_size, 0, &mapped_data);
 
     if (res != VK_SUCCESS) {
-        Logger::error("Failed to map memory!", "BufferVk");
+        Logger::error("Failed to map memory!");
         return;
     }
 

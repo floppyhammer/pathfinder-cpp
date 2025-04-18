@@ -120,7 +120,7 @@ void CommandEncoder::begin_compute_pass() {
 
 void CommandEncoder::dispatch(uint32_t group_size_x, uint32_t group_size_y, uint32_t group_size_z) {
     if (group_size_x == 0 || group_size_y == 0 || group_size_z == 0) {
-        Logger::error("Compute group size cannot be zero!", "CommandEncoder");
+        Logger::error("Compute group size cannot be zero!");
         return;
     }
 
@@ -147,12 +147,12 @@ void CommandEncoder::write_buffer(const std::shared_ptr<Buffer> &buffer,
                                   uint32_t data_size,
                                   const void *data) {
     if (data_size == 0 || data == nullptr) {
-        Logger::error("Tried to write buffer with invalid data!", "CommandEncoder");
+        Logger::error("Tried to write buffer with invalid data!");
         return;
     }
 
     if (buffer == nullptr) {
-        Logger::error("Tried to write invalid buffer!", "CommandEncoder");
+        Logger::error("Tried to write invalid buffer!");
         return;
     }
 
@@ -203,7 +203,7 @@ void CommandEncoder::read_buffer(const std::shared_ptr<Buffer> &buffer,
             commands_.push_back(cmd);
         } break;
         default: {
-            Logger::error("Cannot read data from non-storage buffers!", "CommandEncoder");
+            Logger::error("Cannot read data from non-storage buffers!");
         } break;
     }
 }
@@ -216,7 +216,7 @@ void CommandEncoder::write_texture(const std::shared_ptr<Texture> &texture, Rect
 
     // Check if the region is a subset of the whole texture region.
     if (!effective_region.union_rect(whole_region).is_valid() || effective_region.area() == 0) {
-        Logger::error("Tried to write invalid region of a texture!", "CommandEncoder");
+        Logger::error("Tried to write invalid region of a texture!");
         return;
     }
 
@@ -242,7 +242,7 @@ void CommandEncoder::read_texture(const std::shared_ptr<Texture> &texture, RectI
 
     // Check if the region is a subset of the whole texture region.
     if (!effective_region.union_rect(whole_region).is_valid() || effective_region.area() == 0) {
-        Logger::error("Tried to write invalid region of a texture!", "CommandEncoder");
+        Logger::error("Tried to write invalid region of a texture!");
         return;
     }
 

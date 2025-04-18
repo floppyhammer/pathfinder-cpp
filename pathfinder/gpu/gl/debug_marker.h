@@ -65,7 +65,7 @@ inline void gl_check_error(const char *flag) {
     for (GLint error = glGetError(); error; error = glGetError()) {
         std::ostringstream string_stream;
         string_stream << "Error " << error << " after " << flag;
-        Logger::error(string_stream.str(), "OpenGL");
+        Logger::error(string_stream.str());
     }
 #endif
 }
@@ -77,7 +77,7 @@ inline void gl_print_string(const char *name, GLenum s) {
     std::ostringstream string_stream;
     string_stream << "GL " << name << " = " << v;
 
-    Logger::error(string_stream.str(), "OpenGL");
+    Logger::error(string_stream.str());
 #endif
 }
 

@@ -605,7 +605,7 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
                     color_texture_sampler = get_or_create_sampler(color_texture_info->sampling_flags);
 
                     if (color_texture == nullptr) {
-                        Logger::error("Failed to obtain color texture!", "RendererD3D9");
+                        Logger::error("Failed to obtain color texture!");
                         return;
                     }
                 }

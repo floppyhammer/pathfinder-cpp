@@ -1,6 +1,7 @@
 #ifndef PATHFINDER_MAT4_H
 #define PATHFINDER_MAT4_H
 
+#include "mat3.h"
 #include "vec3.h"
 
 namespace Pathfinder {
@@ -15,6 +16,20 @@ struct Mat4 {
         for (int i = 0; i < 4; i++) {
             v[i * 4 + i] = s;
         }
+    }
+
+    static Mat4 from_mat3(Mat3 mat3) {
+        auto mat = Mat4(1);
+
+        mat.v[0] = mat3.v[0];
+        mat.v[4] = mat3.v[3];
+        mat.v[1] = mat3.v[1];
+        mat.v[5] = mat3.v[4];
+
+        mat.v[12] = mat3.v[6];
+        mat.v[13] = mat3.v[7];
+
+        return mat;
     }
 
     static Mat4 from_scale(const Vec3F &scale) {
