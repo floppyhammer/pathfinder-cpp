@@ -3,14 +3,14 @@
 using namespace Pathfinder;
 
 /// Period to calculate average frame time, in seconds.
-const float FRAME_TIME_PERIOD = 5;
+constexpr float FRAME_TIME_PERIOD = 5;
 
 App::App(const std::shared_ptr<Device> &device,
          const std::shared_ptr<Queue> &queue,
          const Vec2I &canvas_size,
          const std::vector<char> &svg_input,
          const std::vector<char> &img_input) {
-    Logger::set_level(Logger::Level::Info);
+    Logger::set_default_level(Logger::Level::Info);
 
     device_ = device;
     queue_ = queue;
@@ -73,7 +73,7 @@ App::App(const std::shared_ptr<Device> &device,
         canvas_->stroke_path(path);
     }
 
-    // TEST: Render target pattern.
+    // TEST: Render a target pattern.
     if (true) {
         auto render_target_size = Vec2I(400, 300);
         auto render_target_desc = RenderTargetDesc{render_target_size, "sub render target"};
@@ -95,14 +95,14 @@ App::App(const std::shared_ptr<Device> &device,
 
     scene_0_ = canvas_->get_scene();
 
-    // TEST: Append SVG scene.
+    // TEST: Append an SVG scene.
     if (true) {
         auto svg_scene = SvgScene(std::string(svg_input.begin(), svg_input.end()), *canvas_);
 
-        // TEST: Replace scene.
+        // TEST: Replace with a scene.
         scene_1_ = svg_scene.get_scene();
 
-        // TEST: Append scene.
+        // TEST: Append a scene.
         //        canvas_->get_scene()->append_scene(*scene_1, Transform2::from_scale({1.0, 1.0}));
     }
 

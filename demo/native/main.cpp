@@ -8,7 +8,7 @@ const int32_t WINDOW_HEIGHT = 720;
 int main() {
     // Create the primary window.
     auto window_builder = Pathfinder::WindowBuilder::new_impl({WINDOW_WIDTH, WINDOW_HEIGHT});
-    auto window = window_builder->get_primary_window();
+    auto window = window_builder->get_window(0).lock();
 
     // Create device and queue.
     auto device = window_builder->request_device();

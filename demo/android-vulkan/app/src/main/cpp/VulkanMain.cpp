@@ -39,7 +39,7 @@ bool InitVulkan(android_app *app) {
 
     window_builder = new Pathfinder::WindowBuilderVk(app->window, window_size);
 
-    pf_window = window_builder->get_primary_window();
+    pf_window = window_builder->get_window(0).lock();
 
     // Create device and queue.
     pf_device = window_builder->request_device();
