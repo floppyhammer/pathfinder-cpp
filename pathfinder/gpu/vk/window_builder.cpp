@@ -82,11 +82,6 @@ WindowBuilderVk::WindowBuilderVk(ANativeWindow *native_window, const Vec2I &wind
 #endif
 
 WindowBuilderVk::~WindowBuilderVk() {
-#ifndef __ANDROID__
-    // Destroy windows.
-    WindowBuilderVk::stop_and_destroy_swapchains();
-#endif
-
     vkDestroyCommandPool(device_, command_pool_, nullptr);
 
     // Destroy the logical device.
