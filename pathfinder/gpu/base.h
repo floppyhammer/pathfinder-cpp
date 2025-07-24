@@ -161,6 +161,12 @@ inline uint32_t get_pixel_size(TextureFormat format) {
         case TextureFormat::Bgra8Srgb: {
             return 4;
         }
+        case TextureFormat::R8: {
+            return 1;
+        }
+        case TextureFormat::Rg8: {
+            return 2;
+        }
         case TextureFormat::Rgba16Float: {
             return 8;
         }

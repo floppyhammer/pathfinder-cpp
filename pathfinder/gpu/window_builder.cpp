@@ -110,12 +110,15 @@ GLFWwindow *WindowBuilder::glfw_window_init(const Vec2I &logical_size,
 
     #if defined(__linux__) || defined(_WIN32)
     auto physical_size = (logical_size.to_f32() * dpi_scaling_factor).to_i32();
-    #else ifdef __APPLE__
+    #elif defined(__APPLE__)
     auto physical_size = logical_size;
     #endif
 
-    auto glfw_window = glfwCreateWindow(
-        physical_size.x, physical_size.y, title.c_str(), fullscreen ? glfwGetPrimaryMonitor() : nullptr, shared_window);
+    auto glfw_window = glfwCreateWindow(physical_size.x,
+                                        physical_size.y,
+                                        title.c_str(),
+                                        fullscreen ? glfwGetPrimaryMonitor() : nullptr,
+                                        shared_window);
     if (glfw_window == nullptr) {
         throw std::runtime_error("Failed to create GLFW window!");
     }

@@ -37,6 +37,11 @@ std::shared_ptr<Texture> DeviceGl::create_texture(const TextureDescriptor &desc,
     return texture_gl;
 }
 
+std::shared_ptr<Texture> DeviceGl::wrap_texture(uint32_t external_gl_id, const TextureDescriptor &desc) {
+    auto texture_gl = std::shared_ptr<TextureGl>(new TextureGl(external_gl_id, desc));
+    return texture_gl;
+}
+
 std::shared_ptr<Sampler> DeviceGl::create_sampler(SamplerDescriptor descriptor) {
     return std::shared_ptr<Sampler>(new Sampler(descriptor));
 }

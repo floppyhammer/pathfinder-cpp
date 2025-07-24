@@ -3,6 +3,7 @@
 
 #include "common/global_macros.h"
 #include "common/io.h"
+#include "common/logger.h"
 #include "common/math/basic.h"
 #include "common/math/mat3.h"
 #include "common/math/mat4.h"

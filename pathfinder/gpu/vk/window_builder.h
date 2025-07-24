@@ -87,12 +87,7 @@ private:
     VkDebugUtilsMessengerEXT debug_messenger_{};
 
     // See https://developer.android.com/ndk/guides/graphics/validation-layer for enabling validation layer on Android.
-    static const bool enable_validation_layers_ =
-#if defined(PATHFINDER_DEBUG) && !defined(__ANDROID__)
-        true;
-#else
-        false;
-#endif
+    static const bool enable_validation_layers_ = false;
 
     VkQueue graphics_queue_{};
     VkQueue present_queue_{};

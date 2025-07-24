@@ -1,6 +1,7 @@
 #ifndef PATHFINDER_BASIC_MATH_H
 #define PATHFINDER_BASIC_MATH_H
 
+#include <cassert>
 #include <cstdint>
 
 #include "../logger.h"
@@ -39,13 +40,15 @@ inline unsigned long upper_power_of_two(unsigned long v) {
     return v;
 }
 
-inline float lerp(float current, float target, float t) {
-    return current + (target - current) * t;
-}
-
 template <class T>
 T clamp(T value, T min, T max) {
     return value < min ? min : (value > max ? max : value);
+}
+
+inline float lerp(float current, float target, float t) {
+    assert(t >= 0 && t <= 1);
+    t = clamp(t, 0.0f, 1.0f);
+    return current + (target - current) * t;
 }
 
 inline int alignup_i32(int32_t a, int32_t b) {

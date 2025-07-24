@@ -24,7 +24,7 @@ public:
 
     std::shared_ptr<Texture> create_texture(const TextureDescriptor &desc, const std::string &label) override;
 
-    std::shared_ptr<Texture> wrap_texture(const TextureDescriptor &desc, const std::string &label);
+    std::shared_ptr<Texture> wrap_texture(uint32_t external_gl_id, const TextureDescriptor &desc);
 
     std::shared_ptr<Sampler> create_sampler(SamplerDescriptor descriptor) override;
 

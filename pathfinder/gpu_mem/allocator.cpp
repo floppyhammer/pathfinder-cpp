@@ -221,18 +221,17 @@ void GpuMemoryAllocator::print_info() {
     size_t free_object_count = free_objects.size();
 
     Logger::info("Current status: ALLOCATED " + std::to_string(int(bytes_allocated / 1024.f)) + " KB | COMMITTED " +
-                     std::to_string(int(bytes_committed / 1024.f)) + " KB | Textures " + std::to_string(texture_count) +
-                     " | Buffers " + std::to_string(buffer_count) + " | Free objects " +
-                     std::to_string(free_object_count));
+                 std::to_string(int(bytes_committed / 1024.f)) + " KB | Textures " + std::to_string(texture_count) +
+                 " | Buffers " + std::to_string(buffer_count) + " | Free objects " + std::to_string(free_object_count));
 
     for (auto& allocation : textures_in_use) {
         Logger::info("Texture " + std::to_string(allocation.first) + ": " + allocation.second.tag + " - " +
-                         std::to_string(int(allocation.second.descriptor.byte_size() / 1024.f)) + " KB");
+                     std::to_string(int(allocation.second.descriptor.byte_size() / 1024.f)) + " KB");
     }
 
     for (auto& allocation : buffers_in_use) {
         Logger::info("Buffer " + std::to_string(allocation.first) + ": " + allocation.second.tag + " - " +
-                         std::to_string(int(allocation.second.descriptor.size / 1024.f)) + " KB");
+                     std::to_string(int(allocation.second.descriptor.size / 1024.f)) + " KB");
     }
 }
 

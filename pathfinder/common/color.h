@@ -88,6 +88,8 @@ struct ColorU {
     /// Check for transparency.
     bool is_opaque() const;
 
+    ColorU lerp(const ColorU& other, float t) const;
+
     bool operator<(const ColorU& rhs) const {
         return to_u32() < rhs.to_u32();
     }
@@ -120,6 +122,11 @@ struct ColorU {
         return {0, 0, 0, 0};
     }
 };
+
+inline std::ostream& operator<<(std::ostream& os, const ColorU& obj) {
+    os << "ColorU(" << (int)obj.r_ << "," << (int)obj.g_ << "," << (int)obj.b_ << "," << (int)obj.a_ << ")";
+    return os;
+}
 
 } // namespace Pathfinder
 

@@ -20,6 +20,10 @@ public:
 private:
     explicit TextureGl(const TextureDescriptor& desc);
 
+    TextureGl(uint32_t external_gl_id, const TextureDescriptor& desc);
+
+    bool wrapped = false;
+
     uint32_t gl_id_ = 0;
 };
 

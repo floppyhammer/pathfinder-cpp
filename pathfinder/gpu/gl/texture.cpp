@@ -36,7 +36,15 @@ TextureGl::TextureGl(const TextureDescriptor& desc) : Texture(desc) {
     DebugMarker::label_texture(gl_id_, label_);
 }
 
+TextureGl::TextureGl(uint32_t external_gl_id, const TextureDescriptor& desc) : Texture(desc) {
+    gl_id_ = external_gl_id;
+    wrapped = true;
+}
+
 TextureGl::~TextureGl() {
+    if (wrapped) {
+        return;
+    }
     glDeleteTextures(1, &gl_id_);
 }
 

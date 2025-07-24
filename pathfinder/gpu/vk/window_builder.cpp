@@ -277,8 +277,10 @@ SwapchainSupportDetails query_swapchain_support(VkPhysicalDevice _physical_devic
 
     if (present_mode_count != 0) {
         details.present_modes.resize(present_mode_count);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(
-            _physical_device, surface, &present_mode_count, details.present_modes.data());
+        vkGetPhysicalDeviceSurfacePresentModesKHR(_physical_device,
+                                                  surface,
+                                                  &present_mode_count,
+                                                  details.present_modes.data());
     }
 
     return details;

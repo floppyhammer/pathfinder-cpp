@@ -23,7 +23,7 @@
         if (res != VK_SUCCESS) {                                                                                 \
             std::ostringstream string_stream;                                                                    \
             string_stream << "Fatal : VkResult is \"" << res << "\" in " << __FILE__ << " at line " << __LINE__; \
-            Pathfinder::Logger::error(string_stream.str());                                            \
+            Pathfinder::Logger::error(string_stream.str());                                                      \
             assert(res == VK_SUCCESS);                                                                           \
         }                                                                                                        \
     }
@@ -40,6 +40,10 @@ inline VkFormat to_vk_texture_format(TextureFormat texture_format) {
             return VK_FORMAT_R8G8B8A8_SRGB;
         case TextureFormat::Bgra8Srgb:
             return VK_FORMAT_B8G8R8A8_SRGB;
+        case TextureFormat::R8:
+            return VK_FORMAT_R8_UNORM;
+        case TextureFormat::Rg8:
+            return VK_FORMAT_R8G8_UNORM;
         case TextureFormat::Rgba16Float:
             return VK_FORMAT_R16G16B16A16_SFLOAT;
         default:
@@ -57,6 +61,10 @@ inline TextureFormat vk_to_texture_format(VkFormat texture_format) {
             return TextureFormat::Rgba8Srgb;
         case VK_FORMAT_B8G8R8A8_SRGB:
             return TextureFormat::Bgra8Srgb;
+        case VK_FORMAT_R8_UNORM:
+            return TextureFormat::R8;
+        case VK_FORMAT_R8G8_UNORM:
+            return TextureFormat::Rg8;
         case VK_FORMAT_R16G16B16A16_SFLOAT:
             return TextureFormat::Rgba16Float;
         default:
