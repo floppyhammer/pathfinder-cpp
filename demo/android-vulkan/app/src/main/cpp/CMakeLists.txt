@@ -7,10 +7,8 @@ project(android_demo_vulkan)
 # for the detailed instructions.
 find_package(game-activity REQUIRED CONFIG)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall \
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -frtti -Wall \
                      -DVK_USE_PLATFORM_ANDROID_KHR")
-
-add_compile_definitions(PATHFINDER_USE_VULKAN)
 
 include_directories(../../../../../../)
 include_directories(../../../../../../third_party)
@@ -18,7 +16,7 @@ include_directories(../../../../../../demo/common)
 
 # Set some flags before adding.
 set(PATHFINDER_BUILD_DEMO ON CACHE BOOL "" FORCE)
-set(PATHFINDER_VULKAN_SUPPORT ON CACHE BOOL "" FORCE)
+set(PATHFINDER_BACKEND_VULKAN ON CACHE BOOL "" FORCE)
 add_subdirectory(../../../../../../ pathfinder)
 
 link_directories(lib/${ANDROID_ABI})

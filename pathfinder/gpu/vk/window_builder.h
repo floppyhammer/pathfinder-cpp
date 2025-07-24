@@ -9,6 +9,8 @@
 #include "../window_builder.h"
 #include "device.h"
 
+class ANativeWindow;
+
 namespace Pathfinder {
 
 /// List of required validation layers.

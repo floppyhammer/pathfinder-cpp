@@ -1,4 +1,5 @@
 #include "renderer_es3.h"
+#include <pathfinder/gpu/gl/window_builder.h>
 
 #include <iostream>
 #include <chrono>
@@ -18,7 +19,7 @@ void RendererES3::init(int width, int height) {
 
     window_size = {width, height};
 
-    pf_window_builder = Pathfinder::WindowBuilder::new_impl(window_size);
+    pf_window_builder = std::make_shared<Pathfinder::WindowBuilderGl>(window_size);
     pf_window = pf_window_builder->get_window(0).lock();
     pf_device = pf_window_builder->request_device();
     pf_queue = pf_window_builder->create_queue();

@@ -10,25 +10,26 @@
 #include "../../gpu/window.h"
 #include "../paint/palette.h"
 
-#ifdef PATHFINDER_USE_VULKAN
-    #include "../../shaders/generated/fill_frag_spv.h"
-    #include "../../shaders/generated/fill_vert_spv.h"
-    #include "../../shaders/generated/tile_clip_combine_frag_spv.h"
-    #include "../../shaders/generated/tile_clip_combine_vert_spv.h"
-    #include "../../shaders/generated/tile_clip_copy_frag_spv.h"
-    #include "../../shaders/generated/tile_clip_copy_vert_spv.h"
-    #include "../../shaders/generated/tile_frag_spv.h"
-    #include "../../shaders/generated/tile_vert_spv.h"
-#else
-    #include "../../shaders/generated/fill_frag.h"
-    #include "../../shaders/generated/fill_vert.h"
-    #include "../../shaders/generated/tile_clip_combine_frag.h"
-    #include "../../shaders/generated/tile_clip_combine_vert.h"
-    #include "../../shaders/generated/tile_clip_copy_frag.h"
-    #include "../../shaders/generated/tile_clip_copy_vert.h"
-    #include "../../shaders/generated/tile_frag.h"
-    #include "../../shaders/generated/tile_vert.h"
-#endif
+/* clang-format off */
+// SPV
+#include "../../shaders/generated/fill_frag_spv.h"
+#include "../../shaders/generated/fill_vert_spv.h"
+#include "../../shaders/generated/tile_clip_combine_frag_spv.h"
+#include "../../shaders/generated/tile_clip_combine_vert_spv.h"
+#include "../../shaders/generated/tile_clip_copy_frag_spv.h"
+#include "../../shaders/generated/tile_clip_copy_vert_spv.h"
+#include "../../shaders/generated/tile_frag_spv.h"
+#include "../../shaders/generated/tile_vert_spv.h"
+// GLSL
+#include "../../shaders/generated/fill_frag.h"
+#include "../../shaders/generated/fill_vert.h"
+#include "../../shaders/generated/tile_clip_combine_frag.h"
+#include "../../shaders/generated/tile_clip_combine_vert.h"
+#include "../../shaders/generated/tile_clip_copy_frag.h"
+#include "../../shaders/generated/tile_clip_copy_vert.h"
+#include "../../shaders/generated/tile_frag.h"
+#include "../../shaders/generated/tile_vert.h"
+/* clang-format on */
 
 #include <array>
 
@@ -36,11 +37,11 @@ namespace Pathfinder {
 
 static uint16_t QUAD_VERTEX_POSITIONS[12] = {0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1};
 
-const size_t FILL_INSTANCE_SIZE = 12;
-const size_t CLIP_TILE_INSTANCE_SIZE = 16;
+constexpr size_t FILL_INSTANCE_SIZE = 12;
+constexpr size_t CLIP_TILE_INSTANCE_SIZE = 16;
 
 // 65536
-const size_t MAX_FILLS_PER_BATCH = 0x10000;
+constexpr size_t MAX_FILLS_PER_BATCH = 0x10000;
 
 RendererD3D9::RendererD3D9(const std::shared_ptr<Device> &_device, const std::shared_ptr<Queue> &_queue)
     : Renderer(_device, _queue) {
@@ -82,13 +83,15 @@ std::shared_ptr<Texture> RendererD3D9::get_dest_texture() {
 void RendererD3D9::set_up_pipelines() {
     // Fill pipeline.
     {
-#ifdef PATHFINDER_USE_VULKAN
-        const auto fill_vert_source = std::vector<char>(std::begin(fill_vert_spv), std::end(fill_vert_spv));
-        const auto fill_frag_source = std::vector<char>(std::begin(fill_frag_spv), std::end(fill_frag_spv));
-#else
-        const auto fill_vert_source = std::vector<char>(std::begin(fill_vert), std::end(fill_vert));
-        const auto fill_frag_source = std::vector<char>(std::begin(fill_frag), std::end(fill_frag));
-#endif
+        std::vector<char> fill_vert_source, fill_frag_source;
+
+        if (device->get_backend_type() == BackendType::Vulkan) {
+            fill_vert_source = std::vector<char>(std::begin(fill_vert_spv), std::end(fill_vert_spv));
+            fill_frag_source = std::vector<char>(std::begin(fill_frag_spv), std::end(fill_frag_spv));
+        } else {
+            fill_vert_source = std::vector<char>(std::begin(fill_vert), std::end(fill_vert));
+            fill_frag_source = std::vector<char>(std::begin(fill_frag), std::end(fill_frag));
+        }
 
         // Set vertex attributes.
         std::vector<VertexInputAttributeDescription> attribute_descriptions;
@@ -134,13 +137,15 @@ void RendererD3D9::set_up_pipelines() {
 
     // Tile pipeline.
     {
-#ifdef PATHFINDER_USE_VULKAN
-        const auto tile_vert_source = std::vector<char>(std::begin(tile_vert_spv), std::end(tile_vert_spv));
-        const auto tile_frag_source = std::vector<char>(std::begin(tile_frag_spv), std::end(tile_frag_spv));
-#else
-        const auto tile_vert_source = std::vector<char>(std::begin(tile_vert), std::end(tile_vert));
-        const auto tile_frag_source = std::vector<char>(std::begin(tile_frag), std::end(tile_frag));
-#endif
+        std::vector<char> tile_vert_source, tile_frag_source;
+
+        if (device->get_backend_type() == BackendType::Vulkan) {
+            tile_vert_source = std::vector<char>(std::begin(tile_vert_spv), std::end(tile_vert_spv));
+            tile_frag_source = std::vector<char>(std::begin(tile_frag_spv), std::end(tile_frag_spv));
+        } else {
+            tile_vert_source = std::vector<char>(std::begin(tile_vert), std::end(tile_vert));
+            tile_frag_source = std::vector<char>(std::begin(tile_frag), std::end(tile_frag));
+        }
 
         // Set vertex attributes.
         std::vector<VertexInputAttributeDescription> attribute_descriptions;
@@ -237,17 +242,17 @@ void RendererD3D9::reallocate_alpha_tile_pages_if_necessary() {
 }
 
 void RendererD3D9::create_tile_clip_copy_pipeline() {
-#ifdef PATHFINDER_USE_VULKAN
-    const auto tile_clip_copy_vert_source =
-        std::vector<char>(std::begin(tile_clip_copy_vert_spv), std::end(tile_clip_copy_vert_spv));
-    const auto tile_clip_copy_frag_source =
-        std::vector<char>(std::begin(tile_clip_copy_frag_spv), std::end(tile_clip_copy_frag_spv));
-#else
-    const auto tile_clip_copy_vert_source =
-        std::vector<char>(std::begin(tile_clip_copy_vert), std::end(tile_clip_copy_vert));
-    const auto tile_clip_copy_frag_source =
-        std::vector<char>(std::begin(tile_clip_copy_frag), std::end(tile_clip_copy_frag));
-#endif
+    std::vector<char> tile_clip_copy_vert_source, tile_clip_copy_frag_source;
+
+    if (device->get_backend_type() == BackendType::Vulkan) {
+        tile_clip_copy_vert_source =
+            std::vector<char>(std::begin(tile_clip_copy_vert_spv), std::end(tile_clip_copy_vert_spv));
+        tile_clip_copy_frag_source =
+            std::vector<char>(std::begin(tile_clip_copy_frag_spv), std::end(tile_clip_copy_frag_spv));
+    } else {
+        tile_clip_copy_vert_source = std::vector<char>(std::begin(tile_clip_copy_vert), std::end(tile_clip_copy_vert));
+        tile_clip_copy_frag_source = std::vector<char>(std::begin(tile_clip_copy_frag), std::end(tile_clip_copy_frag));
+    }
 
     // Set vertex attributes.
     std::vector<VertexInputAttributeDescription> attribute_descriptions;
@@ -283,15 +288,14 @@ void RendererD3D9::create_tile_clip_copy_pipeline() {
 }
 
 void RendererD3D9::create_tile_clip_combine_pipeline() {
-#ifdef PATHFINDER_USE_VULKAN
-    const auto vert_source =
-        std::vector<char>(std::begin(tile_clip_combine_vert_spv), std::end(tile_clip_combine_vert_spv));
-    const auto frag_source =
-        std::vector<char>(std::begin(tile_clip_combine_frag_spv), std::end(tile_clip_combine_frag_spv));
-#else
-    const auto vert_source = std::vector<char>(std::begin(tile_clip_combine_vert), std::end(tile_clip_combine_vert));
-    const auto frag_source = std::vector<char>(std::begin(tile_clip_combine_frag), std::end(tile_clip_combine_frag));
-#endif
+    std::vector<char> vert_source, frag_source;
+    if (device->get_backend_type() == BackendType::Vulkan) {
+        vert_source = std::vector<char>(std::begin(tile_clip_combine_vert_spv), std::end(tile_clip_combine_vert_spv));
+        frag_source = std::vector<char>(std::begin(tile_clip_combine_frag_spv), std::end(tile_clip_combine_frag_spv));
+    } else {
+        vert_source = std::vector<char>(std::begin(tile_clip_combine_vert), std::end(tile_clip_combine_vert));
+        frag_source = std::vector<char>(std::begin(tile_clip_combine_frag), std::end(tile_clip_combine_frag));
+    }
 
     // Set vertex attributes.
     std::vector<VertexInputAttributeDescription> attribute_descriptions;

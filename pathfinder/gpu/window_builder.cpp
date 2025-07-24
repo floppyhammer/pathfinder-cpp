@@ -1,14 +1,29 @@
 #include "window_builder.h"
 
+#include "gl/window_builder.h"
+#include "vk/window_builder.h"
 #include "window.h"
 
-#ifdef PATHFINDER_USE_VULKAN
-    #include "vk/base.h"
-#else
-    #include "gl/base.h"
-#endif
-
 namespace Pathfinder {
+
+std::shared_ptr<WindowBuilder> WindowBuilder::new_impl(BackendType backend_type, const Vec2I &size) {
+#ifndef __ANDROID__
+    switch (backend_type) {
+        case BackendType::Opengl: {
+            Logger::info("Using OpenGL backend");
+            return std::make_shared<WindowBuilderGl>(size);
+        }
+        case BackendType::Vulkan: {
+            Logger::info("Using Vulkan backend");
+            return std::make_shared<WindowBuilderVk>(size);
+        }
+        default:
+            abort();
+    }
+#else
+    return nullptr;
+#endif
+}
 
 std::weak_ptr<Window> WindowBuilder::get_window(uint8_t window_index) const {
     if (window_index == 0) {
@@ -42,6 +57,7 @@ void WindowBuilder::poll_events() {
 }
 
 void WindowBuilder::set_fullscreen(bool fullscreen) {
+#ifndef __ANDROID__
     if (primary_window_->fullscreen_ == fullscreen) {
         return;
     }
@@ -79,6 +95,7 @@ void WindowBuilder::set_fullscreen(bool fullscreen) {
 
         primary_window_->logical_size_ = reserved_window_logical_size_;
     }
+#endif
 }
 
 #ifndef __ANDROID__

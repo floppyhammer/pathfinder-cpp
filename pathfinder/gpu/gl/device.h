@@ -16,6 +16,8 @@ namespace Pathfinder {
 
 class DeviceGl : public Device {
 public:
+    DeviceGl();
+
     std::shared_ptr<Framebuffer> create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
                                                     const std::shared_ptr<Texture> &texture,
                                                     const std::string &label) override;

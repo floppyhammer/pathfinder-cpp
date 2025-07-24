@@ -15,14 +15,13 @@ static const char *PRIMARY_WINDOW_TITLE = "Primary Window";
 /// Window management.
 class WindowBuilder {
 public:
-    static std::shared_ptr<WindowBuilder> new_impl(const Vec2I &size);
+    static std::shared_ptr<WindowBuilder> new_impl(BackendType backend_type, const Vec2I &size);
 
     virtual ~WindowBuilder() = default;
 
     /// Wait for the swapchains to finish the current frame, then destroy them.
     /// Call this right after the render loop is stopped.
-    virtual void stop_and_destroy_swapchains() {
-    }
+    virtual void stop_and_destroy_swapchains() {}
 
     /// Create a new sub-window.
     virtual uint8_t create_window(const Vec2I &size, const std::string &title) = 0;

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.7.1)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -fno-rtti -Wall")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -frtti -Wall")
 
 if (${ANDROID_PLATFORM_LEVEL} LESS 12)
     message(FATAL_ERROR "OpenGL 2 is not supported before API level 11 \
@@ -21,7 +21,7 @@ include_directories(../../../../../../demo/common)
 
 # Set some flags before adding.
 set(PATHFINDER_BUILD_DEMO ON CACHE BOOL "" FORCE)
-set(PATHFINDER_VULKAN_SUPPORT OFF CACHE BOOL "" FORCE)
+set(PATHFINDER_BACKEND_VULKAN OFF CACHE BOOL "" FORCE)
 add_subdirectory(../../../../../../ pathfinder)
 
 link_directories(lib/${ANDROID_ABI})

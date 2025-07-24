@@ -2,12 +2,13 @@
 
 #include "../common/app.h"
 
-const int32_t WINDOW_WIDTH = 1280;
-const int32_t WINDOW_HEIGHT = 720;
+constexpr int32_t WINDOW_WIDTH = 1280;
+constexpr int32_t WINDOW_HEIGHT = 720;
 
 int main() {
     // Create the primary window.
-    auto window_builder = Pathfinder::WindowBuilder::new_impl({WINDOW_WIDTH, WINDOW_HEIGHT});
+    auto window_builder =
+        Pathfinder::WindowBuilder::new_impl(Pathfinder::BackendType::Opengl, {WINDOW_WIDTH, WINDOW_HEIGHT});
     auto window = window_builder->get_window(0).lock();
 
     // Create device and queue.

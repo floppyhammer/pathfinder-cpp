@@ -9,7 +9,8 @@ project(pathfinder
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
 # Options.
-option(PATHFINDER_VULKAN_SUPPORT "Use Vulkan instead of OpenGL" OFF)
+option(PATHFINDER_BACKEND_OPENGL "Enable OpenGL backend" ON)
+option(PATHFINDER_BACKEND_VULKAN "Enable Vulkan backend" ON)
 option(PATHFINDER_BUILD_DEMO "Build demo" OFF)
 
 # Identify Linux.
@@ -21,11 +22,13 @@ endif ()
 if (EMSCRIPTEN)
     message("[Pathfinder] Build for Web")
 
+    set(PATHFINDER_BACKEND_OPENGL ON)
     # No Vulkan support for web.
-    set(PATHFINDER_VULKAN_SUPPORT OFF)
+    set(PATHFINDER_BACKEND_VULKAN OFF)
 elseif (APPLE)
     # No GL support for Mac.
-    set(PATHFINDER_VULKAN_SUPPORT ON)
+    set(PATHFINDER_BACKEND_OPENGL OFF)
+    set(PATHFINDER_BACKEND_VULKAN ON)
 elseif (LINUX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1")
 endif ()
@@ -34,20 +37,26 @@ add_subdirectory(pathfinder)
 
 target_compile_features(pathfinder PUBLIC cxx_std_14)
 
-if (PATHFINDER_VULKAN_SUPPORT)
-    message("[Pathfinder] Use Vulkan")
+if (PATHFINDER_BACKEND_VULKAN)
+    message("[Pathfinder] Enabled Vulkan backend")
 
     find_package(Vulkan REQUIRED)
-
-    # Don't use add_compile_definitions, which doesn't propagate to parent projects.
-    target_compile_definitions(pathfinder PUBLIC PATHFINDER_USE_VULKAN)
 
     target_link_libraries(pathfinder PUBLIC Vulkan::Vulkan)
 
     # This is to please GitHub Actions.
     target_include_directories(pathfinder PUBLIC "${Vulkan_INCLUDE_DIRS}")
 else ()
-    message("[Pathfinder] Use OpenGL")
+    message("[Pathfinder] Disabled Vulkan backend")
+endif ()
+
+if (PATHFINDER_BACKEND_OPENGL)
+    message("[Pathfinder] Enabled OpenGL backend")
+
+    # Don't use add_compile_definitions, which doesn't propagate to parent projects.
+    target_compile_definitions(pathfinder PUBLIC PATHFINDER_USE_OPENGL)
+else ()
+    message("[Pathfinder] Disabled OpenGL backend")
 endif ()
 
 # Include third_party headers.
@@ -62,12 +71,6 @@ endif ()
 
 if (PATHFINDER_BUILD_DEMO)
     message("[Pathfinder] Build demo")
-
-    # target_compile_definitions only added PATHFINDER_USE_VULKAN to the Pathfinder library.
-    # We need to define PATHFINDER_USE_VULKAN for the demo as well.
-    if (PATHFINDER_VULKAN_SUPPORT)
-        add_compile_definitions(PATHFINDER_USE_VULKAN)
-    endif ()
 
     # Demo common library.
     add_subdirectory(demo/common)

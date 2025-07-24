@@ -23,7 +23,9 @@ DeviceVk::DeviceVk(VkDevice vk_device,
                    VkQueue vk_present_queue,
                    VkCommandPool vk_command_pool)
     : vk_device_(vk_device), vk_physical_device_(vk_physical_device), vk_graphics_queue_(vk_graphics_queue),
-      vk_present_queue_(vk_present_queue), vk_command_pool_(vk_command_pool) {}
+      vk_present_queue_(vk_present_queue), vk_command_pool_(vk_command_pool) {
+    backend_type = BackendType::Vulkan;
+}
 
 VkDevice DeviceVk::get_device() const {
     return vk_device_;

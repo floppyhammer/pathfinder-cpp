@@ -12,6 +12,11 @@
 
 namespace Pathfinder {
 
+enum class BackendType {
+    Opengl,
+    Vulkan,
+};
+
 /// We only need to provide a Driver to Canvas for rendering,
 /// which means Window and SwapChain aren't needed for platforms like Android.
 class Device : public std::enable_shared_from_this<Device> {
@@ -56,6 +61,13 @@ public:
         const std::shared_ptr<ShaderModule> &comp_shader_module,
         const std::shared_ptr<DescriptorSet> &descriptor_set,
         const std::string &label) = 0;
+
+    BackendType get_backend_type() const {
+        return backend_type;
+    }
+
+protected:
+    BackendType backend_type;
 };
 
 } // namespace Pathfinder

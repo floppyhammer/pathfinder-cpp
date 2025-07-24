@@ -12,23 +12,24 @@
 #include "gpu_data.h"
 
 #ifdef PATHFINDER_ENABLE_D3D11
-    #ifdef PATHFINDER_USE_VULKAN
-        #include "../../shaders/generated/bin_comp_spv.h"
-        #include "../../shaders/generated/bound_comp_spv.h"
-        #include "../../shaders/generated/dice_comp_spv.h"
-        #include "../../shaders/generated/fill_comp_spv.h"
-        #include "../../shaders/generated/propagate_comp_spv.h"
-        #include "../../shaders/generated/sort_comp_spv.h"
-        #include "../../shaders/generated/tile_comp_spv.h"
-    #else
-        #include "../../shaders/generated/bin_comp.h"
-        #include "../../shaders/generated/bound_comp.h"
-        #include "../../shaders/generated/dice_comp.h"
-        #include "../../shaders/generated/fill_comp.h"
-        #include "../../shaders/generated/propagate_comp.h"
-        #include "../../shaders/generated/sort_comp.h"
-        #include "../../shaders/generated/tile_comp.h"
-    #endif
+/* clang-format off */
+// SPV
+    #include "../../shaders/generated/bin_comp_spv.h"
+    #include "../../shaders/generated/bound_comp_spv.h"
+    #include "../../shaders/generated/dice_comp_spv.h"
+    #include "../../shaders/generated/fill_comp_spv.h"
+    #include "../../shaders/generated/propagate_comp_spv.h"
+    #include "../../shaders/generated/sort_comp_spv.h"
+    #include "../../shaders/generated/tile_comp_spv.h"
+// GLSL
+    #include "../../shaders/generated/bin_comp.h"
+    #include "../../shaders/generated/bound_comp.h"
+    #include "../../shaders/generated/dice_comp.h"
+    #include "../../shaders/generated/fill_comp.h"
+    #include "../../shaders/generated/propagate_comp.h"
+    #include "../../shaders/generated/sort_comp.h"
+    #include "../../shaders/generated/tile_comp.h"
+/* clang-format on */
 
 namespace Pathfinder {
 
@@ -135,23 +136,25 @@ RendererD3D11::RendererD3D11(const std::shared_ptr<Device> &device, const std::s
 void RendererD3D11::set_up_pipelines() {
     auto default_sampler = get_default_sampler();
 
-    #ifdef PATHFINDER_USE_VULKAN
-    const auto dice_source = std::vector<char>(std::begin(dice_comp_spv), std::end(dice_comp_spv));
-    const auto bound_source = std::vector<char>(std::begin(bound_comp_spv), std::end(bound_comp_spv));
-    const auto bin_source = std::vector<char>(std::begin(bin_comp_spv), std::end(bin_comp_spv));
-    const auto propagate_source = std::vector<char>(std::begin(propagate_comp_spv), std::end(propagate_comp_spv));
-    const auto fill_source = std::vector<char>(std::begin(fill_comp_spv), std::end(fill_comp_spv));
-    const auto sort_source = std::vector<char>(std::begin(sort_comp_spv), std::end(sort_comp_spv));
-    const auto tile_source = std::vector<char>(std::begin(tile_comp_spv), std::end(tile_comp_spv));
-    #else
-    const auto dice_source = std::vector<char>(std::begin(dice_comp), std::end(dice_comp));
-    const auto bound_source = std::vector<char>(std::begin(bound_comp), std::end(bound_comp));
-    const auto bin_source = std::vector<char>(std::begin(bin_comp), std::end(bin_comp));
-    const auto propagate_source = std::vector<char>(std::begin(propagate_comp), std::end(propagate_comp));
-    const auto fill_source = std::vector<char>(std::begin(fill_comp), std::end(fill_comp));
-    const auto sort_source = std::vector<char>(std::begin(sort_comp), std::end(sort_comp));
-    const auto tile_source = std::vector<char>(std::begin(tile_comp), std::end(tile_comp));
-    #endif
+    std::vector<char> dice_source, bound_source, bin_source, propagate_source, fill_source, sort_source, tile_source;
+
+    if (device->get_backend_type() == BackendType::Vulkan) {
+        dice_source = std::vector<char>(std::begin(dice_comp_spv), std::end(dice_comp_spv));
+        bound_source = std::vector<char>(std::begin(bound_comp_spv), std::end(bound_comp_spv));
+        bin_source = std::vector<char>(std::begin(bin_comp_spv), std::end(bin_comp_spv));
+        propagate_source = std::vector<char>(std::begin(propagate_comp_spv), std::end(propagate_comp_spv));
+        fill_source = std::vector<char>(std::begin(fill_comp_spv), std::end(fill_comp_spv));
+        sort_source = std::vector<char>(std::begin(sort_comp_spv), std::end(sort_comp_spv));
+        tile_source = std::vector<char>(std::begin(tile_comp_spv), std::end(tile_comp_spv));
+    } else {
+        dice_source = std::vector<char>(std::begin(dice_comp), std::end(dice_comp));
+        bound_source = std::vector<char>(std::begin(bound_comp), std::end(bound_comp));
+        bin_source = std::vector<char>(std::begin(bin_comp), std::end(bin_comp));
+        propagate_source = std::vector<char>(std::begin(propagate_comp), std::end(propagate_comp));
+        fill_source = std::vector<char>(std::begin(fill_comp), std::end(fill_comp));
+        sort_source = std::vector<char>(std::begin(sort_comp), std::end(sort_comp));
+        tile_source = std::vector<char>(std::begin(tile_comp), std::end(tile_comp));
+    }
 
     dice_descriptor_set = device->create_descriptor_set();
     dice_descriptor_set->add_or_update({

@@ -27,10 +27,6 @@ bool is_extension_supported(const char *name) {
     return false;
 }
 
-std::shared_ptr<WindowBuilder> WindowBuilder::new_impl(const Vec2I &size) {
-    return std::make_shared<WindowBuilderGl>(size);
-}
-
 WindowBuilderGl::WindowBuilderGl(const Vec2I &size) {
 #ifndef __ANDROID__
     glfwInit();

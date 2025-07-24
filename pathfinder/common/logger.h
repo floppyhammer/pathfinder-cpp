@@ -59,7 +59,7 @@ public:
         if (level <= Level::Verbose) {
             auto tag = (module.empty() ? PATHFINDER_DEFAULT_LOG_TAG : module).c_str();
 #ifdef __ANDROID__
-            __android_log_write(ANDROID_LOG_VERBOSE, tag, output.c_str());
+            __android_log_write(ANDROID_LOG_VERBOSE, tag, label.c_str());
 #else
             std::cout << "<" << tag << ">[VERBOSE] " << label << std::endl;
 #endif

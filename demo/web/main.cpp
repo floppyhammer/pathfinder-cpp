@@ -42,7 +42,7 @@ void render(void* _swap_chain) {
 int main() {
     Vec2I window_size = {WINDOW_WIDTH, WINDOW_HEIGHT};
 
-    auto window_builder = std::make_shared<WindowBuilderGl>(window_size);
+    auto window_builder = std::make_shared<WindowBuilderGl>(BackendType::Opengl, window_size);
 
     auto window = window_builder->get_main_window();
 

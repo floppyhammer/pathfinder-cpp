@@ -1,16 +1,13 @@
 #include "window.h"
 
-#ifdef PATHFINDER_USE_VULKAN
-    #include "vk/base.h"
-#else
-    #include "gl/base.h"
+#ifndef __ANDROID__
+#include <GLFW/glfw3.h>
 #endif
 
 namespace Pathfinder {
 
 #ifdef __ANDROID__
-Window::Window(const Vec2I& size) : logical_size_(size) {
-}
+Window::Window(const Vec2I& size) : logical_size_(size) {}
 #else
 Window::Window(const Vec2I& size, GLFWwindow* window_handle) : logical_size_(size), glfw_window_(window_handle) {
     // Assign this to window user, so we can fetch it when window size changes.
@@ -28,8 +25,10 @@ Vec2I Window::get_logical_size() const {
 }
 
 Vec2I Window::get_position() const {
-    int xpos, ypos;
+    int xpos{}, ypos{};
+#ifndef __ANDROID__
     glfwGetWindowPos(glfw_window_, &xpos, &ypos);
+#endif
     return {xpos, ypos};
 }
 
@@ -39,6 +38,14 @@ bool Window::get_resize_flag() const {
 
 bool Window::is_minimized() const {
     return minimized_;
+}
+
+float Window::get_dpi_scaling_factor() const {
+    return dpi_scaling_factor_;
+}
+
+void Window::set_dpi_scaling_factor(float scale) {
+    dpi_scaling_factor_ = scale;
 }
 
 #ifndef __ANDROID__
@@ -59,14 +66,6 @@ void Window::framebuffer_resize_callback(GLFWwindow* glfw_window, int width, int
 
 void* Window::get_glfw_handle() const {
     return glfw_window_;
-}
-
-float Window::get_dpi_scaling_factor() const {
-    return dpi_scaling_factor_;
-}
-
-void Window::set_dpi_scaling_factor(float scale) {
-    dpi_scaling_factor_ = scale;
 }
 
 void Window::set_window_title(const std::string& title) const {

@@ -10,6 +10,10 @@
 
 namespace Pathfinder {
 
+DeviceGl::DeviceGl() {
+    backend_type = BackendType::Opengl;
+}
+
 std::shared_ptr<Framebuffer> DeviceGl::create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
                                                           const std::shared_ptr<Texture> &texture,
                                                           const std::string &label) {

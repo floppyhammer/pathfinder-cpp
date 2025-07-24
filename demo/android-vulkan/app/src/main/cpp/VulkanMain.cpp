@@ -13,11 +13,10 @@
 // Android Native App pointer.
 android_app *androidAppCtx = nullptr;
 
-Pathfinder::WindowBuilderVk *window_builder{};
-
 std::shared_ptr<App> pf_app;
 std::shared_ptr<Blit> pf_blit;
 
+std::shared_ptr<Pathfinder::WindowBuilder> window_builder;
 std::shared_ptr<Pathfinder::Window> pf_window;
 std::shared_ptr<Pathfinder::Device> pf_device;
 std::shared_ptr<Pathfinder::Queue> pf_queue;
@@ -37,7 +36,7 @@ bool InitVulkan(android_app *app) {
     auto window_size = Pathfinder::Vec2I(
             ANativeWindow_getWidth(app->window), ANativeWindow_getHeight(app->window));
 
-    window_builder = new Pathfinder::WindowBuilderVk(app->window, window_size);
+    window_builder = std::make_shared<Pathfinder::WindowBuilderVk>(app->window, window_size);
 
     pf_window = window_builder->get_window(0).lock();
 
@@ -74,11 +73,10 @@ bool InitVulkan(android_app *app) {
 }
 
 // Native app poll to see if we are ready to draw.
-bool IsVulkanReady(void) { return window_builder && window_builder->get_device(); }
+bool IsVulkanReady(void) { return window_builder != nullptr; }
 
 void DeleteVulkan(void) {
-    delete window_builder;
-    window_builder = nullptr;
+    window_builder.reset();
 }
 
 bool VulkanDrawFrame(void) {
