@@ -7,15 +7,7 @@
 #include "../../common/logger.h"
 #include "../base.h"
 
-// Vulkan header.
-#ifdef __ANDROID__
-    #include "vulkan_wrapper.h"
-#else
-    // Prevent the GLFW header from including the OpenGL header.
-    #define GLFW_INCLUDE_NONE
-    #define GLFW_INCLUDE_VULKAN
-    #include <GLFW/glfw3.h>
-#endif
+#include "../render_api.h"
 
 #define VK_CHECK_RESULT(f)                                                                                       \
     {                                                                                                            \

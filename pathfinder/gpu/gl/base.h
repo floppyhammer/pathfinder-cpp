@@ -3,23 +3,7 @@
 
 #include "../../common/global_macros.h"
 #include "../base.h"
-
-#ifdef __ANDROID__
-    #ifdef PATHFINDER_ENABLE_D3D11
-        #include <GLES3/gl31.h>
-    #else
-        #include <GLES3/gl3.h>
-    #endif
-#elif defined(__EMSCRIPTEN__)
-    #define GLFW_INCLUDE_ES3
-    #include <GLFW/glfw3.h>
-#else
-    // Include OpenGL header via GLAD.
-    #include <glad/gl.h>
-    // Prevent the GLFW header from including the OpenGL header.
-    #define GLFW_INCLUDE_NONE
-    #include <GLFW/glfw3.h>
-#endif
+#include "../render_api.h"
 
 namespace Pathfinder {
 

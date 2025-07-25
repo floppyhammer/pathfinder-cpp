@@ -12,4 +12,5 @@ if (PATHFINDER_BACKEND_OPENGL)
 endif ()
 
 # Compile as static library.
-add_library(pathfinder STATIC ${PF_SOURCE_FILES})
+add_library(pathfinder STATIC ${PF_SOURCE_FILES}
+        gpu/render_api.h)

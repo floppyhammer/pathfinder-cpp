@@ -1,8 +1,6 @@
 #include "window.h"
 
-#ifndef __ANDROID__
-#include <GLFW/glfw3.h>
-#endif
+#include "render_api.h"
 
 namespace Pathfinder {
 

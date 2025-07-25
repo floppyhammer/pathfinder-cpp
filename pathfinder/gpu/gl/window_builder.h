@@ -2,7 +2,6 @@
 #define PATHFINDER_WINDOW_BUILDER_GL_H
 
 #include "../window_builder.h"
-#include "base.h"
 
 struct GLFWwindow;
 

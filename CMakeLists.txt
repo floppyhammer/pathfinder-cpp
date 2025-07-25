@@ -58,9 +58,6 @@ if (PATHFINDER_BACKEND_OPENGL)
 
     # Don't use add_compile_definitions, which doesn't propagate to parent projects.
     target_compile_definitions(pathfinder PUBLIC PATHFINDER_USE_OPENGL)
-
-    # Don't use add_compile_definitions, which doesn't propagate to parent projects.
-    target_compile_definitions(pathfinder PUBLIC PATHFINDER_USE_OPENGL)
 else ()
     message("[Pathfinder] Disabled OpenGL backend")
 endif ()

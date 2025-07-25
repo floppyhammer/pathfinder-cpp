@@ -1,5 +1,8 @@
 #include "window_builder.h"
 
+#ifndef __ANDROID__
+    #include "render_api.h"
+#endif
 #ifdef PATHFINDER_USE_OPENGL
     #include "gl/window_builder.h"
 #endif
