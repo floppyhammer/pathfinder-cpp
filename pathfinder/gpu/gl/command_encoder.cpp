@@ -74,7 +74,8 @@ bool CommandEncoderGl::finish() {
 
                 uint32_t vao;
                 glGenVertexArrays(1, &vao);
-                DebugMarker::label_vao(vao, label_ + " VAO");
+                // This triggers error 1281, so we comment it for now.
+                // DebugMarker::label_vao(vao, label_ + " VAO");
                 vao_.push_back(vao);
                 gl_check_error("GenVAO");
             } break;
