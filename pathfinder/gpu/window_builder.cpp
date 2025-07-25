@@ -29,7 +29,12 @@ std::shared_ptr<WindowBuilder> WindowBuilder::new_impl(BackendType backend_type,
         }
     #endif
         default:
+    #ifdef PATHFINDER_USE_OPENGL
+            Logger::info("Vulkan backend unavailable, falling back to OpenGL backend");
+            return std::make_shared<WindowBuilderGl>(size);
+    #else
             abort();
+    #endif
     }
 #else
     return nullptr;
