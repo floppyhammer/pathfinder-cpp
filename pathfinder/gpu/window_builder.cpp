@@ -1,7 +1,11 @@
 #include "window_builder.h"
 
-#include "gl/window_builder.h"
-#include "vk/window_builder.h"
+#ifdef PATHFINDER_USE_OPENGL
+    #include "gl/window_builder.h"
+#endif
+#ifdef PATHFINDER_USE_VULKAN
+    #include "vk/window_builder.h"
+#endif
 #include "window.h"
 
 namespace Pathfinder {
@@ -9,14 +13,18 @@ namespace Pathfinder {
 std::shared_ptr<WindowBuilder> WindowBuilder::new_impl(BackendType backend_type, const Vec2I &size) {
 #ifndef __ANDROID__
     switch (backend_type) {
+    #ifdef PATHFINDER_USE_OPENGL
         case BackendType::Opengl: {
             Logger::info("Using OpenGL backend");
             return std::make_shared<WindowBuilderGl>(size);
         }
+    #endif
+    #ifdef PATHFINDER_USE_VULKAN
         case BackendType::Vulkan: {
             Logger::info("Using Vulkan backend");
             return std::make_shared<WindowBuilderVk>(size);
         }
+    #endif
         default:
             abort();
     }

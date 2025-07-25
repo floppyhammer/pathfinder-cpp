@@ -46,12 +46,18 @@ if (PATHFINDER_BACKEND_VULKAN)
 
     # This is to please GitHub Actions.
     target_include_directories(pathfinder PUBLIC "${Vulkan_INCLUDE_DIRS}")
+
+    # Don't use add_compile_definitions, which doesn't propagate to parent projects.
+    target_compile_definitions(pathfinder PUBLIC PATHFINDER_USE_VULKAN)
 else ()
     message("[Pathfinder] Disabled Vulkan backend")
 endif ()
 
 if (PATHFINDER_BACKEND_OPENGL)
     message("[Pathfinder] Enabled OpenGL backend")
+
+    # Don't use add_compile_definitions, which doesn't propagate to parent projects.
+    target_compile_definitions(pathfinder PUBLIC PATHFINDER_USE_OPENGL)
 
     # Don't use add_compile_definitions, which doesn't propagate to parent projects.
     target_compile_definitions(pathfinder PUBLIC PATHFINDER_USE_OPENGL)
