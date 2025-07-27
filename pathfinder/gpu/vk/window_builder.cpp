@@ -319,11 +319,13 @@ void WindowBuilderVk::pick_physical_device(VkSurfaceKHR surface) {
 
 VkSurfaceFormatKHR choose_swap_surface_format(const std::vector<VkSurfaceFormatKHR> &available_formats) {
     for (const auto &format : available_formats) {
-        if (format.format == VK_FORMAT_R8G8B8A8_UNORM && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+        if ((format.format == VK_FORMAT_R8G8B8A8_UNORM || format.format == VK_FORMAT_B8G8R8A8_UNORM) &&
+            format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
             return format;
         }
     }
 
+    // We're not getting a format we required, so we pick one randomly.
     return available_formats[0];
 }
 

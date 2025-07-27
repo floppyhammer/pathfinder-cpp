@@ -8,7 +8,7 @@ constexpr int32_t WINDOW_HEIGHT = 720;
 int main() {
     // Create the primary window.
     auto window_builder =
-        Pathfinder::WindowBuilder::new_impl(Pathfinder::BackendType::Opengl, {WINDOW_WIDTH, WINDOW_HEIGHT});
+        Pathfinder::WindowBuilder::new_impl(Pathfinder::BackendType::Vulkan, {WINDOW_WIDTH, WINDOW_HEIGHT});
     auto window = window_builder->get_window(0).lock();
 
     // Create device and queue.
