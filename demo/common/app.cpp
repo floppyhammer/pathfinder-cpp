@@ -10,7 +10,7 @@ App::App(const std::shared_ptr<Device> &device,
          const Vec2I &canvas_size,
          const std::vector<char> &svg_input,
          const std::vector<char> &img_input) {
-    Logger::set_default_level(Logger::Level::Info);
+    Logger::set_global_level(Logger::Level::Info);
 
     device_ = device;
     queue_ = queue;

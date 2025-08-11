@@ -9,9 +9,9 @@
 namespace Pathfinder {
 
 // To handle floating point error.
-const float FLOAT_EPSILON = 0.0001;
+constexpr float FLOAT_EPSILON = 0.0001;
 
-const float PI = 3.141592653589f;
+constexpr float PI = 3.141592653589f;
 
 /// Convert degree to radian.
 inline float deg2rad(float x) {

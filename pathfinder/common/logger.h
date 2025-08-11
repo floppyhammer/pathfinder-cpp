@@ -12,9 +12,10 @@
     #include <android/log.h>
 #endif
 
-#define PATHFINDER_DEFAULT_LOG_TAG "Pathfinder Default Logger"
+#define PATHFINDER_DEFAULT_LOG_TAG "Pathfinder Default"
 
 namespace Pathfinder {
+
 class Logger {
 public:
     static Logger *get_singleton() {
@@ -22,6 +23,7 @@ public:
         return &singleton;
     }
 
+    /// Effective level = MAX(global level, module level)
     enum class Level {
         Verbose = 0,
         Debug,
@@ -29,35 +31,39 @@ public:
         Warn,
         Error,
         Silence,
-    } default_level_ = Level::Warn;
+    } global_level_ = Level::Warn;
 
     std::unordered_map<std::string, Level> module_levels;
 
-    static void set_default_level(Level level) {
-        get_singleton()->default_level_ = level;
+    static void set_global_level(const Level level) {
+        get_singleton()->global_level_ = level;
     }
 
-    static void set_module_level(const std::string &module, Level level) {
+    static void set_module_level(const std::string &module, const Level level) {
         if (module.empty()) {
             return;
         }
         get_singleton()->module_levels[module] = level;
     }
 
-    static Level get_module_level(const std::string &module) {
+    static Level get_effective_level(const std::string &module) {
+        const auto global_level = get_singleton()->global_level_;
+
         if (module.empty()) {
-            return get_singleton()->default_level_;
+            return global_level;
         }
         if (get_singleton()->module_levels.find(module) == get_singleton()->module_levels.end()) {
-            return get_singleton()->default_level_;
+            return global_level;
         }
-        return get_singleton()->module_levels.at(module);
+
+        const auto module_level = get_singleton()->module_levels.at(module);
+
+        return global_level > module_level ? global_level : module_level;
     }
 
-    static void verbose(const std::string &label, const std::string &module = "") {
-        auto level = get_module_level(module);
-        if (level <= Level::Verbose) {
-            auto tag = (module.empty() ? PATHFINDER_DEFAULT_LOG_TAG : module).c_str();
+    static void verbose(const std::string &label, const std::string &module = PATHFINDER_DEFAULT_LOG_TAG) {
+        if (const auto level = get_effective_level(module); level <= Level::Verbose) {
+            auto tag = module.c_str();
 #ifdef __ANDROID__
             __android_log_write(ANDROID_LOG_VERBOSE, tag, label.c_str());
 #else
@@ -66,10 +72,9 @@ public:
         }
     }
 
-    static void debug(const std::string &label, const std::string &module = "") {
-        auto level = get_module_level(module);
-        if (level <= Level::Debug) {
-            auto tag = module.empty() ? PATHFINDER_DEFAULT_LOG_TAG : module.c_str();
+    static void debug(const std::string &label, const std::string &module = PATHFINDER_DEFAULT_LOG_TAG) {
+        if (const auto level = get_effective_level(module); level <= Level::Debug) {
+            auto tag = module.c_str();
 #ifdef __ANDROID__
             __android_log_write(ANDROID_LOG_DEBUG, tag, label.c_str());
 #else
@@ -78,10 +83,9 @@ public:
         }
     }
 
-    static void info(const std::string &label, const std::string &module = "") {
-        auto level = get_module_level(module);
-        if (level <= Level::Info) {
-            auto tag = module.empty() ? PATHFINDER_DEFAULT_LOG_TAG : module.c_str();
+    static void info(const std::string &label, const std::string &module = PATHFINDER_DEFAULT_LOG_TAG) {
+        if (const auto level = get_effective_level(module); level <= Level::Info) {
+            auto tag = module.c_str();
 #ifdef __ANDROID__
             __android_log_write(ANDROID_LOG_INFO, tag, label.c_str());
 #else
@@ -90,10 +94,9 @@ public:
         }
     }
 
-    static void warn(const std::string &label, const std::string &module = "") {
-        auto level = get_module_level(module);
-        if (level <= Level::Warn) {
-            auto tag = module.empty() ? PATHFINDER_DEFAULT_LOG_TAG : module.c_str();
+    static void warn(const std::string &label, const std::string &module = PATHFINDER_DEFAULT_LOG_TAG) {
+        if (const auto level = get_effective_level(module); level <= Level::Warn) {
+            auto tag = module.c_str();
 #ifdef __ANDROID__
             __android_log_write(ANDROID_LOG_WARN, tag, label.c_str());
 #else
@@ -102,10 +105,9 @@ public:
         }
     }
 
-    static void error(const std::string &label, const std::string &module = "") {
-        auto level = get_module_level(module);
-        if (level <= Level::Error) {
-            auto tag = module.empty() ? PATHFINDER_DEFAULT_LOG_TAG : module.c_str();
+    static void error(const std::string &label, const std::string &module = PATHFINDER_DEFAULT_LOG_TAG) {
+        if (const auto level = get_effective_level(module); level <= Level::Error) {
+            auto tag = module.c_str();
 #ifdef __ANDROID__
             __android_log_write(ANDROID_LOG_ERROR, tag, label.c_str());
 #else
@@ -123,6 +125,7 @@ public:
 
     void operator=(Logger const &) = delete;
 };
+
 } // namespace Pathfinder
 
 #endif // PATHFINDER_LOGGER_H
