@@ -47,7 +47,7 @@ void Path2d::cubic_to(float cx0, float cy0, float cx1, float cy1, float x, float
 }
 
 void Path2d::add_line(const Vec2F &start, const Vec2F &end) {
-    if (start == end) {
+    if (start.approx_eq(end, FLOAT_EPSILON)) {
         return;
     }
 
@@ -124,7 +124,7 @@ void Path2d::add_rect_with_corners(const RectF &rect, const RectF &corner_radius
 }
 
 void Path2d::add_circle(const Vec2F &center, float radius) {
-    if (radius == 0) {
+    if (radius <= 0) {
         return;
     }
 
