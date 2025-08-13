@@ -12,6 +12,8 @@ public:
 
     void set_context() override;
 
+    void draw_frame() override;
+
 private:
     bool init_display();
 

@@ -28,7 +28,7 @@ public:
 
     virtual bool init_app() = 0;
 
-    bool draw_frame();
+    virtual void draw_frame();
 
     bool is_ready() const;
 

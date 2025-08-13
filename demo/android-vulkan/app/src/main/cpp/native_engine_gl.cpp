@@ -110,3 +110,9 @@ bool NativeEngineGl::init_app() {
 void NativeEngineGl::set_context() {
     eglMakeCurrent(mEglDisplay, mEglSurface, mEglSurface, mEglContext);
 }
+
+void NativeEngineGl::draw_frame() {
+    NativeEngine::draw_frame();
+
+    eglSwapBuffers(mEglDisplay, mEglSurface);
+}

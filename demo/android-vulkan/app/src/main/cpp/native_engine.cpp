@@ -1,9 +1,9 @@
 #include "native_engine.h"
 
-bool NativeEngine::draw_frame() {
+void NativeEngine::draw_frame() {
     // Acquire next swap chain image.
     if (!pf_swapchain->acquire_image()) {
-        return false;
+        return;
     }
 
     auto current_window_size = pf_window->get_logical_size();
@@ -39,8 +39,6 @@ bool NativeEngine::draw_frame() {
     pf_queue->submit(encoder, pf_swapchain);
 
     pf_swapchain->present();
-
-    return true;
 }
 
 bool NativeEngine::is_ready() const {
