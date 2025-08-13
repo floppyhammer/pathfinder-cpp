@@ -12,22 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 #include <android/log.h>
-#include "VulkanMain.hpp"
+
+#include "native_engine_gl.h"
+#include "native_engine_vk.h"
+
+NativeEngine *native_engine = nullptr;
 
 // Process the next main command.
 void handle_cmd(android_app *app, int32_t cmd) {
     switch (cmd) {
         case APP_CMD_INIT_WINDOW:
             // The window is being shown, get it ready.
-            InitVulkan(app);
+            native_engine = new NativeEngineVk(app);
+            native_engine->init_app();
             break;
         case APP_CMD_TERM_WINDOW:
             // The window is being hidden or closed, clean it up.
-            DeleteVulkan();
+            delete native_engine;
             break;
         default:
-            __android_log_print(ANDROID_LOG_INFO, "Pathfinder",
-                                "Event not handled: %d", cmd);
+            __android_log_print(ANDROID_LOG_INFO, "Pathfinder", "Event not handled: %d", cmd);
     }
 }
 
@@ -41,14 +45,15 @@ void android_main(struct android_app *app) {
 
     // Main loop.
     do {
-        if (ALooper_pollAll(IsVulkanReady() ? 1 : 0, nullptr,
-                            &events, (void **) &source) >= 0) {
-            if (source != NULL) source->process(app, source);
+        if (ALooper_pollAll(1000, nullptr, &events, (void **)&source) >= 0) {
+            if (source != NULL) {
+                source->process(app, source);
+            }
         }
 
-        // Render if Vulkan is ready.
-        if (IsVulkanReady()) {
-            VulkanDrawFrame();
+        // Render if the engine is ready.
+        if (native_engine && native_engine->is_ready()) {
+            native_engine->draw_frame();
         }
     } while (app->destroyRequested == 0);
 }
