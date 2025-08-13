@@ -11,4 +11,4 @@ cmake-build-relwithdebinfo/
 
 # Android demo assets
 demo/android-gles/app/src/main/assets/
-demo/android-vulkan/app/src/main/assets/
+demo/android/app/src/main/assets/
