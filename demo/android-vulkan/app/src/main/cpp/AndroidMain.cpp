@@ -45,7 +45,7 @@ void android_main(struct android_app *app) {
 
     // Main loop.
     do {
-        if (ALooper_pollAll(1000, nullptr, &events, (void **)&source) >= 0) {
+        if (ALooper_pollOnce(0, nullptr, &events, (void **)&source) >= 0) {
             if (source != nullptr) {
                 source->process(app, source);
             }
