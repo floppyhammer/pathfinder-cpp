@@ -14,7 +14,7 @@
                  This will be optional after the release 1.1.0 -->
             <meta-data
                 android:name="android.app.lib_name"
-                android:value="android_demo_vulkan" />
+                android:value="pathfinder_android_demo" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

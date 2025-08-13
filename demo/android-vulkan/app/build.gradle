@@ -5,7 +5,7 @@ android {
     ndkVersion "23.1.7779620"
 
     defaultConfig {
-        applicationId "graphics.pathfinder.vulkan"
+        applicationId "graphics.pathfinder.demo"
         minSdkVersion 24
         targetSdkVersion 34
 
@@ -31,7 +31,7 @@ android {
     }
     buildTypes.release.minifyEnabled = false
     buildFeatures.prefab = true
-    namespace 'graphics.pathfinder.vulkan'
+    namespace 'graphics.pathfinder.demo'
 }
 
 dependencies {

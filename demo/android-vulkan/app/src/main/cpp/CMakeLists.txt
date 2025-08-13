@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.4.1)
 
-project(android_demo_vulkan)
+project(pathfinder_android_demo)
 
 # Integrate GameActivity, refer to
 #     https://d.android.com/games/agdk/integrate-game-activity

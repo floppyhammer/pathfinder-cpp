@@ -40,14 +40,11 @@ bool NativeEngineVk::init_app() {
 
     pf_blit = std::make_shared<Blit>(pf_device, pf_queue, pf_swapchain->get_surface_format());
 
-    {
-        auto dst_texture =
-            pf_device->create_texture({window_size, Pathfinder::TextureFormat::Rgba8Unorm}, "dst texture");
+    auto dst_texture = pf_device->create_texture({window_size, Pathfinder::TextureFormat::Rgba8Unorm}, "dst texture");
 
-        pf_app->canvas_->set_dst_texture(dst_texture);
+    pf_app->canvas_->set_dst_texture(dst_texture);
 
-        pf_blit->set_texture(dst_texture);
-    }
+    pf_blit->set_texture(dst_texture);
 
     return true;
 }

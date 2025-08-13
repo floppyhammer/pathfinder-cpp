@@ -15,7 +15,7 @@ bool NativeEngineGl::init_display() {
     }
 
     mEglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    if (EGL_FALSE == eglInitialize(mEglDisplay, 0, 0)) {
+    if (EGL_FALSE == eglInitialize(mEglDisplay, nullptr, nullptr)) {
         LOGE("NativeEngine: failed to init display, error %d", eglGetError());
         return false;
     }
@@ -98,14 +98,11 @@ bool NativeEngineGl::init_app() {
 
     pf_blit = std::make_shared<Blit>(pf_device, pf_queue, pf_swapchain->get_surface_format());
 
-    {
-        auto dst_texture =
-            pf_device->create_texture({window_size, Pathfinder::TextureFormat::Rgba8Unorm}, "dst texture");
+    auto dst_texture = pf_device->create_texture({window_size, Pathfinder::TextureFormat::Rgba8Unorm}, "dst texture");
 
-        pf_app->canvas_->set_dst_texture(dst_texture);
+    pf_app->canvas_->set_dst_texture(dst_texture);
 
-        pf_blit->set_texture(dst_texture);
-    }
+    pf_blit->set_texture(dst_texture);
 
     return true;
 }
