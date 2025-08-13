@@ -25,8 +25,8 @@ the same image in a single compute invocation.
 
 ### Android
 
-* Copy `assets` into `demo/android-gles/app/src/main` or `demo/android-vulkan/app/src/main`
-* Open `demo/android-gles` or `demo/android-vulkan` in Android Studio.
+* Copy `assets` into `demo/android/app/src/main`.
+* Open `demo/android` in Android Studio.
 * Build and run.
 
 ### Web

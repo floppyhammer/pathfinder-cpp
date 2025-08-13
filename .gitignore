@@ -10,5 +10,4 @@ cmake-build-relwithdebinfo/
 .idea/
 
 # Android demo assets
-demo/android-gles/app/src/main/assets/
 demo/android/app/src/main/assets/
