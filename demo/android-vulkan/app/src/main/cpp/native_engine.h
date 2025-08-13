@@ -24,6 +24,8 @@ public:
         mAppCtx = app;
     }
 
+    virtual ~NativeEngine() = default;
+
     virtual bool init_app() = 0;
 
     bool draw_frame();

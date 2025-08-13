@@ -29,20 +29,23 @@ bool NativeEngineGl::init_surface() {
     }
 
     EGLint numConfigs;
-    const EGLint attribs[] = {
-            EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT, // Request OpenGL ES 3.0
-            EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-            EGL_BLUE_SIZE, 8,
-            EGL_GREEN_SIZE, 8,
-            EGL_RED_SIZE, 8,
-            EGL_DEPTH_SIZE, 16,
-            EGL_NONE
-    };
+    const EGLint attribs[] = {EGL_RENDERABLE_TYPE,
+                              EGL_OPENGL_ES3_BIT, // Request OpenGL ES 3.0
+                              EGL_SURFACE_TYPE,
+                              EGL_WINDOW_BIT,
+                              EGL_BLUE_SIZE,
+                              8,
+                              EGL_GREEN_SIZE,
+                              8,
+                              EGL_RED_SIZE,
+                              8,
+                              EGL_DEPTH_SIZE,
+                              16,
+                              EGL_NONE};
 
     // Pick the first EGLConfig that matches.
     eglChooseConfig(mEglDisplay, attribs, &mEglConfig, 1, &numConfigs);
-    mEglSurface = eglCreateWindowSurface(mEglDisplay, mEglConfig, mAppCtx->window,
-                                         NULL);
+    mEglSurface = eglCreateWindowSurface(mEglDisplay, mEglConfig, mAppCtx->window, NULL);
     if (mEglSurface == EGL_NO_SURFACE) {
         LOGE("Failed to create EGL surface, EGL error %d", eglGetError());
         return false;
@@ -70,8 +73,11 @@ bool NativeEngineGl::init_app() {
     init_surface();
     init_context();
 
-    auto window_size = Pathfinder::Vec2I(
-            ANativeWindow_getWidth(mAppCtx->window), ANativeWindow_getHeight(mAppCtx->window));
+    // This is required.
+    eglMakeCurrent(mEglDisplay, mEglSurface, mEglSurface, mEglContext);
+
+    auto window_size =
+        Pathfinder::Vec2I(ANativeWindow_getWidth(mAppCtx->window), ANativeWindow_getHeight(mAppCtx->window));
 
     window_builder = std::make_shared<Pathfinder::WindowBuilderGl>(window_size);
 
@@ -88,18 +94,13 @@ bool NativeEngineGl::init_app() {
     auto img_input = Pathfinder::load_asset(mAppCtx->activity->assetManager, "sea.png");
 
     // Create app.
-    pf_app = std::make_shared<App>(pf_device,
-                                   pf_queue,
-                                   window_size,
-                                   svg_input,
-                                   img_input);
+    pf_app = std::make_shared<App>(pf_device, pf_queue, window_size, svg_input, img_input);
 
-    pf_blit = std::make_shared<Blit>(pf_device, pf_queue,
-                                     pf_swapchain->get_surface_format());
+    pf_blit = std::make_shared<Blit>(pf_device, pf_queue, pf_swapchain->get_surface_format());
 
     {
-        auto dst_texture = pf_device->create_texture(
-                {window_size, Pathfinder::TextureFormat::Rgba8Unorm}, "dst texture");
+        auto dst_texture =
+            pf_device->create_texture({window_size, Pathfinder::TextureFormat::Rgba8Unorm}, "dst texture");
 
         pf_app->canvas_->set_dst_texture(dst_texture);
 
