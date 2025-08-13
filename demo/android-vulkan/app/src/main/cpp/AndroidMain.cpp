@@ -53,6 +53,8 @@ void android_main(struct android_app *app) {
 
         // Render if the engine is ready.
         if (native_engine && native_engine->is_ready()) {
+            // This is required for GL, otherwise GPU memory leak occurs.
+            native_engine->set_context();
             native_engine->draw_frame();
         }
     } while (app->destroyRequested == 0);

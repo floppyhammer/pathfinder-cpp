@@ -10,6 +10,8 @@ public:
 
     bool init_app() override;
 
+    void set_context() override;
+
 private:
     bool init_display();
 

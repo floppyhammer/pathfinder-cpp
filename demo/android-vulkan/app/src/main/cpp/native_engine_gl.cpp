@@ -45,7 +45,7 @@ bool NativeEngineGl::init_surface() {
 
     // Pick the first EGLConfig that matches.
     eglChooseConfig(mEglDisplay, attribs, &mEglConfig, 1, &numConfigs);
-    mEglSurface = eglCreateWindowSurface(mEglDisplay, mEglConfig, mAppCtx->window, NULL);
+    mEglSurface = eglCreateWindowSurface(mEglDisplay, mEglConfig, mAppCtx->window, nullptr);
     if (mEglSurface == EGL_NO_SURFACE) {
         LOGE("Failed to create EGL surface, EGL error %d", eglGetError());
         return false;
@@ -60,7 +60,7 @@ bool NativeEngineGl::init_context() {
     }
 
     EGLint attribList[] = {EGL_CONTEXT_CLIENT_VERSION, 3, EGL_NONE};
-    mEglContext = eglCreateContext(mEglDisplay, mEglConfig, NULL, attribList);
+    mEglContext = eglCreateContext(mEglDisplay, mEglConfig, nullptr, attribList);
     if (mEglContext == EGL_NO_CONTEXT) {
         LOGE("Failed to create EGL context, EGL error %d", eglGetError());
         return false;
@@ -74,7 +74,7 @@ bool NativeEngineGl::init_app() {
     init_context();
 
     // This is required.
-    eglMakeCurrent(mEglDisplay, mEglSurface, mEglSurface, mEglContext);
+    set_context();
 
     auto window_size =
         Pathfinder::Vec2I(ANativeWindow_getWidth(mAppCtx->window), ANativeWindow_getHeight(mAppCtx->window));
@@ -105,4 +105,8 @@ bool NativeEngineGl::init_app() {
     pf_blit->set_texture(dst_texture);
 
     return true;
+}
+
+void NativeEngineGl::set_context() {
+    eglMakeCurrent(mEglDisplay, mEglSurface, mEglSurface, mEglContext);
 }

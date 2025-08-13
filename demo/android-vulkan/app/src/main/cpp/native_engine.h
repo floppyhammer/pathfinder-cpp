@@ -32,6 +32,8 @@ public:
 
     bool is_ready() const;
 
+    virtual void set_context() {};
+
 protected:
     android_app *mAppCtx;
 
