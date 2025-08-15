@@ -139,6 +139,8 @@ GLFWwindow *WindowBuilder::glfw_window_init(const Vec2I &logical_size,
     glfwGetMonitorContentScale(monitors[0], &dpi_scale_x, &dpi_scale_y);
     assert(dpi_scale_x == dpi_scale_y);
     dpi_scaling_factor = dpi_scale_x;
+    #else
+    dpi_scaling_factor = 1.0f; // We cannot leave it unassigned.
     #endif
 
     #if defined(__linux__) || defined(_WIN32) || defined(__EMSCRIPTEN__)

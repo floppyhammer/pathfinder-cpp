@@ -87,7 +87,7 @@ if (PATHFINDER_BUILD_DEMO)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s USE_GLFW=3 -s USE_WEBGL2=1 -s FULL_ES3=1")
 
         # For debugging. Enable this to obtain detailed call stack.
-        #        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -gsource-map -s ASSERTIONS=2 -s SAFE_HEAP=1 -s STACK_OVERFLOW_CHECK=1 --source-map-base http://127.0.0.1:8000/")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -gsource-map -s ASSERTIONS=2 -s SAFE_HEAP=1 -s STACK_OVERFLOW_CHECK=1 -s NO_DISABLE_EXCEPTION_CATCHING --source-map-base http://127.0.0.1:8000/")
 
         add_subdirectory(demo/web)
     endif ()
