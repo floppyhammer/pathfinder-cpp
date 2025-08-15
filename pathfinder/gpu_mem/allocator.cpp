@@ -190,7 +190,7 @@ void GpuMemoryAllocator::purge_if_needed() {
 
         switch (free_objects.front().kind) {
             case FreeObjectKind::Buffer: {
-                Logger::info("Purging buffer: " + oldest_free_obj.buffer_allocation.tag);
+                Logger::debug("Purging buffer: " + oldest_free_obj.buffer_allocation.tag);
 
                 free_objects.erase(free_objects.begin());
                 bytes_allocated -= oldest_free_obj.buffer_allocation.buffer->get_size();
@@ -198,7 +198,7 @@ void GpuMemoryAllocator::purge_if_needed() {
                 purge_happened = true;
             } break;
             case FreeObjectKind::Texture: {
-                Logger::info("Purging texture: " + oldest_free_obj.texture_allocation.tag);
+                Logger::debug("Purging texture: " + oldest_free_obj.texture_allocation.tag);
 
                 free_objects.erase(free_objects.begin());
                 bytes_allocated -= oldest_free_obj.texture_allocation.descriptor.byte_size();
@@ -220,18 +220,19 @@ void GpuMemoryAllocator::print_info() {
     size_t buffer_count = buffers_in_use.size();
     size_t free_object_count = free_objects.size();
 
-    Logger::info("Current status: ALLOCATED " + std::to_string(int(bytes_allocated / 1024.f)) + " KB | COMMITTED " +
-                 std::to_string(int(bytes_committed / 1024.f)) + " KB | Textures " + std::to_string(texture_count) +
-                 " | Buffers " + std::to_string(buffer_count) + " | Free objects " + std::to_string(free_object_count));
+    Logger::debug("Current status: ALLOCATED " + std::to_string(int(bytes_allocated / 1024.f)) + " KB | COMMITTED " +
+                  std::to_string(int(bytes_committed / 1024.f)) + " KB | Textures " + std::to_string(texture_count) +
+                  " | Buffers " + std::to_string(buffer_count) + " | Free objects " +
+                  std::to_string(free_object_count));
 
     for (auto& allocation : textures_in_use) {
-        Logger::info("Texture " + std::to_string(allocation.first) + ": " + allocation.second.tag + " - " +
-                     std::to_string(int(allocation.second.descriptor.byte_size() / 1024.f)) + " KB");
+        Logger::debug("Texture " + std::to_string(allocation.first) + ": " + allocation.second.tag + " - " +
+                      std::to_string(int(allocation.second.descriptor.byte_size() / 1024.f)) + " KB");
     }
 
     for (auto& allocation : buffers_in_use) {
-        Logger::info("Buffer " + std::to_string(allocation.first) + ": " + allocation.second.tag + " - " +
-                     std::to_string(int(allocation.second.descriptor.size / 1024.f)) + " KB");
+        Logger::debug("Buffer " + std::to_string(allocation.first) + ": " + allocation.second.tag + " - " +
+                      std::to_string(int(allocation.second.descriptor.size / 1024.f)) + " KB");
     }
 }
 
