@@ -32,6 +32,8 @@ public:
 
     bool acquire_image() override;
 
+    void submit(const std::shared_ptr<CommandEncoder> &encoder) override;
+
 private:
     WindowVk *window_{};
     DeviceVk *device_{};
@@ -66,6 +68,8 @@ private:
     size_t current_frame_ = 0;
 
     uint32_t image_index_ = 0;
+
+    std::shared_ptr<CommandEncoder> encoder_of_last_frame_;
 
 private:
     void init_swapchain();

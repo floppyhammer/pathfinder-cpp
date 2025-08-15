@@ -13,7 +13,7 @@
 
 namespace Pathfinder {
 
-std::shared_ptr<WindowBuilder> WindowBuilder::new_impl(BackendType backend_type, const Vec2I &size) {
+std::shared_ptr<WindowBuilder> WindowBuilder::new_impl(const BackendType backend_type, const Vec2I &size) {
 #ifndef __ANDROID__
     switch (backend_type) {
     #ifdef PATHFINDER_USE_OPENGL
@@ -62,7 +62,7 @@ void WindowBuilder::poll_events() {
     {
         primary_window_->just_resized_ = false;
 
-        for (auto w : sub_windows_) {
+        for (const auto &w : sub_windows_) {
             w->just_resized_ = false;
         }
     }
@@ -141,17 +141,17 @@ GLFWwindow *WindowBuilder::glfw_window_init(const Vec2I &logical_size,
     dpi_scaling_factor = dpi_scale_x;
     #endif
 
-    #if defined(__linux__) || defined(_WIN32)
-    auto physical_size = (logical_size.to_f32() * dpi_scaling_factor).to_i32();
+    #if defined(__linux__) || defined(_WIN32) || defined(__EMSCRIPTEN__)
+    const auto physical_size = (logical_size.to_f32() * dpi_scaling_factor).to_i32();
     #elif defined(__APPLE__)
     auto physical_size = logical_size;
     #endif
 
-    auto glfw_window = glfwCreateWindow(physical_size.x,
-                                        physical_size.y,
-                                        title.c_str(),
-                                        fullscreen ? glfwGetPrimaryMonitor() : nullptr,
-                                        shared_window);
+    const auto glfw_window = glfwCreateWindow(physical_size.x,
+                                              physical_size.y,
+                                              title.c_str(),
+                                              fullscreen ? glfwGetPrimaryMonitor() : nullptr,
+                                              shared_window);
     if (glfw_window == nullptr) {
         throw std::runtime_error("Failed to create GLFW window!");
     }

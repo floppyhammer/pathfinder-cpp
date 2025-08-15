@@ -12,7 +12,7 @@ class QueueGl : public Queue {
     friend class WindowGl;
 
 public:
-    void submit_and_wait(std::shared_ptr<CommandEncoder> encoder) override {
+    void submit_and_wait(const std::shared_ptr<CommandEncoder> &encoder) override {
         if (encoder->submitted_) {
             Logger::error("Attempted to submit an encoder that's already been submitted!");
             return;
@@ -21,10 +21,6 @@ public:
         encoder->submitted_ = true;
 
         encoder->finish();
-    }
-
-    void submit(std::shared_ptr<CommandEncoder> encoder, std::shared_ptr<SwapChain> surface) override {
-        submit_and_wait(encoder);
     }
 };
 

@@ -128,6 +128,7 @@ struct Command {
 class CommandEncoder {
     friend class QueueVk;
     friend class QueueGl;
+    friend class SwapChainGl;
     friend class SwapChainVk;
 
 public:

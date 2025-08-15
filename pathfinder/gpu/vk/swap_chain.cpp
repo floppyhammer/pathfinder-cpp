@@ -219,6 +219,28 @@ void SwapChainVk::create_sync_objects() {
     }
 }
 
+void SwapChainVk::submit(const std::shared_ptr<CommandEncoder> &encoder) {
+    // Cleanup last encoder.
+    if (encoder_of_last_frame_) {
+        encoder_of_last_frame_ = nullptr;
+    }
+
+    if (encoder->submitted_) {
+        Logger::error("Attempted to submit an encoder that's already been submitted!");
+        return;
+    }
+
+    encoder->submitted_ = true;
+
+    if (!encoder->finish()) {
+        return;
+    }
+
+    flush(encoder);
+
+    encoder_of_last_frame_ = encoder;
+}
+
 void SwapChainVk::flush(const std::shared_ptr<CommandEncoder> &encoder) {
     auto vk_device = device_->get_device();
     auto vk_graphics_queue = device_->get_graphics_queue();

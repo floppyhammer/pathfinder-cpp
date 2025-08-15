@@ -2,7 +2,7 @@
 
 namespace Pathfinder {
 
-void QueueVk::submit_and_wait(std::shared_ptr<CommandEncoder> encoder) {
+void QueueVk::submit_and_wait(const std::shared_ptr<CommandEncoder>& encoder) {
     if (encoder->submitted_) {
         Logger::error("Attempted to submit an encoder that's already been submitted!");
         return;
@@ -15,7 +15,7 @@ void QueueVk::submit_and_wait(std::shared_ptr<CommandEncoder> encoder) {
         return;
     }
 
-    auto encoder_vk = (CommandEncoderVk *)encoder.get();
+    auto encoder_vk = (CommandEncoderVk*)encoder.get();
 
     // Submit the command buffer to the graphics queue.
     VkSubmitInfo submit_info{};
@@ -27,30 +27,6 @@ void QueueVk::submit_and_wait(std::shared_ptr<CommandEncoder> encoder) {
 
     // Wait for the queue to finish commands.
     vkQueueWaitIdle(vk_graphics_queue_);
-}
-
-void QueueVk::submit(std::shared_ptr<CommandEncoder> encoder, std::shared_ptr<SwapChain> surface) {
-    // Cleanup last encoder.
-    if (encoder_of_last_frame_) {
-        encoder_of_last_frame_ = nullptr;
-    }
-
-    if (encoder->submitted_) {
-        Logger::error("Attempted to submit an encoder that's already been submitted!");
-        return;
-    }
-
-    encoder->submitted_ = true;
-
-    if (!encoder->finish()) {
-        return;
-    }
-
-    auto surface_vk = (SwapChainVk *)surface.get();
-
-    surface_vk->flush(encoder);
-
-    encoder_of_last_frame_ = encoder;
 }
 
 } // namespace Pathfinder

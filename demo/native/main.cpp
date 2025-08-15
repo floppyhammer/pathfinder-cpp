@@ -76,7 +76,7 @@ int main() {
             encoder->end_render_pass();
         }
 
-        queue->submit(encoder, swap_chain);
+        swap_chain->submit(encoder);
 
         swap_chain->present();
     }

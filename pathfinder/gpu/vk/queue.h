@@ -11,9 +11,7 @@ class QueueVk : public Queue {
     friend class WindowBuilderVk;
 
 public:
-    void submit_and_wait(std::shared_ptr<CommandEncoder> encoder) override;
-
-    void submit(std::shared_ptr<CommandEncoder> encoder, std::shared_ptr<SwapChain> surface) override;
+    void submit_and_wait(const std::shared_ptr<CommandEncoder> &encoder) override;
 
 private:
     VkDevice vk_device_{};
@@ -21,8 +19,6 @@ private:
     VkQueue vk_graphics_queue_{};
 
     VkQueue vk_present_queue_{};
-
-    std::shared_ptr<CommandEncoder> encoder_of_last_frame_;
 
 public:
     QueueVk(VkDevice vk_device, VkQueue vk_graphics_queue, VkQueue vk_present_queue) {

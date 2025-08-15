@@ -34,6 +34,8 @@ public:
     /// Acquire current texture in the swap chain.
     virtual bool acquire_image() = 0;
 
+    virtual void submit(const std::shared_ptr<CommandEncoder> &encoder) = 0;
+
     /**
      * Flush command buffers to the current image.
      */

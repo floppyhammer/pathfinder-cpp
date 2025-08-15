@@ -12,6 +12,7 @@ namespace Pathfinder {
 
 class SwapChainGl : public SwapChain {
     friend class DeviceGl;
+    friend class CommandEncoderGl;
 
 public:
 #ifndef __ANDROID__
@@ -47,6 +48,17 @@ public:
         glfwMakeContextCurrent(glfw_window_);
 #endif
         return true;
+    }
+
+    void submit(const std::shared_ptr<CommandEncoder> &encoder) override {
+        if (encoder->submitted_) {
+            Logger::error("Attempted to submit an encoder that's already been submitted!");
+            return;
+        }
+
+        encoder->submitted_ = true;
+
+        encoder->finish();
     }
 
     void present() override {

@@ -29,9 +29,11 @@ ShaderModuleGl::ShaderModuleGl(const std::vector<char> &source_code,
         case ShaderStage::Fragment: {
             id_ = glCreateShader(GL_FRAGMENT_SHADER);
         } break;
+#ifndef __EMSCRIPTEN__
         case ShaderStage::Compute: {
             id_ = glCreateShader(GL_COMPUTE_SHADER);
         } break;
+#endif
         default:
             abort();
     }
