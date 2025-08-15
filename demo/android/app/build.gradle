@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 34
+    compileSdkVersion 36
     ndkVersion "23.1.7779620"
 
     defaultConfig {
         applicationId "graphics.pathfinder.demo"
         minSdkVersion 24
-        targetSdkVersion 34
+        targetSdkVersion 36
 
         // Shader compilation directives, put glsl shaders to app/src/main/shaders.
         // Android Studio will pick them up and compile them into APK/assets/shaders.
