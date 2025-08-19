@@ -51,12 +51,17 @@ void Window::framebuffer_resize_callback(GLFWwindow* glfw_window, int width, int
     auto window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
 
     if (window) {
+        // Get the size of window decorations.
+        int left, top, right, bottom;
+        glfwGetWindowFrameSize(glfw_window, &left, &top, &right, &bottom);
+
+        // TODO: consider window decorations.
         window->just_resized_ = true;
         window->logical_size_ = (Vec2F(width, height) / window->get_dpi_scaling_factor()).to_i32();
         window->minimized_ = window->logical_size_.area() == 0;
 
-        Logger::info("Window physical resized to " + Vec2I(width, height).to_string());
-        Logger::info("Window logical resized to " + window->logical_size_.to_string());
+        Logger::info("Window resized to physical" + Vec2I(width, height).to_string() + ", logical" +
+                     window->logical_size_.to_string());
     } else {
         Logger::error("glfwGetWindowUserPointer is NULL!");
     }
