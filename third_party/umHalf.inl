@@ -463,7 +463,7 @@ inline HalfFloat operator+ (HalfFloat one, HalfFloat two)
 
 	// compute the difference between the two exponents. shifts with negative
 	// numbers are undefined, thus we need two code paths
-	register int expDiff = one.IEEE.Exp - two.IEEE.Exp;
+	int expDiff = one.IEEE.Exp - two.IEEE.Exp;
 	
 	if (0 == expDiff)
 	{
