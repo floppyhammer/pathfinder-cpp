@@ -113,6 +113,8 @@ void SwapChainVk::cleanup_swapchain() {
 void SwapChainVk::destroy() {
     auto vk_device = device_->get_device();
 
+    encoder_of_last_frame_.reset();
+
     // Clean up swap chain related resources.
     cleanup_swapchain();
 
