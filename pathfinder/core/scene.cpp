@@ -14,9 +14,8 @@ SceneEpoch::SceneEpoch(uint64_t _hi, uint64_t _lo) {
 SceneEpoch SceneEpoch::successor() const {
     if (lo == std::numeric_limits<uint64_t>::max()) {
         return {hi + 1, 0};
-    } else {
-        return {hi, lo + 1};
     }
+    return {hi, lo + 1};
 }
 
 void SceneEpoch::next() {
