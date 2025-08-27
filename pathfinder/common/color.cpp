@@ -12,12 +12,12 @@ ColorU::ColorU(uint32_t color) {
     r_ = (color << 24u) >> 24u;
 }
 
-ColorU::ColorU(ColorF _color) {
+ColorU::ColorU(const ColorF& color) {
     // Note that the order is reversed.
-    a_ = static_cast<uint8_t>(_color.a_ * 255.f);
-    b_ = static_cast<uint8_t>(_color.b_ * 255.f);
-    g_ = static_cast<uint8_t>(_color.g_ * 255.f);
-    r_ = static_cast<uint8_t>(_color.r_ * 255.f);
+    a_ = static_cast<uint8_t>(color.a_ * 255.f);
+    b_ = static_cast<uint8_t>(color.b_ * 255.f);
+    g_ = static_cast<uint8_t>(color.g_ * 255.f);
+    r_ = static_cast<uint8_t>(color.r_ * 255.f);
 }
 
 ColorU::ColorU(uint8_t r, uint8_t g, uint8_t b, uint8_t a) : r_(r), g_(g), b_(b), a_(a) {}
