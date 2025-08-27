@@ -15,8 +15,6 @@ namespace Pathfinder {
 
 #ifndef __ANDROID__
 std::string load_file_as_string(const std::string &file_path) {
-    auto timer = Timestamp("");
-
     std::string output;
     std::ifstream file;
 
@@ -40,15 +38,10 @@ std::string load_file_as_string(const std::string &file_path) {
         throw std::runtime_error(std::string("Failed to load string from disk: ") + std::string(file_path));
     }
 
-    timer.record("Loading file as string: " + file_path);
-    timer.print();
-
     return std::move(output);
 }
 
 std::vector<char> load_file_as_bytes(const std::string &file_path) {
-    auto timer = Timestamp("");
-
     FILE *file = fopen(file_path.c_str(), "rb");
     if (!file) {
         Logger::error("Failed to load file: " + file_path);
@@ -67,9 +60,6 @@ std::vector<char> load_file_as_bytes(const std::string &file_path) {
 
     fclose(file);
 
-    timer.record("Loading file as bytes: " + file_path);
-    timer.print();
-
     return std::move(bytes);
 }
 #endif
@@ -87,7 +77,7 @@ std::shared_ptr<ImageBuffer> ImageBuffer::from_memory(const std::vector<char> &b
                                                     STBI_rgb_alpha);
 
     if (channels != 4) {
-        Logger::info("Converted non-RGBA pixels to RGBA ones");
+        Logger::info("stb-image converted non-RGBA pixels to RGBA ones");
     }
 
     // Generate a texture using the previously loaded image data.

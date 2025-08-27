@@ -5,8 +5,7 @@ project(pathfinder
         LANGUAGES C CXX)
 
 # Set binary output directory.
-# (Using CMAKE_CURRENT_SOURCE_DIR is necessary.)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 # Options.
 option(PATHFINDER_BACKEND_OPENGL "Enable OpenGL backend" ON)

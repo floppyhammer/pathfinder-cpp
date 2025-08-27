@@ -31,7 +31,7 @@ public:
         Warn,
         Error,
         Silence,
-    } global_level_ = Level::Warn;
+    } global_level_ = Level::Info;
 
     std::unordered_map<std::string, Level> module_levels;
 
