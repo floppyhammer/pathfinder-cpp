@@ -73,6 +73,12 @@ struct ColorU {
 
     ColorF to_f32() const;
 
+    std::string to_hex() const {
+        char hex_color[8]; // #RRGGBB\0
+        std::snprintf(hex_color, sizeof(hex_color), "#%02x%02x%02x", r_, g_, b_);
+        return hex_color;
+    }
+
     ColorU apply_alpha(float alpha) const {
         alpha = clamp(alpha, 0.0f, 1.0f);
         auto new_color = *this;
