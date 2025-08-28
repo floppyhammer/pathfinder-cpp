@@ -34,8 +34,6 @@ endif ()
 
 add_subdirectory(pathfinder)
 
-file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
-
 target_compile_features(pathfinder PUBLIC cxx_std_14)
 
 if (PATHFINDER_BACKEND_VULKAN)
@@ -75,6 +73,8 @@ endif ()
 
 if (PATHFINDER_BUILD_DEMO)
     message("[Pathfinder] Build demo")
+
+    file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
 
     # Demo common library.
     add_subdirectory(demo/common)
