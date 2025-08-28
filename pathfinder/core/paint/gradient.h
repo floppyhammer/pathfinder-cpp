@@ -3,7 +3,6 @@
 
 //! Gradient effects that paths can be filled with.
 
-#include <utility>
 #include <vector>
 
 #include "../../common/math/transform2.h"
@@ -127,7 +126,7 @@ public:
     bool is_opaque();
 
     // For being used as ordered key.
-    inline bool operator<(const Gradient &rhs) const {
+    bool operator<(const Gradient &rhs) const {
         if (wrap == rhs.wrap) {
             if (geometry.type == rhs.geometry.type) {
                 if (geometry.type == GradientGeometry::Type::Linear) {
@@ -152,7 +151,7 @@ private:
 };
 
 /// The size of a gradient tile.
-const uint32_t GRADIENT_TILE_LENGTH = 256;
+constexpr uint32_t GRADIENT_TILE_LENGTH = 256;
 
 /// Color texture data for gradient filter,
 /// each row of which stores a 1D gradient line.

@@ -182,25 +182,25 @@ inline bool blend_mode_occludes_backdrop(BlendMode blend_mode) {
     }
 }
 
-const int32_t COMBINER_CTRL_COLOR_COMBINE_SRC_IN = 0x1;
-const int32_t COMBINER_CTRL_COLOR_COMBINE_DEST_IN = 0x2;
+constexpr int32_t COMBINER_CTRL_COLOR_COMBINE_SRC_IN = 0x1;
+constexpr int32_t COMBINER_CTRL_COLOR_COMBINE_DEST_IN = 0x2;
 
-const int32_t COMBINER_CTRL_COMPOSITE_NORMAL = 0x0;
-const int32_t COMBINER_CTRL_COMPOSITE_MULTIPLY = 0x1;
-const int32_t COMBINER_CTRL_COMPOSITE_SCREEN = 0x2;
-const int32_t COMBINER_CTRL_COMPOSITE_OVERLAY = 0x3;
-const int32_t COMBINER_CTRL_COMPOSITE_DARKEN = 0x4;
-const int32_t COMBINER_CTRL_COMPOSITE_LIGHTEN = 0x5;
-const int32_t COMBINER_CTRL_COMPOSITE_COLOR_DODGE = 0x6;
-const int32_t COMBINER_CTRL_COMPOSITE_COLOR_BURN = 0x7;
-const int32_t COMBINER_CTRL_COMPOSITE_HARD_LIGHT = 0x8;
-const int32_t COMBINER_CTRL_COMPOSITE_SOFT_LIGHT = 0x9;
-const int32_t COMBINER_CTRL_COMPOSITE_DIFFERENCE = 0xa;
-const int32_t COMBINER_CTRL_COMPOSITE_EXCLUSION = 0xb;
-const int32_t COMBINER_CTRL_COMPOSITE_HUE = 0xc;
-const int32_t COMBINER_CTRL_COMPOSITE_SATURATION = 0xd;
-const int32_t COMBINER_CTRL_COMPOSITE_COLOR = 0xe;
-const int32_t COMBINER_CTRL_COMPOSITE_LUMINOSITY = 0xf;
+constexpr int32_t COMBINER_CTRL_COMPOSITE_NORMAL = 0x0;
+constexpr int32_t COMBINER_CTRL_COMPOSITE_MULTIPLY = 0x1;
+constexpr int32_t COMBINER_CTRL_COMPOSITE_SCREEN = 0x2;
+constexpr int32_t COMBINER_CTRL_COMPOSITE_OVERLAY = 0x3;
+constexpr int32_t COMBINER_CTRL_COMPOSITE_DARKEN = 0x4;
+constexpr int32_t COMBINER_CTRL_COMPOSITE_LIGHTEN = 0x5;
+constexpr int32_t COMBINER_CTRL_COMPOSITE_COLOR_DODGE = 0x6;
+constexpr int32_t COMBINER_CTRL_COMPOSITE_COLOR_BURN = 0x7;
+constexpr int32_t COMBINER_CTRL_COMPOSITE_HARD_LIGHT = 0x8;
+constexpr int32_t COMBINER_CTRL_COMPOSITE_SOFT_LIGHT = 0x9;
+constexpr int32_t COMBINER_CTRL_COMPOSITE_DIFFERENCE = 0xa;
+constexpr int32_t COMBINER_CTRL_COMPOSITE_EXCLUSION = 0xb;
+constexpr int32_t COMBINER_CTRL_COMPOSITE_HUE = 0xc;
+constexpr int32_t COMBINER_CTRL_COMPOSITE_SATURATION = 0xd;
+constexpr int32_t COMBINER_CTRL_COMPOSITE_COLOR = 0xe;
+constexpr int32_t COMBINER_CTRL_COMPOSITE_LUMINOSITY = 0xf;
 
 inline int32_t blend_mode_to_composite_ctrl(BlendMode blend_mode) {
     switch (blend_mode) {
@@ -290,10 +290,10 @@ inline bool is_blend_mode_destructive(BlendMode blend_mode) {
 }
 
 struct TextureSamplingFlags {
-    static const uint8_t REPEAT_U = 0x01;
-    static const uint8_t REPEAT_V = 0x02;
-    static const uint8_t NEAREST_MIN = 0x04;
-    static const uint8_t NEAREST_MAG = 0x08;
+    static constexpr uint8_t REPEAT_U = 0x01;
+    static constexpr uint8_t REPEAT_V = 0x02;
+    static constexpr uint8_t NEAREST_MIN = 0x04;
+    static constexpr uint8_t NEAREST_MAG = 0x08;
 
     uint8_t value = 0;
 
@@ -301,7 +301,7 @@ struct TextureSamplingFlags {
         return value & flags;
     }
 
-    inline bool operator==(const TextureSamplingFlags &rhs) const {
+    bool operator==(const TextureSamplingFlags &rhs) const {
         return value == rhs.value;
     }
 };

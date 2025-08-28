@@ -154,7 +154,7 @@ struct Pattern {
         source.type = PatternSource::Type::Image;
         source.image = image;
 
-        return Pattern::from_source(source);
+        return from_source(source);
     }
 
     /// Creates a new pattern from the given render target with the given size.

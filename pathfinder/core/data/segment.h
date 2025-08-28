@@ -34,15 +34,15 @@ public:
 
     Segment(const LineSegmentF &_baseline, const LineSegmentF &_ctrl, SegmentKind _kind, SegmentFlags _flags);
 
-    inline static Segment line(const LineSegmentF &baseline) {
+    static Segment line(const LineSegmentF &baseline) {
         return {baseline, LineSegmentF(), SegmentKind::Line, SegmentFlags::NONE};
     }
 
-    inline static Segment quadratic(const LineSegmentF &baseline, const Vec2F &ctrl) {
+    static Segment quadratic(const LineSegmentF &baseline, const Vec2F &ctrl) {
         return {baseline, LineSegmentF(ctrl, ctrl), SegmentKind::Quadratic, SegmentFlags::NONE};
     }
 
-    inline static Segment cubic(const LineSegmentF &baseline, const LineSegmentF &ctrl) {
+    static Segment cubic(const LineSegmentF &baseline, const LineSegmentF &ctrl) {
         return {baseline, ctrl, SegmentKind::Cubic, SegmentFlags::NONE};
     }
 
@@ -105,17 +105,17 @@ public:
     static Segment arc_from_cos(float cos_sweep_angle);
 
     /// Returns true if this segment represents a straight line.
-    inline bool is_line() const {
+    bool is_line() const {
         return kind == SegmentKind::Line;
     }
 
     /// Returns true if this segment represents a quadratic Bézier curve.
-    inline bool is_quadratic() const {
+    bool is_quadratic() const {
         return kind == SegmentKind::Quadratic;
     }
 
     /// Returns true if this segment represents a cubic Bézier curve.
-    inline bool is_cubic() const {
+    bool is_cubic() const {
         return kind == SegmentKind::Cubic;
     }
 

@@ -5,7 +5,6 @@
 
 #include <vector>
 
-#include "../common/math/transform2.h"
 #include "data/contour.h"
 #include "data/path.h"
 #include "data/segment.h"

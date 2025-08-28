@@ -1,13 +1,11 @@
 #ifndef PATHFINDER_D3D11_RENDERER_H
 #define PATHFINDER_D3D11_RENDERER_H
 
-#include "../../gpu/buffer.h"
 #include "../../gpu/compute_pipeline.h"
 #include "../../gpu/descriptor_set.h"
 #include "../renderer.h"
 #include "../scene.h"
 #include "gpu_data.h"
-#include "scene_builder.h"
 
 #ifdef PATHFINDER_ENABLE_D3D11
 

@@ -12,7 +12,7 @@
 namespace Pathfinder {
 
 // This value amounts to 16.0 * tolerance * tolerance in Pathfinder Rust.
-const float FLATTENING_TOLERANCE = 1.0f;
+constexpr float FLATTENING_TOLERANCE = 1.0f;
 
 enum class StepDirection {
     None,

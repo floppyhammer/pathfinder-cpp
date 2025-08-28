@@ -41,20 +41,20 @@ struct LineSegmentF {
 
     LineSegmentF(float from_x, float from_y, float to_x, float to_y);
 
-    inline Vec2F from() const {
+    Vec2F from() const {
         return value.xy();
     }
 
-    inline Vec2F to() const {
+    Vec2F to() const {
         return value.zw();
     }
 
     /// Get line segment vector.
-    inline Vec2F vector() const {
+    Vec2F vector() const {
         return to() - from();
     }
 
-    inline Vec2F sample(float t) const {
+    Vec2F sample(float t) const {
         return from() + vector() * t;
     }
 
@@ -90,16 +90,16 @@ struct LineSegmentF {
 
     bool is_valid() const;
 
-    inline LineSegmentF operator+(const Vec2F &v) const {
+    LineSegmentF operator+(const Vec2F &v) const {
         return {from() + v, to() + v};
     }
 
-    inline LineSegmentF operator*(const Vec2F &v) const {
+    LineSegmentF operator*(const Vec2F &v) const {
         return {from() * v, to() * v};
     }
 
     // For being used as ordered key.
-    inline bool operator<(const LineSegmentF &rhs) const {
+    bool operator<(const LineSegmentF &rhs) const {
         bool res = value.get<0>() < rhs.value.get<0>();
         res = res && value.get<1>() < rhs.value.get<1>();
         res = res && value.get<2>() < rhs.value.get<2>();

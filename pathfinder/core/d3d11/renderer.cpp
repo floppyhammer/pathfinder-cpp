@@ -6,10 +6,12 @@
 #include "../../common/logger.h"
 #include "../../common/math/basic.h"
 #include "../../common/timestamp.h"
+#include "../../gpu/buffer.h"
 #include "../../gpu/command_encoder.h"
 #include "../../gpu/window.h"
 #include "../data/data.h"
 #include "gpu_data.h"
+#include "scene_builder.h"
 
 #ifdef PATHFINDER_ENABLE_D3D11
 /* clang-format off */
@@ -33,24 +35,24 @@
 
 namespace Pathfinder {
 
-const size_t FILL_INDIRECT_DRAW_PARAMS_INSTANCE_COUNT_INDEX = 1;
-const size_t FILL_INDIRECT_DRAW_PARAMS_ALPHA_TILE_COUNT_INDEX = 4;
-const size_t FILL_INDIRECT_DRAW_PARAMS_SIZE = 8;
+constexpr size_t FILL_INDIRECT_DRAW_PARAMS_INSTANCE_COUNT_INDEX = 1;
+constexpr size_t FILL_INDIRECT_DRAW_PARAMS_ALPHA_TILE_COUNT_INDEX = 4;
+constexpr size_t FILL_INDIRECT_DRAW_PARAMS_SIZE = 8;
 
-const size_t BIN_INDIRECT_DRAW_PARAMS_MICROLINE_COUNT_INDEX = 3;
+constexpr size_t BIN_INDIRECT_DRAW_PARAMS_MICROLINE_COUNT_INDEX = 3;
 
-const uint32_t BOUND_WORKGROUP_SIZE = 64;
-const uint32_t DICE_WORKGROUP_SIZE = 64;
-const uint32_t BIN_WORKGROUP_SIZE = 64;
-const uint32_t PROPAGATE_WORKGROUP_SIZE = 64;
-const uint32_t SORT_WORKGROUP_SIZE = 64;
+constexpr uint32_t BOUND_WORKGROUP_SIZE = 64;
+constexpr uint32_t DICE_WORKGROUP_SIZE = 64;
+constexpr uint32_t BIN_WORKGROUP_SIZE = 64;
+constexpr uint32_t PROPAGATE_WORKGROUP_SIZE = 64;
+constexpr uint32_t SORT_WORKGROUP_SIZE = 64;
 
 // If clear destination texture before drawing using D3D11.
-const int32_t LOAD_ACTION_CLEAR = 0;
-const int32_t LOAD_ACTION_LOAD = 1;
+constexpr int32_t LOAD_ACTION_CLEAR = 0;
+constexpr int32_t LOAD_ACTION_LOAD = 1;
 
-const uint32_t INITIAL_ALLOCATED_MICROLINE_COUNT = 1024 * 16;
-const uint32_t INITIAL_ALLOCATED_FILL_COUNT = 1024 * 16;
+constexpr uint32_t INITIAL_ALLOCATED_MICROLINE_COUNT = 1024 * 16;
+constexpr uint32_t INITIAL_ALLOCATED_FILL_COUNT = 1024 * 16;
 
 Vec2I pixel_size_to_tile_size(Vec2I pixel_size) {
     // Round up.

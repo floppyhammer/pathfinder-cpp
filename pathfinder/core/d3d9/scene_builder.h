@@ -78,7 +78,7 @@ private:
 
     /**
      * Run in a thread. Run a tiler on a path.
-     * @param path_id Unique ID of the path in the scene.
+     * @param params
      * @return A built shape.
      */
     BuiltDrawPath build_draw_path_on_cpu(const DrawPathBuildParams &params);

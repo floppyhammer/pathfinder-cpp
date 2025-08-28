@@ -3,7 +3,6 @@
 
 #include <vector>
 
-#include "../../common/color.h"
 #include "contour.h"
 
 namespace Pathfinder {

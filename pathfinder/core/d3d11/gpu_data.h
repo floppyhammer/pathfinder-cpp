@@ -6,7 +6,6 @@
 #include "../../common/math/rect.h"
 #include "../../common/math/transform2.h"
 #include "../data/built_path.h"
-#include "../data/line_segment.h"
 #include "../paint/paint.h"
 #include "../scene.h"
 

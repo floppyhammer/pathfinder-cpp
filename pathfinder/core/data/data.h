@@ -13,26 +13,26 @@
 namespace Pathfinder {
 
 // Tile size.
-const int TILE_WIDTH = 16;
-const int TILE_HEIGHT = 16;
+constexpr int TILE_WIDTH = 16;
+constexpr int TILE_HEIGHT = 16;
 
 // Curve type.
-const unsigned int CURVE_IS_QUADRATIC = 0x80000000;
-const unsigned int CURVE_IS_CUBIC = 0x40000000;
+constexpr unsigned int CURVE_IS_QUADRATIC = 0x80000000;
+constexpr unsigned int CURVE_IS_CUBIC = 0x40000000;
 
 // Fill rule.
-const int32_t TILE_CTRL_MASK_WINDING = 0x1;
-const int32_t TILE_CTRL_MASK_EVEN_ODD = 0x2;
-const int32_t TILE_CTRL_MASK_0_SHIFT = 0;
+constexpr int32_t TILE_CTRL_MASK_WINDING = 0x1;
+constexpr int32_t TILE_CTRL_MASK_EVEN_ODD = 0x2;
+constexpr int32_t TILE_CTRL_MASK_0_SHIFT = 0;
 
 struct PushSegmentFlags {
     uint8_t value = 0x00;
 
     /// The bounds should be updated.
-    static const uint8_t UPDATE_BOUNDS = 0x01;
+    static constexpr uint8_t UPDATE_BOUNDS = 0x01;
 
     /// The "from" point of the segment.
-    static const uint8_t INCLUDE_FROM_POINT = 0x02;
+    static constexpr uint8_t INCLUDE_FROM_POINT = 0x02;
 
     PushSegmentFlags() = default;
 
@@ -152,10 +152,10 @@ struct TilingPathInfo {
         return false;
     }
 
-    inline uint8_t to_ctrl() const {
+    uint8_t to_ctrl() const {
         uint8_t ctrl = 0;
 
-        if (type == TilingPathInfo::Type::Draw) {
+        if (type == Type::Draw) {
             ctrl = info.fill_rule == FillRule::EvenOdd ? TILE_CTRL_MASK_EVEN_ODD << TILE_CTRL_MASK_0_SHIFT
                                                        : TILE_CTRL_MASK_WINDING << TILE_CTRL_MASK_0_SHIFT;
         }

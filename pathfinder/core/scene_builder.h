@@ -2,7 +2,6 @@
 #define PATHFINDER_SCENE_BUILDER_H
 
 #include "data/built_path.h"
-#include "data/data.h"
 
 namespace Pathfinder {
 

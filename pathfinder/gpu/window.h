@@ -2,7 +2,6 @@
 #define PATHFINDER_GPU_WINDOW_H
 
 #include "device.h"
-#include "queue.h"
 #include "swap_chain.h"
 
 struct GLFWwindow;

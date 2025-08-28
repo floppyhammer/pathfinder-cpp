@@ -10,9 +10,9 @@ namespace Pathfinder {
 
 // Tweak these constants to improve stroking performance.
 
-const float STROKE_TOL = 0.1f;
+constexpr float STROKE_TOL = 0.1f;
 
-const uint32_t SAMPLE_COUNT = 16;
+constexpr uint32_t SAMPLE_COUNT = 16;
 
 ContourStrokeToFill::ContourStrokeToFill(Contour _input, float _radius, LineJoin _join, float _join_miter_limit)
     : input(std::move(_input)), radius(_radius), join(_join), join_miter_limit(_join_miter_limit) {}

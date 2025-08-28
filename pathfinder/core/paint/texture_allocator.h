@@ -2,7 +2,6 @@
 #define PATHFINDER_TEXTURE_ALLOCATOR_H
 
 #include <cstdint>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 

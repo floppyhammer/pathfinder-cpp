@@ -1,12 +1,9 @@
 #ifndef PATHFINDER_SCENE_H
 #define PATHFINDER_SCENE_H
 
-#include <limits>
-#include <map>
 #include <vector>
 
 #include "../common/math/basic.h"
-#include "data/data.h"
 #include "data/path.h"
 #include "paint/palette.h"
 #include "renderer.h"
