@@ -62,7 +62,8 @@ public:
     }
 
     static void verbose(const std::string &label, const std::string &module = PATHFINDER_DEFAULT_LOG_TAG) {
-        if (const auto level = get_effective_level(module); level <= Level::Verbose) {
+        const auto level = get_effective_level(module);
+        if (level <= Level::Verbose) {
             auto tag = module.c_str();
 #ifdef __ANDROID__
             __android_log_write(ANDROID_LOG_VERBOSE, tag, label.c_str());
@@ -73,7 +74,8 @@ public:
     }
 
     static void debug(const std::string &label, const std::string &module = PATHFINDER_DEFAULT_LOG_TAG) {
-        if (const auto level = get_effective_level(module); level <= Level::Debug) {
+        const auto level = get_effective_level(module);
+        if (level <= Level::Debug) {
             auto tag = module.c_str();
 #ifdef __ANDROID__
             __android_log_write(ANDROID_LOG_DEBUG, tag, label.c_str());
@@ -84,7 +86,8 @@ public:
     }
 
     static void info(const std::string &label, const std::string &module = PATHFINDER_DEFAULT_LOG_TAG) {
-        if (const auto level = get_effective_level(module); level <= Level::Info) {
+        const auto level = get_effective_level(module);
+        if (level <= Level::Info) {
             auto tag = module.c_str();
 #ifdef __ANDROID__
             __android_log_write(ANDROID_LOG_INFO, tag, label.c_str());
@@ -95,7 +98,8 @@ public:
     }
 
     static void warn(const std::string &label, const std::string &module = PATHFINDER_DEFAULT_LOG_TAG) {
-        if (const auto level = get_effective_level(module); level <= Level::Warn) {
+        const auto level = get_effective_level(module);
+        if (level <= Level::Warn) {
             auto tag = module.c_str();
 #ifdef __ANDROID__
             __android_log_write(ANDROID_LOG_WARN, tag, label.c_str());
@@ -106,7 +110,8 @@ public:
     }
 
     static void error(const std::string &label, const std::string &module = PATHFINDER_DEFAULT_LOG_TAG) {
-        if (const auto level = get_effective_level(module); level <= Level::Error) {
+        const auto level = get_effective_level(module);
+        if (level <= Level::Error) {
             auto tag = module.c_str();
 #ifdef __ANDROID__
             __android_log_write(ANDROID_LOG_ERROR, tag, label.c_str());
