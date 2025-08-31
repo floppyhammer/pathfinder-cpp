@@ -48,6 +48,11 @@ if (PATHFINDER_BACKEND_VULKAN)
 
     # Don't use add_compile_definitions, which doesn't propagate to parent projects.
     target_compile_definitions(pathfinder PRIVATE PATHFINDER_USE_VULKAN)
+
+    # Enable this for Vulkan 1.3 and higher on macOS.
+    if (APPLE)
+        target_compile_definitions(pathfinder PRIVATE PATHFINDER_VKB_ENABLE_PORTABILITY)
+    endif ()
 else ()
     message("[Pathfinder] Disabled Vulkan backend")
 endif ()

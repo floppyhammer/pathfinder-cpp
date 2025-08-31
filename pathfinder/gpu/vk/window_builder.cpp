@@ -189,6 +189,9 @@ void WindowBuilderVk::create_instance() {
     const auto extensions = get_required_instance_extensions();
     instance_info.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     instance_info.ppEnabledExtensionNames = extensions.data();
+#ifdef PATHFINDER_VKB_ENABLE_PORTABILITY
+    instance_info.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+#endif
 
     VkDebugUtilsMessengerCreateInfoEXT debug_create_info;
     if (enable_validation_layers_) {
@@ -389,6 +392,10 @@ std::vector<const char *> WindowBuilderVk::get_required_instance_extensions() {
     if (enable_validation_layers_) {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
+
+#ifdef PATHFINDER_VKB_ENABLE_PORTABILITY
+    extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+#endif
 
     return extensions;
 }
