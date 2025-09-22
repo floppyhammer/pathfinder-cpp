@@ -56,6 +56,8 @@ public:
     std::shared_ptr<ComputePipeline> create_compute_pipeline(const std::shared_ptr<ShaderModule> &comp_shader_module,
                                                              const std::shared_ptr<DescriptorSet> &descriptor_set,
                                                              const std::string &label) override;
+
+    std::shared_ptr<Fence> create_fence(const std::string &label) override;
 };
 
 } // namespace Pathfinder

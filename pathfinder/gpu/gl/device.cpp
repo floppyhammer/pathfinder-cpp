@@ -3,6 +3,7 @@
 #include "../../common/logger.h"
 #include "compute_pipeline.h"
 #include "debug_marker.h"
+#include "fence.h"
 #include "framebuffer.h"
 #include "render_pass.h"
 #include "render_pipeline.h"
@@ -93,6 +94,16 @@ std::shared_ptr<ComputePipeline> DeviceGl::create_compute_pipeline(
     const std::shared_ptr<DescriptorSet> &descriptor_set,
     const std::string &label) {
     return std::shared_ptr<ComputePipelineGl>(new ComputePipelineGl(comp_shader_module));
+}
+
+std::shared_ptr<Fence> DeviceGl::create_fence(const std::string &label) {
+    GLsync fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+
+    auto fence_gl = std::shared_ptr<FenceGl>(new FenceGl());
+    fence_gl->label = label;
+    fence_gl->fence = fence;
+
+    return fence_gl;
 }
 
 } // namespace Pathfinder

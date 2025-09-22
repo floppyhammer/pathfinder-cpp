@@ -8,6 +8,7 @@
 #include "compute_pipeline.h"
 #include "debug_marker.h"
 #include "descriptor_set.h"
+#include "fence.h"
 #include "framebuffer.h"
 #include "render_pass.h"
 #include "render_pipeline.h"
@@ -490,6 +491,28 @@ std::shared_ptr<CommandEncoder> DeviceVk::create_command_encoder(const std::stri
     command_encoder_vk->device_ = shared_from_this();
 
     return command_encoder_vk;
+}
+
+std::shared_ptr<Fence> DeviceVk::create_fence(const std::string &label) {
+    VkFenceCreateInfo fence_info = {};
+    fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fence_info.pNext = nullptr;
+    fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+    VkFence fence = VK_NULL_HANDLE;
+    const VkResult result = vkCreateFence(vk_device_, &fence_info, nullptr, &fence);
+
+    if (result != VK_SUCCESS) {
+        Logger::error("Failed to create fence!");
+        return nullptr;
+    }
+
+    auto fence_vk = std::shared_ptr<FenceVk>(new FenceVk());
+    fence_vk->label = label;
+    fence_vk->device = this;
+    fence_vk->fence = fence;
+
+    return fence_vk;
 }
 
 VkShaderModule DeviceVk::create_shader_module(const std::vector<char> &code) {

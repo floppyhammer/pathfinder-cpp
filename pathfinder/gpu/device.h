@@ -5,6 +5,7 @@
 #include "buffer.h"
 #include "command_encoder.h"
 #include "compute_pipeline.h"
+#include "fence.h"
 #include "framebuffer.h"
 #include "render_pass.h"
 #include "render_pipeline.h"
@@ -61,6 +62,8 @@ public:
         const std::shared_ptr<ShaderModule> &comp_shader_module,
         const std::shared_ptr<DescriptorSet> &descriptor_set,
         const std::string &label) = 0;
+
+    virtual std::shared_ptr<Fence> create_fence(const std::string &label) = 0;
 
     BackendType get_backend_type() const {
         return backend_type;

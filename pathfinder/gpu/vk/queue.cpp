@@ -1,8 +1,10 @@
 #include "queue.h"
 
+#include "fence.h"
+
 namespace Pathfinder {
 
-void QueueVk::submit_and_wait(const std::shared_ptr<CommandEncoder>& encoder) {
+void QueueVk::submit(const std::shared_ptr<CommandEncoder> &encoder, const std::shared_ptr<Fence> &fence) {
     if (encoder->submitted_) {
         Logger::error("Attempted to submit an encoder that's already been submitted!");
         return;
@@ -15,7 +17,35 @@ void QueueVk::submit_and_wait(const std::shared_ptr<CommandEncoder>& encoder) {
         return;
     }
 
-    auto encoder_vk = (CommandEncoderVk*)encoder.get();
+    auto encoder_vk = (CommandEncoderVk *)encoder.get();
+
+    // Submit the command buffer to the graphics queue.
+    VkSubmitInfo submit_info{};
+    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_info.commandBufferCount = 1;
+    submit_info.pCommandBuffers = &encoder_vk->vk_command_buffer_;
+
+    auto fence_vk = (FenceVk *)fence.get();
+
+    vkQueueSubmit(vk_graphics_queue_, 1, &submit_info, fence_vk->fence);
+
+    fence_vk->wait();
+}
+
+void QueueVk::submit_and_wait(const std::shared_ptr<CommandEncoder> &encoder) {
+    if (encoder->submitted_) {
+        Logger::error("Attempted to submit an encoder that's already been submitted!");
+        return;
+    }
+
+    // Mark the encoder as submitted.
+    encoder->submitted_ = true;
+
+    if (!encoder->finish()) {
+        return;
+    }
+
+    auto encoder_vk = (CommandEncoderVk *)encoder.get();
 
     // Submit the command buffer to the graphics queue.
     VkSubmitInfo submit_info{};

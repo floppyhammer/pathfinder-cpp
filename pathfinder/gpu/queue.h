@@ -3,6 +3,7 @@
 
 #include "../common/math/vec2.h"
 #include "command_encoder.h"
+#include "fence.h"
 #include "framebuffer.h"
 #include "render_pass.h"
 
@@ -16,6 +17,8 @@ public:
     explicit Queue() = default;
 
     virtual ~Queue() = default;
+
+    virtual void submit(const std::shared_ptr<CommandEncoder> &encoder, const std::shared_ptr<Fence> &fence) = 0;
 
     virtual void submit_and_wait(const std::shared_ptr<CommandEncoder> &encoder) = 0;
 };
