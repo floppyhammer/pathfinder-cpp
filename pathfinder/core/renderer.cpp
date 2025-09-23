@@ -27,11 +27,13 @@ Renderer::Renderer(const std::shared_ptr<Device> &_device, const std::shared_ptr
                                                       TextureFormat::Rgba16Float,
                                                       "metadata texture");
 
+    fence = device->create_fence("renderer fence");
+
     auto encoder = device->create_command_encoder("upload common renderer data");
 
     encoder->write_texture(allocator->get_texture(area_lut_texture_id), {}, image_buffer->get_data());
 
-    queue->submit_and_wait(encoder);
+    queue->submit(encoder, fence);
 }
 
 Renderer::~Renderer() {
@@ -102,7 +104,7 @@ void Renderer::upload_texel_data(std::vector<ColorU> &texels, TextureLocation lo
 
     auto encoder = device->create_command_encoder("upload data of the pattern texture pages");
     encoder->write_texture(texture, location.rect, texels.data());
-    queue->submit_and_wait(encoder);
+    queue->submit(encoder, fence);
 
     texture_page->must_preserve_contents_ = true;
 }
@@ -249,7 +251,7 @@ void Renderer::upload_texture_metadata(const std::vector<TextureMetadataEntry> &
     auto encoder = device->create_command_encoder("upload to metadata texture");
     encoder->add_callback(callback);
     encoder->write_texture(allocator->get_texture(metadata_texture_id), region_rect, raw_texels);
-    queue->submit_and_wait(encoder);
+    queue->submit(encoder, fence);
 }
 
 } // namespace Pathfinder

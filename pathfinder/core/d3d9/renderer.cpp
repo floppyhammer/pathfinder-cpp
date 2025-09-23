@@ -68,7 +68,7 @@ RendererD3D9::RendererD3D9(const std::shared_ptr<Device> &_device, const std::sh
                           quad_vertex_data_size,
                           QUAD_VERTEX_POSITIONS);
 
-    queue->submit_and_wait(encoder);
+    queue->submit(encoder, fence);
 }
 
 void RendererD3D9::set_dest_texture(const std::shared_ptr<Texture> &texture) {
@@ -363,7 +363,7 @@ void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &_scene_builder, boo
         // We can do fill drawing as soon as the fill vertex buffer is ready.
         draw_fills(fill_vertex_buffer_id, scene_builder->pending_fills.size(), encoder);
 
-        queue->submit_and_wait(encoder);
+        queue->submit(encoder, fence);
 
         allocator->free_buffer(fill_vertex_buffer_id);
     }
@@ -442,7 +442,7 @@ void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &t
                    z_buffer_texture_id,
                    encoder);
 
-        queue->submit_and_wait(encoder);
+        queue->submit(encoder, fence);
 
         allocator->free_texture(z_buffer_texture_id);
         allocator->free_buffer(tile_vertex_buffer_id);

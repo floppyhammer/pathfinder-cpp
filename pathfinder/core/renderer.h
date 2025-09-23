@@ -90,6 +90,8 @@ public:
 
     std::shared_ptr<Queue> queue;
 
+    std::shared_ptr<Fence> fence;
+
 protected:
     virtual TextureFormat mask_texture_format() const = 0;
 

@@ -22,8 +22,10 @@ public:
 
         encoder->finish();
 
-        auto fence_gl = (FenceGl *)fence.get();
-        fence_gl->wait();
+        if (fence) {
+            auto fence_gl = (FenceGl *)fence.get();
+            fence_gl->wait();
+        }
     }
 
     void submit_and_wait(const std::shared_ptr<CommandEncoder> &encoder) override {

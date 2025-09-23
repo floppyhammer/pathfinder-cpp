@@ -315,7 +315,7 @@ void RendererD3D11::set_dest_texture(const std::shared_ptr<Texture> &new_texture
 void RendererD3D11::upload_scene(SegmentsD3D11 &draw_segments, SegmentsD3D11 &clip_segments) {
     auto encoder = device->create_command_encoder("upload scene");
     scene_buffers.upload(draw_segments, clip_segments, allocator, device, encoder);
-    queue->submit_and_wait(encoder);
+    queue->submit(encoder, fence);
 }
 
 void RendererD3D11::prepare_and_draw_tiles(DrawTileBatchD3D11 &batch) {
@@ -425,7 +425,7 @@ void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
 
     encoder->end_compute_pass();
 
-    queue->submit_and_wait(encoder);
+    queue->submit(encoder, fence);
 }
 
 Vec2I RendererD3D11::tile_size() const {
@@ -475,7 +475,7 @@ PropagateMetadataBufferIDsD3D11 RendererD3D11::upload_propagate_metadata(
                           0,
                           propagate_metadata.size() * sizeof(PropagateMetadataD3D11),
                           propagate_metadata.data());
-    queue->submit_and_wait(encoder);
+    queue->submit(encoder, fence);
 
     return {propagate_metadata_storage_id, backdrops_storage_id};
 }
@@ -485,7 +485,7 @@ void RendererD3D11::upload_initial_backdrops(uint64_t backdrops_buffer_id, std::
 
     auto encoder = device->create_command_encoder("upload initial backdrops");
     encoder->write_buffer(backdrops_buffer, 0, backdrops.size() * sizeof(BackdropInfoD3D11), backdrops.data());
-    queue->submit_and_wait(encoder);
+    queue->submit(encoder, fence);
 }
 
 void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
@@ -684,7 +684,7 @@ std::shared_ptr<MicrolinesBufferIDsD3D11> RendererD3D11::dice_segments(std::vect
 
     encoder->end_compute_pass();
 
-    queue->submit_and_wait(encoder);
+    queue->submit(encoder, fence);
 
     // Read indirect draw params back to CPU memory.
     indirect_draw_params_buffer->download_via_mapping(FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t),
@@ -751,7 +751,7 @@ void RendererD3D11::bound(uint64_t tiles_d3d11_buffer_id,
 
     encoder->end_compute_pass();
 
-    queue->submit_and_wait(encoder);
+    queue->submit(encoder, fence);
 
     allocator->free_buffer(path_info_buffer_id);
 }
@@ -811,7 +811,7 @@ std::shared_ptr<FillBufferInfoD3D11> RendererD3D11::bin_segments(
 
     encoder->end_compute_pass();
 
-    queue->submit_and_wait(encoder);
+    queue->submit(encoder, fence);
 
     // Read buffer.
     z_buffer->download_via_mapping(FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t), 0, indirect_draw_params);
@@ -919,7 +919,7 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
 
     uint32_t fill_indirect_draw_params[FILL_INDIRECT_DRAW_PARAMS_SIZE];
 
-    queue->submit_and_wait(encoder);
+    queue->submit(encoder, fence);
 
     // Read buffer.
     z_buffer->download_via_mapping(FILL_INDIRECT_DRAW_PARAMS_SIZE * sizeof(uint32_t), 0, fill_indirect_draw_params);
@@ -980,7 +980,7 @@ void RendererD3D11::draw_fills(FillBufferInfoD3D11 &fill_storage_info,
 
     encoder->end_compute_pass();
 
-    queue->submit_and_wait(encoder);
+    queue->submit(encoder, fence);
 }
 
 void RendererD3D11::sort_tiles(uint64_t tiles_d3d11_buffer_id,
@@ -1017,7 +1017,7 @@ void RendererD3D11::sort_tiles(uint64_t tiles_d3d11_buffer_id,
 
     encoder->end_compute_pass();
 
-    queue->submit_and_wait(encoder);
+    queue->submit(encoder, fence);
 }
 
 void RendererD3D11::free_tile_batch_buffers() {

@@ -25,11 +25,15 @@ void QueueVk::submit(const std::shared_ptr<CommandEncoder> &encoder, const std::
     submit_info.commandBufferCount = 1;
     submit_info.pCommandBuffers = &encoder_vk->vk_command_buffer_;
 
-    auto fence_vk = (FenceVk *)fence.get();
+    if (fence) {
+        auto fence_vk = (FenceVk *)fence.get();
 
-    vkQueueSubmit(vk_graphics_queue_, 1, &submit_info, fence_vk->fence);
+        vkQueueSubmit(vk_graphics_queue_, 1, &submit_info, fence_vk->fence);
 
-    fence_vk->wait();
+        fence_vk->wait();
+    } else {
+        vkQueueSubmit(vk_graphics_queue_, 1, &submit_info, VK_NULL_HANDLE);
+    }
 }
 
 void QueueVk::submit_and_wait(const std::shared_ptr<CommandEncoder> &encoder) {
