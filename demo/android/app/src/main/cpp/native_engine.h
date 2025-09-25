@@ -20,7 +20,7 @@
 
 class NativeEngine {
 public:
-    NativeEngine(struct android_app *app) {
+    explicit NativeEngine(struct android_app *app) {
         mAppCtx = app;
     }
 
@@ -35,6 +35,8 @@ public:
     virtual void set_context() {};
 
 protected:
+    void init_app_common(Pathfinder::Vec2I window_size);
+
     android_app *mAppCtx;
 
     std::shared_ptr<App> pf_app;

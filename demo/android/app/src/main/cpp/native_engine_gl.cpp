@@ -81,28 +81,7 @@ bool NativeEngineGl::init_app() {
 
     window_builder = std::make_shared<Pathfinder::WindowBuilderGl>(window_size);
 
-    pf_window = window_builder->get_window(0).lock();
-
-    // Create device and queue.
-    pf_device = window_builder->request_device();
-    pf_queue = window_builder->create_queue();
-
-    // Create swap chains for windows.
-    pf_swapchain = pf_window->get_swap_chain(pf_device);
-
-    auto svg_input = Pathfinder::load_asset(mAppCtx->activity->assetManager, "features.svg");
-    auto img_input = Pathfinder::load_asset(mAppCtx->activity->assetManager, "sea.png");
-
-    // Create app.
-    pf_app = std::make_shared<App>(pf_device, pf_queue, window_size, svg_input, img_input);
-
-    pf_blit = std::make_shared<Blit>(pf_device, pf_queue, pf_swapchain->get_surface_format());
-
-    auto dst_texture = pf_device->create_texture({window_size, Pathfinder::TextureFormat::Rgba8Unorm}, "dst texture");
-
-    pf_app->canvas_->set_dst_texture(dst_texture);
-
-    pf_blit->set_texture(dst_texture);
+    init_app_common(window_size);
 
     return true;
 }
