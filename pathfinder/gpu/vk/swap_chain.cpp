@@ -257,17 +257,17 @@ void SwapChainVk::flush(const std::shared_ptr<CommandEncoder> &encoder) {
     // -------------------------------------
     VkSubmitInfo submit_info{};
     submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_info.commandBufferCount = 1;
+    submit_info.pCommandBuffers = &encoder_vk->vk_command_buffer_;
 
+    // The semaphores to wait before commands in this command buffer can begin execution.
     VkSemaphore wait_semaphores[] = {image_available_semaphores_[current_frame_]};
     VkPipelineStageFlags wait_stages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     submit_info.waitSemaphoreCount = 1;
     submit_info.pWaitSemaphores = wait_semaphores;
-    submit_info.pWaitDstStageMask = wait_stages;
+    submit_info.pWaitDstStageMask = wait_stages; // The wait will not affect stages that come before this stage.
 
-    submit_info.commandBufferCount = 1;
-    submit_info.pCommandBuffers = &encoder_vk->vk_command_buffer_;
-
-    // The semaphores to signal after all commands in the buffer are finished.
+    // The semaphores to signal after all commands in this command buffer are finished on the GPU.
     VkSemaphore signal_semaphores[] = {render_finished_semaphores_[current_frame_]};
     submit_info.signalSemaphoreCount = 1;
     submit_info.pSignalSemaphores = signal_semaphores;
