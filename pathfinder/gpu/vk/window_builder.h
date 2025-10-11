@@ -89,7 +89,7 @@ private:
     VkDebugUtilsMessengerEXT debug_messenger_{};
 
     // See https://developer.android.com/ndk/guides/graphics/validation-layer for enabling validation layer on Android.
-    static const bool enable_validation_layers_ = false;
+    static constexpr bool enable_validation_layers_ = false;
 
     VkQueue graphics_queue_{};
     VkQueue present_queue_{};
@@ -129,8 +129,6 @@ private:
     void initialize_after_surface_creation(VkSurfaceKHR surface);
 
     void setup_debug_messenger();
-
-    void create_queues(VkSurfaceKHR surface);
 
     void create_instance();
 

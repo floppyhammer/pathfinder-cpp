@@ -133,17 +133,7 @@ void WindowBuilderVk::initialize_after_surface_creation(VkSurfaceKHR surface) {
 
     create_command_pool(surface);
 
-    create_queues(surface);
-
     initialized_ = true;
-}
-
-void WindowBuilderVk::create_queues(VkSurfaceKHR surface) {
-    QueueFamilyIndices qf_indices = find_queue_families(physical_device_, surface);
-
-    // Get a queue handle from a device.
-    vkGetDeviceQueue(device_, *qf_indices.graphics_family, 0, &graphics_queue_);
-    vkGetDeviceQueue(device_, *qf_indices.present_family, 0, &present_queue_);
 }
 
 std::shared_ptr<Device> WindowBuilderVk::request_device() {
