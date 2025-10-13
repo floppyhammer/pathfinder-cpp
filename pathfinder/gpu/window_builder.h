@@ -9,6 +9,7 @@
 #endif
 
 class ANativeWindow;
+class GLFWwindow;
 
 namespace Pathfinder {
 
