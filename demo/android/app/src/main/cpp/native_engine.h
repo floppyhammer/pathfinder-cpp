@@ -20,19 +20,17 @@
 
 class NativeEngine {
 public:
-    explicit NativeEngine(struct android_app *app) {
+    explicit NativeEngine(android_app *app) {
         mAppCtx = app;
     }
 
-    virtual ~NativeEngine() = default;
+    ~NativeEngine() = default;
 
-    virtual bool init_app() = 0;
+    bool init_app(bool use_vulkan);
 
-    virtual void draw_frame();
+    void draw_frame();
 
     bool is_ready() const;
-
-    virtual void set_context() {};
 
 protected:
     void init_app_common(Pathfinder::Vec2I window_size);

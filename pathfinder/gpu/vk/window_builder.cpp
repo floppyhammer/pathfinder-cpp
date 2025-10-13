@@ -2,7 +2,6 @@
 
 #include <set>
 
-#include "../window_builder.h"
 #include "debug_marker.h"
 #include "queue.h"
 #include "window.h"

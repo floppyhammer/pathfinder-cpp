@@ -1,6 +1,10 @@
 #ifndef PATHFINDER_GPU_SWAP_CHAIN_GL_H
 #define PATHFINDER_GPU_SWAP_CHAIN_GL_H
 
+#ifdef __ANDROID__
+    #include <EGL/egl.h>
+#endif
+
 #include "../../common/global_macros.h"
 #include "../swap_chain.h"
 #include "base.h"
@@ -24,10 +28,15 @@ public:
         render_pass_ = std::shared_ptr<RenderPassGl>(new RenderPassGl(AttachmentLoadOp::Clear));
     }
 #else
-    SwapChainGl(Vec2I _size) : SwapChain(_size) {
+    SwapChainGl(Vec2I _size, EGLDisplay egl_display, EGLSurface egl_surface, EGLContext egl_context)
+        : SwapChain(_size) {
         command_encoder_ = std::shared_ptr<CommandEncoderGl>(new CommandEncoderGl());
 
         render_pass_ = std::shared_ptr<RenderPassGl>(new RenderPassGl(AttachmentLoadOp::Clear));
+
+        egl_display_ = egl_display;
+        egl_surface_ = egl_surface;
+        egl_context_ = egl_context;
     }
 #endif
 
@@ -46,9 +55,14 @@ public:
     bool acquire_image() override {
 #ifndef __ANDROID__
         glfwMakeContextCurrent(glfw_window_);
-            // Disable VSync (for performance comparison).
-            // glfwSwapInterval(0);
+#else
+        // This is required for GL on Android, otherwise GPU memory leak occurs.
+        eglMakeCurrent(egl_display_, egl_surface_, egl_surface_, egl_context_);
 #endif
+
+        // Disable VSync (for performance comparison).
+        // glfwSwapInterval(0);
+
         return true;
     }
 
@@ -66,6 +80,8 @@ public:
     void present() override {
 #ifndef __ANDROID__
         glfwSwapBuffers(glfw_window_);
+#else
+        eglSwapBuffers(egl_display_, egl_surface_);
 #endif
     }
 
@@ -74,6 +90,10 @@ public:
 private:
 #ifndef __ANDROID__
     GLFWwindow *glfw_window_;
+#else
+    EGLDisplay egl_display_;
+    EGLSurface egl_surface_;
+    EGLContext egl_context_;
 #endif
 
     std::shared_ptr<RenderPass> render_pass_;

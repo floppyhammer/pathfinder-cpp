@@ -4,7 +4,11 @@
 #include "device.h"
 #include "queue.h"
 
-struct GLFWwindow;
+#ifdef __ANDROID__
+    #include <EGL/egl.h>
+#endif
+
+class ANativeWindow;
 
 namespace Pathfinder {
 
@@ -45,6 +49,8 @@ protected:
                                         float &dpi_scaling_factor,
                                         bool fullscreen,
                                         GLFWwindow *shared_window);
+#else
+    ANativeWindow *native_window_{};
 #endif
 
     std::shared_ptr<Window> primary_window_;

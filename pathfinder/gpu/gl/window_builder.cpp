@@ -27,8 +27,8 @@ bool is_extension_supported(const char *name) {
     return false;
 }
 
-WindowBuilderGl::WindowBuilderGl(const Vec2I &size) {
 #ifndef __ANDROID__
+WindowBuilderGl::WindowBuilderGl(const Vec2I &size) {
     glfwInit();
 
     // Major GL version.
@@ -75,9 +75,6 @@ WindowBuilderGl::WindowBuilderGl(const Vec2I &size) {
         Logger::info("Debug markers disabled. Try running from inside a OpenGL graphics debugger (e.g. RenderDoc).");
     }
     #endif
-#else
-    primary_window_ = std::make_shared<WindowGl>(size);
-#endif
 
     // Print GL version.
     int gl_major_version, gl_minor_version;
@@ -88,6 +85,94 @@ WindowBuilderGl::WindowBuilderGl(const Vec2I &size) {
     string_stream << "Version: " << gl_major_version << '.' << gl_minor_version;
     Logger::info(string_stream.str());
 }
+
+#else
+WindowBuilderGl::WindowBuilderGl(ANativeWindow *native_window, const Vec2I &window_size) {
+    egl_display_ = EGL_NO_DISPLAY;
+    egl_surface_ = EGL_NO_SURFACE;
+    egl_context_ = EGL_NO_CONTEXT;
+    egl_config_ = nullptr;
+
+    native_window_ = native_window;
+
+    init_display();
+    init_surface();
+    init_context();
+
+    // This is required.
+    eglMakeCurrent(egl_display_, egl_surface_, egl_surface_, egl_context_);
+
+    primary_window_ = std::make_shared<WindowGl>(window_size, egl_display_, egl_surface_, egl_context_);
+
+    // Print GL version.
+    int gl_major_version, gl_minor_version;
+    glGetIntegerv(GL_MAJOR_VERSION, &gl_major_version);
+    glGetIntegerv(GL_MINOR_VERSION, &gl_minor_version);
+
+    std::ostringstream string_stream;
+    string_stream << "Version: " << gl_major_version << '.' << gl_minor_version;
+    Logger::info(string_stream.str());
+}
+
+bool WindowBuilderGl::init_display() {
+    if (egl_display_ != EGL_NO_DISPLAY) {
+        return true;
+    }
+
+    egl_display_ = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (EGL_FALSE == eglInitialize(egl_display_, nullptr, nullptr)) {
+        Logger::error("NativeEngine: failed to init display");
+        return false;
+    }
+    return true;
+}
+
+bool WindowBuilderGl::init_surface() {
+    assert(egl_display_ != EGL_NO_DISPLAY);
+    if (egl_surface_ != EGL_NO_SURFACE) {
+        return true;
+    }
+
+    EGLint numConfigs;
+    const EGLint attribs[] = {EGL_RENDERABLE_TYPE,
+                              EGL_OPENGL_ES3_BIT, // Request OpenGL ES 3.0
+                              EGL_SURFACE_TYPE,
+                              EGL_WINDOW_BIT,
+                              EGL_BLUE_SIZE,
+                              8,
+                              EGL_GREEN_SIZE,
+                              8,
+                              EGL_RED_SIZE,
+                              8,
+                              EGL_DEPTH_SIZE,
+                              16,
+                              EGL_NONE};
+
+    // Pick the first EGLConfig that matches.
+    eglChooseConfig(egl_display_, attribs, &egl_config_, 1, &numConfigs);
+    egl_surface_ = eglCreateWindowSurface(egl_display_, egl_config_, native_window_, nullptr);
+    if (egl_surface_ == EGL_NO_SURFACE) {
+        Logger::error("Failed to create EGL surface");
+        return false;
+    }
+    return true;
+}
+
+bool WindowBuilderGl::init_context() {
+    assert(egl_display_ != EGL_NO_DISPLAY);
+    if (egl_context_ != EGL_NO_CONTEXT) {
+        return true;
+    }
+
+    EGLint attribList[] = {EGL_CONTEXT_CLIENT_VERSION, 3, EGL_NONE};
+    egl_context_ = eglCreateContext(egl_display_, egl_config_, nullptr, attribList);
+    if (egl_context_ == EGL_NO_CONTEXT) {
+        Logger::error("Failed to create EGL context");
+        return false;
+    }
+    return true;
+}
+#endif
 
 WindowBuilderGl::~WindowBuilderGl() {
     // Destroy windows.

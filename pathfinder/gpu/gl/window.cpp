@@ -9,10 +9,13 @@
 namespace Pathfinder {
 
 #ifndef __ANDROID__
-WindowGl::WindowGl(const Vec2I &size, GLFWwindow *window_handle) : Window(size, window_handle) {
-}
+WindowGl::WindowGl(const Vec2I &size, GLFWwindow *window_handle) : Window(size, window_handle) {}
 #else
-WindowGl::WindowGl(const Vec2I &size) : Window(size) {
+WindowGl::WindowGl(const Vec2I &size, EGLDisplay egl_display, EGLSurface egl_surface, EGLContext egl_context)
+    : Window(size) {
+    egl_display_ = egl_display;
+    egl_surface_ = egl_surface;
+    egl_context_ = egl_context;
 }
 #endif
 
@@ -24,7 +27,7 @@ std::shared_ptr<SwapChain> WindowGl::get_swap_chain(const std::shared_ptr<Device
 #ifndef __ANDROID__
     swapchain_ = std::make_shared<SwapChainGl>(get_physical_size(), glfw_window_);
 #else
-    swapchain_ = std::make_shared<SwapChainGl>(get_physical_size());
+    swapchain_ = std::make_shared<SwapChainGl>(get_physical_size(), egl_display_, egl_surface_, egl_context_);
 #endif
 
     return swapchain_;

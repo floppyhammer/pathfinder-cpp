@@ -9,8 +9,6 @@
 #include "../window_builder.h"
 #include "device.h"
 
-class ANativeWindow;
-
 namespace Pathfinder {
 
 /// List of required validation layers.
@@ -95,10 +93,6 @@ private:
     VkQueue present_queue_{};
 
     VkCommandPool command_pool_{};
-
-#ifdef __ANDROID__
-    ANativeWindow *native_window_{};
-#endif
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
                                                          VkDebugUtilsMessageTypeFlagsEXT message_type,

@@ -40,9 +40,7 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         AndroidMain.cpp
         vulkan_wrapper.cpp
         GameActivitySources.cpp
-        native_engine.cpp
-        native_engine_gl.cpp
-        native_engine_vk.cpp)
+        native_engine.cpp)
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
         game-activity::game-activity

@@ -6,7 +6,6 @@
 #include "../../common/global_macros.h"
 #include "../../common/logger.h"
 #include "../base.h"
-
 #include "../render_api.h"
 
 #define VK_CHECK_RESULT(f)                                                                                       \

@@ -13,8 +13,7 @@
 // limitations under the License.
 #include <android/log.h>
 
-#include "native_engine_gl.h"
-#include "native_engine_vk.h"
+#include "native_engine.h"
 
 NativeEngine *native_engine = nullptr;
 
@@ -23,8 +22,8 @@ void handle_cmd(android_app *app, int32_t cmd) {
     switch (cmd) {
         case APP_CMD_INIT_WINDOW:
             // The window is being shown, get it ready.
-            native_engine = new NativeEngineVk(app);
-            native_engine->init_app();
+            native_engine = new NativeEngine(app);
+            native_engine->init_app(false);
             break;
         case APP_CMD_TERM_WINDOW:
             // The window is being hidden or closed, clean it up.
@@ -53,8 +52,6 @@ void android_main(struct android_app *app) {
 
         // Render if the engine is ready.
         if (native_engine && native_engine->is_ready()) {
-            // This is required for GL, otherwise GPU memory leak occurs.
-            native_engine->set_context();
             native_engine->draw_frame();
         }
     } while (app->destroyRequested == 0);

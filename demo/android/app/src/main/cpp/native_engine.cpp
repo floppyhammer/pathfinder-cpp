@@ -1,5 +1,11 @@
 #include "native_engine.h"
 
+// clang-format off
+#include "vulkan_wrapper.h"
+#include "pathfinder/gpu/gl/window_builder.h"
+#include "pathfinder/gpu/vk/window_builder.h"
+// clang-format on
+
 void NativeEngine::draw_frame() {
     // Acquire next swap chain image.
     if (!pf_swapchain->acquire_image()) {
@@ -68,4 +74,24 @@ void NativeEngine::init_app_common(Pathfinder::Vec2I window_size) {
     pf_app->canvas_->set_dst_texture(dst_texture);
 
     pf_blit->set_texture(dst_texture);
+}
+
+bool NativeEngine::init_app(bool use_vulkan) {
+    auto window_size =
+        Pathfinder::Vec2I(ANativeWindow_getWidth(mAppCtx->window), ANativeWindow_getHeight(mAppCtx->window));
+
+    if (!use_vulkan) {
+        window_builder = std::make_shared<Pathfinder::WindowBuilderGl>(mAppCtx->window, window_size);
+    } else {
+        if (!InitVulkan()) {
+            Pathfinder::Logger::warn("Vulkan is unavailable, install vulkan and re-start");
+            return false;
+        }
+
+        window_builder = std::make_shared<Pathfinder::WindowBuilderVk>(mAppCtx->window, window_size);
+    }
+
+    init_app_common(window_size);
+
+    return true;
 }
