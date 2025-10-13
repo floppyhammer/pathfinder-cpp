@@ -46,6 +46,8 @@ public:
     bool acquire_image() override {
 #ifndef __ANDROID__
         glfwMakeContextCurrent(glfw_window_);
+            // Disable VSync (for performance comparison).
+            // glfwSwapInterval(0);
 #endif
         return true;
     }
