@@ -18,24 +18,8 @@ std::vector<char> load_file_as_bytes(const std::string &file_path);
 
 std::string load_file_as_string(const std::string &file_path);
 #else
-    #include <android/asset_manager.h>
 
-/// FIXME: we have to put the function implementation in the header, otherwise linking would fail. Don't know why.
-inline std::vector<char> load_asset(AAssetManager *asset_manager, const std::string &filename) {
-    assert(asset_manager);
-
-    AAsset *file = AAssetManager_open(asset_manager, filename.c_str(), AASSET_MODE_BUFFER);
-    assert(file);
-
-    size_t file_length = AAsset_getLength(file);
-
-    std::vector<char> file_content(file_length);
-
-    AAsset_read(file, file_content.data(), file_length);
-    AAsset_close(file);
-
-    return file_content;
-}
+std::vector<char> load_asset(void *asset_manager, const std::string &filename);
 #endif
 
 class ImageBuffer {

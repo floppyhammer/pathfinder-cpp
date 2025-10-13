@@ -8,6 +8,10 @@
 #endif
 #include <stb_image.h>
 
+#ifdef __ANDROID__
+    #include <android/asset_manager.h>
+#endif
+
 #include <cerrno>
 #include <stdexcept>
 
@@ -61,6 +65,22 @@ std::vector<char> load_file_as_bytes(const std::string &file_path) {
     fclose(file);
 
     return std::move(bytes);
+}
+#else
+std::vector<char> load_asset(void *asset_manager, const std::string &filename) {
+    assert(asset_manager);
+
+    AAsset *file = AAssetManager_open((AAssetManager *)asset_manager, filename.c_str(), AASSET_MODE_BUFFER);
+    assert(file);
+
+    size_t file_length = AAsset_getLength(file);
+
+    std::vector<char> file_content(file_length);
+
+    AAsset_read(file, file_content.data(), file_length);
+    AAsset_close(file);
+
+    return file_content;
 }
 #endif
 
