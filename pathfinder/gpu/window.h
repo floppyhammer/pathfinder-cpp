@@ -43,9 +43,7 @@ public:
 
     void* get_glfw_handle() const;
 
-#ifndef __ANDROID__
     bool should_close();
-#endif
 
     /// GLFW: whenever the window size changed (by OS or user) this callback function executes.
     static void framebuffer_resize_callback(GLFWwindow* glfw_window, int width, int height);

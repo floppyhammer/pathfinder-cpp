@@ -71,28 +71,38 @@ void* Window::get_glfw_handle() const {
     return glfw_window_;
 }
 
+#endif
+
 void Window::set_window_title(const std::string& title) const {
+#ifndef __ANDROID__
     glfwSetWindowTitle(glfw_window_, title.c_str());
+#endif
 }
 
 bool Window::should_close() {
+#ifndef __ANDROID__
     return glfwWindowShouldClose(glfw_window_);
+#else
+    return false;
+#endif
 }
 
 void Window::hide() {
+#ifndef __ANDROID__
     if (!hidden_) {
         glfwHideWindow(glfw_window_);
         hidden_ = true;
     }
+#endif
 }
 
 void Window::show() {
+#ifndef __ANDROID__
     if (hidden_) {
         glfwShowWindow(glfw_window_);
         hidden_ = false;
     }
-}
-
 #endif
+}
 
 } // namespace Pathfinder
