@@ -6,18 +6,6 @@
 #include <game-activity/native_app_glue/android_native_app_glue.h>
 #include <pathfinder/gpu/swap_chain.h>
 
-#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "threaded_app", __VA_ARGS__))
-#define LOGE(...) ((void)__android_log_print(ANDROID_LOG_ERROR, "threaded_app", __VA_ARGS__))
-#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "threaded_app", __VA_ARGS__))
-#define LOGW_ONCE(...)                                         \
-    do {                                                       \
-        static bool alogw_once##__FILE__##__LINE__##__ = true; \
-        if (alogw_once##__FILE__##__LINE__##__) {              \
-            alogw_once##__FILE__##__LINE__##__ = false;        \
-            LOGW(__VA_ARGS__);                                 \
-        }                                                      \
-    } while (0)
-
 class NativeEngine {
 public:
     explicit NativeEngine(android_app *app) {
