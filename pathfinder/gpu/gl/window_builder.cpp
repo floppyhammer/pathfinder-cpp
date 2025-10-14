@@ -28,7 +28,7 @@ bool is_extension_supported(const char *name) {
 }
 
 #ifndef __ANDROID__
-WindowBuilderGl::WindowBuilderGl(const Vec2I &size) {
+WindowBuilderGl::WindowBuilderGl(const Vec2I &logical_size) {
     glfwInit();
 
     // Major GL version.
@@ -48,16 +48,19 @@ WindowBuilderGl::WindowBuilderGl(const Vec2I &size) {
     #endif
 
     float dpi_scaling_factor;
-    auto glfw_window = glfw_window_init(size, PRIMARY_WINDOW_TITLE, dpi_scaling_factor, false, nullptr);
+    auto glfw_window = glfw_window_init(logical_size, PRIMARY_WINDOW_TITLE, dpi_scaling_factor, false, nullptr);
 
-    primary_window_ = std::make_shared<WindowGl>(size, glfw_window);
+    auto physical_size = (logical_size.to_f32() * dpi_scaling_factor).to_i32();
+
+    primary_window_ = std::make_shared<WindowGl>(physical_size, glfw_window);
     primary_window_->set_dpi_scaling_factor(dpi_scaling_factor);
 
     // Set user data.
     primary_window_->window_index = 0;
 
     std::ostringstream ss;
-    ss << "Window created:\n  Size: " << size << "\n  DPI Scaling: " << dpi_scaling_factor;
+    ss << "Window created:\n  Physical Size: " << physical_size << "\n  Logical Size: " << logical_size
+       << "\n  DPI Scaling: " << dpi_scaling_factor;
     Logger::info(ss.str());
 
     // Have to make the window context current before calling gladLoadGL().

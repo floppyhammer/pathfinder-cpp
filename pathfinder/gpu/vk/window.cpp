@@ -49,7 +49,7 @@ VkExtent2D WindowVk::choose_swap_extent(const VkSurfaceCapabilitiesKHR& capabili
 std::shared_ptr<SwapChain> WindowVk::get_swap_chain(const std::shared_ptr<Device>& device) {
     if (!swapchain_) {
         auto device_vk = static_cast<DeviceVk*>(device.get());
-        swapchain_ = std::make_shared<SwapChainVk>(logical_size_, this, device_vk);
+        swapchain_ = std::make_shared<SwapChainVk>(get_physical_size(), this, device_vk);
     }
 
     return swapchain_;

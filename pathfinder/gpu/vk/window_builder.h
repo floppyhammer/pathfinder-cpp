@@ -54,9 +54,9 @@ class Window;
 class WindowBuilderVk : public WindowBuilder {
 public:
 #ifndef __ANDROID__
-    explicit WindowBuilderVk(const Vec2I &size);
+    explicit WindowBuilderVk(const Vec2I &logical_size);
 #else
-    explicit WindowBuilderVk(ANativeWindow *native_window, const Vec2I &window_size);
+    explicit WindowBuilderVk(ANativeWindow *native_window, const Vec2I &physical_size);
 #endif
 
     ~WindowBuilderVk() override;

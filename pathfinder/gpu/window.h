@@ -59,7 +59,7 @@ public:
     uint8_t window_index{};
 
 protected:
-    Vec2I logical_size_;
+    Vec2I physical_size_;
 
     bool just_resized_ = false;
     bool fullscreen_ = false;

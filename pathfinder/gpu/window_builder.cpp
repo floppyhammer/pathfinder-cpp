@@ -57,6 +57,10 @@ float WindowBuilder::get_dpi_scaling_factor(uint8_t window_index) const {
     return get_window(window_index).lock()->get_dpi_scaling_factor();
 }
 
+void WindowBuilder::set_dpi_scaling_factor(uint8_t window_index, float new_scale) {
+    get_window(window_index).lock()->set_dpi_scaling_factor(new_scale);
+}
+
 void WindowBuilder::poll_events() {
     // Reset window flags.
     {
@@ -81,35 +85,30 @@ void WindowBuilder::set_fullscreen(bool fullscreen) {
     primary_window_->fullscreen_ = fullscreen;
 
     if (fullscreen) {
-        reserved_window_logical_size_ = primary_window_->get_logical_size();
+        reserved_window_physical_size_ = primary_window_->get_physical_size();
         reserved_window_position_ = primary_window_->get_position();
 
         const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-
-        auto physical_size = Vec2I(mode->width, mode->height);
 
         glfwSetWindowMonitor(primary_window_->glfw_window_,
                              glfwGetPrimaryMonitor(),
                              0,
                              0,
-                             physical_size.x,
-                             physical_size.y,
+                             mode->width,
+                             mode->height,
                              GLFW_DONT_CARE);
 
-        auto logical_size = (physical_size.to_f32() / get_dpi_scaling_factor(0)).to_i32();
-        primary_window_->logical_size_ = logical_size;
+        primary_window_->physical_size_ = Vec2I(mode->width, mode->height);
     } else {
-        auto physical_size = (reserved_window_logical_size_.to_f32() * get_dpi_scaling_factor(0)).to_i32();
-
         glfwSetWindowMonitor(primary_window_->glfw_window_,
-                             NULL,
+                             nullptr,
                              reserved_window_position_.x,
                              reserved_window_position_.y,
-                             physical_size.x,
-                             physical_size.y,
+                             reserved_window_physical_size_.x,
+                             reserved_window_physical_size_.y,
                              GLFW_DONT_CARE);
 
-        primary_window_->logical_size_ = reserved_window_logical_size_;
+        primary_window_->physical_size_ = reserved_window_physical_size_;
     }
 #endif
 }

@@ -31,9 +31,11 @@ public:
     /// Create a new sub-window.
     virtual uint8_t create_window(const Vec2I &size, const std::string &title) = 0;
 
-    [[nodiscard]] std::weak_ptr<Window> get_window(uint8_t window_index) const;
+    std::weak_ptr<Window> get_window(uint8_t window_index) const;
 
     float get_dpi_scaling_factor(uint8_t window_index) const;
+
+    void set_dpi_scaling_factor(uint8_t window_index, float new_scale);
 
     virtual std::shared_ptr<Device> request_device() = 0;
 
@@ -60,7 +62,7 @@ protected:
     bool primary_window_fullscreen_ = false;
 
     // Size before going fullscreen or being minimized.
-    Vec2I reserved_window_logical_size_;
+    Vec2I reserved_window_physical_size_;
 
     Vec2I reserved_window_position_;
 };

@@ -14,12 +14,12 @@ public:
 #ifdef __ANDROID__
     WindowBuilderGl(ANativeWindow *native_window, const Vec2I &window_size);
 #else
-    explicit WindowBuilderGl(const Vec2I &size);
+    explicit WindowBuilderGl(const Vec2I &logical_size);
 #endif
 
     ~WindowBuilderGl() override;
 
-    uint8_t create_window(const Vec2I &size, const std::string &title) override;
+    uint8_t create_window(const Vec2I &logical_size, const std::string &title) override;
 
     std::shared_ptr<Device> request_device() override;
 

@@ -29,7 +29,7 @@ void destroy_debug_utils_messenger_ext(VkInstance instance,
 }
 
 #ifndef __ANDROID__
-WindowBuilderVk::WindowBuilderVk(const Vec2I &size) {
+WindowBuilderVk::WindowBuilderVk(const Vec2I &logical_size) {
     glfwInit();
 
     // To not create an OpenGL context (as we're using Vulkan).
@@ -40,18 +40,20 @@ WindowBuilderVk::WindowBuilderVk(const Vec2I &size) {
     setup_debug_messenger();
 
     float dpi_scaling_factor;
-    auto glfw_window = glfw_window_init(size, PRIMARY_WINDOW_TITLE, dpi_scaling_factor, false, nullptr);
+    auto glfw_window = glfw_window_init(logical_size, PRIMARY_WINDOW_TITLE, dpi_scaling_factor, false, nullptr);
+
+    auto physical_size = (logical_size.to_f32() * dpi_scaling_factor).to_i32();
 
     VkSurfaceKHR surface{};
     VK_CHECK_RESULT(glfwCreateWindowSurface(instance_, glfw_window, nullptr, &surface))
 
     initialize_after_surface_creation(surface);
 
-    primary_window_ = std::make_shared<WindowVk>(size, glfw_window, surface, instance_);
+    primary_window_ = std::make_shared<WindowVk>(physical_size, glfw_window, surface, instance_);
     primary_window_->set_dpi_scaling_factor(dpi_scaling_factor);
 }
 #else
-WindowBuilderVk::WindowBuilderVk(ANativeWindow *native_window, const Vec2I &window_size) {
+WindowBuilderVk::WindowBuilderVk(ANativeWindow *native_window, const Vec2I &physical_size) {
     native_window_ = native_window;
 
     create_instance();
@@ -68,7 +70,7 @@ WindowBuilderVk::WindowBuilderVk(ANativeWindow *native_window, const Vec2I &wind
 
     initialize_after_surface_creation(surface);
 
-    primary_window_ = std::make_shared<WindowVk>(window_size, surface, instance_);
+    primary_window_ = std::make_shared<WindowVk>(physical_size, surface, instance_);
 }
 #endif
 
