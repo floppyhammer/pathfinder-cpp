@@ -419,7 +419,7 @@ void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &t
         }
 
         // Different batches will use the same tile vertex buffer, so we need to make sure
-        // that a batch is down drawing before processing the next batch.
+        // that a batch is done drawing before processing the next batch.
         auto encoder = device->create_command_encoder("upload & draw tiles");
 
         // Apply clip paths.

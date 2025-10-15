@@ -75,13 +75,13 @@ Blit::Blit(const std::shared_ptr<Device> &device, const std::shared_ptr<Queue> &
 
 void Blit::set_texture(const std::shared_ptr<Texture> &new_texture) {
     texture_ = new_texture;
-
-    descriptor_set_->add_or_update({
-        Descriptor::sampled(0, ShaderStage::Fragment, "uTexture", texture_, sampler_),
-    });
 }
 
 void Blit::draw(const std::shared_ptr<CommandEncoder> &encoder) {
+    descriptor_set_->add_or_update({
+        Descriptor::sampled(0, ShaderStage::Fragment, "uTexture", texture_, sampler_),
+    });
+
     encoder->bind_render_pipeline(pipeline_);
 
     encoder->bind_vertex_buffers({vertex_buffer_});
