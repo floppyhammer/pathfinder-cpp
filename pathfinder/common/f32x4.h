@@ -2,6 +2,7 @@
 #define PATHFINDER_F32X4_H
 
 #include <algorithm>
+#include <cstdint>
 
 #include "global_macros.h"
 #include "logger.h"

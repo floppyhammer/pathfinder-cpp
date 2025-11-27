@@ -1,6 +1,8 @@
 #ifndef PATHFINDER_LINE_SEGMENT_H
 #define PATHFINDER_LINE_SEGMENT_H
 
+#include <cstdint>
+
 #include "../../common/f32x4.h"
 #include "../../common/math/transform2.h"
 #include "../../common/math/vec2.h"
