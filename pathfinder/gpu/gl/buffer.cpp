@@ -1,5 +1,7 @@
 #include "buffer.h"
 
+#include <cassert>
+
 #include "../../common/logger.h"
 #include "debug_marker.h"
 
@@ -11,6 +13,7 @@ BufferGl::BufferGl(const BufferDescriptor &desc) : Buffer(desc) {
     }
 
     glGenBuffers(1, &gl_id_);
+    assert(gl_id_ != 0);
 
     GLint target = GL_NONE;
 
