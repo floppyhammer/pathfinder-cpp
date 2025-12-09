@@ -30,6 +30,7 @@
 
     #ifdef PATHFINDER_USE_VULKAN
         #define GLFW_INCLUDE_VULKAN
+        #include <vulkan/vulkan.h>
     #endif
 
     #include <GLFW/glfw3.h>
