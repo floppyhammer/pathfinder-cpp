@@ -40,7 +40,9 @@
 // Enable DEBUG mode. Influencing performance.
 // For the GL backend, error checking is enabled.
 // For Vulkan , the validation layers are enabled.
-#define PATHFINDER_DEBUG
+#ifndef NDEBUG
+    #define PATHFINDER_DEBUG
+#endif
 
 /// Enable building scenes (on D3d9 level) in parallel.
 #define PATHFINDER_THREADS 4
