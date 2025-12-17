@@ -1,5 +1,7 @@
 #include "texture.h"
 
+#include <assert.h>
+
 #include "../../common/global_macros.h"
 #include "debug_marker.h"
 
@@ -46,16 +48,39 @@ TextureGl::~TextureGl() {
         return;
     }
     glDeleteTextures(1, &gl_id_);
+
+    if (pbo_id_ > 0) {
+        glDeleteBuffers(1, &pbo_id_);
+    }
 }
 
 uint32_t TextureGl::get_texture_id() const {
     return gl_id_;
 }
 
+uint32_t TextureGl::get_pbo_id() const {
+    return pbo_id_;
+}
+
 void TextureGl::set_label(const std::string& label) {
     Texture::set_label(label);
 
     DebugMarker::label_texture(gl_id_, label);
+}
+
+void TextureGl::prepare_pbo() {
+    if (pbo_id_ > 0) {
+        return;
+    }
+
+    glGenBuffers(1, &pbo_id_);
+    assert(pbo_id_ != 0);
+
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo_id_);
+
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, static_cast<GLsizeiptr>(desc_.byte_size()), nullptr, GL_STREAM_DRAW);
+
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 }
 
 } // namespace Pathfinder

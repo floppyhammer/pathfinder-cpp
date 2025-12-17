@@ -15,7 +15,11 @@ public:
 
     uint32_t get_texture_id() const;
 
+    uint32_t get_pbo_id() const;
+
     void set_label(const std::string& label) override;
+
+    void prepare_pbo();
 
 private:
     explicit TextureGl(const TextureDescriptor& desc);
@@ -25,6 +29,8 @@ private:
     bool wrapped = false;
 
     uint32_t gl_id_ = 0;
+
+    uint32_t pbo_id_ = 0;
 };
 
 } // namespace Pathfinder
