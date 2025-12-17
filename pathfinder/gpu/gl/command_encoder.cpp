@@ -1,6 +1,7 @@
 #include "command_encoder.h"
 
 #include <cassert>
+#include <cstring>
 
 #include "buffer.h"
 #include "compute_pipeline.h"
