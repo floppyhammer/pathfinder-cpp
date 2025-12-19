@@ -49,10 +49,10 @@ bool SwapChainVk::acquire_image() {
 
     auto vk_device = device_->get_device();
 
-    // Wait for the frame to be finished.
+    // Wait for the CPU-side "Frame Slot" to be free.
     vkWaitForFences(vk_device, 1, &in_flight_fences_[current_frame_], VK_TRUE, UINT64_MAX);
 
-    // Retrieve the index of the next available presentable image.
+    // Acquire image using a semaphore dedicated to this frame slot.
     VkResult result = vkAcquireNextImageKHR(vk_device,
                                             vk_swapchain_,
                                             UINT64_MAX,
@@ -68,6 +68,14 @@ bool SwapChainVk::acquire_image() {
     if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
         throw std::runtime_error("Failed to acquire swap chain image!");
     }
+
+    //  Check if the image we just got is still being used by a previous frame.
+    if (images_in_flight_[image_index_] != VK_NULL_HANDLE) {
+        vkWaitForFences(vk_device, 1, &images_in_flight_[image_index_], VK_TRUE, UINT64_MAX);
+    }
+
+    // Mark this image as now being handled by this frame's fence.
+    images_in_flight_[image_index_] = in_flight_fences_[current_frame_];
 
     return true;
 }
@@ -118,9 +126,13 @@ void SwapChainVk::destroy() {
     // Clean up swap chain related resources.
     cleanup_swapchain();
 
+    for (size_t i = 0; i < swapchain_images_.size(); i++) {
+        vkDestroySemaphore(vk_device, render_finished_semaphores_[i], nullptr);
+        ;
+    }
+
     // Clean up sync objects.
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        vkDestroySemaphore(vk_device, render_finished_semaphores_[i], nullptr);
         vkDestroySemaphore(vk_device, image_available_semaphores_[i], nullptr);
         vkDestroyFence(vk_device, in_flight_fences_[i], nullptr);
     }
@@ -140,6 +152,7 @@ void SwapChainVk::create_swapchain(VkPhysicalDevice physical_device) {
         image_count > swapchain_support.capabilities.maxImageCount) {
         image_count = swapchain_support.capabilities.maxImageCount;
     }
+    image_count_ = image_count;
 
     VkSwapchainCreateInfoKHR create_info{};
     create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -185,9 +198,9 @@ void SwapChainVk::create_swapchain(VkPhysicalDevice physical_device) {
 }
 
 void SwapChainVk::create_image_views() {
-    swapchain_image_views_.resize(swapchain_images_.size());
+    swapchain_image_views_.resize(image_count_);
 
-    for (uint32_t i = 0; i < swapchain_images_.size(); i++) {
+    for (uint32_t i = 0; i < image_count_; i++) {
         swapchain_image_views_[i] =
             device_->create_vk_image_view(swapchain_images_[i], swapchain_image_format_, VK_IMAGE_ASPECT_COLOR_BIT);
     }
@@ -202,10 +215,9 @@ void SwapChainVk::create_sync_objects() {
     auto vk_device = device_->get_device();
 
     image_available_semaphores_.resize(MAX_FRAMES_IN_FLIGHT);
-    render_finished_semaphores_.resize(MAX_FRAMES_IN_FLIGHT);
+    render_finished_semaphores_.resize(image_count_);
     in_flight_fences_.resize(MAX_FRAMES_IN_FLIGHT);
-
-    images_in_flight_.resize(swapchain_images_.size(), VK_NULL_HANDLE);
+    images_in_flight_.resize(image_count_, VK_NULL_HANDLE);
 
     VkSemaphoreCreateInfo semaphore_info{};
     semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -214,9 +226,12 @@ void SwapChainVk::create_sync_objects() {
     fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT; // Initialize it in the signaled state
 
+    for (size_t i = 0; i < image_count_; i++) {
+        VK_CHECK_RESULT(vkCreateSemaphore(vk_device, &semaphore_info, nullptr, &render_finished_semaphores_[i]))
+    }
+
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         VK_CHECK_RESULT(vkCreateSemaphore(vk_device, &semaphore_info, nullptr, &image_available_semaphores_[i]))
-        VK_CHECK_RESULT(vkCreateSemaphore(vk_device, &semaphore_info, nullptr, &render_finished_semaphores_[i]))
         VK_CHECK_RESULT(vkCreateFence(vk_device, &fence_info, nullptr, &in_flight_fences_[i]))
     }
 }
@@ -248,11 +263,6 @@ void SwapChainVk::flush(const std::shared_ptr<CommandEncoder> &encoder) {
     auto vk_graphics_queue = device_->get_graphics_queue();
     auto encoder_vk = (CommandEncoderVk *)encoder.get();
 
-    if (images_in_flight_[image_index_] != VK_NULL_HANDLE) {
-        vkWaitForFences(vk_device, 1, &images_in_flight_[image_index_], VK_TRUE, UINT64_MAX);
-    }
-    images_in_flight_[image_index_] = in_flight_fences_[current_frame_];
-
     // Submit command buffer.
     // -------------------------------------
     VkSubmitInfo submit_info{};
@@ -268,7 +278,7 @@ void SwapChainVk::flush(const std::shared_ptr<CommandEncoder> &encoder) {
     submit_info.pWaitDstStageMask = wait_stages; // The wait will not affect stages that come before this stage.
 
     // The semaphores to signal after all commands in this command buffer are finished on the GPU.
-    VkSemaphore signal_semaphores[] = {render_finished_semaphores_[current_frame_]};
+    VkSemaphore signal_semaphores[] = {render_finished_semaphores_[image_index_]};
     submit_info.signalSemaphoreCount = 1;
     submit_info.pSignalSemaphores = signal_semaphores;
 
@@ -282,7 +292,7 @@ void SwapChainVk::present() {
     auto vk_present_queue = device_->get_present_queue();
 
     // Wait until the image to present has finished rendering.
-    VkSemaphore signal_semaphores[] = {render_finished_semaphores_[current_frame_]};
+    VkSemaphore wait_semaphores[] = {render_finished_semaphores_[image_index_]};
 
     // Queue an image for presentation after queueing all rendering commands
     // and transitioning the image to the correct layout.
@@ -292,14 +302,10 @@ void SwapChainVk::present() {
 
     // Specifies the semaphores to wait for before issuing the present request.
     present_info.waitSemaphoreCount = 1;
-    present_info.pWaitSemaphores = signal_semaphores;
-
-    VkSwapchainKHR swapchains[] = {vk_swapchain_};
+    present_info.pWaitSemaphores = wait_semaphores;
     present_info.swapchainCount = 1;
-    present_info.pSwapchains = swapchains;
-
-    // Array of each swap chain's presentable images.
-    present_info.pImageIndices = &image_index_;
+    present_info.pSwapchains = &vk_swapchain_;
+    present_info.pImageIndices = &image_index_; // Array of each swap chain's presentable images.
 
     VkResult result = vkQueuePresentKHR(vk_present_queue, &present_info);
     // -------------------------------------

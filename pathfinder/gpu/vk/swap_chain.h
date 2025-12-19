@@ -12,10 +12,10 @@ namespace Pathfinder {
 
 class WindowBuilderVk;
 
-/// How many frames should be processed concurrently.
-/// NOTE: Swapchain image count doesn't necessarily equal to this (One is expected, the other is what we
-/// actually get considering device capacity).
-const int MAX_FRAMES_IN_FLIGHT = 2;
+/// How many frames should be processed concurrently by CPU.
+/// Typical Value: Usually 2. This provides a balance: the CPU can work on the next frame while the GPU finishes the
+/// current one, but it doesn't add too much "input lag" (latency).
+constexpr int MAX_FRAMES_IN_FLIGHT = 2; // (CPU-to-GPU Buffering)
 
 class SwapChainVk : public SwapChain {
     friend class DeviceVk;
@@ -43,10 +43,13 @@ private:
     std::shared_ptr<RenderPass> render_pass_;
     std::vector<std::shared_ptr<Framebuffer>> framebuffers_;
 
-    /// Swap chain images are allocated differently than normal images.
-    /// Number of images doesn't necessarily equal to MAX_FRAMES_IN_FLIGHT (One is expected, the other is what we
-    /// actually get considering device capacity).
+    /// It handles the transition from the GPU to the display. You need enough images so that while one is being
+    /// displayed on the screen, another can be written to by the GPU, and potentially a third can be "queued up" for
+    /// the next refresh.
+    /// Typical Value: Usually 3 (for Triple Buffering) or 2 (for Double Buffering).
     std::vector<VkImage> swapchain_images_;
+
+    uint32_t image_count_; // (GPU-to-Display Buffering)
 
     /// VkImageView defines which part of VkImage to use.
     std::vector<VkImageView> swapchain_image_views_;
@@ -55,19 +58,28 @@ private:
     /// Default will be VK_FORMAT_B8G8R8A8_SRGB.
     VkFormat swapchain_image_format_{};
 
-    /// Each frame should have its own set of semaphores, so a list is used.
-    std::vector<VkSemaphore> image_available_semaphores_; // Check before acquiring an image.
-    std::vector<VkSemaphore> render_finished_semaphores_; // Check before presenting an image.
-
-    /// To perform CPU-GPU synchronization using fences.
-    std::vector<VkFence> in_flight_fences_;
-    std::vector<VkFence> images_in_flight_;
-
+    // --------------------------------------
     /// To use the right pair of semaphores every time,
     /// we need to keep track of the current frame.
-    size_t current_frame_ = 0;
+    size_t current_frame_ = 0; // Index for MAX_FRAMES_IN_FLIGHT
 
-    uint32_t image_index_ = 0;
+    /// Used to tell the GPU "the image is ready to be drawn on."
+    std::vector<VkSemaphore> image_available_semaphores_; // Check before acquiring an image.
+
+    /// This ensures the CPU doesn't overwrite the command buffer while the GPU is still reading it.
+    std::vector<VkFence> in_flight_fences_;
+    // --------------------------------------
+
+    // --------------------------------------
+    uint32_t image_index_ = 0; // Index for image_count_
+
+    /// (Ideally) these should be per-image to ensure the presentation engine knows exactly when a specific image is
+    /// ready.
+    std::vector<VkSemaphore> render_finished_semaphores_; // Check before presenting an image.
+
+    /// This ensures you don't draw into an image that is still being presented or processed by an older frame.
+    std::vector<VkFence> images_in_flight_;
+    // --------------------------------------
 
     std::shared_ptr<CommandEncoder> encoder_of_last_frame_;
 
