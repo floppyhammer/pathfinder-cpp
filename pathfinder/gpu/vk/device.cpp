@@ -511,6 +511,7 @@ std::shared_ptr<Fence> DeviceVk::create_fence(const std::string &label) {
     fence_vk->label = label;
     fence_vk->device = this;
     fence_vk->fence = fence;
+    vkResetFences(vk_device_, 1, &fence);
 
     return fence_vk;
 }
