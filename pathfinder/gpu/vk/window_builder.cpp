@@ -98,6 +98,7 @@ void WindowBuilderVk::stop_and_destroy_swapchains() {
     }
 
     primary_window_->swapchain_->destroy();
+    primary_window_->destroy();
 }
 
 uint8_t WindowBuilderVk::create_window(const Vec2I &size, const std::string &title) {

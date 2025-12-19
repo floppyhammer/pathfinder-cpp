@@ -121,6 +121,9 @@ void SwapChainVk::cleanup_swapchain() {
 void SwapChainVk::destroy() {
     auto vk_device = device_->get_device();
 
+    vkQueueWaitIdle(device_->get_graphics_queue());
+    vkQueueWaitIdle(device_->get_present_queue());
+
     encoder_of_last_frame_.reset();
 
     // Clean up swap chain related resources.
@@ -128,7 +131,6 @@ void SwapChainVk::destroy() {
 
     for (size_t i = 0; i < swapchain_images_.size(); i++) {
         vkDestroySemaphore(vk_device, render_finished_semaphores_[i], nullptr);
-        ;
     }
 
     // Clean up sync objects.
