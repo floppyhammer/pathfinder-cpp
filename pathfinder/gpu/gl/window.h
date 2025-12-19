@@ -7,8 +7,6 @@
 
 #include "../window.h"
 
-struct GLFWwindow;
-
 namespace Pathfinder {
 
 class WindowGl : public Window {
@@ -16,7 +14,7 @@ class WindowGl : public Window {
 
 public:
 #ifndef __ANDROID__
-    WindowGl(const Vec2I &size, GLFWwindow *window_handle);
+    WindowGl(const Vec2I &size, void *window_handle);
 #else
     WindowGl(const Vec2I &size, EGLDisplay egl_display, EGLSurface egl_surface, EGLContext egl_context);
 #endif

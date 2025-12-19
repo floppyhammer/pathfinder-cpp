@@ -70,7 +70,7 @@ WindowBuilderVk::WindowBuilderVk(ANativeWindow *native_window, const Vec2I &phys
 
     initialize_after_surface_creation(surface);
 
-    primary_window_ = std::make_shared<WindowVk>(physical_size, surface, instance_);
+    primary_window_ = std::make_shared<WindowVk>(physical_size, native_window, surface, instance_);
 }
 #endif
 

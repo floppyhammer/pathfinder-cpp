@@ -10,18 +10,11 @@
 
 namespace Pathfinder {
 
-#ifndef __ANDROID__
-WindowVk::WindowVk(const Vec2I& size, GLFWwindow* window_handle, VkSurfaceKHR surface, VkInstance instance)
+WindowVk::WindowVk(const Vec2I& size, void* window_handle, VkSurfaceKHR surface, VkInstance instance)
     : Window(size, window_handle) {
     surface_ = surface;
     instance_ = instance;
 }
-#else
-WindowVk::WindowVk(const Vec2I& _size, VkSurfaceKHR surface, VkInstance instance) : Window(_size) {
-    surface_ = surface;
-    instance_ = instance;
-}
-#endif
 
 VkExtent2D WindowVk::choose_swap_extent(const VkSurfaceCapabilitiesKHR& capabilities) const {
     if (capabilities.currentExtent.width != UINT32_MAX) {
@@ -30,7 +23,7 @@ VkExtent2D WindowVk::choose_swap_extent(const VkSurfaceCapabilitiesKHR& capabili
         int width, height;
 #ifndef __ANDROID__
 
-        glfwGetFramebufferSize(glfw_window_, &width, &height);
+        glfwGetFramebufferSize((GLFWwindow*)glfw_window_, &width, &height);
 #endif
         width = 1000;
         height = 1000;
@@ -63,7 +56,7 @@ void WindowVk::destroy() {
     }
 
     if (glfw_window_) {
-        glfwDestroyWindow(glfw_window_);
+        glfwDestroyWindow((GLFWwindow*)glfw_window_);
         glfw_window_ = nullptr;
     }
 #endif

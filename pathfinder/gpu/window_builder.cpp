@@ -90,7 +90,7 @@ void WindowBuilder::set_fullscreen(bool fullscreen) {
 
         const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
-        glfwSetWindowMonitor(primary_window_->glfw_window_,
+        glfwSetWindowMonitor((GLFWwindow*)primary_window_->glfw_window_,
                              glfwGetPrimaryMonitor(),
                              0,
                              0,
@@ -100,7 +100,7 @@ void WindowBuilder::set_fullscreen(bool fullscreen) {
 
         primary_window_->physical_size_ = Vec2I(mode->width, mode->height);
     } else {
-        glfwSetWindowMonitor(primary_window_->glfw_window_,
+        glfwSetWindowMonitor((GLFWwindow*)primary_window_->glfw_window_,
                              nullptr,
                              reserved_window_position_.x,
                              reserved_window_position_.y,

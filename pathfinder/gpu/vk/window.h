@@ -15,11 +15,7 @@ class WindowVk : public Window {
     friend class WindowBuilderVk;
 
 public:
-#ifndef __ANDROID__
-    explicit WindowVk(const Vec2I &_size, GLFWwindow *window_handle, VkSurfaceKHR surface, VkInstance instance);
-#else
-    explicit WindowVk(const Vec2I &_size, VkSurfaceKHR surface, VkInstance instance);
-#endif
+    WindowVk(const Vec2I &_size, void *window_handle, VkSurfaceKHR surface, VkInstance instance);
 
     VkExtent2D choose_swap_extent(const VkSurfaceCapabilitiesKHR &capabilities) const;
 

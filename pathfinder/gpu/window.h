@@ -4,8 +4,6 @@
 #include "device.h"
 #include "swap_chain.h"
 
-struct GLFWwindow;
-
 namespace Pathfinder {
 
 class SwapChain;
@@ -15,11 +13,7 @@ class Window {
     friend class WindowBuilderGl;
 
 public:
-#ifdef __ANDROID__
-    explicit Window(const Vec2I& size);
-#else
-    explicit Window(const Vec2I& size, GLFWwindow* window_handle);
-#endif
+    Window(const Vec2I& size, void* window_handle);
 
     virtual ~Window() = default;
 
@@ -45,9 +39,6 @@ public:
 
     bool should_close();
 
-    /// GLFW: whenever the window size changed (by OS or user) this callback function executes.
-    static void framebuffer_resize_callback(GLFWwindow* glfw_window, int width, int height);
-
     std::shared_ptr<SwapChain> swapchain_;
 
     float get_dpi_scaling_factor() const;
@@ -55,6 +46,8 @@ public:
     void set_dpi_scaling_factor(float scale);
 
     void set_window_title(const std::string& title) const;
+
+    void update_window_size(bool resized, Vec2I physical_size);
 
     uint8_t window_index{};
 
@@ -69,7 +62,7 @@ protected:
     float dpi_scaling_factor_ = 1.0f;
 
 #ifndef __ANDROID__
-    GLFWwindow* glfw_window_{};
+    void* glfw_window_{};
 #endif
 };
 

@@ -10,7 +10,7 @@ namespace Pathfinder {
 
 class SwapChain {
 public:
-    explicit SwapChain(Vec2I size) : size_(size) {}
+    explicit SwapChain(const Vec2I size) : size_(size) {}
 
     virtual ~SwapChain() = default;
 
