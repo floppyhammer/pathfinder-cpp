@@ -1,11 +1,6 @@
 #ifndef PATHFINDER_GPU_WINDOW_VK_H
 #define PATHFINDER_GPU_WINDOW_VK_H
 
-#include <cstring>
-#include <iostream>
-#include <vector>
-
-#include "../../common/global_macros.h"
 #include "../window.h"
 #include "device.h"
 

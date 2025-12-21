@@ -1,8 +1,6 @@
 #ifndef PATHFINDER_GPU_DRIVER_VK_H
 #define PATHFINDER_GPU_DRIVER_VK_H
 
-#include "../../common/global_macros.h"
-#include "../../common/io.h"
 #include "../base.h"
 #include "../device.h"
 #include "render_pass.h"

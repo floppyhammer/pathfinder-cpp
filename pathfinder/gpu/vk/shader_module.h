@@ -23,4 +23,5 @@ private:
 };
 
 } // namespace Pathfinder
+
 #endif // PATHFINDER_GPU_SHADER_MODULE_VK_H

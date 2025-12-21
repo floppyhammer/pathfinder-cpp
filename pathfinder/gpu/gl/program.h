@@ -2,12 +2,9 @@
 #define PATHFINDER_GPU_PROGRAM_H
 
 #include <fstream>
-#include <iostream>
 #include <sstream>
 #include <string>
-#include <vector>
 
-#include "../../common/global_macros.h"
 #include "../../common/logger.h"
 #include "../../common/math/mat2.h"
 #include "../../common/math/mat4.h"

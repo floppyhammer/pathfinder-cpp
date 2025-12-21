@@ -8,7 +8,6 @@
 #include <queue>
 
 #include "../common/color.h"
-#include "../common/logger.h"
 #include "../common/math/rect.h"
 #include "buffer.h"
 #include "compute_pipeline.h"

@@ -3,13 +3,10 @@
 
 #include <vector>
 
-#include "../../common/global_macros.h"
 #include "../../common/logger.h"
-#include "../../common/math/basic.h"
 #include "../device.h"
 #include "buffer.h"
 #include "command_encoder.h"
-#include "swap_chain.h"
 #include "texture.h"
 
 namespace Pathfinder {

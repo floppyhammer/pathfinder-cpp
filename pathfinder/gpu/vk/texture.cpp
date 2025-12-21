@@ -1,7 +1,5 @@
 #include "texture.h"
 
-#include <cassert>
-
 #include "debug_marker.h"
 #include "device.h"
 

@@ -1,7 +1,6 @@
 #ifndef PATHFINDER_GPU_RENDER_PIPELINE_H
 #define PATHFINDER_GPU_RENDER_PIPELINE_H
 
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -13,9 +12,9 @@ namespace Pathfinder {
 class RenderPipeline {
 public:
     RenderPipeline(const std::vector<VertexInputAttributeDescription>& attribute_descriptions,
-                   BlendState blend_state,
+                   const BlendState& blend_state,
                    std::string label)
-        : attribute_descriptions_(attribute_descriptions), blend_state_(blend_state), label_(std::move(label)){};
+        : attribute_descriptions_(attribute_descriptions), blend_state_(blend_state), label_(std::move(label)) {};
 
     virtual ~RenderPipeline() = default;
 

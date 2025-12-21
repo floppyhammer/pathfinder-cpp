@@ -1,7 +1,6 @@
 #ifndef PATHFINDER_GPU_DATA_GL_H
 #define PATHFINDER_GPU_DATA_GL_H
 
-#include "../../common/global_macros.h"
 #include "../base.h"
 #include "../render_api.h"
 

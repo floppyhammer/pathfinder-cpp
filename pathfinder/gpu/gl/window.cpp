@@ -1,9 +1,5 @@
 #include "window.h"
 
-#include <sstream>
-#include <stdexcept>
-
-#include "../../common/logger.h"
 #include "swap_chain.h"
 
 namespace Pathfinder {

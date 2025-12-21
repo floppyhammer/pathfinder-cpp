@@ -12,7 +12,7 @@ class RenderPassVk : public RenderPass {
 public:
     ~RenderPassVk() override;
 
-    VkRenderPass get_vk_render_pass();
+    VkRenderPass get_vk_render_pass() const;
 
 private:
     RenderPassVk(VkDevice vk_device,

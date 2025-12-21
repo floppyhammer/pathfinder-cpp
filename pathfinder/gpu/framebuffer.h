@@ -1,7 +1,6 @@
 #ifndef PATHFINDER_GPU_FRAMEBUFFER_H
 #define PATHFINDER_GPU_FRAMEBUFFER_H
 
-#include <cassert>
 #include <memory>
 
 #include "texture.h"

@@ -12,14 +12,14 @@
 namespace Pathfinder {
 
 /// List of required validation layers.
-const std::vector<const char *> VALIDATION_LAYERS = {"VK_LAYER_KHRONOS_validation"};
+const std::vector VALIDATION_LAYERS = {"VK_LAYER_KHRONOS_validation"};
 
 /// List of required device extensions.
-const std::vector<const char *> DEVICE_EXTENSIONS = {
+const std::vector DEVICE_EXTENSIONS = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 };
 
-const std::vector<const char *> INSTANCE_EXTENSIONS = {
+const std::vector INSTANCE_EXTENSIONS = {
     "VK_KHR_surface",
 #ifdef __ANDROID__
     "VK_KHR_android_surface",
@@ -30,7 +30,7 @@ struct QueueFamilyIndices {
     std::shared_ptr<uint32_t> graphics_family;
     std::shared_ptr<uint32_t> present_family;
 
-    [[nodiscard]] bool is_complete() const {
+    bool is_complete() const {
         return graphics_family && present_family;
     }
 };

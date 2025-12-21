@@ -1,8 +1,5 @@
 #include "framebuffer.h"
 
-#include <cassert>
-#include <utility>
-
 #include "../framebuffer.h"
 #include "debug_marker.h"
 

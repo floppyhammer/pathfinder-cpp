@@ -1,7 +1,6 @@
 #ifndef PATHFINDER_GPU_GL_DEBUG_MARKER_H
 #define PATHFINDER_GPU_GL_DEBUG_MARKER_H
 
-#include <iostream>
 #include <sstream>
 
 #include "../../common/global_macros.h"

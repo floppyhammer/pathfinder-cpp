@@ -1,5 +1,7 @@
 #include "swap_chain.h"
 
+#include "render_pass.h"
+
 namespace Pathfinder {
 
 #ifndef __ANDROID__

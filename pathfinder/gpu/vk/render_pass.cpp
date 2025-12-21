@@ -78,7 +78,7 @@ RenderPassVk::~RenderPassVk() {
     vkDestroyRenderPass(vk_device_, vk_render_pass_, nullptr);
 }
 
-VkRenderPass RenderPassVk::get_vk_render_pass() {
+VkRenderPass RenderPassVk::get_vk_render_pass() const {
     return vk_render_pass_;
 }
 

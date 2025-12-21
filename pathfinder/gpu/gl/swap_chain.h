@@ -5,12 +5,10 @@
     #include <EGL/egl.h>
 #endif
 
-#include "../../common/global_macros.h"
 #include "../swap_chain.h"
 #include "base.h"
 #include "command_encoder.h"
 #include "framebuffer.h"
-#include "render_pass.h"
 
 namespace Pathfinder {
 

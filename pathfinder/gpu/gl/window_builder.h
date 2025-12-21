@@ -3,8 +3,6 @@
 
 #include "../window_builder.h"
 
-struct GLFWwindow;
-
 namespace Pathfinder {
 
 class Window;
