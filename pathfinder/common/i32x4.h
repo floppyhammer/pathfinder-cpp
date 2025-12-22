@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-#include "global_macros.h"
+#include "../config.h"
 
 #ifdef __ANDROID__
     // A C/C++ header file that converts Intel SSE intrinsics to Arm/Aarch64 NEON intrinsics.

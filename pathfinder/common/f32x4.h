@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <cstdint>
 
-#include "global_macros.h"
+#include "../config.h"
 #include "logger.h"
 #include "math/vec2.h"
 

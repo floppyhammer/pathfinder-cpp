@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 
-#include "../../common/global_macros.h"
+#include "../../config.h"
 #include "../window.h"
 #include "../window_builder.h"
 #include "device.h"

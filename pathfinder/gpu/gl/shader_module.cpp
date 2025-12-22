@@ -2,8 +2,8 @@
 
 #include <sstream>
 
-#include "../../common/global_macros.h"
 #include "../../common/logger.h"
+#include "../../config.h"
 #include "base.h"
 
 namespace Pathfinder {

@@ -2,8 +2,8 @@
 
 #include <thread>
 
-#include "../../common/global_macros.h"
 #include "../../common/timestamp.h"
+#include "../../config.h"
 #include "../scene.h"
 #include "renderer.h"
 #include "tiler.h"

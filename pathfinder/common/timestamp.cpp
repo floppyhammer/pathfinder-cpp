@@ -5,7 +5,7 @@
 #include <sstream>
 #include <string>
 
-#include "global_macros.h"
+#include "../config.h"
 #include "logger.h"
 
 namespace Pathfinder {

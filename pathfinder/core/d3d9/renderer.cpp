@@ -1,10 +1,10 @@
 #include "renderer.h"
 
-#include "../../common/global_macros.h"
 #include "../../common/io.h"
 #include "../../common/math/mat4.h"
 #include "../../common/math/vec3.h"
 #include "../../common/timestamp.h"
+#include "../../config.h"
 #include "../../gpu/command_encoder.h"
 #include "../../gpu/device.h"
 #include "../../gpu/window.h"

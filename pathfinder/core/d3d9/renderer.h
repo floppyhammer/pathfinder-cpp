@@ -3,8 +3,8 @@
 
 #include <vector>
 
-#include "../../common/global_macros.h"
 #include "../../common/math/mat4.h"
+#include "../../config.h"
 #include "../../gpu/descriptor_set.h"
 #include "../../gpu/framebuffer.h"
 #include "../../gpu/render_pass.h"

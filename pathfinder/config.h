@@ -1,5 +1,5 @@
-#ifndef PATHFINDER_GLOBAL_MACROS_H
-#define PATHFINDER_GLOBAL_MACROS_H
+#ifndef PATHFINDER_CONFIG_H
+#define PATHFINDER_CONFIG_H
 
 /// Platform marcos.
 #ifdef __EMSCRIPTEN__
@@ -52,4 +52,4 @@
     #define PATHFINDER_ENABLE_SIMD
 #endif
 
-#endif // PATHFINDER_GLOBAL_MACROS_H
+#endif // PATHFINDER_CONFIG_H

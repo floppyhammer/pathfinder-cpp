@@ -1,9 +1,9 @@
 #include "canvas.h"
 
-#include "../common/global_macros.h"
 #include "../common/io.h"
 #include "../common/logger.h"
 #include "../common/timestamp.h"
+#include "../config.h"
 #include "d3d11/renderer.h"
 #include "d3d11/scene_builder.h"
 #include "d3d9/renderer.h"

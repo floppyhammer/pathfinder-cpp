@@ -1,7 +1,6 @@
 #ifndef PATHFINDER_PRELUDE_H
 #define PATHFINDER_PRELUDE_H
 
-#include "common/global_macros.h"
 #include "common/io.h"
 #include "common/logger.h"
 #include "common/math/basic.h"
@@ -11,6 +10,7 @@
 #include "common/math/vec2.h"
 #include "common/math/vec3.h"
 #include "common/timestamp.h"
+#include "config.h"
 #include "core/canvas.h"
 #include "core/svg.h"
 #include "gpu/device.h"

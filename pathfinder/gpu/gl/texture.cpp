@@ -2,7 +2,7 @@
 
 #include <assert.h>
 
-#include "../../common/global_macros.h"
+#include "../../config.h"
 #include "debug_marker.h"
 
 namespace Pathfinder {
