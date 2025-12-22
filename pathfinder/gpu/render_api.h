@@ -1,6 +1,8 @@
 #ifndef PATHFINDER_NATIVE_RENDER_API_H
 #define PATHFINDER_NATIVE_RENDER_API_H
 
+#include "../config.h"
+
 #ifdef __ANDROID__
     #ifdef PATHFINDER_USE_OPENGL
 
