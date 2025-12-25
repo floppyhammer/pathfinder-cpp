@@ -14,8 +14,6 @@ class CommandEncoderVk : public CommandEncoder {
 public:
     ~CommandEncoderVk() override;
 
-    VkCommandBuffer get_vk_handle() const;
-
 private:
     CommandEncoderVk(VkCommandBuffer vk_command_buffer, DeviceVk *device);
 

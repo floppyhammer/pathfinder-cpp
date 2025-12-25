@@ -11,7 +11,7 @@ FenceVk::~FenceVk() {
 }
 
 void FenceVk::wait() const {
-    // Wait indefinitely
+    // Wait indefinitely.
     vkWaitForFences(device->get_device(), 1, &fence, VK_TRUE, UINT64_MAX);
     vkResetFences(device->get_device(), 1, &fence);
 }

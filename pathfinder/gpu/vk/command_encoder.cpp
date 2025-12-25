@@ -185,13 +185,9 @@ CommandEncoderVk::~CommandEncoderVk() {
     vk_command_buffer_ = VK_NULL_HANDLE;
 }
 
-VkCommandBuffer CommandEncoderVk::get_vk_handle() const {
-    return vk_command_buffer_;
-}
-
 bool CommandEncoderVk::finish() {
     if (finished_) {
-        Logger::error("Attempted to finished an encoder that's been finished previously!");
+        Logger::error("Attempted to finish an encoder that's been finished previously!");
         return false;
     }
 
@@ -207,11 +203,11 @@ bool CommandEncoderVk::finish() {
 
     VK_CHECK_RESULT(vkBeginCommandBuffer(vk_command_buffer_, &begin_info))
 
-    // Start a new debug marker region
+    // Start a new debug marker region.
     DebugMarker::get_singleton()->begin_region(vk_command_buffer_, label_, ColorF(1.0f, 0.78f, 0.05f, 1.0f));
 
-    for (auto cmd_iter = commands_.begin(); cmd_iter < commands_.end(); cmd_iter++) {
-        auto &cmd = *cmd_iter;
+    for (auto cmd_iter = commands_.begin(); cmd_iter < commands_.end(); ++cmd_iter) {
+        auto const &cmd = *cmd_iter;
 
         switch (cmd.type) {
             case CommandType::BeginRenderPass: {
@@ -219,7 +215,7 @@ bool CommandEncoderVk::finish() {
 
                 bool pass_has_draw_call = false;
 
-                for (auto pass_cmd_iter = cmd_iter; pass_cmd_iter < commands_.end(); pass_cmd_iter++) {
+                for (auto pass_cmd_iter = cmd_iter; pass_cmd_iter < commands_.end(); ++pass_cmd_iter) {
                     if (pass_cmd_iter->type == CommandType::BindDescriptorSet) {
                         sync_descriptor_set(pass_cmd_iter->args.bind_descriptor_set.descriptor_set);
                     }
@@ -267,7 +263,7 @@ bool CommandEncoderVk::finish() {
                 vkCmdBeginRenderPass(vk_command_buffer_, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
 
                 // In case we need to clear a framebuffer even when nothing is drawn.
-                // This is to keep consistency with OpgnGL.
+                // This is to keep consistency with OpenGL.
                 if (pass_has_draw_call && render_pass_vk->get_attachment_load_op() == AttachmentLoadOp::Clear) {
                     std::array<VkClearAttachment, 1> clear_attachments{};
 
@@ -384,7 +380,7 @@ bool CommandEncoderVk::finish() {
             case CommandType::BeginComputePass: {
                 assert(render_pipeline_ == nullptr);
 
-                for (auto cmd_iter2 = cmd_iter; cmd_iter2 < commands_.end(); cmd_iter2++) {
+                for (auto cmd_iter2 = cmd_iter; cmd_iter2 < commands_.end(); ++cmd_iter2) {
                     if (cmd_iter2->type == CommandType::BindDescriptorSet) {
                         sync_descriptor_set(cmd_iter2->args.bind_descriptor_set.descriptor_set);
                     }
@@ -517,7 +513,7 @@ bool CommandEncoderVk::finish() {
 
                     // Specify which part of the image we want to copy the pixels.
                     {
-                        // A VkImageSubresourceLayers used to specify the specific image subresources of the image used
+                        // A VkImageSubresourceLayers used to specify the specific image sub-resources of the image used
                         // for the source or destination image data.
                         region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                         region.imageSubresource.mipLevel = 0;
@@ -574,7 +570,7 @@ bool CommandEncoderVk::finish() {
 
                     // Specify which part of the image we want to copy the pixels.
                     {
-                        // A VkImageSubresourceLayers used to specify the specific image subresources of the image used
+                        // A VkImageSubresourceLayers used to specify the specific image sub-resources of the image used
                         // for the source or destination image data.
                         region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                         region.imageSubresource.mipLevel = 0;
