@@ -10,6 +10,10 @@ namespace Pathfinder {
 void DescriptorSetVk::update_vk_descriptor_set(VkDevice vk_device, VkDescriptorSetLayout vk_descriptor_set_layout) {
     vk_device_ = vk_device;
 
+    if (!dirty) {
+        return;
+    }
+
     // Create descriptor pool and allocate descriptor sets.
     if (!descriptor_set_allocated_) {
         // Get pool sizes.
@@ -142,6 +146,8 @@ void DescriptorSetVk::update_vk_descriptor_set(VkDevice vk_device, VkDescriptorS
     // To update multiple descriptor sets at once,
     // make sure the pBufferInfo or pImageInfo pointers are still valid at this point.
     vkUpdateDescriptorSets(vk_device_, descriptor_writes.size(), descriptor_writes.data(), 0, nullptr);
+
+    dirty = false;
 }
 
 VkDescriptorSet &DescriptorSetVk::get_vk_descriptor_set() {

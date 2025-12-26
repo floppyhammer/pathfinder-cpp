@@ -78,6 +78,8 @@ public:
         for (auto& d : _descriptors) {
             descriptors[d.binding] = d;
         }
+
+        dirty = true;
     }
 
     const std::unordered_map<uint32_t, Descriptor>& get_descriptors() const {
@@ -90,6 +92,8 @@ protected:
 protected:
     /// Binding point is used as the hashing key.
     std::unordered_map<uint32_t, Descriptor> descriptors;
+
+    bool dirty = false;
 };
 
 } // namespace Pathfinder
