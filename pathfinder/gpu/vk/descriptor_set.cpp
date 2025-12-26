@@ -13,7 +13,7 @@ void DescriptorSetVk::update_vk_descriptor_set(VkDevice vk_device, VkDescriptorS
     // Create descriptor pool and allocate descriptor sets.
     if (!descriptor_set_allocated_) {
         // Get pool sizes.
-        std::vector<VkDescriptorPoolSize> poolSizes{};
+        std::vector<VkDescriptorPoolSize> pool_sizes{};
 
         for (auto &d : descriptors) {
             VkDescriptorPoolSize pool_size{};
@@ -37,13 +37,13 @@ void DescriptorSetVk::update_vk_descriptor_set(VkDevice vk_device, VkDescriptorS
                 }
             }
 
-            poolSizes.push_back(pool_size);
+            pool_sizes.push_back(pool_size);
         }
 
         VkDescriptorPoolCreateInfo pool_info{};
         pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        pool_info.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-        pool_info.pPoolSizes = poolSizes.data();
+        pool_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size());
+        pool_info.pPoolSizes = pool_sizes.data();
         pool_info.maxSets = 1;
 
         VK_CHECK_RESULT(vkCreateDescriptorPool(vk_device_, &pool_info, nullptr, &vk_descriptor_pool_))
@@ -59,22 +59,26 @@ void DescriptorSetVk::update_vk_descriptor_set(VkDevice vk_device, VkDescriptorS
         descriptor_set_allocated_ = true;
     }
 
-    for (auto &pair : descriptors) {
-        auto &descriptor = pair.second;
+    // These have to be here to prevent them from going out of scope
+    // before being used in vkUpdateDescriptorSets().
+    std::vector<VkWriteDescriptorSet> descriptor_writes;
+    std::vector<VkDescriptorBufferInfo> buffer_infos;
+    std::vector<VkDescriptorImageInfo> image_infos;
 
+    // A vector may reach its current capacity and reallocate its internal storage to a new memory location.
+    // This is to make sure that doesn't happen.
+    buffer_infos.reserve(descriptors.size());
+    image_infos.reserve(descriptors.size());
+    descriptor_writes.reserve(descriptors.size());
+
+    for (auto &[fst, descriptor] : descriptors) {
         // Must initialize it with {}.
-        VkWriteDescriptorSet descriptor_write{};
-
-        // These two have to be here to prevent them from going out of scope
-        // before being used in vkUpdateDescriptorSets().
-        VkDescriptorBufferInfo buffer_info{};
-        VkDescriptorImageInfo image_info{};
-
-        descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptor_write.dstSet = vk_descriptor_set_;
-        descriptor_write.dstBinding = descriptor.binding;
-        descriptor_write.dstArrayElement = 0;
-        descriptor_write.descriptorCount = 1;
+        VkWriteDescriptorSet write{};
+        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        write.dstSet = vk_descriptor_set_;
+        write.dstBinding = descriptor.binding;
+        write.dstArrayElement = 0;
+        write.descriptorCount = 1;
 
         switch (descriptor.type) {
             case DescriptorType::UniformBuffer:
@@ -87,17 +91,19 @@ void DescriptorSetVk::update_vk_descriptor_set(VkDevice vk_device, VkDescriptorS
 
                 auto buffer_vk = static_cast<BufferVk *>(descriptor.buffer.get());
 
+                VkDescriptorBufferInfo buffer_info{};
                 buffer_info.buffer = buffer_vk->get_vk_buffer();
                 buffer_info.offset = 0;
                 buffer_info.range = buffer_vk->get_size();
 
                 if (descriptor.type == DescriptorType::UniformBuffer) {
-                    descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                    write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
                 } else if (descriptor.type == DescriptorType::StorageBuffer) {
-                    descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                    write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                 }
 
-                descriptor_write.pBufferInfo = &buffer_info;
+                buffer_infos.push_back(buffer_info);
+                write.pBufferInfo = &buffer_infos.back();
             } break;
             case DescriptorType::Sampler:
             case DescriptorType::Image: {
@@ -110,28 +116,32 @@ void DescriptorSetVk::update_vk_descriptor_set(VkDevice vk_device, VkDescriptorS
                 auto texture_vk = static_cast<TextureVk *>(descriptor.texture.get());
                 auto sampler_vk = static_cast<SamplerVk *>(descriptor.sampler.get());
 
+                VkDescriptorImageInfo image_info{};
                 image_info.imageView = texture_vk->get_image_view();
 
                 if (descriptor.type == DescriptorType::Sampler) {
                     image_info.sampler = sampler_vk->get_sampler();
                     image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                    descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                 } else if (descriptor.type == DescriptorType::Image) {
                     image_info.sampler = VK_NULL_HANDLE;
                     image_info.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-                    descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                    write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
                 }
 
-                descriptor_write.pImageInfo = &image_info;
+                image_infos.push_back(image_info);
+                write.pImageInfo = &image_infos.back();
             } break;
             default:
                 abort();
         }
 
-        // If you want to update multiple descriptor sets at once,
-        // make sure the pBufferInfo or pImageInfo pointer is still valid at this point.
-        vkUpdateDescriptorSets(vk_device_, 1, &descriptor_write, 0, nullptr);
+        descriptor_writes.push_back(write);
     }
+
+    // To update multiple descriptor sets at once,
+    // make sure the pBufferInfo or pImageInfo pointers are still valid at this point.
+    vkUpdateDescriptorSets(vk_device_, descriptor_writes.size(), descriptor_writes.data(), 0, nullptr);
 }
 
 VkDescriptorSet &DescriptorSetVk::get_vk_descriptor_set() {
