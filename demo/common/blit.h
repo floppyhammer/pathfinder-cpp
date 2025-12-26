@@ -5,7 +5,7 @@
 
 #include <memory>
 
-/// Simplly blits a texture to screen.
+/// Simply blits a texture to a framebuffer.
 class Blit {
 public:
     Blit(const std::shared_ptr<Pathfinder::Device> &device,
