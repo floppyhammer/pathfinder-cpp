@@ -6,7 +6,7 @@ namespace Pathfinder {
 
 // Invariant: `requested_size` must be a power of two.
 RectI TreeNode::allocate(Vec2I this_origin, uint32_t this_size, uint32_t requested_size) {
-    if (type == TreeNode::Type::FullLeaf) {
+    if (type == Type::FullLeaf) {
         // No room here.
         return RectI();
     }
@@ -16,15 +16,15 @@ RectI TreeNode::allocate(Vec2I this_origin, uint32_t this_size, uint32_t request
     }
 
     // Allocate here or split, as necessary.
-    if (type == TreeNode::Type::EmptyLeaf) {
+    if (type == Type::EmptyLeaf) {
         // Do we have a perfect fit?
         if (this_size == requested_size) {
-            type = TreeNode::Type::FullLeaf;
+            type = Type::FullLeaf;
             return RectI(this_origin, Vec2I(this_size, this_size));
         }
 
         // Split.
-        type = TreeNode::Type::Parent;
+        type = Type::Parent;
 
         for (int i = 0; i < 4; i++) {
             kids[i] = std::make_shared<TreeNode>();
@@ -33,7 +33,7 @@ RectI TreeNode::allocate(Vec2I this_origin, uint32_t this_size, uint32_t request
 
     // Recurse into children.
     switch (type) {
-        case TreeNode::Type::Parent: {
+        case Type::Parent: {
             uint32_t kid_size = this_size / 2;
 
             auto origin = kids[0]->allocate(this_origin, kid_size, requested_size);
@@ -69,7 +69,7 @@ RectI TreeNode::allocate(Vec2I this_origin, uint32_t this_size, uint32_t request
 void TreeNode::free(Vec2I this_origin, uint32_t this_size, Vec2I requested_origin, uint32_t requested_size) {
     if (this_size <= requested_size) {
         if (this_size == requested_size && this_origin == requested_origin) {
-            type = TreeNode::Type::EmptyLeaf;
+            type = Type::EmptyLeaf;
 
             for (int i = 0; i < 4; i++) {
                 kids[i] = nullptr;
@@ -101,7 +101,7 @@ void TreeNode::free(Vec2I this_origin, uint32_t this_size, Vec2I requested_origi
         }
     }
 
-    if (type == TreeNode::Type::Parent) {
+    if (type == Type::Parent) {
         kids[child_index]->free(child_origin, child_size, requested_origin, requested_size);
         merge_if_necessary();
     } else {
@@ -111,7 +111,7 @@ void TreeNode::free(Vec2I this_origin, uint32_t this_size, Vec2I requested_origi
 }
 
 void TreeNode::merge_if_necessary() {
-    if (type == TreeNode::Type::Parent) {
+    if (type == Type::Parent) {
         // Check if all kids are empty leaves.
         bool res = true;
         for (auto &k : kids) {
@@ -119,14 +119,14 @@ void TreeNode::merge_if_necessary() {
                 throw std::runtime_error("Parent tree node should not have null kids!");
             }
 
-            if (k->type != TreeNode::Type::EmptyLeaf) {
+            if (k->type != Type::EmptyLeaf) {
                 res = false;
                 break;
             }
         }
 
         if (res) {
-            type = TreeNode::Type::EmptyLeaf;
+            type = Type::EmptyLeaf;
 
             for (int i = 0; i < 4; i++) {
                 kids[i] = nullptr;
@@ -279,12 +279,12 @@ Vec2I TextureAllocator::page_size(uint32_t page_id) {
 
         if (page_allocator.type == TexturePageAllocator::Type::Atlas) {
             return Vec2I(page_allocator.allocator.size);
-        } else {
-            return Vec2I(page_allocator.image_size);
         }
-    } else {
-        throw std::runtime_error("No such texture page!");
+
+        return Vec2I(page_allocator.image_size);
     }
+
+    throw std::runtime_error("No such texture page!");
 }
 
 Vec2F TextureAllocator::page_scale(uint32_t page_id) {
@@ -294,9 +294,9 @@ Vec2F TextureAllocator::page_scale(uint32_t page_id) {
 bool TextureAllocator::page_is_new(uint32_t page_id) {
     if (pages[page_id]) {
         return pages[page_id]->is_new;
-    } else {
-        throw std::runtime_error("No such texture page!");
     }
+
+    throw std::runtime_error("No such texture page!");
 }
 
 void TextureAllocator::mark_all_pages_as_allocated() {
@@ -312,6 +312,7 @@ TexturePageIter TextureAllocator::page_ids() {
     while (first_index < pages.size() && pages[first_index] == nullptr) {
         first_index += 1;
     }
+
     return TexturePageIter{this, first_index};
 }
 
@@ -328,6 +329,7 @@ std::shared_ptr<uint32_t> TexturePageIter::next() {
             break;
         }
     }
+
     return next_id;
 }
 

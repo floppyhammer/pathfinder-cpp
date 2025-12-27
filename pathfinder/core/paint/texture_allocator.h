@@ -11,7 +11,7 @@
 
 namespace Pathfinder {
 
-const uint32_t ATLAS_TEXTURE_LENGTH = 1024;
+constexpr uint32_t ATLAS_TEXTURE_LENGTH = 1024;
 
 struct TreeNode {
     enum class Type {

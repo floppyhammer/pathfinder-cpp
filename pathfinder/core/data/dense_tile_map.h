@@ -59,33 +59,31 @@ struct DenseTileMap {
     }
 
     /// A quick way to build z buffer.
-    static inline DenseTileMap z_builder(const RectI &_rect) {
+    static DenseTileMap z_builder(const RectI &_rect) {
         return {std::vector<T>(_rect.width() * _rect.height(), 0), _rect};
     }
 
-    inline T *get(const Vec2I &coords) {
+    T *get(const Vec2I &coords) {
         auto index = coords_to_index(coords);
 
         // We have to make sure the index we get is valid.
         if (index) {
             return &data[*index];
-        } else {
-            return nullptr;
         }
+        return nullptr;
     }
 
     /// A safe call to find index by coordinates.
-    inline std::shared_ptr<size_t> coords_to_index(const Vec2I &coords) {
+    std::shared_ptr<size_t> coords_to_index(const Vec2I &coords) {
         if (rect.contains_point(coords)) {
             return std::make_shared<size_t>(coords_to_index_unchecked(coords));
-        } else {
-            return nullptr;
         }
+        return nullptr;
     }
 
     /// An unsafe call to index by coordinates.
     /// The tile map's top and bottom bounds are not considered.
-    inline int coords_to_index_unchecked(const Vec2I &coords) {
+    int coords_to_index_unchecked(const Vec2I &coords) const {
         return (coords.y - rect.min_y()) * rect.size().x + coords.x - rect.min_x();
     }
 };

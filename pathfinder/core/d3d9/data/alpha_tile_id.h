@@ -9,8 +9,8 @@
 
 namespace Pathfinder {
 
-const size_t ALPHA_TILE_LEVEL_COUNT = 2;
-const size_t ALPHA_TILES_PER_LEVEL = 1 << (32 - ALPHA_TILE_LEVEL_COUNT + 1);
+constexpr size_t ALPHA_TILE_LEVEL_COUNT = 2;
+constexpr size_t ALPHA_TILES_PER_LEVEL = 1 << (32 - ALPHA_TILE_LEVEL_COUNT + 1);
 
 struct AlphaTileId {
     /// A valid value means a solid tile. Default is invalid.

@@ -47,7 +47,7 @@ public:
     std::vector<Fill> pending_fills;
 
     // Tiles to draw.
-    std::vector<DrawTileBatchD3D9> tile_batches{};
+    std::vector<DrawTileBatchD3D9> tile_batches;
 
     // Metadata texture data.
     std::vector<TextureMetadataEntry> metadata;

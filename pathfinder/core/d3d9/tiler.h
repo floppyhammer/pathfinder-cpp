@@ -9,7 +9,7 @@ namespace Pathfinder {
 
 /// This might be the most important class for building on D3D9 level.
 /// One tiler for one outline.
-struct Tiler {
+class Tiler {
 public:
     Tiler(SceneBuilderD3D9& _scene_builder,
           uint32_t path_id,
