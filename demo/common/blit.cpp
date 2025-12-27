@@ -84,7 +84,7 @@ void Blit::set_texture(const std::shared_ptr<Texture> &new_texture) {
 void Blit::draw(const std::shared_ptr<CommandEncoder> &encoder) {
     encoder->bind_render_pipeline(pipeline_);
 
-    encoder->bind_vertex_buffers({vertex_buffer_});
+    encoder->bind_vertex_buffers({{vertex_buffer_, 0}});
 
     encoder->bind_descriptor_set(descriptor_set_);
 

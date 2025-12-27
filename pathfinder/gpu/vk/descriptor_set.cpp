@@ -97,8 +97,8 @@ void DescriptorSetVk::update_vk_descriptor_set(VkDevice vk_device, VkDescriptorS
 
                 VkDescriptorBufferInfo buffer_info{};
                 buffer_info.buffer = buffer_vk->get_vk_buffer();
-                buffer_info.offset = 0;
-                buffer_info.range = buffer_vk->get_size();
+                buffer_info.offset = descriptor.buffer_offset;
+                buffer_info.range = descriptor.buffer_range;
 
                 if (descriptor.type == DescriptorType::UniformBuffer) {
                     write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;

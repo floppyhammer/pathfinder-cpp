@@ -67,6 +67,7 @@ struct Command {
         struct {
             uint32_t buffer_count;
             std::array<Buffer *, MAX_VERTEX_BUFFER_BINDINGS> buffers;
+            std::array<uint64_t, MAX_VERTEX_BUFFER_BINDINGS> offsets;
         } bind_vertex_buffers;
         struct {
             Buffer *buffer;
@@ -144,7 +145,7 @@ public:
     /// Bind pipeline.
     void bind_render_pipeline(const std::shared_ptr<RenderPipeline> &pipeline);
 
-    void bind_vertex_buffers(std::vector<std::shared_ptr<Buffer>> vertex_buffers);
+    void bind_vertex_buffers(std::vector<std::pair<std::shared_ptr<Buffer>, uint64_t>> vertex_buffers);
 
     /// Bind uniform buffers and texture samplers.
     /// Image layout should be ready before calling this.

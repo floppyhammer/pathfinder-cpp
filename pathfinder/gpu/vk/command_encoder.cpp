@@ -315,7 +315,7 @@ bool CommandEncoderVk::finish() {
                 for (uint32_t i = 0; i < args.buffer_count; i++) {
                     auto buffer_vk = dynamic_cast<BufferVk *>(args.buffers[i]);
                     vertex_buffers.push_back(buffer_vk->get_vk_buffer());
-                    offsets.push_back(0);
+                    offsets.push_back(args.offsets[i]);
                 }
 
                 // Bind vertex and index buffers.

@@ -89,6 +89,7 @@ bool CommandEncoderGl::finish() {
 
                 auto buffer_count = args.buffer_count;
                 auto vertex_buffers = args.buffers;
+                auto vertex_offsets = args.offsets;
 
                 assert(!vao_.empty() && "Must bind a render pipeline before binding vertex buffers!");
                 glBindVertexArray(vao_.back());
@@ -106,6 +107,7 @@ bool CommandEncoderGl::finish() {
                     }
 
                     auto buffer = static_cast<BufferGl *>(vertex_buffers[attrib.binding]);
+                    auto offset = vertex_offsets[attrib.binding];
                     auto vbo = buffer->get_handle();
 
                     if (location == 0) {
@@ -130,7 +132,7 @@ bool CommandEncoderGl::finish() {
                                                    attrib.size,
                                                    to_gl_data_type(attrib.type),
                                                    (GLsizei)attrib.stride,
-                                                   (void *)attrib.offset);
+                                                   (void *)(offset + attrib.offset));
                         } break;
                         case DataType::f16:
                         case DataType::f32: {
@@ -139,7 +141,7 @@ bool CommandEncoderGl::finish() {
                                                   to_gl_data_type(attrib.type),
                                                   GL_FALSE,
                                                   (GLsizei)attrib.stride,
-                                                  (void *)attrib.offset);
+                                                  (void *)(offset + attrib.offset));
                         } break;
                     }
 
@@ -179,7 +181,11 @@ bool CommandEncoderGl::finish() {
 
                             unsigned int ubo_index = glGetUniformBlockIndex(program_id, binding_name.c_str());
                             glUniformBlockBinding(program_id, ubo_index, binding_point);
-                            glBindBufferBase(GL_UNIFORM_BUFFER, binding_point, buffer_gl->get_handle());
+                            glBindBufferRange(GL_UNIFORM_BUFFER,
+                                              binding_point,
+                                              buffer_gl->get_handle(),
+                                              descriptor.buffer_offset,
+                                              descriptor.buffer_range);
 
                             gl_check_error("Mismatched uniform binding name!");
                         } break;

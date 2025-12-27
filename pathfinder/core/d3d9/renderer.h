@@ -54,11 +54,21 @@ private:
     std::shared_ptr<RenderPipeline> tile_clip_copy_pipeline, tile_clip_combine_pipeline; // For clip paths.
 
     /// Descriptor sets.
-    std::shared_ptr<DescriptorSet> fill_descriptor_set, tile_descriptor_set;
+    std::shared_ptr<DescriptorSet> fill_descriptor_set;
     std::shared_ptr<DescriptorSet> tile_clip_copy_descriptor_set, tile_clip_combine_descriptor_set; // For clip paths.
+
+    std::vector<std::shared_ptr<DescriptorSet>> tile_descriptor_sets;
 
     /// Uniform buffers.
     uint64_t fill_ub_id, tile_ub_id;
+
+    uint32_t tile_batch_storage_count = 0;
+
+    // Temp
+    std::vector<uint64_t> tile_vertex_buffer_ids;
+    std::vector<uint64_t> z_buffer_texture_ids;
+    std::vector<ClipBufferInfo> clip_buffer_infos;
+    uint64_t *temp_mask_texture_id = nullptr;
 
     /// Where the final rendering output goes.
     /// This is not managed by the memory allocator.
@@ -88,7 +98,8 @@ private:
 
     void create_tile_clip_combine_pipeline();
 
-    void upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &tile_batches);
+    void upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &tile_batches,
+                               const std::shared_ptr<CommandEncoder> &encoder);
 
     /// Upload fills data to GPU.
     uint64_t upload_fills(const std::vector<Fill> &fills, const std::shared_ptr<CommandEncoder> &encoder) const;
@@ -112,12 +123,16 @@ private:
                     const std::shared_ptr<const RenderTargetId> &render_target_id,
                     const std::shared_ptr<const TileBatchTextureInfo> &color_texture_info,
                     uint64_t z_buffer_texture_id,
-                    const std::shared_ptr<CommandEncoder> &encoder);
+                    const std::shared_ptr<CommandEncoder> &encoder,
+                    const std::shared_ptr<DescriptorSet> &tile_descriptor_set,
+                    uint64_t tile_uniform_offset);
 
     /// Draw the mask texture. Use Renderer::buffered_fills.
     void draw_fills(uint64_t fill_vertex_buffer_id,
                     uint32_t fills_count,
                     const std::shared_ptr<CommandEncoder> &encoder) const;
+
+    void update_tile_batch_storage(uint32_t new_tile_batch_count);
 };
 
 } // namespace Pathfinder

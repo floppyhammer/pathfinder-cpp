@@ -201,7 +201,7 @@ struct SegmentsD3D11 {
     std::vector<Vec2F> points;
     std::vector<SegmentIndicesD3D11> indices;
 
-    /// Add a outline as segments.
+    /// Add an outline as segments.
     Range add_path(const Outline &outline);
 };
 

@@ -47,7 +47,7 @@ void CommandEncoder::bind_render_pipeline(const std::shared_ptr<RenderPipeline> 
     commands_.push_back(cmd);
 }
 
-void CommandEncoder::bind_vertex_buffers(std::vector<std::shared_ptr<Buffer>> vertex_buffers) {
+void CommandEncoder::bind_vertex_buffers(std::vector<std::pair<std::shared_ptr<Buffer>, uint64_t>> vertex_buffers) {
     Command cmd{};
     cmd.type = CommandType::BindVertexBuffers;
 
@@ -56,7 +56,8 @@ void CommandEncoder::bind_vertex_buffers(std::vector<std::shared_ptr<Buffer>> ve
 
     assert(vertex_buffers.size() < MAX_VERTEX_BUFFER_BINDINGS && "Too many vertex buffers bound!");
     for (int buffer_index = 0; buffer_index < vertex_buffers.size(); buffer_index++) {
-        args.buffers[buffer_index] = vertex_buffers[buffer_index].get();
+        args.buffers[buffer_index] = vertex_buffers[buffer_index].first.get();
+        args.offsets[buffer_index] = vertex_buffers[buffer_index].second;
     }
 
     commands_.push_back(cmd);
