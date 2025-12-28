@@ -59,12 +59,15 @@ public:
     virtual ~Renderer();
 
     /// Upload texture metadata built by palette.
-    void upload_texture_metadata(const std::vector<TextureMetadataEntry> &metadata);
+    void upload_texture_metadata(const std::vector<TextureMetadataEntry> &metadata,
+                                 const std::shared_ptr<CommandEncoder> &encoder);
 
     /// Allocate GPU resources for a pattern texture page.
     void allocate_pattern_texture_page(uint64_t page_id, Vec2I texture_size);
 
-    void upload_texel_data(std::vector<ColorU> &texels, TextureLocation location);
+    void upload_texel_data(std::vector<ColorU> &texels,
+                           TextureLocation location,
+                           const std::shared_ptr<CommandEncoder> &encoder);
 
     void declare_render_target(RenderTargetId render_target_id, TextureLocation location);
 

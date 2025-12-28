@@ -88,7 +88,9 @@ RenderTarget Renderer::get_render_target(RenderTargetId render_target_id) {
     return {allocator->get_texture(texture_page->texture_id_)};
 }
 
-void Renderer::upload_texel_data(std::vector<ColorU> &texels, TextureLocation location) {
+void Renderer::upload_texel_data(std::vector<ColorU> &texels,
+                                 TextureLocation location,
+                                 const std::shared_ptr<CommandEncoder> &encoder) {
     if (location.page >= pattern_texture_pages.size()) {
         Logger::error("Texture page ID is invalid!");
         return;
@@ -102,9 +104,7 @@ void Renderer::upload_texel_data(std::vector<ColorU> &texels, TextureLocation lo
 
     auto texture = allocator->get_texture(texture_page->texture_id_);
 
-    auto encoder = device->create_command_encoder("upload data of the pattern texture pages");
     encoder->write_texture(texture, location.rect, texels.data());
-    queue->submit(encoder, fence);
 
     texture_page->must_preserve_contents_ = true;
 }
@@ -159,7 +159,8 @@ std::shared_ptr<Sampler> Renderer::get_default_sampler() {
     return get_or_create_sampler(TextureSamplingFlags{});
 }
 
-void Renderer::upload_texture_metadata(const std::vector<TextureMetadataEntry> &metadata) {
+void Renderer::upload_texture_metadata(const std::vector<TextureMetadataEntry> &metadata,
+                                       const std::shared_ptr<CommandEncoder> &encoder) {
     if (metadata.empty()) {
         return;
     }
@@ -248,10 +249,8 @@ void Renderer::upload_texture_metadata(const std::vector<TextureMetadataEntry> &
     // Callback to clean up staging resources.
     auto callback = [raw_texels] { delete[] raw_texels; };
 
-    auto encoder = device->create_command_encoder("upload to metadata texture");
     encoder->add_callback(callback);
     encoder->write_texture(allocator->get_texture(metadata_texture_id), region_rect, raw_texels);
-    queue->submit(encoder, fence);
 }
 
 } // namespace Pathfinder

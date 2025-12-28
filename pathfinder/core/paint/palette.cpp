@@ -129,35 +129,40 @@ std::vector<PaintMetadata> Palette::build_paint_info(Renderer *renderer) {
     // Create texture metadata.
     auto texture_metadata_entries = create_texture_metadata(paint_locations_info.paint_metadata);
 
+    auto encoder =
+        renderer->device->create_command_encoder("upload palette data (metadata texture & pattern texture pages)");
+
     // Upload texture metadata.
-    renderer->upload_texture_metadata(texture_metadata_entries);
+    renderer->upload_texture_metadata(texture_metadata_entries, encoder);
 
     // Allocate textures for all images in the paint texture manager.
     allocate_textures(paint_texture_manager, renderer);
 
-    {
-        for (uint32_t index = 0; index < render_target_metadata.size(); index++) {
-            auto &metadata = render_target_metadata[index];
-            auto id = RenderTargetId{scene_id, index};
-            renderer->declare_render_target(id, metadata);
-        }
+    // Render targets.
+    for (uint32_t index = 0; index < render_target_metadata.size(); index++) {
+        auto &metadata = render_target_metadata[index];
+        auto id = RenderTargetId{scene_id, index};
+        renderer->declare_render_target(id, metadata);
+    }
 
-        // Gradient tiles.
-        for (auto &tile : paint_locations_info.gradient_tile_builder.tiles) {
-            renderer->upload_texel_data(tile.texels,
-                                        TextureLocation{tile.page, RectI(Vec2I(0, 0), Vec2I(GRADIENT_TILE_LENGTH))});
-        }
+    // Gradient tiles.
+    for (auto &tile : paint_locations_info.gradient_tile_builder.tiles) {
+        renderer->upload_texel_data(tile.texels,
+                                    TextureLocation{tile.page, RectI(Vec2I(0, 0), Vec2I(GRADIENT_TILE_LENGTH))},
+                                    encoder);
+    }
 
-        // Image texels.
-        std::set<uint32_t> uploaded_image_pages;
-        for (auto &texel_info : paint_locations_info.image_texel_info) {
-            // Skip repeated image pages.
-            if (uploaded_image_pages.find(texel_info.location.page) == uploaded_image_pages.end()) {
-                renderer->upload_texel_data(*texel_info.texels, texel_info.location);
-                uploaded_image_pages.insert(texel_info.location.page);
-            }
+    // Image texels.
+    std::set<uint32_t> uploaded_image_pages;
+    for (auto &texel_info : paint_locations_info.image_texel_info) {
+        // Skip repeated image pages.
+        if (uploaded_image_pages.find(texel_info.location.page) == uploaded_image_pages.end()) {
+            renderer->upload_texel_data(*texel_info.texels, texel_info.location, encoder);
+            uploaded_image_pages.insert(texel_info.location.page);
         }
     }
+
+    renderer->queue->submit(encoder, renderer->fence);
 
     // Free transient locations and unused images, now that they're no longer needed.
     free_transient_locations(*paint_texture_manager, transient_paint_locations);
