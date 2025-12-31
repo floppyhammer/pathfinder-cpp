@@ -75,7 +75,9 @@ void DescriptorSetVk::update_vk_descriptor_set(VkDevice vk_device, VkDescriptorS
     image_infos.reserve(descriptors.size());
     descriptor_writes.reserve(descriptors.size());
 
-    for (auto &[fst, descriptor] : descriptors) {
+    for (auto &pair : descriptors) {
+        auto &descriptor = pair.second;
+
         // Must initialize it with {}.
         VkWriteDescriptorSet write{};
         write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
