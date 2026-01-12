@@ -81,7 +81,7 @@ private:
     std::vector<VkFence> images_in_flight_;
     // --------------------------------------
 
-    std::shared_ptr<CommandEncoder> encoder_of_last_frame_;
+    std::vector<std::shared_ptr<CommandEncoder>> encoders_in_flight_;
 
 private:
     void init_swapchain();

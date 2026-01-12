@@ -124,7 +124,7 @@ void SwapChainVk::destroy() {
     vkQueueWaitIdle(device_->get_graphics_queue());
     vkQueueWaitIdle(device_->get_present_queue());
 
-    encoder_of_last_frame_.reset();
+    encoders_in_flight_.clear();
 
     // Clean up swap chain related resources.
     cleanup_swapchain();
@@ -239,9 +239,9 @@ void SwapChainVk::create_sync_objects() {
 }
 
 void SwapChainVk::submit(const std::shared_ptr<CommandEncoder> &encoder) {
-    // Cleanup last encoder.
-    if (encoder_of_last_frame_) {
-        encoder_of_last_frame_ = nullptr;
+    encoders_in_flight_.push_back(encoder);
+    if (encoders_in_flight_.size() > MAX_FRAMES_IN_FLIGHT) {
+        encoders_in_flight_.erase(encoders_in_flight_.begin());
     }
 
     if (encoder->submitted_) {
@@ -256,8 +256,6 @@ void SwapChainVk::submit(const std::shared_ptr<CommandEncoder> &encoder) {
     }
 
     flush(encoder);
-
-    encoder_of_last_frame_ = encoder;
 }
 
 void SwapChainVk::flush(const std::shared_ptr<CommandEncoder> &encoder) {
