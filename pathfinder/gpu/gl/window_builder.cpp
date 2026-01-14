@@ -31,20 +31,30 @@ bool is_extension_supported(const char *name) {
 WindowBuilderGl::WindowBuilderGl(const Vec2I &logical_size) {
     glfwInit();
 
-    // Major GL version.
-    #ifdef PATHFINDER_ENABLE_D3D11
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    #if (defined(__linux__) && defined(__ARM_ARCH))
+        // Set the desired OpenGL ES version.
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        #ifdef PATHFINDER_ENABLE_D3D11
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+        #else
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+        #endif
     #else
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    #endif
+        // Major GL version.
+        #ifdef PATHFINDER_ENABLE_D3D11
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        #else
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        #endif
 
-    // Minor GL version.
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        // Minor GL version.
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    #ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        #ifdef __APPLE__
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        #endif
     #endif
 
     float dpi_scaling_factor;
