@@ -77,10 +77,17 @@ WindowBuilderGl::WindowBuilderGl(const Vec2I &logical_size) {
     glfwMakeContextCurrent(glfw_window);
 
     #ifndef __EMSCRIPTEN__
+    #if defined(__linux__) && defined(__ARM_ARCH)
+    // GLAD: load all OpenGL ES function pointers.
+    if (!gladLoadGLES2(glfwGetProcAddress)) {
+        throw std::runtime_error("Failed to initialize GLAD!");
+    }
+    #else
     // GLAD: load all OpenGL function pointers.
     if (!gladLoadGL(glfwGetProcAddress)) {
         throw std::runtime_error("Failed to initialize GLAD!");
     }
+    #endif
 
     if (GLAD_GL_EXT_debug_label) {
         Logger::info("Debug markers enabled.");

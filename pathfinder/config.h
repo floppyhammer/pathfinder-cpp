@@ -33,7 +33,7 @@
 // #define PATHFINDER_MINIMUM_SHADER_VERSION_SUPPORT
 
 // WebGL only supports ES3.0 shaders.
-#if defined(PATHFINDER_EMSCRIPTEN) || defined(PATHFINDER_ANDROID)
+#if defined(PATHFINDER_EMSCRIPTEN) || defined(PATHFINDER_ANDROID) || (defined(__linux__) && defined(__ARM_ARCH))
     #define PATHFINDER_MINIMUM_SHADER_VERSION_SUPPORT
 #endif
 

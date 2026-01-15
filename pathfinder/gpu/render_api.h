@@ -25,9 +25,14 @@
 #else // Native
 
     #ifdef PATHFINDER_USE_OPENGL
+    #if defined(__linux__) && defined(__ARM_ARCH)
+        // Include OpenGL ES header via GLAD.
+        #include <glad/gles2.h>
+    #else
         // Include OpenGL header via GLAD.
         #include <glad/gl.h>
-        #define GLFW_INCLUDE_NONE
+    #endif
+    #define GLFW_INCLUDE_NONE
     #endif
 
     #ifdef PATHFINDER_USE_VULKAN
