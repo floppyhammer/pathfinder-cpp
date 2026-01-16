@@ -13,6 +13,8 @@ namespace Pathfinder {
 
 DeviceGl::DeviceGl() {
     backend_type = BackendType::Opengl;
+
+    glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &min_uniform_alignment_);
 }
 
 std::shared_ptr<Framebuffer> DeviceGl::create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
@@ -104,6 +106,11 @@ std::shared_ptr<Fence> DeviceGl::create_fence(const std::string &label) {
     fence_gl->fence = fence;
 
     return fence_gl;
+}
+
+size_t DeviceGl::get_aligned_uniform_size(size_t original_size) {
+    GLint aligned_size = (original_size + min_uniform_alignment_ - 1) & ~(min_uniform_alignment_ - 1);
+    return aligned_size;
 }
 
 } // namespace Pathfinder

@@ -65,6 +65,8 @@ public:
 
     virtual std::shared_ptr<Fence> create_fence(const std::string &label) = 0;
 
+    virtual size_t get_aligned_uniform_size(size_t original_size) = 0;
+
     BackendType get_backend_type() const {
         return backend_type;
     }

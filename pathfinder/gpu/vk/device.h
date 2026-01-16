@@ -88,6 +88,8 @@ public:
                         VkDeviceSize src_offset = 0,
                         VkDeviceSize dst_offset = 0) const;
 
+    size_t get_aligned_uniform_size(size_t original_size) override;
+
 private:
     /// The graphics card that we'll end up selecting will be stored in a VkPhysicalDevice handle.
     VkPhysicalDevice vk_physical_device_{};
@@ -99,6 +101,8 @@ private:
     VkQueue vk_present_queue_{};
 
     VkCommandPool vk_command_pool_{};
+
+    VkDeviceSize min_uniform_alignment_{};
 
     VkShaderModule create_shader_module(const std::vector<char> &code);
 

@@ -26,6 +26,10 @@ DeviceVk::DeviceVk(VkDevice vk_device,
     : vk_physical_device_(vk_physical_device), vk_device_(vk_device), vk_graphics_queue_(vk_graphics_queue),
       vk_present_queue_(vk_present_queue), vk_command_pool_(vk_command_pool) {
     backend_type = BackendType::Vulkan;
+
+    VkPhysicalDeviceProperties props;
+    vkGetPhysicalDeviceProperties(vk_physical_device, &props);
+    min_uniform_alignment_ = props.limits.minUniformBufferOffsetAlignment;
 }
 
 VkDevice DeviceVk::get_device() const {
@@ -759,6 +763,11 @@ void DeviceVk::copy_data_from_mappable_memory(void *dst, VkDeviceMemory buffer_m
     vkMapMemory(vk_device_, buffer_memory, 0, data_size, 0, &data);
     memcpy(dst, data, data_size);
     vkUnmapMemory(vk_device_, buffer_memory);
+}
+
+size_t DeviceVk::get_aligned_uniform_size(size_t original_size) {
+    VkDeviceSize aligned_size = (original_size + min_uniform_alignment_ - 1) & ~(min_uniform_alignment_ - 1);
+    return aligned_size;
 }
 
 } // namespace Pathfinder

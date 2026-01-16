@@ -55,6 +55,11 @@ public:
                                                              const std::string &label) override;
 
     std::shared_ptr<Fence> create_fence(const std::string &label) override;
+
+    size_t get_aligned_uniform_size(size_t original_size) override;
+
+private:
+    GLint min_uniform_alignment_{};
 };
 
 } // namespace Pathfinder

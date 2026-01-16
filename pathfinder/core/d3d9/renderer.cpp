@@ -88,9 +88,10 @@ void RendererD3D9::update_tile_batch_storage(uint32_t new_tile_batch_count) {
     }
 
     // Create a new uniform buffer.
-    tile_ub_id = allocator->allocate_buffer(new_tile_batch_count * sizeof(TileUniformD3d9),
-                                            BufferType::Uniform,
-                                            "tile uniform buffer");
+    tile_ub_id =
+        allocator->allocate_buffer(new_tile_batch_count * device->get_aligned_uniform_size(sizeof(TileUniformD3d9)),
+                                   BufferType::Uniform,
+                                   "tile uniform buffer");
 
     for (int i = tile_batch_storage_count; i < new_tile_batch_count; i++) {
         // Set descriptor set.
@@ -488,7 +489,7 @@ void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &t
                    z_buffer_texture_id,
                    encoder,
                    tile_descriptor_sets[tile_batch_idx],
-                   tile_batch_idx * sizeof(TileUniformD3d9));
+                   tile_batch_idx * device->get_aligned_uniform_size(sizeof(TileUniformD3d9)));
 
         tile_batch_idx++;
     }
