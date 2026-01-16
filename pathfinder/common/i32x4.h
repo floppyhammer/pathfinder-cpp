@@ -5,7 +5,7 @@
 
 #include "../config.h"
 
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || (defined(__linux__) && defined(__ARM_ARCH))
     // A C/C++ header file that converts Intel SSE intrinsics to Arm/Aarch64 NEON intrinsics.
     #include <sse2neon.h>
 #else

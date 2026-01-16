@@ -321,6 +321,10 @@ PaintLocationsInfo Palette::assign_paint_locations(const std::shared_ptr<PaintTe
                 if (!pattern.smoothing_enabled()) {
                     sampling_flags.value |= TextureSamplingFlags::NEAREST_MIN | TextureSamplingFlags::NEAREST_MAG;
                 }
+                // Raspberry PI only supports NEAREST for NPOT textures.
+#if defined(__linux__) && defined(__ARM_ARCH)
+                sampling_flags.value |= TextureSamplingFlags::NEAREST_MIN | TextureSamplingFlags::NEAREST_MAG;
+#endif
 
                 PaintFilter paint_filter;
                 // We can have a pattern without a filter.
