@@ -156,7 +156,12 @@ std::shared_ptr<Sampler> Renderer::get_default_sampler() {
     // Note: It has to be CLAMP_TO_EDGE. Artifacts will show for both REPEAT and MIRRORED_REPEAT.
     flags.value = 0;
 
-    return get_or_create_sampler(TextureSamplingFlags{});
+    // Raspberry PI only supports NEAREST for NPOT textures.
+#if defined(__linux__) && defined(__ARM_ARCH)
+    flags.value |= TextureSamplingFlags::NEAREST_MIN | TextureSamplingFlags::NEAREST_MAG;
+#endif
+
+    return get_or_create_sampler(flags);
 }
 
 void Renderer::upload_texture_metadata(const std::vector<TextureMetadataEntry> &metadata,
