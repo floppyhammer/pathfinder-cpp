@@ -5,7 +5,6 @@
 #include <sstream>
 #include <string>
 
-#include "../config.h"
 #include "logger.h"
 
 namespace Pathfinder {

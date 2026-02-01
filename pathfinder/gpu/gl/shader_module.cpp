@@ -3,8 +3,12 @@
 #include <sstream>
 
 #include "../../common/logger.h"
-#include "../../config.h"
 #include "base.h"
+
+// WebGL only supports ES3.0 shaders.
+#if defined(__EMSCRIPTEN__) || defined(__ANDROID__) || (defined(__linux__) && defined(__ARM_ARCH))
+    #define PATHFINDER_MINIMUM_SHADER_VERSION_SUPPORT
+#endif
 
 namespace Pathfinder {
 

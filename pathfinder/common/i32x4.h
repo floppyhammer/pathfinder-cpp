@@ -3,8 +3,6 @@
 
 #include <cstdint>
 
-#include "../config.h"
-
 #if defined(__ANDROID__) || (defined(__linux__) && defined(__ARM_ARCH))
     // A C/C++ header file that converts Intel SSE intrinsics to Arm/Aarch64 NEON intrinsics.
     #include <sse2neon.h>
@@ -28,31 +26,31 @@ struct I32x4 {
         v = _mm_setr_epi32(x, y, z, w);
     }
 
-    inline static I32x4 splat(int32_t x) {
+    static I32x4 splat(int32_t x) {
         return I32x4(_mm_set1_epi32(x));
     }
 
-    inline I32x4 shift_l(int32_t count) const {
+    I32x4 shift_l(int32_t count) const {
         // Same as _mm_sllv_epi32(v, _mm_set1_epi32(count)), but that requires AVX2.
         // Cf. https://stackoverflow.com/questions/14731442/am-i-using-mm-srl-epi32-wrong
         return I32x4(_mm_sll_epi32(v, _mm_set_epi32(0, 0, 0, count)));
     }
 
-    inline I32x4 shift_r(int32_t count) const {
+    I32x4 shift_r(int32_t count) const {
         // Same as _mm_srlv_epi32(v, _mm_set1_epi32(count)), but that requires AVX2.
         // Cf. https://stackoverflow.com/questions/14731442/am-i-using-mm-srl-epi32-wrong
         return I32x4(_mm_srl_epi32(v, _mm_set_epi32(0, 0, 0, count)));
     }
 
-    inline I32x4 operator+(const I32x4 &b) const {
+    I32x4 operator+(const I32x4 &b) const {
         return I32x4(_mm_add_epi32(v, b.v));
     }
 
-    inline I32x4 operator-(const I32x4 &b) const {
+    I32x4 operator-(const I32x4 &b) const {
         return I32x4(_mm_sub_epi32(v, b.v));
     }
 
-    inline I32x4 operator*(const I32x4 &b) const {
+    I32x4 operator*(const I32x4 &b) const {
         // Multiply 2 and 0.
         __m128i tmp1 = _mm_mul_epu32(v, b.v);
         // Multiply 3 and 1.
@@ -62,11 +60,11 @@ struct I32x4 {
         return I32x4(_mm_unpacklo_epi32(_mm_shuffle_epi32(tmp1, 8), _mm_shuffle_epi32(tmp2, 8)));
     }
 
-    inline void operator+=(const I32x4 &b) {
+    void operator+=(const I32x4 &b) {
         *this = *this + b;
     }
 
-    inline void operator-=(const I32x4 &b) {
+    void operator-=(const I32x4 &b) {
         *this = *this - b;
     }
 };

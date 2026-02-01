@@ -2,7 +2,6 @@
 
 #include <assert.h>
 
-#include "../../config.h"
 #include "debug_marker.h"
 
 namespace Pathfinder {

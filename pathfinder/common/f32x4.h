@@ -4,12 +4,16 @@
 #include <algorithm>
 #include <cstdint>
 
-#include "../config.h"
 #include "logger.h"
 #include "math/vec2.h"
 
 #undef min
 #undef max
+
+/// Enable SIMD.
+#if !defined(PATHFINDER_EMSCRIPTEN) && !defined(PATHFINDER_APPLE)
+    #define PATHFINDER_ENABLE_SIMD
+#endif
 
 #ifdef PATHFINDER_ENABLE_SIMD
     #if defined(__ANDROID__) || (defined(__linux__) && defined(__ARM_ARCH))

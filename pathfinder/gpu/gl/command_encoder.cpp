@@ -285,8 +285,8 @@ bool CommandEncoderGl::finish() {
                 // Max local (in one shader) work group sizes x:1536 y:1024 z:64.
                 glDispatchCompute(args.group_size_x, args.group_size_y, args.group_size_z);
 
-                // In order to use timestamps more precisely.
-    #ifdef PATHFINDER_DEBUG
+    // In order to use timestamps more precisely.
+    #ifndef NDEBUG
                 glFinish();
     #endif
 

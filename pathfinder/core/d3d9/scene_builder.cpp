@@ -3,13 +3,14 @@
 #include <thread>
 
 #include "../../common/timestamp.h"
-#include "../../config.h"
 #include "../scene.h"
 #include "renderer.h"
 #include "tiler.h"
 
 #undef min
 #undef max
+
+#define PATHFINDER_THREADS 4
 
 namespace Pathfinder {
 

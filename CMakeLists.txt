@@ -11,6 +11,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 option(PATHFINDER_BACKEND_OPENGL "Enable OpenGL backend" ON)
 option(PATHFINDER_BACKEND_VULKAN "Enable Vulkan backend" ON)
 option(PATHFINDER_BUILD_DEMO "Build demo" OFF)
+option(PATHFINDER_USE_D3D11 "Use D3D11" OFF)
 
 # Identify Linux.
 if (UNIX AND NOT APPLE AND NOT ANDROID)
@@ -24,22 +25,28 @@ if (EMSCRIPTEN)
     set(PATHFINDER_BACKEND_OPENGL ON)
     # No Vulkan support for web.
     set(PATHFINDER_BACKEND_VULKAN OFF)
+    # No compute shader for web.
+    set(PATHFINDER_USE_D3D11 OFF)
 elseif (APPLE)
     # No GL support for Mac.
     set(PATHFINDER_BACKEND_OPENGL OFF)
     set(PATHFINDER_BACKEND_VULKAN ON)
 elseif (LINUX)
-    if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm|aarch64")
+    if (CMAKE_SYSTEM_PROCESSOR MATCHES "arm|aarch64")
         message(STATUS "Building on ARM architecture")
-    else()
+    else ()
         message(STATUS "Not on ARM architecture")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1")
-    endif()
+    endif ()
 endif ()
 
 add_subdirectory(pathfinder)
 
 target_compile_features(pathfinder PUBLIC cxx_std_14)
+
+if (PATHFINDER_USE_D3D11)
+    target_compile_definitions(pathfinder PUBLIC PATHFINDER_ENABLE_D3D11)
+endif ()
 
 if (PATHFINDER_BACKEND_VULKAN)
     message("[Pathfinder] Enabled Vulkan backend")

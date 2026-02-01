@@ -60,7 +60,7 @@ struct Vec2 {
     }
 
     Vec2 normalize() const {
-#ifdef PATHFINDER_DEBUG
+#ifndef NDEBUG
         if (length() == 0) {
             Logger::error("Attempted to normalize a vector of zero length. This may indicate a bug in your code!");
         }

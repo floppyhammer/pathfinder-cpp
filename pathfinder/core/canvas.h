@@ -48,10 +48,10 @@ enum class PathOp {
 /// Normally, we only need one canvas to render multiple scenes.
 class Canvas {
 public:
-    explicit Canvas(Vec2I size,
-                    const std::shared_ptr<Device> &_device,
-                    const std::shared_ptr<Queue> &_queue,
-                    RenderLevel _render_level);
+    Canvas(Vec2I size,
+           const std::shared_ptr<Device> &_device,
+           const std::shared_ptr<Queue> &_queue,
+           RenderLevel _render_level);
 
     /// Set the final render target.
     void set_dst_texture(const std::shared_ptr<Texture> &new_dst_texture);

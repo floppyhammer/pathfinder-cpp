@@ -4,7 +4,6 @@
 #include <sstream>
 
 #include "../../common/logger.h"
-#include "../../config.h"
 #include "base.h"
 
 namespace Pathfinder {
@@ -60,7 +59,7 @@ struct DebugMarker {
 };
 
 inline void gl_check_error(const char *flag) {
-#ifdef PATHFINDER_DEBUG
+#ifndef NDEBUG
     for (GLint error = glGetError(); error; error = glGetError()) {
         std::ostringstream string_stream;
         string_stream << "Error " << error << " after " << flag;
@@ -70,7 +69,7 @@ inline void gl_check_error(const char *flag) {
 }
 
 inline void gl_print_string(const char *name, GLenum s) {
-#ifdef PATHFINDER_DEBUG
+#ifndef NDEBUG
     const char *v = (const char *)glGetString(s);
 
     std::ostringstream string_stream;

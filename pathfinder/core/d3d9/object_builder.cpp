@@ -2,7 +2,6 @@
 
 #include "../../common/f32x4.h"
 #include "../../common/math/basic.h"
-#include "../../config.h"
 #include "../data/data.h"
 
 namespace Pathfinder {
