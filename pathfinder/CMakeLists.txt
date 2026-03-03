@@ -9,7 +9,7 @@ endif ()
 
 if (PATHFINDER_BACKEND_OPENGL)
     file(GLOB PF_SOURCE_FILES ${PF_SOURCE_FILES} gpu/gl/*.cpp)
-    if (CMAKE_SYSTEM_PROCESSOR MATCHES "arm|aarch64")
+    if (CMAKE_SYSTEM_PROCESSOR MATCHES "arm|ARM|ARM64|aarch64")
         file(GLOB PF_SOURCE_FILES ${PF_SOURCE_FILES} ../third_party/glad/src/gles2.c)
     else ()
         file(GLOB PF_SOURCE_FILES ${PF_SOURCE_FILES} ../third_party/glad/src/gl.c)

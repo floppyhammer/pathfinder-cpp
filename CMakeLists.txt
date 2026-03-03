@@ -44,6 +44,16 @@ add_subdirectory(pathfinder)
 
 target_compile_features(pathfinder PUBLIC cxx_std_14)
 
+if (EMSCRIPTEN)
+elseif (APPLE)
+elseif (LINUX)
+    target_compile_definitions(pathfinder PUBLIC PATHFINDER_ENABLE_SIMD)
+else ()
+    if (NOT CMAKE_SYSTEM_PROCESSOR MATCHES "ARM|ARM64|aarch64")
+        target_compile_definitions(pathfinder PUBLIC PATHFINDER_ENABLE_SIMD)
+    endif ()
+endif ()
+
 if (PATHFINDER_USE_D3D11)
     target_compile_definitions(pathfinder PUBLIC PATHFINDER_ENABLE_D3D11)
 endif ()

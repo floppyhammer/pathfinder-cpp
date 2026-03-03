@@ -10,11 +10,6 @@
 #undef min
 #undef max
 
-/// Enable SIMD.
-#if !defined(PATHFINDER_EMSCRIPTEN) && !defined(PATHFINDER_APPLE)
-    #define PATHFINDER_ENABLE_SIMD
-#endif
-
 #ifdef PATHFINDER_ENABLE_SIMD
     #if defined(__ANDROID__) || (defined(__linux__) && defined(__ARM_ARCH))
         // Converts Intel SSE intrinsics to Arm/Aarch64 NEON intrinsics.

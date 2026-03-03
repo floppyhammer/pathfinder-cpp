@@ -148,6 +148,9 @@ GLFWwindow *WindowBuilder::glfw_window_init(const Vec2I &logical_size,
     auto physical_size = logical_size;
     #endif
 
+    glfwSetErrorCallback(
+        [](int error, const char *description) { fprintf(stderr, "GLFW error (%d): %s\n", error, description); });
+
     const auto glfw_window = glfwCreateWindow(physical_size.x,
                                               physical_size.y,
                                               title.c_str(),

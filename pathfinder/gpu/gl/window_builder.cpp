@@ -31,7 +31,7 @@ bool is_extension_supported(const char *name) {
 WindowBuilderGl::WindowBuilderGl(const Vec2I &logical_size) {
     glfwInit();
 
-    #if (defined(__linux__) && defined(__ARM_ARCH))
+    #if (defined(__linux__) && defined(__ARM_ARCH)) || (defined(_WIN32) && defined(_M_ARM64))
         // Set the desired OpenGL ES version.
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         #ifdef PATHFINDER_ENABLE_D3D11
@@ -77,7 +77,7 @@ WindowBuilderGl::WindowBuilderGl(const Vec2I &logical_size) {
     glfwMakeContextCurrent(glfw_window);
 
     #ifndef __EMSCRIPTEN__
-    #if defined(__linux__) && defined(__ARM_ARCH)
+        #if (defined(__linux__) && defined(__ARM_ARCH)) || (defined(_WIN32) && defined(_M_ARM64))
     // GLAD: load all OpenGL ES function pointers.
     if (!gladLoadGLES2(glfwGetProcAddress)) {
         throw std::runtime_error("Failed to initialize GLAD!");

@@ -87,7 +87,7 @@ private:
 
     // See https://developer.android.com/ndk/guides/graphics/validation-layer for enabling validation layer on Android.
     static constexpr bool enable_validation_layers_ =
-#ifndef NDEBUG
+#if !defined(NDEBUG) && !(defined(_WIN32) && defined(_M_ARM64))
         true;
 #else
         false;
