@@ -10,7 +10,7 @@ void handle_cmd(android_app *app, int32_t cmd) {
         case APP_CMD_INIT_WINDOW:
             // The window is being shown, get it ready.
             native_engine = new NativeEngine(app);
-            native_engine->init_app(false);
+            native_engine->init_app(true);
             break;
         case APP_CMD_TERM_WINDOW:
             // The window is being hidden or closed, clean it up.

@@ -23,7 +23,6 @@ link_directories(lib/${ANDROID_ABI})
 
 add_library(${CMAKE_PROJECT_NAME} SHARED
         AndroidMain.cpp
-        vulkan_wrapper.cpp
         GameActivitySources.cpp
         native_engine.cpp)
 

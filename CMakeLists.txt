@@ -61,14 +61,24 @@ endif ()
 if (PATHFINDER_BACKEND_VULKAN)
     message("[Pathfinder] Enabled Vulkan backend")
 
-    find_package(Vulkan REQUIRED)
+    # Load Vulkan dll
+    #    find_package(Vulkan REQUIRED)
+    #
+    #    target_link_libraries(pathfinder PUBLIC Vulkan::Vulkan)
+    #
+    #    # This is to please GitHub Actions.
+    #    target_include_directories(pathfinder PUBLIC "${Vulkan_INCLUDE_DIRS}")
+    #
 
-    target_link_libraries(pathfinder PUBLIC Vulkan::Vulkan)
+    # Load Vulkan dynamically
+    if (ANDROID)
+        # Prevent crash at vkCreateAndroidSurfaceKHR.
+        set(VOLK_STATIC_DEFINES VK_USE_PLATFORM_ANDROID_KHR)
+    endif ()
 
-    # This is to please GitHub Actions.
-    target_include_directories(pathfinder PUBLIC "${Vulkan_INCLUDE_DIRS}")
+    add_subdirectory("third_party/volk")
+    target_link_libraries(pathfinder PUBLIC volk)
 
-    # Don't use add_compile_definitions, which doesn't propagate to parent projects.
     target_compile_definitions(pathfinder PRIVATE PATHFINDER_USE_VULKAN)
 
     # Enable this for Vulkan 1.3 and higher on macOS.

@@ -13,8 +13,7 @@
     #endif
 
     #ifdef PATHFINDER_USE_VULKAN
-        // Vulkan header.
-        #include "vulkan_wrapper.h"
+        #include <volk/volk.h>
     #endif
 
 #elif defined(__EMSCRIPTEN__)
@@ -24,18 +23,17 @@
 
     #ifdef PATHFINDER_USE_OPENGL
         #if defined(__linux__) && defined(__ARM_ARCH) || (defined(_WIN32) && defined(_M_ARM64))
-        // Include OpenGL ES header via GLAD.
-        #include <glad/gles2.h>
-    #else
-        // Include OpenGL header via GLAD.
-        #include <glad/gl.h>
-    #endif
-    #define GLFW_INCLUDE_NONE
+            // Include OpenGL ES header via GLAD.
+            #include <glad/gles2.h>
+        #else
+            // Include OpenGL header via GLAD.
+            #include <glad/gl.h>
+        #endif
+        #define GLFW_INCLUDE_NONE
     #endif
 
     #ifdef PATHFINDER_USE_VULKAN
-        #define GLFW_INCLUDE_VULKAN
-        #include <vulkan/vulkan.h>
+        #include <volk/volk.h>
     #endif
 
     #include <GLFW/glfw3.h>

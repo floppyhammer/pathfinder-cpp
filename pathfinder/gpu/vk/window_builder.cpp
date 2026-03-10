@@ -37,6 +37,8 @@ WindowBuilderVk::WindowBuilderVk(const Vec2I &logical_size) {
 
     create_instance();
 
+    volkLoadInstance(instance_);
+
     setup_debug_messenger();
 
     float dpi_scaling_factor;
@@ -57,6 +59,8 @@ WindowBuilderVk::WindowBuilderVk(ANativeWindow *native_window, const Vec2I &phys
     native_window_ = native_window;
 
     create_instance();
+
+    volkLoadInstance(instance_);
 
     setup_debug_messenger();
 

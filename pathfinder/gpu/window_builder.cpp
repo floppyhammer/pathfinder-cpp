@@ -25,7 +25,14 @@ std::shared_ptr<WindowBuilder> WindowBuilder::new_impl(const BackendType backend
     #ifdef PATHFINDER_USE_VULKAN
         case BackendType::Vulkan: {
             Logger::info("Using Vulkan backend");
-            return std::make_shared<WindowBuilderVk>(size);
+
+            // Load Vulkan functions.
+            if (volkInitialize()) {
+                Logger::error("Vulkan is not supported on this platform");
+                // Go to the default branch.
+            } else {
+                return std::make_shared<WindowBuilderVk>(size);
+            }
         }
     #endif
         default:
@@ -33,7 +40,7 @@ std::shared_ptr<WindowBuilder> WindowBuilder::new_impl(const BackendType backend
             Logger::info("Vulkan backend unavailable, falling back to OpenGL backend");
             return std::make_shared<WindowBuilderGl>(size);
     #else
-            abort();
+            throw std::invalid_argument("None of the render backends is supported!");
     #endif
     }
 #else
@@ -90,7 +97,7 @@ void WindowBuilder::set_fullscreen(bool fullscreen) {
 
         const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
-        glfwSetWindowMonitor((GLFWwindow*)primary_window_->glfw_window_,
+        glfwSetWindowMonitor((GLFWwindow *)primary_window_->glfw_window_,
                              glfwGetPrimaryMonitor(),
                              0,
                              0,
@@ -100,7 +107,7 @@ void WindowBuilder::set_fullscreen(bool fullscreen) {
 
         primary_window_->physical_size_ = Vec2I(mode->width, mode->height);
     } else {
-        glfwSetWindowMonitor((GLFWwindow*)primary_window_->glfw_window_,
+        glfwSetWindowMonitor((GLFWwindow *)primary_window_->glfw_window_,
                              nullptr,
                              reserved_window_position_.x,
                              reserved_window_position_.y,

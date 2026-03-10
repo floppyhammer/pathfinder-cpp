@@ -17,3 +17,7 @@
 
 # Set branch:
 # git submodule set-branch --branch [BRANCH_NAME] [SUBMODULE_PATH]
+[submodule "third_party/volk"]
+	path = third_party/volk
+	url = https://github.com/zeux/volk.git
+	branch = vulkan-sdk-1.4.341

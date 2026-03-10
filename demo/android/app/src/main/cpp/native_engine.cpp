@@ -1,7 +1,7 @@
 #include "native_engine.h"
 
 // clang-format off
-#include "vulkan_wrapper.h"
+#include <volk/volk.h>
 #include "pathfinder/gpu/gl/window_builder.h"
 #include "pathfinder/gpu/vk/window_builder.h"
 // clang-format on
@@ -83,11 +83,6 @@ bool NativeEngine::init_app(bool use_vulkan) {
     if (!use_vulkan) {
         window_builder = std::make_shared<Pathfinder::WindowBuilderGl>(mAppCtx->window, window_size);
     } else {
-        if (!InitVulkan()) {
-            Pathfinder::Logger::warn("Vulkan is unavailable, install vulkan and re-start");
-            return false;
-        }
-
         window_builder = std::make_shared<Pathfinder::WindowBuilderVk>(mAppCtx->window, window_size);
     }
 

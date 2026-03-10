@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 
+#include "../render_api.h"
 #include "../window.h"
 #include "../window_builder.h"
 #include "device.h"
