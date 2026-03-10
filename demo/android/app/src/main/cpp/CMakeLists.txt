@@ -31,7 +31,6 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         game-activity::game-activity
         log
         android
-        pathfinder
         pathfinder_demo_common
         EGL # GL
         GLESv3 # GL

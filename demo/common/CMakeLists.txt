@@ -8,3 +8,6 @@ target_compile_features(pathfinder_demo_common PUBLIC cxx_std_14)
 
 # Include Pathfinder headers.
 target_include_directories(pathfinder_demo_common PUBLIC "../../")
+
+# pathfinder has to be linked to pathfinder_demo_common first to ensure macro propagation.
+target_link_libraries(pathfinder_demo_common pathfinder)
