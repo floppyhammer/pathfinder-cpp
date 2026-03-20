@@ -199,7 +199,7 @@ bool CommandEncoderVk::finish() {
     // Begin recording.
     VkCommandBufferBeginInfo begin_info{};
     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    begin_info.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+    begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
     VK_CHECK_RESULT(vkBeginCommandBuffer(vk_command_buffer_, &begin_info))
 
