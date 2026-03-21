@@ -331,12 +331,14 @@ bool CommandEncoderVk::finish() {
             } break;
             case CommandType::BindVertexBuffers: {
                 auto &args = cmd.args.bind_vertex_buffers;
-                std::vector<VkBuffer> vertex_buffers;
-                std::vector<VkDeviceSize> offsets;
+
+                std::array<VkBuffer, MAX_VERTEX_BUFFER_BINDINGS> vertex_buffers;
+                std::array<VkDeviceSize, MAX_VERTEX_BUFFER_BINDINGS> offsets;
+
                 for (uint32_t i = 0; i < args.buffer_count; i++) {
                     auto buffer_vk = dynamic_cast<BufferVk *>(args.buffers[i]);
-                    vertex_buffers.push_back(buffer_vk->get_vk_buffer());
-                    offsets.push_back(args.offsets[i]);
+                    vertex_buffers[i] = buffer_vk->get_vk_buffer();
+                    offsets[i] = args.offsets[i];
                 }
 
                 // Bind vertex and index buffers.

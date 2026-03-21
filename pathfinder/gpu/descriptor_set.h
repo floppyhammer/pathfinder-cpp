@@ -26,7 +26,7 @@ struct Descriptor {
     /// 1. For buffer
     std::shared_ptr<Buffer> buffer;
     uint64_t buffer_offset{}; // Must be a multiple of minUniformBufferOffsetAlignment.
-    uint64_t buffer_range{};
+    uint64_t buffer_range{};  // Zero means whole size.
 
     /// 2. For compute image & sampling
     std::shared_ptr<Texture> texture;
