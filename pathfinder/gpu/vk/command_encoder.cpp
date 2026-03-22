@@ -234,12 +234,12 @@ bool CommandEncoderVk::finish() {
                 }
 
                 auto &args = cmd.args.begin_render_pass;
-                auto render_pass_vk = dynamic_cast<RenderPassVk *>(args.render_pass);
-                auto framebuffer_vk = dynamic_cast<FramebufferVk *>(args.framebuffer);
+                auto render_pass_vk = static_cast<RenderPassVk *>(args.render_pass);
+                auto framebuffer_vk = static_cast<FramebufferVk *>(args.framebuffer);
 
                 // Transition non-swap-chain-framebuffer image.
                 if (framebuffer_vk->get_texture()) {
-                    auto texture_vk = dynamic_cast<TextureVk *>(framebuffer_vk->get_texture().get());
+                    auto texture_vk = static_cast<TextureVk *>(framebuffer_vk->get_texture().get());
 
                     int32_t src_stage = 0;
                     int32_t dst_stage = 0;
@@ -323,7 +323,7 @@ bool CommandEncoderVk::finish() {
             } break;
             case CommandType::BindRenderPipeline: {
                 auto &args = cmd.args.bind_render_pipeline;
-                auto pipeline_vk = dynamic_cast<RenderPipelineVk *>(args.pipeline);
+                auto pipeline_vk = static_cast<RenderPipelineVk *>(args.pipeline);
 
                 render_pipeline_ = pipeline_vk;
 
@@ -332,11 +332,11 @@ bool CommandEncoderVk::finish() {
             case CommandType::BindVertexBuffers: {
                 auto &args = cmd.args.bind_vertex_buffers;
 
-                std::array<VkBuffer, MAX_VERTEX_BUFFER_BINDINGS> vertex_buffers;
-                std::array<VkDeviceSize, MAX_VERTEX_BUFFER_BINDINGS> offsets;
+                std::array<VkBuffer, MAX_VERTEX_BUFFER_BINDINGS> vertex_buffers{};
+                std::array<VkDeviceSize, MAX_VERTEX_BUFFER_BINDINGS> offsets{};
 
                 for (uint32_t i = 0; i < args.buffer_count; i++) {
-                    auto buffer_vk = dynamic_cast<BufferVk *>(args.buffers[i]);
+                    auto buffer_vk = static_cast<BufferVk *>(args.buffers[i]);
                     vertex_buffers[i] = buffer_vk->get_vk_buffer();
                     offsets[i] = args.offsets[i];
                 }
@@ -350,10 +350,10 @@ bool CommandEncoderVk::finish() {
             } break;
             case CommandType::BindDescriptorSet: {
                 auto &args = cmd.args.bind_descriptor_set;
-                auto descriptor_set_vk = dynamic_cast<DescriptorSetVk *>(args.descriptor_set);
+                auto descriptor_set_vk = static_cast<DescriptorSetVk *>(args.descriptor_set);
 
                 if (render_pipeline_) {
-                    auto render_pipeline_vk = dynamic_cast<RenderPipelineVk *>(render_pipeline_);
+                    auto render_pipeline_vk = static_cast<RenderPipelineVk *>(render_pipeline_);
 
                     descriptor_set_vk->update_vk_descriptor_set(vk_device_,
                                                                 render_pipeline_vk->get_descriptor_set_layout());
@@ -368,7 +368,7 @@ bool CommandEncoderVk::finish() {
                                             0,
                                             nullptr);
                 } else if (compute_pipeline_) {
-                    auto compute_pipeline_vk = dynamic_cast<ComputePipelineVk *>(compute_pipeline_);
+                    auto compute_pipeline_vk = static_cast<ComputePipelineVk *>(compute_pipeline_);
 
                     descriptor_set_vk->update_vk_descriptor_set(vk_device_,
                                                                 compute_pipeline_vk->get_descriptor_set_layout());
@@ -415,7 +415,7 @@ bool CommandEncoderVk::finish() {
             case CommandType::BindComputePipeline: {
                 auto &args = cmd.args.bind_compute_pipeline;
 
-                auto pipeline_vk = dynamic_cast<ComputePipelineVk *>(args.pipeline);
+                auto pipeline_vk = static_cast<ComputePipelineVk *>(args.pipeline);
 
                 compute_pipeline_ = pipeline_vk;
 
@@ -432,7 +432,7 @@ bool CommandEncoderVk::finish() {
             } break;
             case CommandType::WriteBuffer: {
                 auto &args = cmd.args.write_buffer;
-                auto buffer_vk = dynamic_cast<BufferVk *>(args.buffer);
+                auto buffer_vk = static_cast<BufferVk *>(args.buffer);
 
                 // Create a host visible buffer and copy data to it by memory mapping.
                 // ---------------------------------
@@ -454,7 +454,7 @@ bool CommandEncoderVk::finish() {
                 // Only for storage buffer.
             case CommandType::ReadBuffer: {
                 auto &args = cmd.args.read_buffer;
-                auto buffer_vk = dynamic_cast<BufferVk *>(args.buffer);
+                auto buffer_vk = static_cast<BufferVk *>(args.buffer);
 
                 // Add a barrier.
                 VkBufferMemoryBarrier memory_barrier = {};
@@ -501,7 +501,7 @@ bool CommandEncoderVk::finish() {
             case CommandType::WriteTexture: {
                 auto &args = cmd.args.write_texture;
 
-                auto texture_vk = dynamic_cast<TextureVk *>(args.texture);
+                auto texture_vk = static_cast<TextureVk *>(args.texture);
 
                 // Image region size in bytes.
                 auto pixel_size = get_pixel_size(texture_vk->get_format()); // Bytes of one pixel.
@@ -580,7 +580,7 @@ bool CommandEncoderVk::finish() {
             case CommandType::ReadTexture: {
                 auto &args = cmd.args.read_texture;
 
-                auto texture_vk = dynamic_cast<TextureVk *>(args.texture);
+                auto texture_vk = static_cast<TextureVk *>(args.texture);
 
                 // Image region size in bytes.
                 auto pixel_size = get_pixel_size(texture_vk->get_format()); // Bytes of one pixel.
@@ -678,7 +678,7 @@ bool CommandEncoderVk::finish() {
 }
 
 void CommandEncoderVk::sync_descriptor_set(DescriptorSet *descriptor_set) {
-    auto descriptor_set_vk = dynamic_cast<DescriptorSetVk *>(descriptor_set);
+    auto descriptor_set_vk = static_cast<DescriptorSetVk *>(descriptor_set);
 
     const size_t descriptor_count = descriptor_set_vk->get_descriptors().size();
 
@@ -695,7 +695,7 @@ void CommandEncoderVk::sync_descriptor_set(DescriptorSet *descriptor_set) {
         if (d.second.texture) {
             if (d.second.type == DescriptorType::Sampler) {
                 auto texture = d.second.texture.get();
-                auto texture_vk = dynamic_cast<TextureVk *>(texture);
+                auto texture_vk = static_cast<TextureVk *>(texture);
 
                 auto barrier = generate_image_barrier(texture_vk->get_image(),
                                                       to_vk_layout(texture_vk->get_layout()),
@@ -710,7 +710,7 @@ void CommandEncoderVk::sync_descriptor_set(DescriptorSet *descriptor_set) {
                 }
             } else if (d.second.type == DescriptorType::Image) {
                 auto texture = d.second.texture.get();
-                auto texture_vk = dynamic_cast<TextureVk *>(texture);
+                auto texture_vk = static_cast<TextureVk *>(texture);
 
                 auto barrier = generate_image_barrier(texture_vk->get_image(),
                                                       to_vk_layout(texture_vk->get_layout()),
@@ -727,7 +727,7 @@ void CommandEncoderVk::sync_descriptor_set(DescriptorSet *descriptor_set) {
         }
 
         if (d.second.buffer) {
-            auto buffer_vk = dynamic_cast<BufferVk *>(d.second.buffer.get());
+            auto buffer_vk = static_cast<BufferVk *>(d.second.buffer.get());
 
             src_stage_mask |= VK_PIPELINE_STAGE_TRANSFER_BIT;
 
