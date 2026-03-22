@@ -17,7 +17,7 @@ public:
 private:
     CommandEncoderVk(VkCommandBuffer vk_command_buffer, DeviceVk *device);
 
-    void sync_descriptor_set(DescriptorSet *descriptor_set);
+    void add_barriers_for_descriptor_set(DescriptorSet *descriptor_set);
 
     bool finish() override;
 
