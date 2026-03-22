@@ -337,7 +337,7 @@ VkPresentModeKHR choose_swap_present_mode(const std::vector<VkPresentModeKHR> &a
     }
 
     // Traditional V-Sync
-    return VK_PRESENT_MODE_IMMEDIATE_KHR;
+    return VK_PRESENT_MODE_FIFO_KHR;
 }
 
 QueueFamilyIndices find_queue_families(VkPhysicalDevice physical_device, VkSurfaceKHR surface) {
