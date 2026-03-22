@@ -19,8 +19,6 @@ public:
     virtual ~Queue() = default;
 
     virtual void submit(const std::shared_ptr<CommandEncoder> &encoder, const std::shared_ptr<Fence> &fence) = 0;
-
-    virtual void submit_and_wait(const std::shared_ptr<CommandEncoder> &encoder) = 0;
 };
 
 } // namespace Pathfinder

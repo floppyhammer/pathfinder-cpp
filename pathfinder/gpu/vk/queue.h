@@ -13,8 +13,6 @@ class QueueVk : public Queue {
 public:
     void submit(const std::shared_ptr<CommandEncoder> &encoder, const std::shared_ptr<Fence> &fence) override;
 
-    void submit_and_wait(const std::shared_ptr<CommandEncoder> &encoder) override;
-
 private:
     VkDevice vk_device_{};
 

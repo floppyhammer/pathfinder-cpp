@@ -30,6 +30,8 @@ private:
     std::shared_ptr<Pathfinder::DescriptorSet> descriptor_set_;
 
     std::shared_ptr<Pathfinder::Sampler> sampler_;
+
+    std::shared_ptr<Pathfinder::Fence> fence_;
 };
 
 #endif // PATHFINDER_DEMO_TEXTURE_RECT_H

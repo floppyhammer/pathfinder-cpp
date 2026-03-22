@@ -25,17 +25,6 @@ public:
             fence_gl->wait();
         }
     }
-
-    void submit_and_wait(const std::shared_ptr<CommandEncoder> &encoder) override {
-        if (encoder->submitted_) {
-            Logger::error("Attempted to submit an encoder that's already been submitted!");
-            return;
-        }
-
-        encoder->submitted_ = true;
-
-        encoder->finish();
-    }
 };
 
 } // namespace Pathfinder
