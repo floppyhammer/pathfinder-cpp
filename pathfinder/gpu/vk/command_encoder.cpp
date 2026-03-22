@@ -693,36 +693,35 @@ void CommandEncoderVk::sync_descriptor_set(DescriptorSet *descriptor_set) {
     // Make all image layouts ready.
     for (auto &d : descriptor_set_vk->get_descriptors()) {
         if (d.second.texture) {
-            if (d.second.type == DescriptorType::Sampler) {
-                auto texture = d.second.texture.get();
-                auto texture_vk = static_cast<TextureVk *>(texture);
+            auto texture = d.second.texture.get();
+            auto texture_vk = static_cast<TextureVk *>(texture);
 
-                auto barrier = generate_image_barrier(texture_vk->get_image(),
-                                                      to_vk_layout(texture_vk->get_layout()),
-                                                      to_vk_layout(TextureLayout::ShaderReadOnly),
-                                                      src_stage_mask,
-                                                      dst_stage_mask);
+            auto old_layout = texture_vk->get_layout();
+
+            VkImageMemoryBarrier barrier{};
+
+            if (d.second.type == DescriptorType::Sampler) {
+                barrier = generate_image_barrier(texture_vk->get_image(),
+                                                 to_vk_layout(old_layout),
+                                                 to_vk_layout(TextureLayout::ShaderReadOnly),
+                                                 src_stage_mask,
+                                                 dst_stage_mask);
 
                 texture_vk->set_layout(TextureLayout::ShaderReadOnly);
-
-                if (barrier.image != nullptr) {
-                    image_barriers.push_back(barrier);
-                }
             } else if (d.second.type == DescriptorType::Image) {
-                auto texture = d.second.texture.get();
-                auto texture_vk = static_cast<TextureVk *>(texture);
-
-                auto barrier = generate_image_barrier(texture_vk->get_image(),
-                                                      to_vk_layout(texture_vk->get_layout()),
-                                                      to_vk_layout(TextureLayout::General),
-                                                      src_stage_mask,
-                                                      dst_stage_mask);
+                barrier = generate_image_barrier(texture_vk->get_image(),
+                                                 to_vk_layout(old_layout),
+                                                 to_vk_layout(TextureLayout::General),
+                                                 src_stage_mask,
+                                                 dst_stage_mask);
 
                 texture_vk->set_layout(TextureLayout::General);
+            } else {
+                throw std::runtime_error("Invalid descriptor type");
+            }
 
-                if (barrier.image != nullptr) {
-                    image_barriers.push_back(barrier);
-                }
+            if (barrier.image != nullptr) {
+                image_barriers.push_back(barrier);
             }
         }
 
@@ -732,18 +731,17 @@ void CommandEncoderVk::sync_descriptor_set(DescriptorSet *descriptor_set) {
             src_stage_mask |= VK_PIPELINE_STAGE_TRANSFER_BIT;
 
             int32_t dst_access_mask{};
+
             switch (buffer_vk->get_type()) {
-                case BufferType::Vertex: {
-                    Logger::error("Why do we have a vertex buffer in a descriptor set?");
-                } break;
                 case BufferType::Uniform: {
                     dst_access_mask = VK_ACCESS_SHADER_READ_BIT;
                 } break;
                 case BufferType::Storage: {
                     dst_access_mask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
                 } break;
-                case BufferType::Index:
-                    abort();
+                default: {
+                    throw std::runtime_error("Invalid buffer type in a descriptor set");
+                }
             }
 
             switch (d.second.stage) {
@@ -760,11 +758,11 @@ void CommandEncoderVk::sync_descriptor_set(DescriptorSet *descriptor_set) {
                     dst_stage_mask |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
                 } break;
                 default: {
-                    abort();
+                    throw std::runtime_error("Invalid shader stage in a descriptor set");
                 }
             }
 
-            VkBufferMemoryBarrier barrier = {};
+            VkBufferMemoryBarrier barrier{};
             barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
             barrier.pNext = nullptr;
             barrier.size = buffer_vk->get_size();
