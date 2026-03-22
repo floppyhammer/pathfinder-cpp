@@ -29,11 +29,12 @@ std::shared_ptr<Texture> SwapChainVk::get_surface_texture() {
     desc.size = size_;
     desc.format = vk_to_texture_format(swapchain_image_format_);
 
+    // The initial layout for a swapchain image is VK_IMAGE_LAYOUT_UNDEFINED.
     auto texture = TextureVk::from_wrapping(desc,
                                             swapchain_images_[image_index_],
                                             VK_NULL_HANDLE,
                                             swapchain_image_views_[image_index_],
-                                            TextureLayout::ColorAttachment);
+                                            TextureLayout::Undefined);
 
     return texture;
 }
