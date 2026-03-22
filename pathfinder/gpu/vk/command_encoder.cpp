@@ -208,7 +208,7 @@ bool CommandEncoderVk::finish() {
 
                 // In case we need to clear a framebuffer even when nothing is drawn.
                 // This is to keep consistency with OpenGL.
-                if (pass_has_draw_call && render_pass_vk->get_attachment_load_op() == AttachmentLoadOp::Clear) {
+                if (!pass_has_draw_call && render_pass_vk->get_attachment_load_op() == AttachmentLoadOp::Clear) {
                     std::array<VkClearAttachment, 1> clear_attachments{};
 
                     clear_attachments[0] = {VK_IMAGE_ASPECT_COLOR_BIT, 0, clearValues[0]};
@@ -219,6 +219,7 @@ bool CommandEncoderVk::finish() {
                         0,
                         1};
 
+                    // Note: this operation is really performance-heavy.
                     vkCmdClearAttachments(vk_command_buffer_,
                                           clear_attachments.size(),
                                           clear_attachments.data(),
