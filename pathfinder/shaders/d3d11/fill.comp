@@ -108,7 +108,7 @@ vec4 accumulateCoverageForFillList(int fillIndex, ivec2 tileSubCoord) {
 
 ivec2 computeTileCoord(uint alphaTileIndex) {
     uint x = alphaTileIndex & 0xffu;
-    uint y = (alphaTileIndex >> 8u) & 0xffu + (((alphaTileIndex >> 16u) & 0xffu) << 8u);
+    uint y = ((alphaTileIndex >> 8u) & 0xffu) | (((alphaTileIndex >> 16u) & 0xffu) << 8u);
     return ivec2(16, 4) * ivec2(x, y) + ivec2(gl_LocalInvocationID.xy);
 }
 
