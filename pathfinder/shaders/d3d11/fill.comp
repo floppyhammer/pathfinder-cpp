@@ -127,8 +127,9 @@ void main() {
     uint tileIndex = iAlphaTiles[batchAlphaTileIndex * 2u + 0u];
 
     // |?(8bit)|x(24bit)| -> |0(8bit)|x(24bit)|
-    if ((int(iTiles[tileIndex * 4u + TILE_FIELD_BACKDROP_ALPHA_TILE_ID] << 8) >> 8) < 0)
-        return;
+    // Commented to fix artifacts in OpenGL.
+    //if ((int(iTiles[tileIndex * 4u + TILE_FIELD_BACKDROP_ALPHA_TILE_ID] << 8) >> 8) < 0)
+    //    return;
 
     int fillIndex = int(iTiles[tileIndex * 4u + TILE_FIELD_FIRST_FILL_ID]);
     uint tileControlWord = iTiles[tileIndex * 4u + TILE_FIELD_CONTROL];

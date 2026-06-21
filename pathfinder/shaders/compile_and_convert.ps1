@@ -45,4 +45,5 @@ Get-ChildItem -Recurse -File | Where { ($_.Extension -ne ".h") } | Remove-Item
 
 # Wait for input.
 Write-Host "All jobs finished."
-$Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+Set-Location ".."
+# $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
