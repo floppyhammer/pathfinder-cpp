@@ -25,24 +25,18 @@ layout(std140) uniform bUniform {
     vec2 uFramebufferSize; // Mask framebuffer. Dynamic as (4096, 1024 * page_count).
 };
 
-#ifdef VULKAN
 layout(location = 0) in uvec2 aTileOffset;
 layout(location = 1) in int aDestTileIndex;
 layout(location = 2) in int aDestBackdrop;
 layout(location = 3) in int aSrcTileIndex;
 layout(location = 4) in int aSrcBackdrop;
 
+#ifdef VULKAN
 layout(location = 0) out vec2 vTexCoord0;
 layout(location = 1) out float vBackdrop0;
 layout(location = 2) out vec2 vTexCoord1;
 layout(location = 3) out float vBackdrop1;
 #else
-in uvec2 aTileOffset;
-in int aDestTileIndex;
-in int aDestBackdrop;
-in int aSrcTileIndex;
-in int aSrcBackdrop;
-
 out vec2 vTexCoord0;
 out float vBackdrop0;
 out vec2 vTexCoord1;
