@@ -136,6 +136,8 @@ public:
     /// Returns true if this paint is obviously opaque, via a quick check.
     bool is_opaque() const;
 
+    bool is_visible() const;
+
     /// Returns the base color of this paint.
     ColorU get_base_color() const;
 

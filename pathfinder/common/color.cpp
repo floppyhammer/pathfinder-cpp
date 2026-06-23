@@ -40,6 +40,10 @@ ColorF ColorU::to_f32() const {
 }
 
 bool ColorU::is_opaque() const {
+    return a_ == 255;
+}
+
+bool ColorU::is_visible() const {
     return a_ != 0;
 }
 

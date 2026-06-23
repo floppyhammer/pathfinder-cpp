@@ -24,6 +24,11 @@ bool Paint::is_opaque() const {
     return true;
 }
 
+bool Paint::is_visible() const {
+    // todo: consider overlay
+    return base_color.is_visible();
+}
+
 ColorU Paint::get_base_color() const {
     return base_color;
 }

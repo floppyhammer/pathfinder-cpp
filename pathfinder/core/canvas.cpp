@@ -161,7 +161,7 @@ void Canvas::push_path(Outline &outline, PathOp path_op, FillRule fill_rule) {
     outline.transform(transform);
 
     // Add shadow.
-    if (current_state.shadow_color.is_opaque()) {
+    if (current_state.shadow_color.is_visible()) {
         // Copy outline.
         Outline shadow_outline = outline;
 
@@ -211,7 +211,7 @@ void Canvas::push_path(Outline &outline, PathOp path_op, FillRule fill_rule) {
 }
 
 void Canvas::fill_path(Path2d &path2d, FillRule fill_rule) {
-    if (current_state.fill_paint.is_opaque()) {
+    if (current_state.fill_paint.is_visible()) {
         auto outline = path2d.into_outline();
         push_path(outline, PathOp::Fill, fill_rule);
     }
@@ -226,7 +226,7 @@ void Canvas::stroke_path(Path2d &path2d) {
     style.line_cap = line_cap();
 
     // No need to draw an invisible stroke.
-    if (current_state.stroke_paint.is_opaque() && style.line_width > 0) {
+    if (current_state.stroke_paint.is_visible() && style.line_width > 0) {
         auto outline = path2d.into_outline();
 
         // Do dash before converting stroke to fill.

@@ -91,8 +91,9 @@ struct ColorU {
         return ColorU(new_color);
     }
 
-    /// Check for transparency.
     bool is_opaque() const;
+
+    bool is_visible() const;
 
     ColorU lerp(const ColorU& other, float t) const;
 
