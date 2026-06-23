@@ -16,17 +16,28 @@ bool Paint::is_opaque() const {
 
         if (content.type == PaintContents::Type::Gradient) {
             return content.gradient.is_opaque();
-        } else {
-            return content.pattern.is_opaque();
         }
+
+        return content.pattern.is_opaque();
     }
 
     return true;
 }
 
 bool Paint::is_visible() const {
-    // todo: consider overlay
-    return base_color.is_visible();
+    if (!base_color.is_visible()) {
+        return false;
+    }
+
+    if (!overlay) {
+        return true;
+    }
+
+    const auto &content = overlay->contents;
+    if (content.type == PaintContents::Type::Gradient) {
+        return content.gradient.is_visible();
+    }
+    return content.pattern.is_visible();
 }
 
 ColorU Paint::get_base_color() const {

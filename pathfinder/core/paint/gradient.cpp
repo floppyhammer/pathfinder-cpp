@@ -54,14 +54,27 @@ ColorU Gradient::sample(float t) const {
     return ColorU(lower_stop.color.to_f32().lerp(upper_stop.color.to_f32(), ratio));
 }
 
-bool Gradient::is_opaque() {
-    bool opaque = false;
-
-    for (auto &stop : stops) {
-        opaque |= stop.color.is_opaque();
+bool Gradient::is_opaque() const {
+    if (stops.empty()) {
+        return false;
     }
 
-    return opaque;
+    for (auto &stop : stops) {
+        if (!stop.color.is_opaque()) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool Gradient::is_visible() const {
+    for (auto &stop : stops) {
+        if (stop.color.is_visible()) {
+            return true;
+        }
+    }
+    return false;
 }
 
 TextureLocation GradientTileBuilder::allocate(const Gradient &gradient,

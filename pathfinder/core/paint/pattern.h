@@ -95,8 +95,8 @@ struct PatternSource {
 
     /// Returns true if this pattern is obviously opaque.
     bool is_opaque() const {
-        // We assume all images and render targets are opaque for the sake of simplicity.
-        return true;
+        // We assume all images and render targets are non-opaque for the sake of simplicity.
+        return false;
     }
 
     // For being used as key in ordered maps.
@@ -197,6 +197,8 @@ struct Pattern {
                 return source.image->size;
             case PatternSource::Type::RenderTarget:
                 return source.size;
+            case PatternSource::Type::Texture:
+                return source.texture.lock()->get_size();
         }
     }
 
@@ -234,6 +236,11 @@ struct Pattern {
     /// Returns true if this pattern is obviously fully opaque.
     bool is_opaque() const {
         return source.is_opaque();
+    }
+
+    bool is_visible() const {
+        // We assume all images and render targets are visible for the sake of simplicity.
+        return true;
     }
 };
 

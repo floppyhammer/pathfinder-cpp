@@ -123,7 +123,10 @@ public:
     ColorU sample(float t) const;
 
     /// Returns true if all colors of all stops in this gradient are opaque.
-    bool is_opaque();
+    bool is_opaque() const;
+
+    /// Returns true if any colors of any stops in this gradient are visible.
+    bool is_visible() const;
 
     // For being used as ordered key.
     bool operator<(const Gradient &rhs) const {
