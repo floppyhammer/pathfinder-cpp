@@ -80,20 +80,25 @@ std::shared_ptr<RenderPipeline> DeviceGl::create_render_pipeline(
     const std::shared_ptr<ShaderModule> &frag_shader_module,
     const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
     BlendState blend_state,
-    const std::shared_ptr<DescriptorSet> &descriptor_set,
+    const std::shared_ptr<DescriptorSetLayout> &descriptor_set_layout,
     TextureFormat target_format,
     const std::string &label) {
     return std::shared_ptr<RenderPipelineGl>(
         new RenderPipelineGl(vert_shader_module, frag_shader_module, attribute_descriptions, blend_state, label));
 }
 
-std::shared_ptr<DescriptorSet> DeviceGl::create_descriptor_set() {
-    return std::shared_ptr<DescriptorSet>(new DescriptorSet());
+std::shared_ptr<DescriptorSetLayout> DeviceGl::create_descriptor_set_layout(
+    const std::vector<DescriptorLayout> &descriptors) {
+    return std::shared_ptr<DescriptorSetLayout>(new DescriptorSetLayout(descriptors));
+}
+
+std::shared_ptr<DescriptorSet> DeviceGl::create_descriptor_set(std::shared_ptr<DescriptorSetLayout> layout) {
+    return std::shared_ptr<DescriptorSet>(new DescriptorSet(layout));
 }
 
 std::shared_ptr<ComputePipeline> DeviceGl::create_compute_pipeline(
     const std::shared_ptr<ShaderModule> &comp_shader_module,
-    const std::shared_ptr<DescriptorSet> &descriptor_set,
+    const std::shared_ptr<DescriptorSetLayout> &descriptor_set_layout,
     const std::string &label) {
     return std::shared_ptr<ComputePipelineGl>(new ComputePipelineGl(comp_shader_module));
 }

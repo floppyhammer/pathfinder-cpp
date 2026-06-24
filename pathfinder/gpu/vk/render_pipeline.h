@@ -13,7 +13,6 @@ class RenderPipelineVk : public RenderPipeline {
 
 public:
     ~RenderPipelineVk() override {
-        vkDestroyDescriptorSetLayout(vk_device_, vk_descriptor_set_layout_, nullptr);
         vkDestroyPipeline(vk_device_, vk_pipeline_, nullptr);
         vkDestroyPipelineLayout(vk_device_, vk_layout_, nullptr);
     }
@@ -26,23 +25,16 @@ public:
         return vk_layout_;
     }
 
-    VkDescriptorSetLayout get_descriptor_set_layout() const {
-        return vk_descriptor_set_layout_;
-    }
-
 private:
     RenderPipelineVk(VkDevice vk_device,
                      const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
                      BlendState blend_state,
                      std::string label)
         : RenderPipeline(attribute_descriptions, blend_state, std::move(label)), vk_device_(vk_device) {}
-
     // A walkaround of render pass dependency.
     std::shared_ptr<RenderPassVk> render_pass_vk_;
 
     VkPipeline vk_pipeline_{};
-
-    VkDescriptorSetLayout vk_descriptor_set_layout_{};
 
     VkPipelineLayout vk_layout_{};
 

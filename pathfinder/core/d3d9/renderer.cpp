@@ -94,25 +94,13 @@ void RendererD3D9::update_tile_batch_storage(uint32_t new_tile_batch_count) {
 
     for (int i = tile_batch_storage_count; i < new_tile_batch_count; i++) {
         // Set descriptor set.
-        auto tile_descriptor_set = device->create_descriptor_set();
+        auto tile_descriptor_set = device->create_descriptor_set(tile_descriptor_set_layout_);
         tile_descriptor_set->add_or_update({
-            Descriptor::sampled(0, ShaderStage::Vertex, "uTextureMetadata"),
-            Descriptor::sampled(1, ShaderStage::Vertex, "uZBuffer"),
-            Descriptor::uniform(2, ShaderStage::VertexAndFragment, "bUniform", allocator->get_buffer(tile_ub_id)),
-            Descriptor::sampled(3, ShaderStage::Fragment, "uColorTexture0"),
-            Descriptor::sampled(4, ShaderStage::Fragment, "uMaskTexture0"),
+            Descriptor::uniform(2, allocator->get_buffer(tile_ub_id)),
             // Unused binding.
-            Descriptor::sampled(5,
-                                ShaderStage::Fragment,
-                                "uDestTexture",
-                                allocator->get_texture(dummy_texture_id),
-                                get_default_sampler()),
+            Descriptor::sampled(5, allocator->get_texture(dummy_texture_id), get_default_sampler()),
             // Unused binding.
-            Descriptor::sampled(6,
-                                ShaderStage::Fragment,
-                                "uGammaLUT",
-                                allocator->get_texture(dummy_texture_id),
-                                get_default_sampler()),
+            Descriptor::sampled(6, allocator->get_texture(dummy_texture_id), get_default_sampler()),
         });
         tile_descriptor_sets.push_back(tile_descriptor_set);
     }
@@ -152,15 +140,19 @@ void RendererD3D9::set_up_pipelines() {
 
         fill_ub_id = allocator->allocate_buffer(sizeof(FillUniformD3d9), BufferType::Uniform, "fill uniform buffer");
 
-        // Set descriptor set.
-        fill_descriptor_set = device->create_descriptor_set();
+        {
+            std::vector<DescriptorLayout> layouts = {
+                DescriptorLayout{0, ShaderStage::Vertex, DescriptorType::UniformBuffer, "bUniform"},
+                DescriptorLayout{1, ShaderStage::Fragment, DescriptorType::Sampler, "uAreaLUT"},
+            };
+
+            fill_descriptor_set_layout_ = device->create_descriptor_set_layout(layouts);
+        }
+
+        fill_descriptor_set = device->create_descriptor_set(fill_descriptor_set_layout_);
         fill_descriptor_set->add_or_update({
-            Descriptor::uniform(0, ShaderStage::Vertex, "bUniform", allocator->get_buffer(fill_ub_id)),
-            Descriptor::sampled(1,
-                                ShaderStage::Fragment,
-                                "uAreaLUT",
-                                allocator->get_texture(area_lut_texture_id),
-                                get_default_sampler()),
+            Descriptor::uniform(0, allocator->get_buffer(fill_ub_id)),
+            Descriptor::sampled(1, allocator->get_texture(area_lut_texture_id), get_default_sampler()),
         });
 
         auto fill_vert_shader = device->create_shader_module(fill_vert_source, ShaderStage::Vertex, "fill vert");
@@ -170,7 +162,7 @@ void RendererD3D9::set_up_pipelines() {
                                                        fill_frag_shader,
                                                        attribute_descriptions,
                                                        BlendState::from_equal(),
-                                                       fill_descriptor_set,
+                                                       fill_descriptor_set_layout_,
                                                        mask_texture_format(),
                                                        "fill pipeline");
     }
@@ -210,6 +202,20 @@ void RendererD3D9::set_up_pipelines() {
                 {1, 1, DataType::u32, stride, offsetof(TileObjectPrimitive, metadata_id), VertexInputRate::Instance});
         }
 
+        {
+            std::vector<DescriptorLayout> layouts = {
+                DescriptorLayout{0, ShaderStage::Vertex, DescriptorType::Sampler, "uTextureMetadata"},
+                DescriptorLayout{1, ShaderStage::Vertex, DescriptorType::Sampler, "uZBuffer"},
+                DescriptorLayout{2, ShaderStage::VertexAndFragment, DescriptorType::UniformBuffer, "bUniform"},
+                DescriptorLayout{3, ShaderStage::Fragment, DescriptorType::Sampler, "uColorTexture0"},
+                DescriptorLayout{4, ShaderStage::Fragment, DescriptorType::Sampler, "uMaskTexture0"},
+                DescriptorLayout{5, ShaderStage::Fragment, DescriptorType::Sampler, "uDestTexture"},
+                DescriptorLayout{6, ShaderStage::Fragment, DescriptorType::Sampler, "uGammaLUT"},
+            };
+
+            tile_descriptor_set_layout_ = device->create_descriptor_set_layout(layouts);
+        }
+
         update_tile_batch_storage(DEFAULT_TILE_BATCH_COUNT);
 
         auto tile_vert_shader = device->create_shader_module(tile_vert_source, ShaderStage::Vertex, "tile vert");
@@ -219,7 +225,7 @@ void RendererD3D9::set_up_pipelines() {
                                                        tile_frag_shader,
                                                        attribute_descriptions,
                                                        BlendState::from_over(),
-                                                       tile_descriptor_sets.front(),
+                                                       tile_descriptor_set_layout_,
                                                        TextureFormat::Rgba8Unorm,
                                                        "tile pipeline");
     }
@@ -282,11 +288,19 @@ void RendererD3D9::create_tile_clip_copy_pipeline() {
         attribute_descriptions.push_back({1, 1, DataType::i32, sizeof(Clip) / 2, 0, VertexInputRate::Instance});
     }
 
+    {
+        std::vector<DescriptorLayout> layouts = {
+            DescriptorLayout{0, ShaderStage::Vertex, DescriptorType::UniformBuffer, "bUniform"},
+            DescriptorLayout{1, ShaderStage::Fragment, DescriptorType::Sampler, "uSrc"},
+        };
+
+        tile_clip_copy_descriptor_set_layout_ = device->create_descriptor_set_layout(layouts);
+    }
+
     // Create descriptor set.
-    tile_clip_copy_descriptor_set = device->create_descriptor_set();
+    tile_clip_copy_descriptor_set = device->create_descriptor_set(tile_clip_copy_descriptor_set_layout_);
     tile_clip_copy_descriptor_set->add_or_update({
-        Descriptor::uniform(0, ShaderStage::Vertex, "bUniform", allocator->get_buffer(fill_ub_id)),
-        Descriptor::sampled(1, ShaderStage::Fragment, "uSrc", nullptr, get_default_sampler()),
+        Descriptor::uniform(0, allocator->get_buffer(fill_ub_id)),
     });
 
     auto tile_clip_copy_vert_shader =
@@ -299,7 +313,7 @@ void RendererD3D9::create_tile_clip_copy_pipeline() {
                                                              tile_clip_copy_frag_shader,
                                                              attribute_descriptions,
                                                              {false},
-                                                             tile_clip_copy_descriptor_set,
+                                                             tile_clip_copy_descriptor_set_layout_,
                                                              mask_texture_format(),
                                                              "tile clip copy pipeline");
 }
@@ -331,11 +345,19 @@ void RendererD3D9::create_tile_clip_combine_pipeline() {
             {1, 1, DataType::i32, stride, offsetof(Clip, src_backdrop), VertexInputRate::Instance});
     }
 
+    {
+        std::vector<DescriptorLayout> layouts = {
+            DescriptorLayout{0, ShaderStage::Vertex, DescriptorType::UniformBuffer, "bUniform"},
+            DescriptorLayout{1, ShaderStage::Fragment, DescriptorType::Sampler, "uSrc"},
+        };
+
+        tile_clip_combine_descriptor_set_layout_ = device->create_descriptor_set_layout(layouts);
+    }
+
     // Create descriptor set.
-    tile_clip_combine_descriptor_set = device->create_descriptor_set();
+    tile_clip_combine_descriptor_set = device->create_descriptor_set(tile_clip_combine_descriptor_set_layout_);
     tile_clip_combine_descriptor_set->add_or_update({
-        Descriptor::uniform(0, ShaderStage::Vertex, "bUniform", allocator->get_buffer(fill_ub_id)),
-        Descriptor::sampled(1, ShaderStage::Fragment, "uSrc", nullptr, nullptr),
+        Descriptor::uniform(0, allocator->get_buffer(fill_ub_id)),
     });
 
     auto tile_clip_combine_vert_shader =
@@ -348,7 +370,7 @@ void RendererD3D9::create_tile_clip_combine_pipeline() {
                                                                 tile_clip_combine_frag_shader,
                                                                 attribute_descriptions,
                                                                 {false},
-                                                                tile_clip_combine_descriptor_set,
+                                                                tile_clip_combine_descriptor_set_layout_,
                                                                 mask_texture_format(),
                                                                 "tile clip combine pipeline");
 }
@@ -549,11 +571,7 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std:
     auto clip_vertex_buffer = allocator->get_buffer(clip_buffer_info.clip_buffer_id);
 
     tile_clip_copy_descriptor_set->add_or_update({
-        Descriptor::sampled(1,
-                            ShaderStage::Fragment,
-                            "uSrc",
-                            allocator->get_texture(*mask_storage.texture_id),
-                            get_default_sampler()),
+        Descriptor::sampled(1, allocator->get_texture(*mask_storage.texture_id), get_default_sampler()),
     });
 
     // Copy out tiles.
@@ -578,7 +596,7 @@ void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std:
     // Combine clip tiles.
     {
         tile_clip_combine_descriptor_set->add_or_update({
-            Descriptor::sampled(1, ShaderStage::Fragment, "uSrc", temp_mask_texture, get_default_sampler()),
+            Descriptor::sampled(1, temp_mask_texture, get_default_sampler()),
         });
 
         encoder->begin_render_pass(mask_render_pass_load, allocator->get_texture(*mask_storage.texture_id), ColorF());
@@ -688,24 +706,11 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
 
     // Update descriptor set.
     tile_descriptor_set->add_or_update({
-        Descriptor::sampled(0,
-                            ShaderStage::Vertex,
-                            "uTextureMetadata",
-                            allocator->get_texture(metadata_texture_id),
-                            default_sampler),
-        Descriptor::sampled(1, ShaderStage::Vertex, "uZBuffer", z_buffer_texture, default_sampler),
-        Descriptor::uniform(2,
-                            ShaderStage::VertexAndFragment,
-                            "bUniform",
-                            allocator->get_buffer(tile_ub_id),
-                            tile_uniform_offset,
-                            sizeof(TileUniformD3d9)),
-        Descriptor::sampled(3, ShaderStage::Fragment, "uColorTexture0", color_texture, color_texture_sampler),
-        Descriptor::sampled(4,
-                            ShaderStage::Fragment,
-                            "uMaskTexture0",
-                            allocator->get_texture(*mask_storage.texture_id),
-                            get_default_sampler()),
+        Descriptor::sampled(0, allocator->get_texture(metadata_texture_id), default_sampler),
+        Descriptor::sampled(1, z_buffer_texture, default_sampler),
+        Descriptor::uniform(2, allocator->get_buffer(tile_ub_id), tile_uniform_offset, sizeof(TileUniformD3d9)),
+        Descriptor::sampled(3, color_texture, color_texture_sampler),
+        Descriptor::sampled(4, allocator->get_texture(*mask_storage.texture_id), get_default_sampler()),
     });
 
     encoder->bind_render_pipeline(tile_pipeline);

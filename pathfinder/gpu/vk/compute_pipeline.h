@@ -13,7 +13,6 @@ class ComputePipelineVk : public ComputePipeline {
 
 public:
     ~ComputePipelineVk() override {
-        vkDestroyDescriptorSetLayout(vk_device_, vk_descriptor_set_layout_, nullptr);
         vkDestroyPipeline(vk_device_, vk_pipeline_, nullptr);
         vkDestroyPipelineLayout(vk_device_, vk_layout_, nullptr);
     }
@@ -26,18 +25,12 @@ public:
         return vk_layout_;
     }
 
-    VkDescriptorSetLayout get_descriptor_set_layout() const {
-        return vk_descriptor_set_layout_;
-    }
-
 private:
     ComputePipelineVk(VkDevice vk_device, std::string label) : vk_device_(vk_device) {
         label_ = std::move(label);
     }
 
     VkPipeline vk_pipeline_{};
-
-    VkDescriptorSetLayout vk_descriptor_set_layout_{};
 
     VkPipelineLayout vk_layout_{};
 

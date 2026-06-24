@@ -276,11 +276,14 @@ bool CommandEncoderVk::finish() {
                 auto &args = cmd.args.bind_descriptor_set;
                 auto descriptor_set_vk = static_cast<DescriptorSetVk *>(args.descriptor_set);
 
+                auto descriptor_set_layout = args.descriptor_set->get_layout();
+                auto descriptor_set_layout_vk = (DescriptorSetLayoutVk *)descriptor_set_layout.get();
+                auto vk_descriptor_set_layout = descriptor_set_layout_vk->get_vk_layout();
+
                 if (render_pipeline_) {
                     auto render_pipeline_vk = static_cast<RenderPipelineVk *>(render_pipeline_);
 
-                    descriptor_set_vk->update_vk_descriptor_set(vk_device_,
-                                                                render_pipeline_vk->get_descriptor_set_layout());
+                    descriptor_set_vk->update_vk_descriptor_set(vk_device_, vk_descriptor_set_layout);
 
                     // Bind uniform buffers and samplers.
                     vkCmdBindDescriptorSets(vk_command_buffer_,
@@ -294,8 +297,7 @@ bool CommandEncoderVk::finish() {
                 } else if (compute_pipeline_) {
                     auto compute_pipeline_vk = static_cast<ComputePipelineVk *>(compute_pipeline_);
 
-                    descriptor_set_vk->update_vk_descriptor_set(vk_device_,
-                                                                compute_pipeline_vk->get_descriptor_set_layout());
+                    descriptor_set_vk->update_vk_descriptor_set(vk_device_, vk_descriptor_set_layout);
 
                     // Bind uniform buffers and samplers.
                     vkCmdBindDescriptorSets(vk_command_buffer_,
@@ -604,6 +606,8 @@ bool CommandEncoderVk::finish() {
 void CommandEncoderVk::add_barriers_for_descriptor_set(DescriptorSet *descriptor_set) {
     auto descriptor_set_vk = static_cast<DescriptorSetVk *>(descriptor_set);
 
+    auto descriptor_set_layout = descriptor_set->get_layout();
+
     const size_t descriptor_count = descriptor_set_vk->get_descriptors().size();
 
     std::vector<VkBufferMemoryBarrier> buffer_barriers;
@@ -667,7 +671,9 @@ void CommandEncoderVk::add_barriers_for_descriptor_set(DescriptorSet *descriptor
                 }
             }
 
-            switch (d.second.stage) {
+            auto stage = descriptor_set_layout->get_descriptor_layout(d.first).stage;
+
+            switch (stage) {
                 case ShaderStage::Vertex: {
                     dst_stage_mask |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
                 } break;

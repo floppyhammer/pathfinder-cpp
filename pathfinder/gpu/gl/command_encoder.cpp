@@ -168,12 +168,15 @@ bool CommandEncoderGl::finish() {
                     program_id = pipeline_gl->get_program()->get_handle();
                 }
 
+                auto descriptor_set_layout = args.descriptor_set->get_layout();
+
                 for (auto &pair : args.descriptor_set->get_descriptors()) {
                     auto &descriptor = pair.second;
 
                     // Note that pair.first is not the binding point.
                     auto binding_point = descriptor.binding;
-                    auto binding_name = descriptor.binding_name;
+                    auto descriptor_layout = descriptor_set_layout->get_descriptor_layout(binding_point);
+                    auto binding_name = descriptor_layout.binding_name;
 
                     switch (descriptor.type) {
                         case DescriptorType::UniformBuffer: {

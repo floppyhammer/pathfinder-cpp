@@ -52,8 +52,35 @@ VkCommandPool DeviceVk::get_command_pool() const {
     return vk_command_pool_;
 }
 
-std::shared_ptr<DescriptorSet> DeviceVk::create_descriptor_set() {
-    return std::shared_ptr<DescriptorSetVk>(new DescriptorSetVk());
+std::shared_ptr<DescriptorSetLayout> DeviceVk::create_descriptor_set_layout(
+    const std::vector<DescriptorLayout> &descriptors) {
+    VkDescriptorSetLayout vk_ds_layout;
+
+    std::vector<VkDescriptorSetLayoutBinding> bindings;
+
+    for (auto &d : descriptors) {
+        VkDescriptorSetLayoutBinding binding;
+        binding.binding = d.binding;
+        binding.descriptorCount = 1;
+        binding.descriptorType = to_vk_descriptor_type(d.type);
+        binding.pImmutableSamplers = nullptr;
+        binding.stageFlags = to_vk_shader_stage(d.stage);
+
+        bindings.push_back(binding);
+    }
+
+    VkDescriptorSetLayoutCreateInfo layout_info{};
+    layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layout_info.bindingCount = bindings.size();
+    layout_info.pBindings = bindings.data();
+
+    VK_CHECK_RESULT(vkCreateDescriptorSetLayout(vk_device_, &layout_info, nullptr, &vk_ds_layout))
+
+    return std::shared_ptr<DescriptorSetLayoutVk>(new DescriptorSetLayoutVk(vk_device_, vk_ds_layout, descriptors));
+}
+
+std::shared_ptr<DescriptorSet> DeviceVk::create_descriptor_set(std::shared_ptr<DescriptorSetLayout> layout) {
+    return std::shared_ptr<DescriptorSetVk>(new DescriptorSetVk(layout));
 }
 
 std::shared_ptr<ShaderModule> DeviceVk::create_shader_module(const std::vector<char> &source_code,
@@ -74,7 +101,7 @@ std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
     const std::shared_ptr<ShaderModule> &frag_shader_module,
     const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
     BlendState blend_state,
-    const std::shared_ptr<DescriptorSet> &descriptor_set,
+    const std::shared_ptr<DescriptorSetLayout> &descriptor_set_layout,
     TextureFormat target_format,
     const std::string &label) {
     auto vert_shader_module_vk = (ShaderModuleVk *)vert_shader_module.get();
@@ -87,40 +114,15 @@ std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
         new RenderPassVk(vk_device_, target_format, AttachmentLoadOp::Load, false, label + " pass"));
     render_pipeline_vk->render_pass_vk_ = render_pass_vk;
 
-    // Create descriptor set layout.
-    {
-        std::vector<VkDescriptorSetLayoutBinding> bindings;
-
-        for (auto &pair : descriptor_set->get_descriptors()) {
-            auto &d = pair.second;
-
-            VkDescriptorSetLayoutBinding binding;
-            binding.binding = d.binding;
-            binding.descriptorCount = 1;
-            binding.descriptorType = to_vk_descriptor_type(d.type);
-            binding.pImmutableSamplers = nullptr;
-            binding.stageFlags = to_vk_shader_stage(d.stage);
-
-            bindings.push_back(binding);
-        }
-
-        VkDescriptorSetLayoutCreateInfo layout_info{};
-        layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        layout_info.bindingCount = bindings.size();
-        layout_info.pBindings = bindings.data();
-
-        VK_CHECK_RESULT(vkCreateDescriptorSetLayout(vk_device_,
-                                                    &layout_info,
-                                                    nullptr,
-                                                    &render_pipeline_vk->vk_descriptor_set_layout_))
-    }
+    auto descriptor_set_layout_vk = (DescriptorSetLayoutVk *)descriptor_set_layout.get();
+    auto vk_descriptor_set_layout = descriptor_set_layout_vk->get_vk_layout();
 
     // Create pipeline layout.
     {
         VkPipelineLayoutCreateInfo pipeline_layout_info{};
         pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipeline_layout_info.setLayoutCount = 1;
-        pipeline_layout_info.pSetLayouts = &render_pipeline_vk->vk_descriptor_set_layout_;
+        pipeline_layout_info.pSetLayouts = &vk_descriptor_set_layout;
         pipeline_layout_info.pushConstantRangeCount = 0;
 
         // Create pipeline layout.
@@ -280,46 +282,21 @@ std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
 
 std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(
     const std::shared_ptr<ShaderModule> &comp_shader_module,
-    const std::shared_ptr<DescriptorSet> &descriptor_set,
+    const std::shared_ptr<DescriptorSetLayout> &descriptor_set_layout,
     const std::string &label) {
     auto compute_pipeline_vk = std::shared_ptr<ComputePipelineVk>(new ComputePipelineVk(vk_device_, label));
 
     auto comp_shader_module_vk = (ShaderModuleVk *)comp_shader_module.get();
 
-    // Create descriptor set layout.
-    {
-        std::vector<VkDescriptorSetLayoutBinding> bindings;
-
-        for (auto &pair : descriptor_set->get_descriptors()) {
-            auto &d = pair.second;
-
-            VkDescriptorSetLayoutBinding binding;
-            binding.binding = d.binding;
-            binding.descriptorCount = 1;
-            binding.descriptorType = to_vk_descriptor_type(d.type);
-            binding.pImmutableSamplers = nullptr;
-            binding.stageFlags = to_vk_shader_stage(d.stage);
-
-            bindings.push_back(binding);
-        }
-
-        VkDescriptorSetLayoutCreateInfo layout_info{};
-        layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        layout_info.bindingCount = bindings.size();
-        layout_info.pBindings = bindings.data();
-
-        VK_CHECK_RESULT(vkCreateDescriptorSetLayout(vk_device_,
-                                                    &layout_info,
-                                                    nullptr,
-                                                    &compute_pipeline_vk->vk_descriptor_set_layout_))
-    }
+    auto descriptor_set_layout_vk = (DescriptorSetLayoutVk *)descriptor_set_layout.get();
+    auto vk_descriptor_set_layout = descriptor_set_layout_vk->get_vk_layout();
 
     // Create pipeline layout.
     {
         VkPipelineLayoutCreateInfo pipeline_layout_info{};
         pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipeline_layout_info.setLayoutCount = 1;
-        pipeline_layout_info.pSetLayouts = &compute_pipeline_vk->vk_descriptor_set_layout_;
+        pipeline_layout_info.pSetLayouts = &vk_descriptor_set_layout;
         pipeline_layout_info.pushConstantRangeCount = 0;
 
         // Create pipeline layout.

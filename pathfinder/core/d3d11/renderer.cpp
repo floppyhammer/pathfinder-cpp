@@ -158,115 +158,171 @@ void RendererD3D11::set_up_pipelines() {
         tile_source = std::vector<char>(std::begin(tile_comp), std::end(tile_comp));
     }
 
-    dice_descriptor_set = device->create_descriptor_set();
+    {
+        std::vector<DescriptorLayout> layouts = {
+            DescriptorLayout{0, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{1, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{2, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{3, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{4, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{5, ShaderStage::Compute, DescriptorType::UniformBuffer, ""},
+            DescriptorLayout{6, ShaderStage::Compute, DescriptorType::UniformBuffer, ""},
+        };
+
+        dice_descriptor_set_layout_ = device->create_descriptor_set_layout(layouts);
+    }
+
+    dice_descriptor_set = device->create_descriptor_set(dice_descriptor_set_layout_);
     dice_descriptor_set->add_or_update({
-        Descriptor::storage(0, ShaderStage::Compute),
-        Descriptor::storage(1, ShaderStage::Compute),
-        Descriptor::storage(2, ShaderStage::Compute),
-        Descriptor::storage(3, ShaderStage::Compute),
-        Descriptor::storage(4, ShaderStage::Compute),
-        Descriptor::uniform(5, ShaderStage::Compute, "bUniform0", allocator->get_buffer(dice_ub0_id)),
-        Descriptor::uniform(6, ShaderStage::Compute, "bUniform1", allocator->get_buffer(dice_ub1_id)),
+        Descriptor::uniform(5, allocator->get_buffer(dice_ub0_id)),
+        Descriptor::uniform(6, allocator->get_buffer(dice_ub1_id)),
     });
 
-    bound_descriptor_set = device->create_descriptor_set();
+    {
+        std::vector<DescriptorLayout> layouts = {
+            DescriptorLayout{0, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{1, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{2, ShaderStage::Compute, DescriptorType::UniformBuffer, ""},
+        };
+
+        bound_descriptor_set_layout_ = device->create_descriptor_set_layout(layouts);
+    }
+
+    bound_descriptor_set = device->create_descriptor_set(bound_descriptor_set_layout_);
     bound_descriptor_set->add_or_update({
-        Descriptor::storage(0, ShaderStage::Compute),
-        Descriptor::storage(1, ShaderStage::Compute),
-        Descriptor::uniform(2, ShaderStage::Compute, "bUniform", allocator->get_buffer(bound_ub_id)),
+        Descriptor::uniform(2, allocator->get_buffer(bound_ub_id)),
     });
 
-    bin_descriptor_set = device->create_descriptor_set();
+    {
+        std::vector<DescriptorLayout> layouts = {
+            DescriptorLayout{0, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{1, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{2, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{3, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{4, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{5, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{6, ShaderStage::Compute, DescriptorType::UniformBuffer, ""},
+        };
+
+        bin_descriptor_set_layout_ = device->create_descriptor_set_layout(layouts);
+    }
+
+    bin_descriptor_set = device->create_descriptor_set(bin_descriptor_set_layout_);
     bin_descriptor_set->add_or_update({
-        Descriptor::storage(0, ShaderStage::Compute),
-        Descriptor::storage(1, ShaderStage::Compute),
-        Descriptor::storage(2, ShaderStage::Compute),
-        Descriptor::storage(3, ShaderStage::Compute),
-        Descriptor::storage(4, ShaderStage::Compute),
-        Descriptor::storage(5, ShaderStage::Compute),
-        Descriptor::uniform(6, ShaderStage::Compute, "bUniform", allocator->get_buffer(bin_ub_id)),
+        Descriptor::uniform(6, allocator->get_buffer(bin_ub_id)),
     });
 
-    propagate_descriptor_set = device->create_descriptor_set();
+    {
+        std::vector<DescriptorLayout> layouts = {
+            DescriptorLayout{0, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{1, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{2, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{3, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{4, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{5, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{6, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{7, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{8, ShaderStage::Compute, DescriptorType::UniformBuffer, ""},
+        };
+
+        propagate_descriptor_set_layout_ = device->create_descriptor_set_layout(layouts);
+    }
+
+    propagate_descriptor_set = device->create_descriptor_set(propagate_descriptor_set_layout_);
     propagate_descriptor_set->add_or_update({
-        Descriptor::storage(0, ShaderStage::Compute),
-        Descriptor::storage(1, ShaderStage::Compute),
-        Descriptor::storage(2, ShaderStage::Compute),
-        Descriptor::storage(3, ShaderStage::Compute),
-        Descriptor::storage(4, ShaderStage::Compute),
-        Descriptor::storage(5, ShaderStage::Compute),
-        Descriptor::storage(6, ShaderStage::Compute),
-        Descriptor::storage(7, ShaderStage::Compute),
-        Descriptor::uniform(8, ShaderStage::Compute, "bUniform", allocator->get_buffer(propagate_ub_id)),
+        Descriptor::uniform(8, allocator->get_buffer(propagate_ub_id)),
     });
 
-    sort_descriptor_set = device->create_descriptor_set();
+    {
+        std::vector<DescriptorLayout> layouts = {
+            DescriptorLayout{0, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{1, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{2, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{3, ShaderStage::Compute, DescriptorType::UniformBuffer, ""},
+        };
+
+        sort_descriptor_set_layout_ = device->create_descriptor_set_layout(layouts);
+    }
+
+    sort_descriptor_set = device->create_descriptor_set(sort_descriptor_set_layout_);
     sort_descriptor_set->add_or_update({
-        Descriptor::storage(0, ShaderStage::Compute),
-        Descriptor::storage(1, ShaderStage::Compute),
-        Descriptor::storage(2, ShaderStage::Compute),
-        Descriptor::uniform(3, ShaderStage::Compute, "bUniform", allocator->get_buffer(sort_ub_id)),
+        Descriptor::uniform(3, allocator->get_buffer(sort_ub_id)),
     });
 
-    fill_descriptor_set = device->create_descriptor_set();
+    {
+        std::vector<DescriptorLayout> layouts = {
+            DescriptorLayout{0, ShaderStage::Compute, DescriptorType::StorageBuffer, ""}, // Read only.
+            DescriptorLayout{1, ShaderStage::Compute, DescriptorType::StorageBuffer, ""}, // Read only.
+            DescriptorLayout{2, ShaderStage::Compute, DescriptorType::StorageBuffer, ""}, // Read only.
+            DescriptorLayout{3, ShaderStage::Compute, DescriptorType::Image, ""},
+            DescriptorLayout{4, ShaderStage::Compute, DescriptorType::Sampler, ""},
+            DescriptorLayout{5, ShaderStage::Compute, DescriptorType::UniformBuffer, ""},
+        };
+
+        fill_descriptor_set_layout_ = device->create_descriptor_set_layout(layouts);
+    }
+
+    fill_descriptor_set = device->create_descriptor_set(fill_descriptor_set_layout_);
     fill_descriptor_set->add_or_update({
-        Descriptor::storage(0, ShaderStage::Compute), // Read only.
-        Descriptor::storage(1, ShaderStage::Compute), // Read only.
-        Descriptor::storage(2, ShaderStage::Compute), // Read only.
-        Descriptor::image(3, ShaderStage::Compute, "uDest"),
         Descriptor::sampled(4,
-                            ShaderStage::Compute,
-                            "uAreaLUT",
+
                             allocator->get_texture(area_lut_texture_id),
                             default_sampler),
-        Descriptor::uniform(5, ShaderStage::Compute, "bUniform", allocator->get_buffer(fill_ub_id)),
+        Descriptor::uniform(5, allocator->get_buffer(fill_ub_id)),
     });
 
-    tile_descriptor_set = device->create_descriptor_set();
+    {
+        std::vector<DescriptorLayout> layouts = {
+            DescriptorLayout{0, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{1, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
+            DescriptorLayout{2, ShaderStage::Compute, DescriptorType::Sampler, ""},
+            DescriptorLayout{3, ShaderStage::Compute, DescriptorType::Sampler, ""},
+            DescriptorLayout{4, ShaderStage::Compute, DescriptorType::Sampler, ""},
+            DescriptorLayout{5, ShaderStage::Compute, DescriptorType::Sampler, ""},
+            DescriptorLayout{6, ShaderStage::Compute, DescriptorType::Sampler, ""},
+            DescriptorLayout{7, ShaderStage::Compute, DescriptorType::Image, ""}, // Unused binding.
+            DescriptorLayout{8, ShaderStage::Compute, DescriptorType::UniformBuffer, ""},
+        };
+
+        tile_descriptor_set_layout_ = device->create_descriptor_set_layout(layouts);
+    }
+
+    tile_descriptor_set = device->create_descriptor_set(tile_descriptor_set_layout_);
     tile_descriptor_set->add_or_update({
-        Descriptor::storage(0, ShaderStage::Compute),
-        Descriptor::storage(1, ShaderStage::Compute),
-        Descriptor::sampled(2, ShaderStage::Compute, "uTextureMetadata"),
-        Descriptor::sampled(3, ShaderStage::Compute, "uZBuffer"),
-        Descriptor::sampled(4, ShaderStage::Compute, "uColorTexture0"),
-        Descriptor::sampled(5, ShaderStage::Compute, "uMaskTexture0"),
         Descriptor::sampled(6,
-                            ShaderStage::Compute,
-                            "uGammaLUT",
                             allocator->get_texture(dummy_texture_id),
                             default_sampler), // Unused binding.
-        Descriptor::image(7, ShaderStage::Compute, "uDestImage"),
-        Descriptor::uniform(8, ShaderStage::Compute, "bUniform", allocator->get_buffer(tile_ub_id)),
+        Descriptor::uniform(8, allocator->get_buffer(tile_ub_id)),
     });
 
     // These pipelines will be called by order.
     dice_pipeline =
         device->create_compute_pipeline(device->create_shader_module(dice_source, ShaderStage::Compute, "dice comp"),
-                                        dice_descriptor_set,
+                                        dice_descriptor_set_layout_,
                                         "dice pipeline"); // 1
     bound_pipeline =
         device->create_compute_pipeline(device->create_shader_module(bound_source, ShaderStage::Compute, "bound comp"),
-                                        bound_descriptor_set,
+                                        bound_descriptor_set_layout_,
                                         "bound pipeline"); // 2
     bin_pipeline =
         device->create_compute_pipeline(device->create_shader_module(bin_source, ShaderStage::Compute, "bin comp"),
-                                        bin_descriptor_set,
+                                        bin_descriptor_set_layout_,
                                         "bin pipeline"); // 3
     propagate_pipeline = device->create_compute_pipeline(
         device->create_shader_module(propagate_source, ShaderStage::Compute, "propagate comp"),
-        propagate_descriptor_set,
+        propagate_descriptor_set_layout_,
         "propagate pipeline"); // 4
     fill_pipeline =
         device->create_compute_pipeline(device->create_shader_module(fill_source, ShaderStage::Compute, "fill comp"),
-                                        fill_descriptor_set,
+                                        fill_descriptor_set_layout_,
                                         "fill pipeline"); // 5
     sort_pipeline =
         device->create_compute_pipeline(device->create_shader_module(sort_source, ShaderStage::Compute, "sort comp"),
-                                        sort_descriptor_set,
+                                        sort_descriptor_set_layout_,
                                         "sort pipeline"); // 6
     tile_pipeline =
         device->create_compute_pipeline(device->create_shader_module(tile_source, ShaderStage::Compute, "tile comp"),
-                                        tile_descriptor_set,
+                                        tile_descriptor_set_layout_,
                                         "tile pipeline"); // 7
 }
 
@@ -393,26 +449,14 @@ void RendererD3D11::draw_tiles(uint64_t tiles_d3d11_buffer_id,
     // Update descriptor set.
     tile_descriptor_set->add_or_update({
         // Read only.
-        Descriptor::storage(0, ShaderStage::Compute, allocator->get_buffer(tiles_d3d11_buffer_id)),
+        Descriptor::storage(0, allocator->get_buffer(tiles_d3d11_buffer_id)),
         // Read only.
-        Descriptor::storage(1, ShaderStage::Compute, allocator->get_buffer(first_tile_map_buffer_id)),
-        Descriptor::sampled(2,
-                            ShaderStage::Compute,
-                            "uTextureMetadata",
-                            allocator->get_texture(metadata_texture_id),
-                            default_sampler),
-        Descriptor::sampled(3,
-                            ShaderStage::Compute,
-                            "uZBuffer",
-                            allocator->get_texture(dummy_texture_id),
-                            default_sampler),
-        Descriptor::sampled(4, ShaderStage::Compute, "uColorTexture0", color_texture, color_texture_sampler),
-        Descriptor::sampled(5,
-                            ShaderStage::Compute,
-                            "uMaskTexture0",
-                            allocator->get_texture(*mask_storage.texture_id),
-                            default_sampler),
-        Descriptor::image(7, ShaderStage::Compute, "uDestImage", target_texture),
+        Descriptor::storage(1, allocator->get_buffer(first_tile_map_buffer_id)),
+        Descriptor::sampled(2, allocator->get_texture(metadata_texture_id), default_sampler),
+        Descriptor::sampled(3, allocator->get_texture(dummy_texture_id), default_sampler),
+        Descriptor::sampled(4, color_texture, color_texture_sampler),
+        Descriptor::sampled(5, allocator->get_texture(*mask_storage.texture_id), default_sampler),
+        Descriptor::image(7, target_texture),
     });
 
     encoder->begin_compute_pass();
@@ -663,15 +707,15 @@ std::shared_ptr<MicrolinesBufferIDsD3D11> RendererD3D11::dice_segments(std::vect
     // Bind storage buffers.
     dice_descriptor_set->add_or_update({
         // Read and write.
-        Descriptor::storage(0, ShaderStage::Compute, indirect_draw_params_buffer),
+        Descriptor::storage(0, indirect_draw_params_buffer),
         // Read only.
-        Descriptor::storage(1, ShaderStage::Compute, dice_metadata_buffer),
+        Descriptor::storage(1, dice_metadata_buffer),
         // Read only.
-        Descriptor::storage(2, ShaderStage::Compute, points_buffer),
+        Descriptor::storage(2, points_buffer),
         // Read only.
-        Descriptor::storage(3, ShaderStage::Compute, point_indices_buffer),
+        Descriptor::storage(3, point_indices_buffer),
         // Write only.
-        Descriptor::storage(4, ShaderStage::Compute, microlines_buffer),
+        Descriptor::storage(4, microlines_buffer),
     });
 
     encoder->begin_compute_pass();
@@ -736,9 +780,9 @@ void RendererD3D11::bound(uint64_t tiles_d3d11_buffer_id,
     // Update the descriptor set.
     bound_descriptor_set->add_or_update({
         // Read only.
-        Descriptor::storage(0, ShaderStage::Compute, tile_path_info_buffer),
+        Descriptor::storage(0, tile_path_info_buffer),
         // Write only.
-        Descriptor::storage(1, ShaderStage::Compute, allocator->get_buffer(tiles_d3d11_buffer_id)),
+        Descriptor::storage(1, allocator->get_buffer(tiles_d3d11_buffer_id)),
     });
 
     encoder->begin_compute_pass();
@@ -786,19 +830,19 @@ std::shared_ptr<FillBufferInfoD3D11> RendererD3D11::bin_segments(
     // Update the descriptor set.
     bin_descriptor_set->add_or_update({
         // Read only.
-        Descriptor::storage(0, ShaderStage::Compute, allocator->get_buffer(microlines_storage.buffer_id)),
+        Descriptor::storage(0, allocator->get_buffer(microlines_storage.buffer_id)),
         // Read only.
         Descriptor::storage(1,
-                            ShaderStage::Compute,
+
                             allocator->get_buffer(propagate_metadata_buffer_ids.propagate_metadata)),
         // Read and write.
-        Descriptor::storage(2, ShaderStage::Compute, z_buffer),
+        Descriptor::storage(2, z_buffer),
         // Write only.
-        Descriptor::storage(3, ShaderStage::Compute, allocator->get_buffer(fill_vertex_buffer_id)),
+        Descriptor::storage(3, allocator->get_buffer(fill_vertex_buffer_id)),
         // Read and write.
-        Descriptor::storage(4, ShaderStage::Compute, allocator->get_buffer(tiles_d3d11_buffer_id)),
+        Descriptor::storage(4, allocator->get_buffer(tiles_d3d11_buffer_id)),
         // Read and write.
-        Descriptor::storage(5, ShaderStage::Compute, allocator->get_buffer(propagate_metadata_buffer_ids.backdrops)),
+        Descriptor::storage(5, allocator->get_buffer(propagate_metadata_buffer_ids.backdrops)),
     });
 
     encoder->begin_compute_pass();
@@ -876,17 +920,17 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
     {
         propagate_descriptor_set->add_or_update({
             // Read only.
-            Descriptor::storage(0, ShaderStage::Compute, propagate_metadata_buffer),
+            Descriptor::storage(0, propagate_metadata_buffer),
             // Read only.
-            Descriptor::storage(2, ShaderStage::Compute, backdrops_buffer),
+            Descriptor::storage(2, backdrops_buffer),
             // Read and write.
-            Descriptor::storage(3, ShaderStage::Compute, tiles_d3d11_buffer),
+            Descriptor::storage(3, tiles_d3d11_buffer),
             // Read and write.
-            Descriptor::storage(5, ShaderStage::Compute, z_buffer),
+            Descriptor::storage(5, z_buffer),
             // Read and write.
-            Descriptor::storage(6, ShaderStage::Compute, first_tile_map_buffer),
+            Descriptor::storage(6, first_tile_map_buffer),
             // Write only.
-            Descriptor::storage(7, ShaderStage::Compute, alpha_tiles_buffer),
+            Descriptor::storage(7, alpha_tiles_buffer),
         });
 
         if (clip_buffer_ids) {
@@ -895,14 +939,14 @@ PropagateTilesInfoD3D11 RendererD3D11::propagate_tiles(uint32_t column_count,
 
             propagate_descriptor_set->add_or_update({
                 // Read only.
-                Descriptor::storage(1, ShaderStage::Compute, clip_metadata_buffer),
+                Descriptor::storage(1, clip_metadata_buffer),
                 // Read and write.
-                Descriptor::storage(4, ShaderStage::Compute, clip_tile_buffer),
+                Descriptor::storage(4, clip_tile_buffer),
             });
         } else { // Placeholders.
             propagate_descriptor_set->add_or_update({
-                Descriptor::storage(1, ShaderStage::Compute, propagate_metadata_buffer),
-                Descriptor::storage(4, ShaderStage::Compute, tiles_d3d11_buffer),
+                Descriptor::storage(1, propagate_metadata_buffer),
+                Descriptor::storage(4, tiles_d3d11_buffer),
             });
         }
     }
@@ -962,12 +1006,12 @@ void RendererD3D11::draw_fills(FillBufferInfoD3D11 &fill_storage_info,
     // Update descriptor set.
     fill_descriptor_set->add_or_update({
         // Read only.
-        Descriptor::storage(0, ShaderStage::Compute, fill_vertex_buffer),
+        Descriptor::storage(0, fill_vertex_buffer),
         // Read only.
-        Descriptor::storage(1, ShaderStage::Compute, tiles_d3d11_buffer),
+        Descriptor::storage(1, tiles_d3d11_buffer),
         // Read only.
-        Descriptor::storage(2, ShaderStage::Compute, alpha_tiles_buffer),
-        Descriptor::image(3, ShaderStage::Compute, "uDest", allocator->get_texture(*mask_storage.texture_id)),
+        Descriptor::storage(2, alpha_tiles_buffer),
+        Descriptor::image(3, allocator->get_texture(*mask_storage.texture_id)),
     });
 
     encoder->begin_compute_pass();
@@ -1000,11 +1044,11 @@ void RendererD3D11::sort_tiles(uint64_t tiles_d3d11_buffer_id,
     // Update the descriptor set.
     sort_descriptor_set->add_or_update({
         // Read and write.
-        Descriptor::storage(0, ShaderStage::Compute, tiles_d3d11_buffer),
+        Descriptor::storage(0, tiles_d3d11_buffer),
         // Read and write.
-        Descriptor::storage(1, ShaderStage::Compute, first_tile_map_buffer),
+        Descriptor::storage(1, first_tile_map_buffer),
         // Read only.
-        Descriptor::storage(2, ShaderStage::Compute, z_buffer),
+        Descriptor::storage(2, z_buffer),
     });
 
     encoder->begin_compute_pass();

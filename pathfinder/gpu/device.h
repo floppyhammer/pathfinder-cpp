@@ -36,7 +36,10 @@ public:
 
     virtual std::shared_ptr<CommandEncoder> create_command_encoder(const std::string &label) = 0;
 
-    virtual std::shared_ptr<DescriptorSet> create_descriptor_set() = 0;
+    virtual std::shared_ptr<DescriptorSetLayout> create_descriptor_set_layout(
+        const std::vector<DescriptorLayout> &descriptors) = 0;
+
+    virtual std::shared_ptr<DescriptorSet> create_descriptor_set(std::shared_ptr<DescriptorSetLayout> layout) = 0;
 
     virtual std::shared_ptr<RenderPass> create_render_pass(TextureFormat format,
                                                            AttachmentLoadOp load_op,
@@ -54,13 +57,13 @@ public:
         const std::shared_ptr<ShaderModule> &frag_shader_module,
         const std::vector<VertexInputAttributeDescription> &attribute_descriptions,
         BlendState blend_state,
-        const std::shared_ptr<DescriptorSet> &descriptor_set,
+        const std::shared_ptr<DescriptorSetLayout> &descriptor_set_layout,
         TextureFormat target_format,
         const std::string &label) = 0;
 
     virtual std::shared_ptr<ComputePipeline> create_compute_pipeline(
         const std::shared_ptr<ShaderModule> &comp_shader_module,
-        const std::shared_ptr<DescriptorSet> &descriptor_set,
+        const std::shared_ptr<DescriptorSetLayout> &descriptor_set_layout,
         const std::string &label) = 0;
 
     virtual std::shared_ptr<Fence> create_fence(const std::string &label) = 0;
@@ -72,7 +75,7 @@ public:
     }
 
 protected:
-    BackendType backend_type;
+    BackendType backend_type = BackendType::Vulkan;
 };
 
 } // namespace Pathfinder

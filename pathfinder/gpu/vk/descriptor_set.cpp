@@ -14,12 +14,14 @@ void DescriptorSetVk::update_vk_descriptor_set(VkDevice vk_device, VkDescriptorS
         return;
     }
 
+    auto descriptor_layouts = layout_->get_descriptor_layouts();
+
     // Create descriptor pool and allocate descriptor sets.
     if (!descriptor_set_allocated_) {
         // Get pool sizes.
         std::vector<VkDescriptorPoolSize> pool_sizes{};
 
-        for (auto &d : descriptors) {
+        for (auto &d : descriptor_layouts) {
             VkDescriptorPoolSize pool_size{};
             pool_size.descriptorCount = 1;
 

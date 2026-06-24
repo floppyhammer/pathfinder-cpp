@@ -197,6 +197,10 @@ private:
     /// Uniform buffers.
     uint64_t bin_ub_id, bound_ub_id, dice_ub0_id, dice_ub1_id, fill_ub_id, propagate_ub_id, sort_ub_id, tile_ub_id;
 
+    std::shared_ptr<DescriptorSetLayout> bound_descriptor_set_layout_, dice_descriptor_set_layout_,
+        bin_descriptor_set_layout_, propagate_descriptor_set_layout_, sort_descriptor_set_layout_,
+        fill_descriptor_set_layout_, tile_descriptor_set_layout_;
+
     std::shared_ptr<DescriptorSet> bound_descriptor_set, dice_descriptor_set, bin_descriptor_set,
         propagate_descriptor_set, sort_descriptor_set, fill_descriptor_set, tile_descriptor_set;
 

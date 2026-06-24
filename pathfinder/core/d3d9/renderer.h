@@ -52,6 +52,9 @@ private:
     std::shared_ptr<RenderPipeline> fill_pipeline, tile_pipeline;
     std::shared_ptr<RenderPipeline> tile_clip_copy_pipeline, tile_clip_combine_pipeline; // For clip paths.
 
+    std::shared_ptr<DescriptorSetLayout> fill_descriptor_set_layout_, tile_clip_copy_descriptor_set_layout_,
+        tile_clip_combine_descriptor_set_layout_, tile_descriptor_set_layout_;
+
     /// Descriptor sets.
     std::shared_ptr<DescriptorSet> fill_descriptor_set;
     std::shared_ptr<DescriptorSet> tile_clip_copy_descriptor_set, tile_clip_combine_descriptor_set; // For clip paths.

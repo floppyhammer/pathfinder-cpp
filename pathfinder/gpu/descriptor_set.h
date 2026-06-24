@@ -2,6 +2,7 @@
 #define PATHFINDER_GPU_DESCRIPTOR_SET_H
 
 #include <cstdint>
+#include <map>
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -12,16 +13,43 @@
 
 namespace Pathfinder {
 
-struct Descriptor {
-    DescriptorType type{};
-
+struct DescriptorLayout {
+    uint32_t binding{};
     ShaderStage stage{};
+    DescriptorType type{};
+    /// For compatibility with lower versions of OpenGL.
+    std::string binding_name;
+};
 
+class DescriptorSetLayout {
+    friend class DeviceGl;
+
+public:
+    virtual ~DescriptorSetLayout() = default;
+
+    const std::map<uint32_t, DescriptorLayout>& get_descriptor_layouts() const {
+        return layouts;
+    }
+
+    const DescriptorLayout& get_descriptor_layout(uint32_t binding) const {
+        return layouts.at(binding);
+    }
+
+protected:
+    explicit DescriptorSetLayout(const std::vector<DescriptorLayout>& _layouts) {
+        for (const auto& l : _layouts) {
+            layouts[l.binding] = l;
+        }
+    }
+
+    std::map<uint32_t, DescriptorLayout> layouts;
+};
+
+struct Descriptor {
     /// Binding point.
     uint32_t binding{};
 
-    /// For compatibility with lower versions of OpenGL.
-    std::string binding_name;
+    DescriptorType type{};
 
     /// 1. For buffer
     std::shared_ptr<Buffer> buffer;
@@ -35,8 +63,6 @@ struct Descriptor {
     std::shared_ptr<Sampler> sampler;
 
     static Descriptor uniform(uint32_t binding,
-                              ShaderStage stage,
-                              const std::string& binding_name,
                               const std::shared_ptr<Buffer>& buffer = nullptr,
                               uint64_t buffer_offset = 0,
                               uint64_t buffer_range = 0) {
@@ -47,8 +73,6 @@ struct Descriptor {
         Descriptor desc{};
         desc.type = DescriptorType::UniformBuffer;
         desc.binding = binding;
-        desc.binding_name = binding_name;
-        desc.stage = stage;
         desc.buffer = buffer;
         desc.buffer_offset = buffer_offset;
         desc.buffer_range = buffer_range;
@@ -61,15 +85,11 @@ struct Descriptor {
     }
 
     static Descriptor sampled(uint32_t binding,
-                              ShaderStage stage,
-                              const std::string& binding_name,
                               const std::shared_ptr<Texture>& texture = nullptr,
                               const std::shared_ptr<Sampler>& sampler = nullptr) {
         Descriptor desc{};
         desc.type = DescriptorType::Sampler;
-        desc.stage = stage;
         desc.binding = binding;
-        desc.binding_name = binding_name;
         desc.texture = texture;
         desc.sampler = sampler;
 
@@ -77,7 +97,6 @@ struct Descriptor {
     }
 
     static Descriptor storage(uint32_t binding,
-                              ShaderStage stage,
                               const std::shared_ptr<Buffer>& buffer = nullptr,
                               uint64_t buffer_offset = 0,
                               uint64_t buffer_range = 0) {
@@ -88,7 +107,6 @@ struct Descriptor {
         Descriptor desc{};
         desc.type = DescriptorType::StorageBuffer;
         desc.binding = binding;
-        desc.stage = stage;
         desc.buffer = buffer;
         desc.buffer_offset = buffer_offset;
         desc.buffer_range = buffer_range;
@@ -97,14 +115,10 @@ struct Descriptor {
     }
 
     static Descriptor image(uint32_t binding,
-                            ShaderStage stage,
-                            const std::string& binding_name,
                             const std::shared_ptr<Texture>& texture = nullptr) {
         Descriptor desc{};
         desc.type = DescriptorType::Image;
-        desc.stage = stage;
         desc.binding = binding;
-        desc.binding_name = binding_name;
         desc.texture = texture;
 
         return desc;
@@ -130,16 +144,22 @@ public:
         dirty = true;
     }
 
-    const std::unordered_map<uint32_t, Descriptor>& get_descriptors() const {
+    const std::map<uint32_t, Descriptor>& get_descriptors() const {
         return descriptors;
     }
 
-protected:
-    DescriptorSet() = default;
+    std::shared_ptr<DescriptorSetLayout> get_layout() const {
+        return layout_;
+    }
 
 protected:
+    explicit DescriptorSet(const std::shared_ptr<DescriptorSetLayout>& layout) : layout_(layout) {}
+
+protected:
+    std::shared_ptr<DescriptorSetLayout> layout_;
+
     /// Binding point is used as the hashing key.
-    std::unordered_map<uint32_t, Descriptor> descriptors;
+    std::map<uint32_t, Descriptor> descriptors;
 
     bool dirty = false;
 };

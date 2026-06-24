@@ -31,6 +31,8 @@ protected:
 
     BlendState blend_state_{};
 
+    std::shared_ptr<DescriptorSetLayout> layout_;
+    
     /// Debug label.
     std::string label_;
 };
