@@ -18,12 +18,9 @@ Blit::Blit(const std::shared_ptr<Device> &device, const std::shared_ptr<Queue> &
     // Set up vertex data (and buffer(s)) and configure vertex attributes.
     constexpr float vertices[] = {
         // Positions, UVs.
-        -1.0, -1.0, 0.0, 0.0, // 0
-        1.0,  -1.0, 1.0, 0.0, // 1
-        1.0,  1.0,  1.0, 1.0, // 2
-        -1.0, -1.0, 0.0, 0.0, // 3
-        1.0,  1.0,  1.0, 1.0, // 4
-        -1.0, 1.0,  0.0, 1.0  // 5
+        -1.0, -1.0, 0.0, 0.0,
+         3.0, -1.0, 2.0, 0.0,
+        -1.0,  3.0, 0.0, 2.0
     };
 
     vertex_buffer_ = device->create_buffer({BufferType::Vertex, sizeof(vertices), MemoryProperty::DeviceLocal},
@@ -95,5 +92,5 @@ void Blit::draw(const std::shared_ptr<CommandEncoder> &encoder) {
 
     encoder->bind_descriptor_set(descriptor_set_);
 
-    encoder->draw(0, 6);
+    encoder->draw(0, 3);
 }
