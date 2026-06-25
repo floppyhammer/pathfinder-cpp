@@ -10,8 +10,9 @@ class RenderPassGl : public RenderPass {
     friend class SwapChainGl;
 
 private:
-    explicit RenderPassGl(AttachmentLoadOp load_op) {
+    RenderPassGl(AttachmentLoadOp load_op, const std::string &label) {
         load_op_ = load_op;
+        label_ = label;
     }
 };
 

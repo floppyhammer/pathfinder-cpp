@@ -10,7 +10,7 @@ SwapChainGl::SwapChainGl(const Vec2I size, void *window_handle) : SwapChain(size
 
     command_encoder_ = std::shared_ptr<CommandEncoderGl>(new CommandEncoderGl());
 
-    render_pass_ = std::shared_ptr<RenderPassGl>(new RenderPassGl(AttachmentLoadOp::Clear));
+    render_pass_ = std::shared_ptr<RenderPassGl>(new RenderPassGl(AttachmentLoadOp::Clear, "Swapchain Render Pass"));
 }
 #else
 SwapChainGl::SwapChainGl(Vec2I size, EGLDisplay egl_display, EGLSurface egl_surface, EGLContext egl_context)

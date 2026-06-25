@@ -62,11 +62,11 @@ std::shared_ptr<CommandEncoder> DeviceGl::create_command_encoder(const std::stri
 std::shared_ptr<RenderPass> DeviceGl::create_render_pass(TextureFormat format,
                                                          AttachmentLoadOp load_op,
                                                          const std::string &label) {
-    return std::shared_ptr<RenderPassGl>(new RenderPassGl(load_op));
+    return std::shared_ptr<RenderPassGl>(new RenderPassGl(load_op, label));
 }
 
 std::shared_ptr<RenderPass> DeviceGl::create_swap_chain_render_pass(TextureFormat format, AttachmentLoadOp load_op) {
-    return std::shared_ptr<RenderPassGl>(new RenderPassGl(load_op));
+    return std::shared_ptr<RenderPassGl>(new RenderPassGl(load_op, "Swapchain Render Pass"));
 }
 
 std::shared_ptr<ShaderModule> DeviceGl::create_shader_module(const std::vector<char> &source_code,

@@ -42,8 +42,6 @@ bool CommandEncoderGl::finish() {
                 }
 
                 gl_check_error("BeginRenderPass");
-
-                int a = 1;
             } break;
             case CommandType::SetViewport: {
                 auto &args = cmd.args.set_viewport;
