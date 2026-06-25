@@ -182,8 +182,12 @@ bool CommandEncoderGl::finish() {
                         case DescriptorType::UniformBuffer: {
                             auto buffer_gl = static_cast<BufferGl *>(descriptor.buffer.get());
 
-                            unsigned int ubo_index = glGetUniformBlockIndex(program_id, binding_name.c_str());
-                            glUniformBlockBinding(program_id, ubo_index, binding_point);
+                            // Only for GLES 3.0
+                            if (!binding_name.empty()) {
+                                unsigned int ubo_index = glGetUniformBlockIndex(program_id, binding_name.c_str());
+                                glUniformBlockBinding(program_id, ubo_index, binding_point);
+                            }
+
                             glBindBufferRange(GL_UNIFORM_BUFFER,
                                               binding_point,
                                               buffer_gl->get_handle(),
@@ -195,12 +199,14 @@ bool CommandEncoderGl::finish() {
                         case DescriptorType::Sampler: {
                             auto texture_gl = static_cast<TextureGl *>(descriptor.texture.get());
 
+                            // Only for GLES 3.0
                             if (!binding_name.empty()) {
                                 glUniform1i(glGetUniformLocation(program_id, binding_name.c_str()),
                                             (GLint)binding_point);
 
                                 gl_check_error("Mismatched texture binding name!");
                             }
+
                             glActiveTexture(GL_TEXTURE0 + binding_point);
 
                             auto sampler_descriptor = descriptor.sampler->get_descriptor();
