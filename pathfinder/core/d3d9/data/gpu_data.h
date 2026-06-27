@@ -21,10 +21,10 @@ struct TileObjectPrimitive {
     int16_t tile_x = 0;
     int16_t tile_y = 0;
     AlphaTileId alpha_tile_id;
+    uint32_t path_id = 0;
     uint8_t ctrl = 0; // Fill rule
     int8_t backdrop = 0;
-    uint32_t path_id = 0;
-    uint32_t metadata_id = 0;
+    uint16_t metadata_id = 0;
 };
 
 /// A vector of this will be sent the tile clip copy program.

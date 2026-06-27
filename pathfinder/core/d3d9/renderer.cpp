@@ -195,11 +195,11 @@ void RendererD3D9::set_up_pipelines() {
             attribute_descriptions.push_back(
                 {1, 4, DataType::u8, stride, offsetof(TileObjectPrimitive, alpha_tile_id), VertexInputRate::Instance});
             attribute_descriptions.push_back(
-                {1, 2, DataType::i8, stride, offsetof(TileObjectPrimitive, ctrl), VertexInputRate::Instance});
-            attribute_descriptions.push_back(
                 {1, 1, DataType::i32, stride, offsetof(TileObjectPrimitive, path_id), VertexInputRate::Instance});
             attribute_descriptions.push_back(
-                {1, 1, DataType::u32, stride, offsetof(TileObjectPrimitive, metadata_id), VertexInputRate::Instance});
+                {1, 2, DataType::i8, stride, offsetof(TileObjectPrimitive, ctrl), VertexInputRate::Instance});
+            attribute_descriptions.push_back(
+                {1, 1, DataType::u16, stride, offsetof(TileObjectPrimitive, metadata_id), VertexInputRate::Instance});
         }
 
         {

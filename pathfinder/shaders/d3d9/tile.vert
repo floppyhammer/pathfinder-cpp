@@ -39,8 +39,8 @@ layout(std140) uniform bUniform {
 layout(location = 0) in uvec2 aTileOffset; // Tile local coordinates
 layout(location = 1) in ivec2 aTileOrigin; // Tile index
 layout(location = 2) in uvec4 aMaskTexCoord0;
-layout(location = 3) in ivec2 aCtrlBackdrop;
-layout(location = 4) in int aPathIndex;
+layout(location = 3) in int aPathIndex;
+layout(location = 4) in ivec2 aCtrlBackdrop;
 layout(location = 5) in uint aMetadataIndex;
 
 #ifdef VULKAN
