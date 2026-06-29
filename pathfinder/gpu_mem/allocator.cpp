@@ -9,51 +9,30 @@ uint64_t GpuMemoryAllocator::allocate_buffer(size_t byte_size, BufferType type, 
 
     auto descriptor = BufferDescriptor{type, byte_size, MemoryProperty::HostVisibleAndCoherent};
 
-    auto now = std::chrono::steady_clock::now();
-
-    // Try to find a free object.
-    for (int free_object_index = 0; free_object_index < free_objects.size(); free_object_index++) {
-        auto free_obj = free_objects[free_object_index];
-
-        bool found_free_obj = false;
+    // Try to find a free object in the idle pool.
+    // Anything in idle_pool is confirmed safe by frame-delay.
+    for (int i = 0; i < (int)idle_pool.size(); i++) {
+        auto& free_obj = idle_pool[i];
 
         if (free_obj.kind == FreeObjectKind::Buffer && free_obj.buffer_allocation.descriptor == descriptor) {
-            std::chrono::duration<double> duration = now - free_obj.timestamp;
+            uint64_t id = free_obj.id;
+            BufferAllocation allocation = free_obj.buffer_allocation;
 
-            // Check if this free buffer can be reused.
-            if (duration.count() >= REUSE_TIME) {
-                found_free_obj = true;
-            }
+            idle_pool.erase(idle_pool.begin() + i);
+
+            allocation.tag = tag;
+            allocation.buffer->set_label(tag);
+
+            bytes_committed += byte_size;
+            active_buffers[id] = allocation;
+
+            return id;
         }
-
-        if (!found_free_obj) {
-            continue;
-        }
-
-        // Reuse this free object.
-        free_objects.erase(free_objects.begin() + free_object_index);
-
-        uint64_t id = free_obj.id;
-        BufferAllocation allocation = free_obj.buffer_allocation;
-
-        // Update tag. Also update GPU debug marker.
-        allocation.tag = tag;
-        allocation.buffer->set_label(tag);
-
-        bytes_committed += byte_size;
-        buffers_in_use[id] = allocation;
-
-        return id;
     }
 
-    // Create a new buffer.
-
     auto buffer = device->create_buffer(descriptor, tag);
-
-    auto id = next_buffer_id;
-    next_buffer_id += 1;
-
-    buffers_in_use[id] = BufferAllocation{buffer, descriptor, tag};
+    auto id = next_buffer_id++;
+    active_buffers[id] = BufferAllocation{buffer, descriptor, tag};
 
     bytes_allocated += byte_size;
     bytes_committed += byte_size;
@@ -65,40 +44,31 @@ uint64_t GpuMemoryAllocator::allocate_texture(Vec2I size, TextureFormat format, 
     assert(!size.is_any_zero());
 
     auto descriptor = TextureDescriptor{size, format};
-
     auto byte_size = descriptor.byte_size();
 
-    // Try to find a free object.
-    for (int free_object_index = 0; free_object_index < free_objects.size(); free_object_index++) {
-        auto free_obj = free_objects[free_object_index];
+    // Try to find a free object in the idle pool.
+    for (int i = 0; i < (int)idle_pool.size(); i++) {
+        auto& free_obj = idle_pool[i];
 
-        if (!(free_obj.kind == FreeObjectKind::Texture && free_obj.texture_allocation.descriptor == descriptor)) {
-            continue;
+        if (free_obj.kind == FreeObjectKind::Texture && free_obj.texture_allocation.descriptor == descriptor) {
+            uint64_t id = free_obj.id;
+            auto allocation = free_obj.texture_allocation;
+
+            idle_pool.erase(idle_pool.begin() + i);
+
+            allocation.tag = tag;
+            allocation.texture->set_label(tag);
+
+            bytes_committed += byte_size;
+            active_textures[id] = allocation;
+
+            return id;
         }
-
-        // Reuse this free object.
-        free_objects.erase(free_objects.begin() + free_object_index);
-
-        uint64_t id = free_obj.id;
-        auto allocation = free_obj.texture_allocation;
-
-        // Update tag. Also update GPU debug marker.
-        allocation.tag = tag;
-        allocation.texture->set_label(tag);
-
-        bytes_committed += byte_size;
-        textures_in_use[id] = allocation;
-
-        return id;
     }
 
-    // Create a new texture.
-
     auto texture = device->create_texture(descriptor, tag);
-    auto id = next_texture_id;
-    next_texture_id += 1;
-
-    textures_in_use[id] = TextureAllocation{texture, descriptor, tag};
+    auto id = next_texture_id++;
+    active_textures[id] = TextureAllocation{texture, descriptor, tag};
 
     bytes_allocated += byte_size;
     bytes_committed += byte_size;
@@ -107,18 +77,16 @@ uint64_t GpuMemoryAllocator::allocate_texture(Vec2I size, TextureFormat format, 
 }
 
 void GpuMemoryAllocator::free_buffer(uint64_t id) {
-    if (buffers_in_use.find(id) == buffers_in_use.end()) {
+    auto it = active_buffers.find(id);
+    if (it == active_buffers.end()) {
         Logger::error("Attempted to free unallocated buffer!");
         return;
     }
 
-    auto allocation = buffers_in_use[id];
-
-    buffers_in_use.erase(id);
+    auto allocation = it->second;
+    active_buffers.erase(it);
 
     bytes_committed -= allocation.buffer->get_size();
-
-    // Put the buffer back to the free objects.
 
     FreeObject free_obj;
     free_obj.timestamp = std::chrono::steady_clock::now();
@@ -126,21 +94,21 @@ void GpuMemoryAllocator::free_buffer(uint64_t id) {
     free_obj.id = id;
     free_obj.buffer_allocation = allocation;
 
-    free_objects.push_back(free_obj);
+    // Put into current frame bucket.
+    pending_buckets[current_frame_index % MAX_FRAMES_IN_FLIGHT].objects.push_back(free_obj);
 }
 
 void GpuMemoryAllocator::free_texture(uint64_t id) {
-    if (textures_in_use.find(id) == textures_in_use.end()) {
+    auto it = active_textures.find(id);
+    if (it == active_textures.end()) {
         Logger::error("Attempted to free unallocated texture!");
         return;
     }
 
-    auto allocation = textures_in_use[id];
+    auto allocation = it->second;
+    active_textures.erase(it);
 
-    textures_in_use.erase(id);
-
-    auto byte_size = allocation.descriptor.byte_size();
-    bytes_committed -= byte_size;
+    bytes_committed -= allocation.descriptor.byte_size();
 
     FreeObject free_obj;
     free_obj.timestamp = std::chrono::steady_clock::now();
@@ -148,90 +116,85 @@ void GpuMemoryAllocator::free_texture(uint64_t id) {
     free_obj.id = id;
     free_obj.texture_allocation = allocation;
 
-    free_objects.push_back(free_obj);
+    // Put into current frame bucket.
+    pending_buckets[current_frame_index % MAX_FRAMES_IN_FLIGHT].objects.push_back(free_obj);
 }
 
 std::shared_ptr<Buffer> GpuMemoryAllocator::get_buffer(uint64_t id) {
-    if (buffers_in_use.find(id) == buffers_in_use.end()) {
+    auto it = active_buffers.find(id);
+    if (it == active_buffers.end()) {
         Logger::error("Attempted to get unallocated buffer!");
         return nullptr;
     }
-
-    return buffers_in_use[id].buffer;
+    return it->second.buffer;
 }
 
 std::shared_ptr<Texture> GpuMemoryAllocator::get_texture(uint64_t id) {
-    if (textures_in_use.find(id) == textures_in_use.end()) {
+    auto it = active_textures.find(id);
+    if (it == active_textures.end()) {
         Logger::error("Attempted to get unallocated texture!");
         return nullptr;
     }
+    return it->second.texture;
+}
 
-    return textures_in_use[id].texture;
+void GpuMemoryAllocator::begin_frame() {
+    // Move to next frame.
+    current_frame_index++;
+
+    // Reclaim the bucket we are about to overwrite.
+    // This bucket contains objects that have been "cooling down" for MAX_FRAMES_IN_FLIGHT frames.
+    auto& bucket = pending_buckets[current_frame_index % MAX_FRAMES_IN_FLIGHT];
+    if (!bucket.objects.empty()) {
+        idle_pool.insert(idle_pool.end(), bucket.objects.begin(), bucket.objects.end());
+        bucket.objects.clear();
+    }
 }
 
 void GpuMemoryAllocator::purge_if_needed() {
     auto now = std::chrono::steady_clock::now();
-
     bool purge_happened = false;
 
-    while (true) {
-        if (free_objects.empty()) {
-            break;
-        }
-
-        // Has to be copied by value.
-        auto oldest_free_obj = free_objects.front();
-
-        std::chrono::duration<double> duration = now - oldest_free_obj.timestamp;
-        // If the first free object has not decayed, so do the rest free objects.
-        if (duration.count() < DECAY_TIME) {
-            break;
-        }
-
-        switch (free_objects.front().kind) {
-            case FreeObjectKind::Buffer: {
-                Logger::debug("Purging buffer: " + oldest_free_obj.buffer_allocation.tag);
-
-                free_objects.erase(free_objects.begin());
-                bytes_allocated -= oldest_free_obj.buffer_allocation.buffer->get_size();
-
-                purge_happened = true;
-            } break;
-            case FreeObjectKind::Texture: {
-                Logger::debug("Purging texture: " + oldest_free_obj.texture_allocation.tag);
-
-                free_objects.erase(free_objects.begin());
-                bytes_allocated -= oldest_free_obj.texture_allocation.descriptor.byte_size();
-
-                purge_happened = true;
-            } break;
-            default:
-                break;
+    for (auto it = idle_pool.begin(); it != idle_pool.end();) {
+        std::chrono::duration<double> duration = now - it->timestamp;
+        if (duration.count() >= DECAY_TIME) {
+            if (it->kind == FreeObjectKind::Buffer) {
+                bytes_allocated -= it->buffer_allocation.buffer->get_size();
+            } else {
+                bytes_allocated -= it->texture_allocation.descriptor.byte_size();
+            }
+            it = idle_pool.erase(it);
+            purge_happened = true;
+        } else {
+            ++it;
         }
     }
 
-    if (purge_happened) {
-        print_info();
-    }
+    if (purge_happened) print_info();
 }
 
 void GpuMemoryAllocator::print_info() {
-    size_t texture_count = textures_in_use.size();
-    size_t buffer_count = buffers_in_use.size();
-    size_t free_object_count = free_objects.size();
+    size_t texture_count = active_textures.size();
+    size_t buffer_count = active_buffers.size();
+
+    size_t idle_count = idle_pool.size();
+    size_t pending_count = 0;
+    for (const auto& bucket : pending_buckets) {
+        pending_count += bucket.objects.size();
+    }
 
     Logger::debug("Current status: ALLOCATED " + std::to_string(int(bytes_allocated / 1024.f)) + " KB | COMMITTED " +
-                  std::to_string(int(bytes_committed / 1024.f)) + " KB | Textures " + std::to_string(texture_count) +
-                  " | Buffers " + std::to_string(buffer_count) + " | Free objects " +
-                  std::to_string(free_object_count));
+                  std::to_string(int(bytes_committed / 1024.f)) + " KB | Active textures " + std::to_string(texture_count) +
+                  " | Active buffers " + std::to_string(buffer_count) + " | Free (Idle/Pending) " +
+                  std::to_string(idle_count) + "/" + std::to_string(pending_count));
 
-    for (auto& allocation : textures_in_use) {
-        Logger::debug("Texture " + std::to_string(allocation.first) + ": " + allocation.second.tag + " - " +
+    for (auto& allocation : active_textures) {
+        Logger::debug("Active texture " + std::to_string(allocation.first) + ": " + allocation.second.tag + " - " +
                       std::to_string(int(allocation.second.descriptor.byte_size() / 1024.f)) + " KB");
     }
 
-    for (auto& allocation : buffers_in_use) {
-        Logger::debug("Buffer " + std::to_string(allocation.first) + ": " + allocation.second.tag + " - " +
+    for (auto& allocation : active_buffers) {
+        Logger::debug("Active Buffer " + std::to_string(allocation.first) + ": " + allocation.second.tag + " - " +
                       std::to_string(int(allocation.second.descriptor.size / 1024.f)) + " KB");
     }
 }

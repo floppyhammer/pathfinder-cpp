@@ -1,6 +1,7 @@
 #ifndef PATHFINDER_ALLOCATOR_H
 #define PATHFINDER_ALLOCATOR_H
 
+#include <array>
 #include <chrono>
 #include <cstdint>
 #include <unordered_map>
@@ -16,15 +17,12 @@ namespace Pathfinder {
 // This improves general buffer re-usability in a GPU memory allocator.
 const size_t MAX_BUFFER_SIZE_CLASS = 16 * 1024 * 1024;
 
-// Number of seconds before unused memory is purged.
-//
-// TODO(pcwalton): jemalloc uses a sigmoidal decay curve here. Consider something similar.
-const float DECAY_TIME = 0.250;
+// Number of seconds before unused memory is purged from idle_pool.
+const float DECAY_TIME = 2.0;
 
-// Number of seconds before we can reuse an object buffer.
-//
-// This helps avoid stalls. This is admittedly a bit of a hack.
-const float REUSE_TIME = 0.015;
+// Maximum number of frames that can be in flight on the GPU.
+// We assume GPU won't lag behind more than this many frames.
+const int MAX_FRAMES_IN_FLIGHT = 3;
 
 struct BufferAllocation {
     std::shared_ptr<Buffer> buffer;
@@ -54,6 +52,10 @@ struct FreeObject {
     TextureAllocation texture_allocation;
 };
 
+struct FrameBucket {
+    std::vector<FreeObject> objects;
+};
+
 /// GPU memory management.
 class GpuMemoryAllocator {
 public:
@@ -71,6 +73,10 @@ public:
 
     void free_texture(uint64_t id);
 
+    /// Notify the allocator that a new frame has started.
+    /// This reclaims resources from several frames ago.
+    void begin_frame();
+
     void purge_if_needed();
 
     void print_info();
@@ -78,20 +84,27 @@ public:
 private:
     std::shared_ptr<Device> device;
 
-    std::unordered_map<uint64_t, BufferAllocation> buffers_in_use;
-    std::unordered_map<uint64_t, TextureAllocation> textures_in_use;
+    std::unordered_map<uint64_t, BufferAllocation> active_buffers;
+    std::unordered_map<uint64_t, TextureAllocation> active_textures;
 
     uint64_t next_buffer_id = 0;
     uint64_t next_texture_id = 0;
 
-    // Framebuffers are render pass dependent.
-    std::unordered_map<TextureFormat, std::shared_ptr<RenderPass>> render_pass_cache;
+    // Resources that are confirmed to be safe for reuse (at least MAX_FRAMES_IN_FLIGHT old).
+    std::vector<FreeObject> idle_pool;
 
-    std::vector<FreeObject> free_objects;
+    // Resources organized by their free-frame index.
+    std::array<FrameBucket, MAX_FRAMES_IN_FLIGHT> pending_buckets;
+
+    uint32_t current_frame_index = 0;
 
     // Statistic data.
-    size_t bytes_committed = 0; // In-use objects.
-    size_t bytes_allocated = 0; // In-use objects + free objects.
+
+    /// Total bytes currently held by user logic (Active state).
+    size_t bytes_committed = 0;
+
+    /// Total GPU memory allocated on the device (Active + Pending + Idle states).
+    size_t bytes_allocated = 0;
 };
 
 } // namespace Pathfinder

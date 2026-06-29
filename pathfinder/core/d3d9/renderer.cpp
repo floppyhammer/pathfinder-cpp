@@ -392,6 +392,8 @@ void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &_scene_builder, boo
 
     reallocate_alpha_tile_pages_if_necessary();
 
+    allocator->begin_frame();
+
     auto encoder = device->create_command_encoder("upload & draw fills, tiles");
 
     uint64_t *fill_vertex_buffer_id = nullptr;

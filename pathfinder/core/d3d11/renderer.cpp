@@ -329,6 +329,8 @@ void RendererD3D11::set_up_pipelines() {
 void RendererD3D11::draw(const std::shared_ptr<SceneBuilder> &_scene_builder, bool _clear_dst_texture) {
     clear_dest_texture = _clear_dst_texture;
 
+    allocator->begin_frame();
+
     auto *scene_builder = static_cast<SceneBuilderD3D11 *>(_scene_builder.get());
 
     if (scene_builder->built_segments.draw_segments.points.empty()) {
