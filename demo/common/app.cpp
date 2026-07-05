@@ -30,8 +30,7 @@ App::App(const std::shared_ptr<Device> &device,
     // TEST: Clip path.
     if (true) {
         Path2d path;
-        path.add_rect(RectF(Vec2F(0.0, 0.0), Vec2F(360.0, 360.0)));
-
+        path.add_circle(Vec2F(180.0, 180.0), 180);
         canvas_->clip_path(path, FillRule::Winding);
     }
 
