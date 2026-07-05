@@ -633,14 +633,13 @@ void RendererD3D11::prepare_tiles(TileBatchDataD3D11 &batch) {
     sort_tiles(tiles_d3d11_buffer_id, first_tile_map_buffer_id, z_buffer_id);
 
     // Record tile batch info.
-    tile_batch_info.insert(tile_batch_info.begin() + batch.batch_id,
-                           TileBatchInfoD3D11{
-                               batch.tile_count,
-                               z_buffer_id,
-                               tiles_d3d11_buffer_id,
-                               propagate_metadata_buffer_ids.propagate_metadata,
-                               first_tile_map_buffer_id,
-                           });
+    tile_batch_info[batch.batch_id] = TileBatchInfoD3D11{
+        batch.tile_count,
+        z_buffer_id,
+        tiles_d3d11_buffer_id,
+        propagate_metadata_buffer_ids.propagate_metadata,
+        first_tile_map_buffer_id,
+    };
 }
 
 std::shared_ptr<MicrolinesBufferIDsD3D11> RendererD3D11::dice_segments(std::vector<DiceMetadataD3D11> &dice_metadata,
@@ -1067,20 +1066,15 @@ void RendererD3D11::sort_tiles(uint64_t tiles_d3d11_buffer_id,
 }
 
 void RendererD3D11::free_tile_batch_buffers() {
-    while (true) {
-        if (tile_batch_info.empty()) {
-            break;
-        }
-
-        auto &info = tile_batch_info.back();
+    for (auto &it : tile_batch_info) {
+        auto &info = it.second;
 
         allocator->free_buffer(info.z_buffer_id);
         allocator->free_buffer(info.tiles_d3d11_buffer_id);
         allocator->free_buffer(info.propagate_metadata_buffer_id);
         allocator->free_buffer(info.first_tile_map_buffer_id);
-
-        tile_batch_info.pop_back();
     }
+    tile_batch_info.clear();
 }
 
 TextureFormat RendererD3D11::mask_texture_format() const {

@@ -20,6 +20,7 @@ std::shared_ptr<GlobalPathId> add_clip_path_to_batch(Scene &scene,
                                                      uint32_t clip_level,
                                                      const Transform2 &transform,
                                                      LastSceneInfo &last_scene,
+                                                     uint32_t &next_batch_id,
                                                      ClipBatchesD3D11 &clip_batches_d3d11);
 
 std::shared_ptr<BuiltDrawPath> prepare_draw_path_for_gpu_binning(Scene &scene,
@@ -61,13 +62,19 @@ PreparedClipPath prepare_clip_path_for_gpu_binning(Scene &scene,
                                                    const Transform2 &transform,
                                                    LastSceneInfo &last_scene,
                                                    size_t clip_level,
+                                                   uint32_t &next_batch_id,
                                                    ClipBatchesD3D11 &clip_batches_d3d11) {
     auto effective_view_box = scene.get_view_box();
     auto clip_path = scene.clip_paths[clip_path_id];
 
     // Add subclip path if necessary.
-    auto subclip_id =
-        add_clip_path_to_batch(scene, clip_path.clip_path, clip_level + 1, transform, last_scene, clip_batches_d3d11);
+    auto subclip_id = add_clip_path_to_batch(scene,
+                                             clip_path.clip_path,
+                                             clip_level + 1,
+                                             transform,
+                                             last_scene,
+                                             next_batch_id,
+                                             clip_batches_d3d11);
 
     auto path_bounds = transform * clip_path.outline.bounds;
 
@@ -87,42 +94,42 @@ std::shared_ptr<GlobalPathId> add_clip_path_to_batch(Scene &scene,
                                                      uint32_t clip_level,
                                                      const Transform2 &transform,
                                                      LastSceneInfo &last_scene,
+                                                     uint32_t &next_batch_id,
                                                      ClipBatchesD3D11 &clip_batches_d3d11) {
-    if (clip_path_id) {
-        auto &map = clip_batches_d3d11.clip_id_to_path_batch_index;
-
-        if (map.find(*clip_path_id) != map.end()) {
-            auto clip_path_batch_index = map[*clip_path_id];
-            return std::make_shared<GlobalPathId>(GlobalPathId{clip_level, clip_path_batch_index});
-        } else {
-            auto prepared_clip_path = prepare_clip_path_for_gpu_binning(scene,
-                                                                        *clip_path_id,
-                                                                        transform,
-                                                                        last_scene,
-                                                                        clip_level,
-                                                                        clip_batches_d3d11);
-
-            auto clip_path = prepared_clip_path.built_path;
-            auto subclip_id = prepared_clip_path.subclip_id;
-
-            while (clip_level >= clip_batches_d3d11.prepare_batches.size()) {
-                auto clip_tile_batch_id = clip_batches_d3d11.prepare_batches.size();
-                clip_batches_d3d11.prepare_batches.emplace_back(clip_tile_batch_id, PathSource::Clip);
-            }
-
-            auto clip_path_batch_index = clip_batches_d3d11.prepare_batches[clip_level].push(clip_path,
-                                                                                             *clip_path_id,
-                                                                                             subclip_id,
-                                                                                             true,
-                                                                                             last_scene);
-
-            map[*clip_path_id] = clip_path_batch_index;
-
-            return std::make_shared<GlobalPathId>(GlobalPathId{clip_level, clip_path_batch_index});
-        }
+    if (!clip_path_id) {
+        return nullptr;
     }
 
-    return nullptr;
+    auto &map = clip_batches_d3d11.clip_id_to_path_batch_index;
+    if (map.find(*clip_path_id) != map.end()) {
+        auto clip_path_batch_index = map[*clip_path_id];
+        auto &batch = clip_batches_d3d11.prepare_batches[clip_level];
+        return std::make_shared<GlobalPathId>(GlobalPathId{batch.batch_id, clip_path_batch_index});
+    }
+
+    auto prepared_clip_path = prepare_clip_path_for_gpu_binning(scene,
+                                                                *clip_path_id,
+                                                                transform,
+                                                                last_scene,
+                                                                clip_level,
+                                                                next_batch_id,
+                                                                clip_batches_d3d11);
+
+    auto clip_path = prepared_clip_path.built_path;
+    auto subclip_id = prepared_clip_path.subclip_id;
+
+    while (clip_level >= clip_batches_d3d11.prepare_batches.size()) {
+        auto clip_tile_batch_id = next_batch_id++;
+        clip_batches_d3d11.prepare_batches.emplace_back(clip_tile_batch_id, PathSource::Clip);
+    }
+
+    auto clip_path_batch_index =
+        clip_batches_d3d11.prepare_batches[clip_level].push(clip_path, *clip_path_id, subclip_id, true, last_scene);
+
+    map[*clip_path_id] = clip_path_batch_index;
+
+    auto &batch = clip_batches_d3d11.prepare_batches[clip_level];
+    return std::make_shared<GlobalPathId>(GlobalPathId{batch.batch_id, clip_path_batch_index});
 }
 
 /// Create tile batches.
@@ -176,8 +183,13 @@ std::vector<DrawTileBatchD3D11> build_tile_batches_for_draw_path_display_item(
         // Add clip path if necessary.
         std::shared_ptr<GlobalPathId> clip_path;
         if (clip_batches_d3d11) {
-            clip_path =
-                add_clip_path_to_batch(scene, draw_path->clip_path_id, 0, transform, last_scene, *clip_batches_d3d11);
+            clip_path = add_clip_path_to_batch(scene,
+                                               draw_path->clip_path_id,
+                                               0,
+                                               transform,
+                                               last_scene,
+                                               next_batch_id,
+                                               *clip_batches_d3d11);
         }
 
         draw_tile_batch->tile_batch_data.push(draw_path->path,

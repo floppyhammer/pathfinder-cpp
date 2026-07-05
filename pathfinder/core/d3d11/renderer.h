@@ -6,6 +6,7 @@
 #include "../renderer.h"
 #include "../scene.h"
 #include "gpu_data.h"
+#include <map>
 
 #ifdef PATHFINDER_ENABLE_D3D11
 
@@ -209,7 +210,7 @@ private:
 
     SceneBuffers scene_buffers;
 
-    std::vector<TileBatchInfoD3D11> tile_batch_info;
+    std::map<uint32_t, TileBatchInfoD3D11> tile_batch_info;
 };
 
 } // namespace Pathfinder
