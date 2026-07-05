@@ -12,6 +12,8 @@
 
 namespace Pathfinder {
 
+constexpr float SHADOW_DOWNSAMPLING_SCALE = 0.5f;
+
 struct ShadowBlurRenderTargetInfo {
     /// Render target ids.
     RenderTargetId id_x;
@@ -39,15 +41,18 @@ ShadowBlurRenderTargetInfo push_shadow_blur_render_targets(Scene &scene,
         return shadow_blur_info;
     }
 
-    auto sigma = current_state.shadow_blur * 0.5f;
+    float sigma_original = current_state.shadow_blur * 0.5f;
+    float sigma_scaled = sigma_original * SHADOW_DOWNSAMPLING_SCALE;
 
     // Bounds expansion caused by blurring.
-    auto bounds = outline_bounds.dilate(sigma * 3.f).round_out().to_i32();
+    auto bounds = outline_bounds.dilate(sigma_original * 3.f).round_out().to_i32();
 
-    shadow_blur_info.id_y = scene.push_render_target(RenderTargetDesc{bounds.size(), "shadow blur x"});
-    shadow_blur_info.id_x = scene.push_render_target(RenderTargetDesc{bounds.size(), "shadow blur y"});
+    Vec2I scaled_size = (bounds.size().to_f32() * SHADOW_DOWNSAMPLING_SCALE).to_i32();
 
-    shadow_blur_info.sigma = sigma;
+    shadow_blur_info.id_y = scene.push_render_target(RenderTargetDesc{scaled_size, "shadow blur x"});
+    shadow_blur_info.id_x = scene.push_render_target(RenderTargetDesc{scaled_size, "shadow blur y"});
+
+    shadow_blur_info.sigma = sigma_scaled;
     shadow_blur_info.bounds = bounds;
 
     shadow_blur_info.color = current_state.shadow_color;
@@ -65,9 +70,15 @@ void composite_shadow_blur_render_targets(Scene &scene, const ShadowBlurRenderTa
         return;
     }
 
-    auto pattern_x = Pattern::from_render_target(info.id_x, info.bounds.size());
-    auto pattern_y = Pattern::from_render_target(info.id_y, info.bounds.size());
-    pattern_y.apply_transform(Transform2::from_translation(info.bounds.origin().to_f32()));
+    Vec2I scaled_size = (info.bounds.size().to_f32() * SHADOW_DOWNSAMPLING_SCALE).to_i32();
+
+    auto pattern_x = Pattern::from_render_target(info.id_x, scaled_size);
+    auto pattern_y = Pattern::from_render_target(info.id_y, scaled_size);
+
+    Transform2 transform = Transform2::from_translation(info.bounds.origin().to_f32()) *
+                           Transform2::from_scale(Vec2F(1.0 / SHADOW_DOWNSAMPLING_SCALE));
+
+    pattern_y.apply_transform(transform);
 
     auto filter = PatternFilter();
 
@@ -93,7 +104,7 @@ void composite_shadow_blur_render_targets(Scene &scene, const ShadowBlurRenderTa
     DrawPath path_x;
     {
         Path2d path2d;
-        path2d.add_rect({{0, 0}, info.bounds.size().to_f32()});
+        path2d.add_rect({{0, 0}, scaled_size.to_f32()});
         path_x.outline = path2d.into_outline();
     }
     path_x.paint = paint_id_x;
@@ -170,7 +181,13 @@ void Canvas::push_path(Outline &outline, PathOp path_op, FillRule fill_rule) {
 
         auto shadow_blur_info = push_shadow_blur_render_targets(*scene, current_state, shadow_outline.bounds);
 
-        shadow_outline.transform(Transform2::from_translation(-shadow_blur_info.bounds.origin().to_f32()));
+        Vec2I scaled_size = (shadow_blur_info.bounds.size().to_f32() * SHADOW_DOWNSAMPLING_SCALE).to_i32();
+        float inv_scale_x = (float)shadow_blur_info.bounds.width() / (float)scaled_size.x;
+        float inv_scale_y = (float)shadow_blur_info.bounds.height() / (float)scaled_size.y;
+
+        // 输入端：先平移到局部原点，再缩小。对应顺序：Scale * Translate
+        shadow_outline.transform(Transform2::from_scale(Vec2F(1.0f / inv_scale_x, 1.0f / inv_scale_y)) *
+                                 Transform2::from_translation(-shadow_blur_info.bounds.origin().to_f32()));
 
         // Per spec the shadow must respect the alpha of the shadowed path, but otherwise have
         // the color of the shadow paint.
