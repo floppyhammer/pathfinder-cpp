@@ -2,8 +2,8 @@
 
 #include "../common/app.h"
 
-constexpr int32_t WINDOW_WIDTH = 1280;
-constexpr int32_t WINDOW_HEIGHT = 720;
+constexpr int32_t WINDOW_WIDTH = 800;
+constexpr int32_t WINDOW_HEIGHT = 480;
 
 int main() {
     // Create the primary window.
