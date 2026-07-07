@@ -34,6 +34,13 @@ App::App(const std::shared_ptr<Device> &device,
         canvas_->clip_path(path, FillRule::Winding);
     }
 
+    // Test: shadow/blur.
+    if (true) {
+        canvas_->set_shadow_color(ColorU::white());
+        canvas_->set_shadow_blur(16);
+        canvas_->set_shadow_offset({0, 0});
+    }
+
     // Test: draw image.
     if (true) {
         auto image_buffer = ImageBuffer::from_memory(img_input, false);
@@ -52,12 +59,6 @@ App::App(const std::shared_ptr<Device> &device,
         path.line_to(460.0, 460.0);
         path.line_to(260.0, 460.0);
         path.close_path();
-
-        // Test: shadow/blur.
-        if (false) {
-            canvas_->set_shadow_color(ColorU::white());
-            canvas_->set_shadow_blur(16);
-        }
 
         // Set brush.
         canvas_->set_line_width(10.0);
