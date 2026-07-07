@@ -18,7 +18,7 @@ App::App(const std::shared_ptr<Device> &device,
     // Set up a canvas.
     canvas_ = std::make_shared<Canvas>(canvas_size, device, queue, RenderLevel::D3d9);
 
-    // TEST: View box clipping.
+    // Test: view box clipping.
     if (true) {
         Path2d path;
         path.add_rect(RectF(Vec2F(400, 400), canvas_size.to_f32() + Vec2F(100)));
@@ -27,14 +27,14 @@ App::App(const std::shared_ptr<Device> &device,
         canvas_->fill_path(path, FillRule::Winding);
     }
 
-    // TEST: Clip path.
+    // Test: clip path.
     if (true) {
         Path2d path;
         path.add_circle(Vec2F(180.0, 180.0), 180);
         canvas_->clip_path(path, FillRule::Winding);
     }
 
-    // TEST: Draw image.
+    // Test: draw image.
     if (true) {
         auto image_buffer = ImageBuffer::from_memory(img_input, false);
         if (image_buffer) {
@@ -44,7 +44,7 @@ App::App(const std::shared_ptr<Device> &device,
         }
     }
 
-    // TEST: Minimal path.
+    // Test: minimal path.
     if (true) {
         Path2d path;
         path.move_to(260.0, 260.0);
@@ -53,9 +53,9 @@ App::App(const std::shared_ptr<Device> &device,
         path.line_to(260.0, 460.0);
         path.close_path();
 
-        // TEST: Shadow/Blur.
+        // Test: shadow/blur.
         if (false) {
-            canvas_->set_shadow_color(ColorU::red());
+            canvas_->set_shadow_color(ColorU::white());
             canvas_->set_shadow_blur(16);
         }
 
@@ -72,7 +72,7 @@ App::App(const std::shared_ptr<Device> &device,
         canvas_->stroke_path(path);
     }
 
-    // TEST: Render a target pattern.
+    // Test: draw a target pattern.
     if (true) {
         auto render_target_size = Vec2I(400, 300);
         auto render_target_desc = RenderTargetDesc{render_target_size, "sub render target"};
@@ -89,19 +89,21 @@ App::App(const std::shared_ptr<Device> &device,
 
         canvas_->get_scene()->pop_render_target();
 
-        canvas_->draw_render_target(render_target_id, {{}, render_target_size.to_f32()});
+        auto pos = Vec2F(100, 50);
+
+        canvas_->draw_render_target(render_target_id, {pos, pos + render_target_size.to_f32()});
     }
 
     scene_0_ = canvas_->get_scene();
 
-    // TEST: Append an SVG scene.
+    // Test: append an SVG scene.
     if (true) {
         auto svg_scene = SvgScene(std::string(svg_input.begin(), svg_input.end()), *canvas_);
 
-        // TEST: Replace with a scene.
+        // Test: replace with a scene.
         scene_1_ = svg_scene.get_scene();
 
-        // TEST: Append a scene.
+        // Test: append a scene.
         //        canvas_->get_scene()->append_scene(*scene_1, Transform2::from_scale({1.0, 1.0}));
     }
 
