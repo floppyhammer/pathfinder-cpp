@@ -79,7 +79,7 @@ struct Mat2 {
 
     // For being used as ordered key.
     bool operator<(const Mat2 &b) const {
-        return v[0] < b.v[0] && v[1] < b.v[1] && v[2] < b.v[2] && v[3] < b.v[3];
+        return std::tie(v[0], v[1], v[2], v[3]) < std::tie(b.v[0], b.v[1], b.v[2], b.v[3]);
     }
 
     Vec2F operator*(const Vec2F &other) const {

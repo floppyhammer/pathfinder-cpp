@@ -101,7 +101,15 @@ public:
 
     // For being used as ordered key.
     bool operator<(const Transform2 &rhs) const {
-        return matrix < rhs.matrix && vector < rhs.vector;
+        return std::tie(matrix, vector) < std::tie(rhs.matrix, rhs.vector);
+    }
+
+    bool operator==(const Transform2 &rhs) const {
+        return matrix == rhs.matrix && vector == rhs.vector;
+    }
+
+    bool operator!=(const Transform2 &rhs) const {
+        return !(*this == rhs);
     }
 };
 

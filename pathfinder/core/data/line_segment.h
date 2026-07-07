@@ -102,11 +102,17 @@ struct LineSegmentF {
 
     // For being used as ordered key.
     bool operator<(const LineSegmentF &rhs) const {
-        bool res = value.get<0>() < rhs.value.get<0>();
-        res = res && value.get<1>() < rhs.value.get<1>();
-        res = res && value.get<2>() < rhs.value.get<2>();
-        res = res && value.get<3>() < rhs.value.get<3>();
-        return res;
+        return std::forward_as_tuple(value.get<0>(), value.get<1>(), value.get<2>(), value.get<3>()) <
+               std::forward_as_tuple(rhs.value.get<0>(), rhs.value.get<1>(), rhs.value.get<2>(), rhs.value.get<3>());
+    }
+
+    bool operator==(const LineSegmentF &rhs) const {
+        return std::forward_as_tuple(value.get<0>(), value.get<1>(), value.get<2>(), value.get<3>()) ==
+               std::forward_as_tuple(rhs.value.get<0>(), rhs.value.get<1>(), rhs.value.get<2>(), rhs.value.get<3>());
+    }
+
+    bool operator!=(const LineSegmentF &rhs) const {
+        return !(*this == rhs);
     }
 };
 

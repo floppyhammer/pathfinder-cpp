@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cmath>
 #include <sstream>
+#include <tuple>
 
 #include "../logger.h"
 
@@ -133,13 +134,13 @@ struct Vec2 {
         return x == b.x && y == b.y;
     }
 
-    // For being used as ordered key.
-    bool operator<(const Vec2 &b) const {
-        return x < b.x && y < b.y;
+    bool operator!=(const Vec2 &b) const {
+        return !(*this == b);
     }
 
-    bool operator!=(const Vec2 &b) const {
-        return x != b.x || y != b.y;
+    // For being used as ordered key.
+    bool operator<(const Vec2 &b) const {
+        return std::tie(x, y) < std::tie(b.x, b.y);
     }
 
     void operator+=(const Vec2 &b) {

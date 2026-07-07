@@ -20,6 +20,21 @@ struct ColorStop {
 
     /// The color of the gradient stop.
     ColorU color;
+
+    bool operator<(const ColorStop &rhs) const {
+        if (offset != rhs.offset) {
+            return offset < rhs.offset;
+        }
+        return color < rhs.color;
+    }
+
+    bool operator==(const ColorStop &rhs) const {
+        return offset == rhs.offset && color == rhs.color;
+    }
+
+    bool operator!=(const ColorStop &rhs) const {
+        return !(*this == rhs);
+    }
 };
 
 struct GradientRadial {
@@ -130,22 +145,38 @@ public:
 
     // For being used as ordered key.
     bool operator<(const Gradient &rhs) const {
-        if (wrap == rhs.wrap) {
-            if (geometry.type == rhs.geometry.type) {
-                if (geometry.type == GradientGeometry::Type::Linear) {
-                    return geometry.linear < rhs.geometry.linear;
-                } else {
-                    bool res = geometry.radial.line < rhs.geometry.radial.line;
-                    res = res && geometry.radial.radii < rhs.geometry.radial.radii;
-                    res = res && geometry.radial.transform < rhs.geometry.radial.transform;
-                    return res;
-                }
-            } else {
-                return geometry.type < rhs.geometry.type;
-            }
-        } else {
+        // 1. Compare the outer wrap mode first.
+        if (wrap != rhs.wrap) {
             return wrap < rhs.wrap;
         }
+
+        // 2. Compare the gradient geometry type.
+        if (geometry.type != rhs.geometry.type) {
+            return geometry.type < rhs.geometry.type;
+        }
+
+        // 3. Branch based on the type and perform strict lexicographical comparison.
+        if (geometry.type == GradientGeometry::Type::Linear) {
+            // Standard total-ordering chain for linear gradient.
+            if (geometry.linear < rhs.geometry.linear) return true;
+            if (rhs.geometry.linear < geometry.linear) return false;
+        } else { // Radial
+            // CRITICAL FIX: Replaced the incorrect '&&' logic with lexicographical comparison
+            // using std::forward_as_tuple to maintain Strict Weak Ordering for rvalues/lvalues.
+            auto tuple_lhs =
+                std::forward_as_tuple(geometry.radial.line, geometry.radial.radii, geometry.radial.transform);
+            auto tuple_rhs = std::forward_as_tuple(rhs.geometry.radial.line,
+                                                   rhs.geometry.radial.radii,
+                                                   rhs.geometry.radial.transform);
+            if (tuple_lhs != tuple_rhs) {
+                return tuple_lhs < tuple_rhs;
+            }
+        }
+
+        // 4. CRITICAL FIX: Compare the 'stops' vector (color stops).
+        // If all geometry attributes are identical, gradients with different colors must not be treated as equivalent.
+        // std::vector's operator< automatically performs a sequential lexicographical comparison on its elements.
+        return stops < rhs.stops;
     }
 
 private:
