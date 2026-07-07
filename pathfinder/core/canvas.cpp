@@ -192,15 +192,34 @@ void Canvas::push_path(Outline &outline, PathOp path_op, FillRule fill_rule) {
         // Per spec the shadow must respect the alpha of the shadowed path, but otherwise have
         // the color of the shadow paint.
         auto shadow_paint = paint;
+
+        auto original_overlay = paint.get_overlay();
+        if (original_overlay) {
+            auto new_overlay = std::make_shared<PaintOverlay>(*original_overlay);
+
+            // CRITICAL FIX: Compensate for the shadow outline's offset.
+            // Shadow coordinates: P' = P + offset - blur_origin.
+            // We want to sample the original source at point P, i.e., Transform_orig * P.
+            // Setting Transform_shadow * P' = Transform_orig * P,
+            // we get: Transform_shadow = Transform_orig * Translation(blur_origin - offset).
+            if (original_overlay->contents.type == PaintContents::Type::Pattern) {
+                auto shadow_pattern = original_overlay->contents.pattern;
+
+                auto compensation = Transform2::from_scale({SHADOW_DOWNSAMPLING_SCALE, SHADOW_DOWNSAMPLING_SCALE}) *
+                                    Transform2::from_translation(current_state.shadow_offset -
+                                                                 shadow_blur_info.bounds.origin().to_f32());
+                shadow_pattern.apply_transform(compensation);
+
+                shadow_paint = Paint::from_pattern(shadow_pattern);
+            }
+
+            new_overlay->composite_op = PaintCompositeOp::DestIn;
+        }
+
         auto shadow_base_alpha = shadow_paint.get_base_color().a_;
         auto shadow_color = current_state.shadow_color.to_f32();
         shadow_color.a_ = shadow_color.a_ * (float)shadow_base_alpha / 255.f;
         shadow_paint.set_base_color(ColorU(shadow_color));
-
-        auto overlay = shadow_paint.get_overlay();
-        if (overlay) {
-            overlay->composite_op = PaintCompositeOp::DestIn;
-        }
 
         auto shadow_paint_id = scene->push_paint(shadow_paint);
 
