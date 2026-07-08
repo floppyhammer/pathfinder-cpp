@@ -159,6 +159,20 @@ void Path2d::add_circle(const Vec2F &center, float radius) {
     close_path();
 }
 
+void Path2d::add_path(const Path2d &other, const Transform2 &transform) {
+    flush_current_contour();
+
+    // We need to get the outline from the other path.
+    // Since into_outline() might be destructive/mutating, we'll use a const_cast
+    // or better, just access the internal outline if we are a member.
+    Outline other_outline = const_cast<Path2d&>(other).into_outline();
+    other_outline.transform(transform);
+
+    for (const auto &contour : other_outline.contours) {
+        outline.push_contour(contour);
+    }
+}
+
 Outline Path2d::into_outline() {
     flush_current_contour();
     return outline;

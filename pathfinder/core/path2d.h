@@ -31,6 +31,8 @@ public:
     void add_rect_with_corners(const RectF &rect, const RectF &corner_radius);
 
     void add_circle(const Vec2F &center, float radius);
+
+    void add_path(const Path2d &other, const Transform2 &transform = Transform2::from_scale({1.0f, 1.0f}));
     // -----------------------------------------------
 
     /// Returns the outline.
