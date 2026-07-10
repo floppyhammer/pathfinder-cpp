@@ -2,6 +2,7 @@
 #define PATHFINDER_GPU_SHADER_MODULE_GL_H
 
 #include <vector>
+#include <cstdint>
 
 #include "../shader_module.h"
 
