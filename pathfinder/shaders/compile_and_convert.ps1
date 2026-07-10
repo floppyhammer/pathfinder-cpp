@@ -2,42 +2,35 @@ Remove-Item -Path "generated" -Recurse
 
 New-Item -Path "generated" -ItemType Directory
 
-New-Variable -Name "GLSLC" -Visibility Public -Value "$env:VULKAN_SDK/Bin/glslc.exe"
+New-Variable -Name "GENERATOR" -Visibility Public -Value "../../cmake-build-debug/bin/pathfinder_shader_generator.exe"
 
 # Compile shaders.
-& $GLSLC blit.vert -o generated/blit_vert.spv
-& $GLSLC blit.frag -o generated/blit_frag.spv
+& $GENERATOR -i blit.vert -o generated/blit_vert.shdbin -t vert
+& $GENERATOR -i blit.frag -o generated/blit_frag.shdbin -t frag
 
-& $GLSLC d3d9/fill.vert -o generated/fill_vert.spv
-& $GLSLC d3d9/fill.frag -o generated/fill_frag.spv
-& $GLSLC d3d9/tile.vert -o generated/tile_vert.spv
-& $GLSLC d3d9/tile.frag -o generated/tile_frag.spv
-& $GLSLC d3d9/tile_clip_copy.vert -o generated/tile_clip_copy_vert.spv
-& $GLSLC d3d9/tile_clip_copy.frag -o generated/tile_clip_copy_frag.spv
-& $GLSLC d3d9/tile_clip_combine.vert -o generated/tile_clip_combine_vert.spv
-& $GLSLC d3d9/tile_clip_combine.frag -o generated/tile_clip_combine_frag.spv
+& $GENERATOR -i d3d9/fill.vert -o generated/fill_vert.shdbin -t vert
+& $GENERATOR -i d3d9/fill.frag -o generated/fill_frag.shdbin -t frag
+& $GENERATOR -i d3d9/tile.vert -o generated/tile_vert.shdbin -t vert
+& $GENERATOR -i d3d9/tile.frag -o generated/tile_frag.shdbin -t frag
+& $GENERATOR -i d3d9/tile_clip_copy.vert -o generated/tile_clip_copy_vert.shdbin -t vert
+& $GENERATOR -i d3d9/tile_clip_copy.frag -o generated/tile_clip_copy_frag.shdbin -t frag
+& $GENERATOR -i d3d9/tile_clip_combine.vert -o generated/tile_clip_combine_vert.shdbin -t vert
+& $GENERATOR -i d3d9/tile_clip_combine.frag -o generated/tile_clip_combine_frag.shdbin -t frag
 
-& $GLSLC d3d11/bin.comp -o generated/bin_comp.spv
-& $GLSLC d3d11/bound.comp -o generated/bound_comp.spv
-& $GLSLC d3d11/dice.comp -o generated/dice_comp.spv
-& $GLSLC d3d11/fill.comp -o generated/fill_comp.spv
-& $GLSLC d3d11/propagate.comp -o generated/propagate_comp.spv
-& $GLSLC d3d11/sort.comp -o generated/sort_comp.spv
-& $GLSLC d3d11/tile.comp -o generated/tile_comp.spv
+& $GENERATOR -i d3d11/bin.comp -o generated/bin_comp.shdbin -t comp
+& $GENERATOR -i d3d11/bound.comp -o generated/bound_comp.shdbin -t comp
+& $GENERATOR -i d3d11/dice.comp -o generated/dice_comp.shdbin -t comp
+& $GENERATOR -i d3d11/fill.comp -o generated/fill_comp.shdbin -t comp
+& $GENERATOR -i d3d11/propagate.comp -o generated/propagate_comp.shdbin -t comp
+& $GENERATOR -i d3d11/sort.comp -o generated/sort_comp.shdbin -t comp
+& $GENERATOR -i d3d11/tile.comp -o generated/tile_comp.shdbin -t comp
 
 Copy-Item "area_lut.png" "generated"
-Copy-Item "blit.frag" "generated"
-Copy-Item "blit.vert" "generated"
-Copy-Item "d3d9/*.*" "generated"
-Copy-Item "d3d11/*.*" "generated"
 
 Set-Location "generated"
 
 # Generate headers.
-python ../convert_files_to_header.py vert
-python ../convert_files_to_header.py frag
-python ../convert_files_to_header.py comp
-python ../convert_files_to_header.py spv
+python ../convert_files_to_header.py shdbin
 python ../convert_files_to_header.py png
 
 # Remove intermediate files.

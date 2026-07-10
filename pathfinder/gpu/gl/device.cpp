@@ -69,10 +69,34 @@ std::shared_ptr<RenderPass> DeviceGl::create_swap_chain_render_pass(TextureForma
     return std::shared_ptr<RenderPassGl>(new RenderPassGl(load_op, "Swapchain Render Pass"));
 }
 
+std::shared_ptr<ShaderModule> DeviceGl::create_shader_module(const std::shared_ptr<Shader> &shader,
+                                                             const std::string &label) {
+    // Try to find the best matching shader variant.
+    // Order: GLSL 4.5 -> GLSLES 3.1 -> GLSLES 3.0.
+
+#ifndef __ANDROID__
+    std::shared_ptr<ShaderCode> code = shader->get_shader_code({ShaderSourceType::GLSL, 4, 5});
+#else
+    std::shared_ptr<ShaderCode> code = shader->get_shader_code({ShaderSourceType::GLSLES, 3, 1});
+    if (!code) {
+        code = shader->get_shader_code({ShaderSourceType::GLSLES, 3, 0});
+    }
+#endif
+
+    if (!code) {
+        Logger::error("Failed to find a compatible GLSL variant in the provided shader binary!");
+        return nullptr;
+    }
+
+    std::vector<char> source(code->code.begin(), code->code.end());
+    return std::shared_ptr<ShaderModuleGl>(
+        new ShaderModuleGl(source, code->stage, code->texture_binding_map, code->uniform_buffer_binding_map, label));
+}
+
 std::shared_ptr<ShaderModule> DeviceGl::create_shader_module(const std::vector<char> &source_code,
                                                              ShaderStage shader_stage,
                                                              const std::string &label) {
-    return std::shared_ptr<ShaderModuleGl>(new ShaderModuleGl(source_code, shader_stage, label));
+    return std::shared_ptr<ShaderModuleGl>(new ShaderModuleGl(source_code, shader_stage, {}, {}, label));
 }
 
 std::shared_ptr<RenderPipeline> DeviceGl::create_render_pipeline(

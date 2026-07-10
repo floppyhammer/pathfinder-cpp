@@ -1,4 +1,4 @@
-#version 310 es
+#version 450
 
 // pathfinder/shaders/tile.fs.glsl
 //
@@ -10,17 +10,11 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-#ifdef GL_ES
 precision highp float;
 precision highp int; // Fix Android rendering artifacts.
 precision highp sampler2D;
-#endif
 
-#ifdef VULKAN
 layout(binding = 2) uniform bUniform {
-#else
-layout(std140) uniform bUniform {
-#endif
     vec2 uTileSize; // Fixed as (16, 16).
     vec2 uTextureMetadataSize; // Fixed as (1280, 512).
     vec2 uZBufferSize; // Not used here.
@@ -30,7 +24,6 @@ layout(std140) uniform bUniform {
     mat4 uTransform;
 };
 
-#ifdef VULKAN
 layout(binding = 3) uniform sampler2D uColorTexture0; // Pattern image.
 layout(binding = 4) uniform sampler2D uMaskTexture0;
 layout(binding = 5) uniform sampler2D uDestTexture;
@@ -48,25 +41,6 @@ layout(location = 8) in vec4 vFilterParams4;
 layout(location = 9) in float vCtrl;
 
 layout(location = 0) out vec4 oFragColor;
-#else
-uniform sampler2D uColorTexture0; // Pattern image.
-uniform sampler2D uMaskTexture0;
-uniform sampler2D uDestTexture;
-uniform sampler2D uGammaLUT; // For text.
-
-in vec3 vMaskTexCoord0;
-in vec2 vColorTexCoord0;
-in vec4 vBaseColor;
-in float vTileCtrl;
-in vec4 vFilterParams0;
-in vec4 vFilterParams1;
-in vec4 vFilterParams2;
-in vec4 vFilterParams3;
-in vec4 vFilterParams4;
-in float vCtrl;
-
-out vec4 oFragColor;
-#endif
 
 //      Mask UV 0         Mask UV 1
 //          +                 +

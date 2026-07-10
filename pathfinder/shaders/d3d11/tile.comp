@@ -1,11 +1,8 @@
-#version 430
+#version 450
 
 precision highp float;
-
-#ifdef GL_ES
 precision highp sampler2D;
 precision highp image2D;
-#endif
 
 layout(local_size_x = 16, local_size_y = 4) in;
 
@@ -24,11 +21,7 @@ layout(binding = 5) uniform sampler2D uMaskTexture0;
 layout(binding = 6) uniform sampler2D uGammaLUT;
 
 // No simultaneous image READ & WRITE for GLES.
-#ifdef GL_ES
-writeonly layout(rgba8, binding = 7) uniform image2D uDestImage;
-#else
 layout(rgba8, binding = 7) uniform image2D uDestImage;
-#endif
 
 layout(std140, binding = 8) uniform bUniform {
     vec4 uClearColor;

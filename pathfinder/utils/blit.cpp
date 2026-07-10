@@ -1,12 +1,9 @@
 #include "blit.h"
 
 /* clang-format off */
-// SPV
-#include "../shaders/generated/blit_frag_spv.h"
-#include "../shaders/generated/blit_vert_spv.h"
-// GLSL
-#include "../shaders/generated/blit_frag.h"
-#include "../shaders/generated/blit_vert.h"
+#include "../gpu/shader.h"
+#include "../shaders/generated/blit_frag_shdbin.h"
+#include "../shaders/generated/blit_vert_shdbin.h"
 /* clang-format on */
 
 using namespace Pathfinder;
@@ -19,21 +16,14 @@ Blit::Blit(const std::shared_ptr<Device> &device, const std::shared_ptr<Queue> &
 
     // Pipeline.
     {
-        std::vector<char> vert_source, frag_source;
-
-        if (device_->get_backend_type() == BackendType::Vulkan) {
-            vert_source = std::vector<char>(std::begin(blit_vert_spv), std::end(blit_vert_spv));
-            frag_source = std::vector<char>(std::begin(blit_frag_spv), std::end(blit_frag_spv));
-        } else {
-            vert_source = std::vector<char>(std::begin(blit_vert), std::end(blit_vert));
-            frag_source = std::vector<char>(std::begin(blit_frag), std::end(blit_frag));
-        }
+        auto vert_shader = Shader::create_from_shdbin(blit_vert_shdbin, sizeof(blit_vert_shdbin));
+        auto frag_shader = Shader::create_from_shdbin(blit_frag_shdbin, sizeof(blit_frag_shdbin));
 
         const auto blend_state = BlendState::from_over();
 
         {
             std::vector<DescriptorLayout> layouts = {
-                DescriptorLayout{0, ShaderStage::Fragment, DescriptorType::Sampler, "uTexture"},
+                DescriptorLayout{0, ShaderStage::Fragment, DescriptorType::Sampler},
             };
 
             descriptor_set_layout_ = device->create_descriptor_set_layout(layouts);
@@ -41,14 +31,13 @@ Blit::Blit(const std::shared_ptr<Device> &device, const std::shared_ptr<Queue> &
 
         descriptor_set_ = device->create_descriptor_set(descriptor_set_layout_);
 
-        pipeline_ = device->create_render_pipeline(
-            device->create_shader_module(vert_source, ShaderStage::Vertex, "blit vert"),
-            device->create_shader_module(frag_source, ShaderStage::Fragment, "blit frag"),
-            {},
-            blend_state,
-            descriptor_set_layout_,
-            target_format,
-            "blit pipeline");
+        pipeline_ = device->create_render_pipeline(device->create_shader_module(vert_shader, "blit vert"),
+                                                   device->create_shader_module(frag_shader, "blit frag"),
+                                                   {},
+                                                   blend_state,
+                                                   descriptor_set_layout_,
+                                                   target_format,
+                                                   "blit pipeline");
     }
 }
 

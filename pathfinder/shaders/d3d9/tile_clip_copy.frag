@@ -1,4 +1,4 @@
-#version 310 es
+#version 450
 
 // pathfinder/shaders/tile_clip_copy.fs.glsl
 //
@@ -11,24 +11,13 @@
 // except according to those terms.
 
 precision highp float;
-
-#ifdef GL_ES
 precision highp sampler2D;
-#endif
 
-#ifdef VULKAN
 layout(binding = 1) uniform sampler2D uSrc;
 
 layout(location = 0) in vec2 vTexCoord;
 
 layout(location = 0) out vec4 oFragColor;
-#else
-uniform sampler2D uSrc;
-
-in vec2 vTexCoord;
-
-out vec4 oFragColor;
-#endif
 
 void main() {
     oFragColor = texture(uSrc, vTexCoord);

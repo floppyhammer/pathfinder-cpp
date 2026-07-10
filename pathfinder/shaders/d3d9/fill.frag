@@ -1,4 +1,4 @@
-#version 310 es
+#version 450
 
 // pathfinder/shaders/fill.fs.glsl
 //
@@ -10,25 +10,15 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-#ifdef GL_ES
 precision highp float;
 precision highp sampler2D;
-#endif
 
 // Pre-prepared texture "area-lut.png" of size (256, 256).
-#ifdef VULKAN
 layout(binding = 1) uniform sampler2D uAreaLUT;
 
 layout(location = 0) in vec2 vFrom;
 layout(location = 1) in vec2 vTo;
 layout(location = 0) out vec4 oFragColor;
-#else
-uniform sampler2D uAreaLUT;
-
-in vec2 vFrom;
-in vec2 vTo;
-out vec4 oFragColor;
-#endif
 
 /// Understanding this process is quite hard as we need to understand the areaLUT texture first.
 /// But I guess areaLUT is mostly used for anti-aliasing.

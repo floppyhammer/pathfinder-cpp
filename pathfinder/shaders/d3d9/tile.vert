@@ -1,4 +1,4 @@
-#version 310 es
+#version 450
 
 // pathfinder/shaders/tile.vs.glsl
 //
@@ -10,23 +10,12 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-#ifdef GL_ES
 precision highp sampler2D;
-#endif
 
-#ifdef VULKAN
 layout(binding = 0) uniform sampler2D uTextureMetadata; // RGBA16F
 layout(binding = 1) uniform sampler2D uZBuffer;
-#else
-uniform sampler2D uTextureMetadata; // RGBA16F
-uniform sampler2D uZBuffer;
-#endif
 
-#ifdef VULKAN
 layout(binding = 2) uniform bUniform {
-#else
-layout(std140) uniform bUniform {
-#endif
     vec2 uTileSize; // Fixed as (16, 16).
     vec2 uTextureMetadataSize; // Fixed as (1280, 512).
     vec2 uZBufferSize;
@@ -43,7 +32,6 @@ layout(location = 3) in int aPathIndex;
 layout(location = 4) in ivec2 aCtrlBackdrop;
 layout(location = 5) in uint aMetadataIndex;
 
-#ifdef VULKAN
 layout(location = 0) out vec3 vMaskTexCoord0;
 layout(location = 1) out vec2 vColorTexCoord0;
 layout(location = 2) out vec4 vBaseColor;
@@ -54,18 +42,6 @@ layout(location = 6) out vec4 vFilterParams2;
 layout(location = 7) out vec4 vFilterParams3;
 layout(location = 8) out vec4 vFilterParams4;
 layout(location = 9) out float vCtrl;
-#else
-out vec3 vMaskTexCoord0;
-out vec2 vColorTexCoord0;
-out vec4 vBaseColor;
-out float vTileCtrl;
-out vec4 vFilterParams0;
-out vec4 vFilterParams1;
-out vec4 vFilterParams2;
-out vec4 vFilterParams3;
-out vec4 vFilterParams4;
-out float vCtrl;
-#endif
 
 /// Fetch data from the metadata texture.
 vec4 fetchUnscaled(sampler2D srcTexture, vec2 scale, vec2 originCoord, int entry) {

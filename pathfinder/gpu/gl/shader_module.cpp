@@ -33,8 +33,12 @@ void replaceAll(std::string &str, const std::string &from, const std::string &to
 
 ShaderModuleGl::ShaderModuleGl(const std::vector<char> &source_code,
                                ShaderStage shader_stage,
+                               const std::vector<std::pair<uint32_t, std::string>> &texture_binding_map,
+                               const std::vector<std::pair<uint32_t, std::string>> &uniform_buffer_binding_map,
                                const std::string &label) {
     label_ = label;
+    texture_binding_map_ = texture_binding_map;
+    uniform_buffer_binding_map_ = uniform_buffer_binding_map;
 
     switch (shader_stage) {
         case ShaderStage::Vertex: {
@@ -62,18 +66,19 @@ ShaderModuleGl::ShaderModuleGl(const std::vector<char> &source_code,
         replaceFirst(code_string, "#version 310 es", "#version 300 es");
     }
 
-    if (shader_stage == ShaderStage::Vertex) {
-        // 1. Find where "#version" is
-        size_t ver_pos = code_string.find("#version");
-        if (ver_pos != std::string::npos) {
-            // 2. Find the following line break
-            size_t nl_pos = code_string.find('\n', ver_pos);
-            if (nl_pos != std::string::npos) {
-                // 3. Add a new line
-                code_string.insert(nl_pos + 1, "#define gl_VertexIndex gl_VertexID\n");
-            }
-        }
-    }
+    // Deprecated, should handled by SPIRV now.
+    // if (shader_stage == ShaderStage::Vertex) {
+    //     // 1. Find where "#version" is
+    //     size_t ver_pos = code_string.find("#version");
+    //     if (ver_pos != std::string::npos) {
+    //         // 2. Find the following line break
+    //         size_t nl_pos = code_string.find('\n', ver_pos);
+    //         if (nl_pos != std::string::npos) {
+    //             // 3. Add a new line
+    //             code_string.insert(nl_pos + 1, "#define gl_VertexIndex gl_VertexID\n");
+    //         }
+    //     }
+    // }
 #endif
 
     auto code_cstr = code_string.c_str();

@@ -15,22 +15,13 @@
 
 #ifdef PATHFINDER_ENABLE_D3D11
 /* clang-format off */
-// SPV
-    #include "../../shaders/generated/bin_comp_spv.h"
-    #include "../../shaders/generated/bound_comp_spv.h"
-    #include "../../shaders/generated/dice_comp_spv.h"
-    #include "../../shaders/generated/fill_comp_spv.h"
-    #include "../../shaders/generated/propagate_comp_spv.h"
-    #include "../../shaders/generated/sort_comp_spv.h"
-    #include "../../shaders/generated/tile_comp_spv.h"
-// GLSL
-    #include "../../shaders/generated/bin_comp.h"
-    #include "../../shaders/generated/bound_comp.h"
-    #include "../../shaders/generated/dice_comp.h"
-    #include "../../shaders/generated/fill_comp.h"
-    #include "../../shaders/generated/propagate_comp.h"
-    #include "../../shaders/generated/sort_comp.h"
-    #include "../../shaders/generated/tile_comp.h"
+    #include "../../shaders/generated/bin_comp_shdbin.h"
+    #include "../../shaders/generated/bound_comp_shdbin.h"
+    #include "../../shaders/generated/dice_comp_shdbin.h"
+    #include "../../shaders/generated/fill_comp_shdbin.h"
+    #include "../../shaders/generated/propagate_comp_shdbin.h"
+    #include "../../shaders/generated/sort_comp_shdbin.h"
+    #include "../../shaders/generated/tile_comp_shdbin.h"
 /* clang-format on */
 
 namespace Pathfinder {
@@ -138,35 +129,15 @@ RendererD3D11::RendererD3D11(const std::shared_ptr<Device> &device, const std::s
 void RendererD3D11::set_up_pipelines() {
     auto default_sampler = get_default_sampler();
 
-    std::vector<char> dice_source, bound_source, bin_source, propagate_source, fill_source, sort_source, tile_source;
-
-    if (device->get_backend_type() == BackendType::Vulkan) {
-        dice_source = std::vector<char>(std::begin(dice_comp_spv), std::end(dice_comp_spv));
-        bound_source = std::vector<char>(std::begin(bound_comp_spv), std::end(bound_comp_spv));
-        bin_source = std::vector<char>(std::begin(bin_comp_spv), std::end(bin_comp_spv));
-        propagate_source = std::vector<char>(std::begin(propagate_comp_spv), std::end(propagate_comp_spv));
-        fill_source = std::vector<char>(std::begin(fill_comp_spv), std::end(fill_comp_spv));
-        sort_source = std::vector<char>(std::begin(sort_comp_spv), std::end(sort_comp_spv));
-        tile_source = std::vector<char>(std::begin(tile_comp_spv), std::end(tile_comp_spv));
-    } else {
-        dice_source = std::vector<char>(std::begin(dice_comp), std::end(dice_comp));
-        bound_source = std::vector<char>(std::begin(bound_comp), std::end(bound_comp));
-        bin_source = std::vector<char>(std::begin(bin_comp), std::end(bin_comp));
-        propagate_source = std::vector<char>(std::begin(propagate_comp), std::end(propagate_comp));
-        fill_source = std::vector<char>(std::begin(fill_comp), std::end(fill_comp));
-        sort_source = std::vector<char>(std::begin(sort_comp), std::end(sort_comp));
-        tile_source = std::vector<char>(std::begin(tile_comp), std::end(tile_comp));
-    }
-
     {
         std::vector<DescriptorLayout> layouts = {
-            DescriptorLayout{0, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{1, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{2, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{3, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{4, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{5, ShaderStage::Compute, DescriptorType::UniformBuffer, ""},
-            DescriptorLayout{6, ShaderStage::Compute, DescriptorType::UniformBuffer, ""},
+            DescriptorLayout{0, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{1, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{2, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{3, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{4, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{5, ShaderStage::Compute, DescriptorType::UniformBuffer},
+            DescriptorLayout{6, ShaderStage::Compute, DescriptorType::UniformBuffer},
         };
 
         dice_descriptor_set_layout_ = device->create_descriptor_set_layout(layouts);
@@ -180,9 +151,9 @@ void RendererD3D11::set_up_pipelines() {
 
     {
         std::vector<DescriptorLayout> layouts = {
-            DescriptorLayout{0, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{1, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{2, ShaderStage::Compute, DescriptorType::UniformBuffer, ""},
+            DescriptorLayout{0, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{1, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{2, ShaderStage::Compute, DescriptorType::UniformBuffer},
         };
 
         bound_descriptor_set_layout_ = device->create_descriptor_set_layout(layouts);
@@ -195,13 +166,13 @@ void RendererD3D11::set_up_pipelines() {
 
     {
         std::vector<DescriptorLayout> layouts = {
-            DescriptorLayout{0, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{1, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{2, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{3, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{4, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{5, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{6, ShaderStage::Compute, DescriptorType::UniformBuffer, ""},
+            DescriptorLayout{0, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{1, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{2, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{3, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{4, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{5, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{6, ShaderStage::Compute, DescriptorType::UniformBuffer},
         };
 
         bin_descriptor_set_layout_ = device->create_descriptor_set_layout(layouts);
@@ -214,15 +185,15 @@ void RendererD3D11::set_up_pipelines() {
 
     {
         std::vector<DescriptorLayout> layouts = {
-            DescriptorLayout{0, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{1, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{2, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{3, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{4, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{5, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{6, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{7, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{8, ShaderStage::Compute, DescriptorType::UniformBuffer, ""},
+            DescriptorLayout{0, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{1, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{2, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{3, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{4, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{5, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{6, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{7, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{8, ShaderStage::Compute, DescriptorType::UniformBuffer},
         };
 
         propagate_descriptor_set_layout_ = device->create_descriptor_set_layout(layouts);
@@ -235,10 +206,10 @@ void RendererD3D11::set_up_pipelines() {
 
     {
         std::vector<DescriptorLayout> layouts = {
-            DescriptorLayout{0, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{1, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{2, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{3, ShaderStage::Compute, DescriptorType::UniformBuffer, ""},
+            DescriptorLayout{0, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{1, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{2, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{3, ShaderStage::Compute, DescriptorType::UniformBuffer},
         };
 
         sort_descriptor_set_layout_ = device->create_descriptor_set_layout(layouts);
@@ -251,12 +222,12 @@ void RendererD3D11::set_up_pipelines() {
 
     {
         std::vector<DescriptorLayout> layouts = {
-            DescriptorLayout{0, ShaderStage::Compute, DescriptorType::StorageBuffer, ""}, // Read only.
-            DescriptorLayout{1, ShaderStage::Compute, DescriptorType::StorageBuffer, ""}, // Read only.
-            DescriptorLayout{2, ShaderStage::Compute, DescriptorType::StorageBuffer, ""}, // Read only.
-            DescriptorLayout{3, ShaderStage::Compute, DescriptorType::Image, ""},
-            DescriptorLayout{4, ShaderStage::Compute, DescriptorType::Sampler, ""},
-            DescriptorLayout{5, ShaderStage::Compute, DescriptorType::UniformBuffer, ""},
+            DescriptorLayout{0, ShaderStage::Compute, DescriptorType::StorageBuffer}, // Read only.
+            DescriptorLayout{1, ShaderStage::Compute, DescriptorType::StorageBuffer}, // Read only.
+            DescriptorLayout{2, ShaderStage::Compute, DescriptorType::StorageBuffer}, // Read only.
+            DescriptorLayout{3, ShaderStage::Compute, DescriptorType::Image},
+            DescriptorLayout{4, ShaderStage::Compute, DescriptorType::Sampler},
+            DescriptorLayout{5, ShaderStage::Compute, DescriptorType::UniformBuffer},
         };
 
         fill_descriptor_set_layout_ = device->create_descriptor_set_layout(layouts);
@@ -273,15 +244,15 @@ void RendererD3D11::set_up_pipelines() {
 
     {
         std::vector<DescriptorLayout> layouts = {
-            DescriptorLayout{0, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{1, ShaderStage::Compute, DescriptorType::StorageBuffer, ""},
-            DescriptorLayout{2, ShaderStage::Compute, DescriptorType::Sampler, ""},
-            DescriptorLayout{3, ShaderStage::Compute, DescriptorType::Sampler, ""},
-            DescriptorLayout{4, ShaderStage::Compute, DescriptorType::Sampler, ""},
-            DescriptorLayout{5, ShaderStage::Compute, DescriptorType::Sampler, ""},
-            DescriptorLayout{6, ShaderStage::Compute, DescriptorType::Sampler, ""},
-            DescriptorLayout{7, ShaderStage::Compute, DescriptorType::Image, ""}, // Unused binding.
-            DescriptorLayout{8, ShaderStage::Compute, DescriptorType::UniformBuffer, ""},
+            DescriptorLayout{0, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{1, ShaderStage::Compute, DescriptorType::StorageBuffer},
+            DescriptorLayout{2, ShaderStage::Compute, DescriptorType::Sampler},
+            DescriptorLayout{3, ShaderStage::Compute, DescriptorType::Sampler},
+            DescriptorLayout{4, ShaderStage::Compute, DescriptorType::Sampler},
+            DescriptorLayout{5, ShaderStage::Compute, DescriptorType::Sampler},
+            DescriptorLayout{6, ShaderStage::Compute, DescriptorType::Sampler},
+            DescriptorLayout{7, ShaderStage::Compute, DescriptorType::Image}, // Unused binding.
+            DescriptorLayout{8, ShaderStage::Compute, DescriptorType::UniformBuffer},
         };
 
         tile_descriptor_set_layout_ = device->create_descriptor_set_layout(layouts);
@@ -295,35 +266,37 @@ void RendererD3D11::set_up_pipelines() {
         Descriptor::uniform(8, allocator->get_buffer(tile_ub_id)),
     });
 
+    auto dice_shader = Shader::create_from_shdbin(dice_comp_shdbin, sizeof(dice_comp_shdbin));
+    auto bound_shader = Shader::create_from_shdbin(bound_comp_shdbin, sizeof(bound_comp_shdbin));
+    auto bin_shader = Shader::create_from_shdbin(bin_comp_shdbin, sizeof(bin_comp_shdbin));
+    auto propagate_shader = Shader::create_from_shdbin(propagate_comp_shdbin, sizeof(propagate_comp_shdbin));
+    auto fill_shader = Shader::create_from_shdbin(fill_comp_shdbin, sizeof(fill_comp_shdbin));
+    auto sort_shader = Shader::create_from_shdbin(sort_comp_shdbin, sizeof(sort_comp_shdbin));
+    auto tile_shader = Shader::create_from_shdbin(tile_comp_shdbin, sizeof(tile_comp_shdbin));
+
     // These pipelines will be called by order.
-    dice_pipeline =
-        device->create_compute_pipeline(device->create_shader_module(dice_source, ShaderStage::Compute, "dice comp"),
-                                        dice_descriptor_set_layout_,
-                                        "dice pipeline"); // 1
-    bound_pipeline =
-        device->create_compute_pipeline(device->create_shader_module(bound_source, ShaderStage::Compute, "bound comp"),
-                                        bound_descriptor_set_layout_,
-                                        "bound pipeline"); // 2
-    bin_pipeline =
-        device->create_compute_pipeline(device->create_shader_module(bin_source, ShaderStage::Compute, "bin comp"),
-                                        bin_descriptor_set_layout_,
-                                        "bin pipeline"); // 3
-    propagate_pipeline = device->create_compute_pipeline(
-        device->create_shader_module(propagate_source, ShaderStage::Compute, "propagate comp"),
-        propagate_descriptor_set_layout_,
-        "propagate pipeline"); // 4
-    fill_pipeline =
-        device->create_compute_pipeline(device->create_shader_module(fill_source, ShaderStage::Compute, "fill comp"),
-                                        fill_descriptor_set_layout_,
-                                        "fill pipeline"); // 5
-    sort_pipeline =
-        device->create_compute_pipeline(device->create_shader_module(sort_source, ShaderStage::Compute, "sort comp"),
-                                        sort_descriptor_set_layout_,
-                                        "sort pipeline"); // 6
-    tile_pipeline =
-        device->create_compute_pipeline(device->create_shader_module(tile_source, ShaderStage::Compute, "tile comp"),
-                                        tile_descriptor_set_layout_,
-                                        "tile pipeline"); // 7
+    dice_pipeline = device->create_compute_pipeline(device->create_shader_module(dice_shader, "dice comp"),
+                                                    dice_descriptor_set_layout_,
+                                                    "dice pipeline"); // 1
+    bound_pipeline = device->create_compute_pipeline(device->create_shader_module(bound_shader, "bound comp"),
+                                                     bound_descriptor_set_layout_,
+                                                     "bound pipeline"); // 2
+    bin_pipeline = device->create_compute_pipeline(device->create_shader_module(bin_shader, "bin comp"),
+                                                   bin_descriptor_set_layout_,
+                                                   "bin pipeline"); // 3
+    propagate_pipeline =
+        device->create_compute_pipeline(device->create_shader_module(propagate_shader, "propagate comp"),
+                                        propagate_descriptor_set_layout_,
+                                        "propagate pipeline"); // 4
+    fill_pipeline = device->create_compute_pipeline(device->create_shader_module(fill_shader, "fill comp"),
+                                                    fill_descriptor_set_layout_,
+                                                    "fill pipeline"); // 5
+    sort_pipeline = device->create_compute_pipeline(device->create_shader_module(sort_shader, "sort comp"),
+                                                    sort_descriptor_set_layout_,
+                                                    "sort pipeline"); // 6
+    tile_pipeline = device->create_compute_pipeline(device->create_shader_module(tile_shader, "tile comp"),
+                                                    tile_descriptor_set_layout_,
+                                                    "tile pipeline"); // 7
 }
 
 void RendererD3D11::draw(const std::shared_ptr<SceneBuilder> &_scene_builder, bool _clear_dst_texture) {

@@ -1,4 +1,4 @@
-#version 310 es
+#version 450
 
 // pathfinder/shaders/tile_clip_combine.vs.glsl
 //
@@ -11,16 +11,9 @@
 // except according to those terms.
 
 precision highp float;
-
-#ifdef GL_ES
 precision highp sampler2D;
-#endif
 
-#ifdef VULKAN
 layout(binding = 0) uniform bUniform {
-#else
-layout(std140) uniform bUniform {
-#endif
     vec2 uTileSize; // Fixed as (16, 16).
     vec2 uFramebufferSize; // Mask framebuffer. Dynamic as (4096, 1024 * page_count).
 };
@@ -31,17 +24,10 @@ layout(location = 2) in int aDestBackdrop;
 layout(location = 3) in int aSrcTileIndex;
 layout(location = 4) in int aSrcBackdrop;
 
-#ifdef VULKAN
 layout(location = 0) out vec2 vTexCoord0;
 layout(location = 1) out float vBackdrop0;
 layout(location = 2) out vec2 vTexCoord1;
 layout(location = 3) out float vBackdrop1;
-#else
-out vec2 vTexCoord0;
-out float vBackdrop0;
-out vec2 vTexCoord1;
-out float vBackdrop1;
-#endif
 
 void main() {
     vec2 destPosition = vec2(ivec2(aDestTileIndex % 256, aDestTileIndex / 256) + ivec2(aTileOffset));

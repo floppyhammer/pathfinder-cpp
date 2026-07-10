@@ -73,8 +73,8 @@ bool CommandEncoderGl::finish() {
 
                 uint32_t vao;
                 glGenVertexArrays(1, &vao);
-                // This triggers error 1281, so we comment it for now.
-                // DebugMarker::label_vao(vao, label_ + " VAO");
+                // We have to bind it here, in case we don't need any vertex buffer.
+                glBindVertexArray(vao);
                 vao_.push_back(vao);
                 gl_check_error("GenVAO");
             } break;
@@ -157,34 +157,13 @@ bool CommandEncoderGl::finish() {
             case CommandType::BindDescriptorSet: {
                 auto &args = cmd.args.bind_descriptor_set;
 
-                uint32_t program_id;
-                if (render_pipeline_ != nullptr) {
-                    auto pipeline_gl = static_cast<RenderPipelineGl *>(render_pipeline_);
-                    program_id = pipeline_gl->get_program()->get_handle();
-                } else {
-                    auto pipeline_gl = static_cast<ComputePipelineGl *>(compute_pipeline_);
-                    program_id = pipeline_gl->get_program()->get_handle();
-                }
-
-                auto descriptor_set_layout = args.descriptor_set->get_layout();
-
                 for (auto &pair : args.descriptor_set->get_descriptors()) {
                     auto &descriptor = pair.second;
-
-                    // Note that pair.first is not the binding point.
                     auto binding_point = descriptor.binding;
-                    auto descriptor_layout = descriptor_set_layout->get_descriptor_layout(binding_point);
-                    auto binding_name = descriptor_layout.binding_name;
 
                     switch (descriptor.type) {
                         case DescriptorType::UniformBuffer: {
                             auto buffer_gl = static_cast<BufferGl *>(descriptor.buffer.get());
-
-                            // Only for GLES 3.0
-                            if (!binding_name.empty()) {
-                                unsigned int ubo_index = glGetUniformBlockIndex(program_id, binding_name.c_str());
-                                glUniformBlockBinding(program_id, ubo_index, binding_point);
-                            }
 
                             glBindBufferRange(GL_UNIFORM_BUFFER,
                                               binding_point,
@@ -192,18 +171,10 @@ bool CommandEncoderGl::finish() {
                                               descriptor.buffer_offset,
                                               descriptor.buffer_range);
 
-                            gl_check_error("Mismatched uniform binding name!");
+                            gl_check_error("bind uniform buffer");
                         } break;
                         case DescriptorType::Sampler: {
                             auto texture_gl = static_cast<TextureGl *>(descriptor.texture.get());
-
-                            // Only for GLES 3.0
-                            if (!binding_name.empty()) {
-                                glUniform1i(glGetUniformLocation(program_id, binding_name.c_str()),
-                                            (GLint)binding_point);
-
-                                gl_check_error("Mismatched texture binding name!");
-                            }
 
                             glActiveTexture(GL_TEXTURE0 + binding_point);
 
@@ -229,6 +200,8 @@ bool CommandEncoderGl::finish() {
                                             GL_TEXTURE_MAG_FILTER,
                                             to_gl_sampler_filter(sampler_descriptor.mag_filter));
                             // --------------------------------------------------------------
+
+                            gl_check_error("bind texture");
                         } break;
 #ifdef PATHFINDER_ENABLE_D3D11
                         case DescriptorType::StorageBuffer: {

@@ -83,6 +83,19 @@ std::shared_ptr<DescriptorSet> DeviceVk::create_descriptor_set(std::shared_ptr<D
     return std::shared_ptr<DescriptorSetVk>(new DescriptorSetVk(layout));
 }
 
+std::shared_ptr<ShaderModule> DeviceVk::create_shader_module(const std::shared_ptr<Shader> &shader,
+                                                             const std::string &label) {
+    auto code = shader->get_shader_code({ShaderSourceType::SPIRV, 1, 1});
+
+    if (!code) {
+        Logger::error("Failed to find a compatible SPIRV variant in the provided shader binary!");
+        return nullptr;
+    }
+
+    std::vector<char> source(code->code.begin(), code->code.end());
+    return create_shader_module(source, code->stage, label);
+}
+
 std::shared_ptr<ShaderModule> DeviceVk::create_shader_module(const std::vector<char> &source_code,
                                                              ShaderStage shader_stage,
                                                              const std::string &label) {

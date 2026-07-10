@@ -43,6 +43,9 @@ public:
 
     std::shared_ptr<DescriptorSet> create_descriptor_set(std::shared_ptr<DescriptorSetLayout> layout) override;
 
+    std::shared_ptr<ShaderModule> create_shader_module(const std::shared_ptr<Shader> &shader,
+                                                       const std::string &label) override;
+
     std::shared_ptr<ShaderModule> create_shader_module(const std::vector<char> &source_code,
                                                        ShaderStage shader_stage,
                                                        const std::string &label) override;

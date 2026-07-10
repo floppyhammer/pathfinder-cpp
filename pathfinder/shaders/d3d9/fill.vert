@@ -1,4 +1,4 @@
-#version 310 es
+#version 450
 
 // pathfinder/shaders/fill.vs.glsl
 //
@@ -10,11 +10,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-#ifdef VULKAN
-    layout(binding = 0) uniform bUniform {
-#else
-    layout(std140) uniform bUniform {
-#endif
+layout(binding = 0) uniform bUniform {
     vec2 uTileSize; // Fixed as (16, 16).
     vec2 uFramebufferSize; // Mask framebuffer. Dynamic as (4096, 1024 * page_count).
 };
@@ -23,13 +19,8 @@ layout(location=0) in uvec2 aTessCoord; // Vertex coordinates in a quad, fixed.
 layout(location=1) in uvec4 aLineSegment; // Line segment from the built batch.
 layout(location=2) in uint aTileIndex; // Alpha tile index.
 
-#ifdef VULKAN
 layout(location=0) out vec2 vFrom;
 layout(location=1) out vec2 vTo;
-#else
-out vec2 vFrom;
-out vec2 vTo;
-#endif
 
 /// Tile index -> index coordinates -> pixel coordinates.
 vec2 computeTileOffset(uint tileIndex, float stencilTextureWidth, vec2 tileSize) {

@@ -9,6 +9,7 @@
 #include "framebuffer.h"
 #include "render_pass.h"
 #include "render_pipeline.h"
+#include "shader.h"
 #include "shader_module.h"
 
 namespace Pathfinder {
@@ -47,6 +48,9 @@ public:
 
     virtual std::shared_ptr<RenderPass> create_swap_chain_render_pass(TextureFormat format,
                                                                       AttachmentLoadOp load_op) = 0;
+
+    virtual std::shared_ptr<ShaderModule> create_shader_module(const std::shared_ptr<Shader> &shader,
+                                                               const std::string &label) = 0;
 
     virtual std::shared_ptr<ShaderModule> create_shader_module(const std::vector<char> &source_code,
                                                                ShaderStage shader_stage,

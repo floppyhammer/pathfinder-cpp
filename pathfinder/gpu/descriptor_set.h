@@ -17,8 +17,8 @@ struct DescriptorLayout {
     uint32_t binding{};
     ShaderStage stage{};
     DescriptorType type{};
-    /// For compatibility with lower versions of OpenGL.
-    std::string binding_name;
+    /// For compatibility with lower versions of OpenGL. Deprecated, this has become automatic.
+    // std::string binding_name;
 };
 
 class DescriptorSetLayout {
@@ -114,8 +114,7 @@ struct Descriptor {
         return desc;
     }
 
-    static Descriptor image(uint32_t binding,
-                            const std::shared_ptr<Texture>& texture = nullptr) {
+    static Descriptor image(uint32_t binding, const std::shared_ptr<Texture>& texture = nullptr) {
         Descriptor desc{};
         desc.type = DescriptorType::Image;
         desc.binding = binding;

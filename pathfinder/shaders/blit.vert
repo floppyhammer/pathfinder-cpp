@@ -1,10 +1,6 @@
-#version 310 es
+#version 450
 
-#ifdef VULKAN
 layout(location = 0) out vec2 vUV;
-#else
-out vec2 vUV;
-#endif
 
 void main() {
     float x = -1.0 + float((gl_VertexIndex & 1) << 2);

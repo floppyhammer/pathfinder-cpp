@@ -47,6 +47,7 @@ enum class ShaderStage {
     Vertex,
     Fragment,
     Compute,
+    Geometry,
     VertexAndFragment,
 };
 

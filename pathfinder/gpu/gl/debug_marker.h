@@ -62,7 +62,7 @@ inline void gl_check_error(const char *flag) {
 #ifndef NDEBUG
     for (GLint error = glGetError(); error; error = glGetError()) {
         std::ostringstream string_stream;
-        string_stream << "Error " << error << " after " << flag;
+        string_stream << "GL error " << error << " after " << flag;
         Logger::error(string_stream.str());
     }
 #endif

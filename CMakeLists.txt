@@ -12,6 +12,8 @@ option(PATHFINDER_BACKEND_OPENGL "Enable OpenGL backend" ON)
 option(PATHFINDER_BACKEND_VULKAN "Enable Vulkan backend" ON)
 option(PATHFINDER_BUILD_DEMO "Build demo" OFF)
 option(PATHFINDER_USE_D3D11 "Use D3D11" OFF)
+option(PATHFINDER_RUNTIME_SHADER_COMPLICATION "Compile shaders at runtime using SPV" OFF)
+option(PATHFINDER_BUILD_SHADER_GENERATOR "Shader generator" OFF)
 
 # Identify Linux.
 if (UNIX AND NOT APPLE AND NOT ANDROID)
@@ -104,6 +106,13 @@ if ((WIN32 OR LINUX OR APPLE) AND NOT (EMSCRIPTEN OR ANDROID))
     target_link_libraries(pathfinder PUBLIC glfw)
 endif ()
 
+if (PATHFINDER_RUNTIME_SHADER_COMPLICATION)
+    add_subdirectory("third_party/spirv-cross")
+    add_subdirectory("third_party/glslang")
+    target_link_libraries(pathfinder PUBLIC spirv-cross glslang)
+    target_compile_definitions(pathfinder PRIVATE PATHFINDER_USE_GLSLANG)
+endif ()
+
 if (PATHFINDER_BUILD_DEMO)
     message("[Pathfinder] Build demo")
 
@@ -126,4 +135,11 @@ if (PATHFINDER_BUILD_DEMO)
 
         add_subdirectory(demo/web)
     endif ()
+endif ()
+
+if (PATHFINDER_BUILD_SHADER_GENERATOR)
+    add_subdirectory("third_party/spirv-cross")
+    add_subdirectory("third_party/glslang")
+
+    add_subdirectory(shader_generator)
 endif ()

@@ -10,24 +10,14 @@
 #include "../paint/palette.h"
 
 /* clang-format off */
-// SPV
-#include "../../shaders/generated/fill_frag_spv.h"
-#include "../../shaders/generated/fill_vert_spv.h"
-#include "../../shaders/generated/tile_clip_combine_frag_spv.h"
-#include "../../shaders/generated/tile_clip_combine_vert_spv.h"
-#include "../../shaders/generated/tile_clip_copy_frag_spv.h"
-#include "../../shaders/generated/tile_clip_copy_vert_spv.h"
-#include "../../shaders/generated/tile_frag_spv.h"
-#include "../../shaders/generated/tile_vert_spv.h"
-// GLSL
-#include "../../shaders/generated/fill_frag.h"
-#include "../../shaders/generated/fill_vert.h"
-#include "../../shaders/generated/tile_clip_combine_frag.h"
-#include "../../shaders/generated/tile_clip_combine_vert.h"
-#include "../../shaders/generated/tile_clip_copy_frag.h"
-#include "../../shaders/generated/tile_clip_copy_vert.h"
-#include "../../shaders/generated/tile_frag.h"
-#include "../../shaders/generated/tile_vert.h"
+#include "../../shaders/generated/fill_frag_shdbin.h"
+#include "../../shaders/generated/fill_vert_shdbin.h"
+#include "../../shaders/generated/tile_clip_combine_frag_shdbin.h"
+#include "../../shaders/generated/tile_clip_combine_vert_shdbin.h"
+#include "../../shaders/generated/tile_clip_copy_frag_shdbin.h"
+#include "../../shaders/generated/tile_clip_copy_vert_shdbin.h"
+#include "../../shaders/generated/tile_frag_shdbin.h"
+#include "../../shaders/generated/tile_vert_shdbin.h"
 /* clang-format on */
 
 #include <array>
@@ -111,16 +101,6 @@ void RendererD3D9::update_tile_batch_storage(uint32_t new_tile_batch_count) {
 void RendererD3D9::set_up_pipelines() {
     // Fill pipeline.
     {
-        std::vector<char> fill_vert_source, fill_frag_source;
-
-        if (device->get_backend_type() == BackendType::Vulkan) {
-            fill_vert_source = std::vector<char>(std::begin(fill_vert_spv), std::end(fill_vert_spv));
-            fill_frag_source = std::vector<char>(std::begin(fill_frag_spv), std::end(fill_frag_spv));
-        } else {
-            fill_vert_source = std::vector<char>(std::begin(fill_vert), std::end(fill_vert));
-            fill_frag_source = std::vector<char>(std::begin(fill_frag), std::end(fill_frag));
-        }
-
         // Set vertex attributes.
         std::vector<VertexInputAttributeDescription> attribute_descriptions;
         {
@@ -142,8 +122,8 @@ void RendererD3D9::set_up_pipelines() {
 
         {
             std::vector<DescriptorLayout> layouts = {
-                DescriptorLayout{0, ShaderStage::Vertex, DescriptorType::UniformBuffer, "bUniform"},
-                DescriptorLayout{1, ShaderStage::Fragment, DescriptorType::Sampler, "uAreaLUT"},
+                DescriptorLayout{0, ShaderStage::Vertex, DescriptorType::UniformBuffer},
+                DescriptorLayout{1, ShaderStage::Fragment, DescriptorType::Sampler},
             };
 
             fill_descriptor_set_layout_ = device->create_descriptor_set_layout(layouts);
@@ -155,11 +135,14 @@ void RendererD3D9::set_up_pipelines() {
             Descriptor::sampled(1, allocator->get_texture(area_lut_texture_id), get_default_sampler()),
         });
 
-        auto fill_vert_shader = device->create_shader_module(fill_vert_source, ShaderStage::Vertex, "fill vert");
-        auto fill_frag_shader = device->create_shader_module(fill_frag_source, ShaderStage::Fragment, "fill frag");
+        auto fill_vert_shader = Shader::create_from_shdbin(fill_vert_shdbin, sizeof(fill_vert_shdbin));
+        auto fill_frag_shader = Shader::create_from_shdbin(fill_frag_shdbin, sizeof(fill_frag_shdbin));
 
-        fill_pipeline = device->create_render_pipeline(fill_vert_shader,
-                                                       fill_frag_shader,
+        auto fill_vert_shader_module = device->create_shader_module(fill_vert_shader, "fill vert");
+        auto fill_frag_shader_module = device->create_shader_module(fill_frag_shader, "fill frag");
+
+        fill_pipeline = device->create_render_pipeline(fill_vert_shader_module,
+                                                       fill_frag_shader_module,
                                                        attribute_descriptions,
                                                        BlendState::from_equal(),
                                                        fill_descriptor_set_layout_,
@@ -169,21 +152,9 @@ void RendererD3D9::set_up_pipelines() {
 
     // Tile pipeline.
     {
-        std::vector<char> tile_vert_source, tile_frag_source;
-
-        if (device->get_backend_type() == BackendType::Vulkan) {
-            tile_vert_source = std::vector<char>(std::begin(tile_vert_spv), std::end(tile_vert_spv));
-            tile_frag_source = std::vector<char>(std::begin(tile_frag_spv), std::end(tile_frag_spv));
-        } else {
-            tile_vert_source = std::vector<char>(std::begin(tile_vert), std::end(tile_vert));
-            tile_frag_source = std::vector<char>(std::begin(tile_frag), std::end(tile_frag));
-        }
-
         // Set vertex attributes.
         std::vector<VertexInputAttributeDescription> attribute_descriptions;
         {
-            attribute_descriptions.reserve(6);
-
             // Quad vertex.
             attribute_descriptions.push_back({0, 2, DataType::u16, 2 * sizeof(uint16_t), 0, VertexInputRate::Vertex});
 
@@ -204,13 +175,13 @@ void RendererD3D9::set_up_pipelines() {
 
         {
             std::vector<DescriptorLayout> layouts = {
-                DescriptorLayout{0, ShaderStage::Vertex, DescriptorType::Sampler, "uTextureMetadata"},
-                DescriptorLayout{1, ShaderStage::Vertex, DescriptorType::Sampler, "uZBuffer"},
-                DescriptorLayout{2, ShaderStage::VertexAndFragment, DescriptorType::UniformBuffer, "bUniform"},
-                DescriptorLayout{3, ShaderStage::Fragment, DescriptorType::Sampler, "uColorTexture0"},
-                DescriptorLayout{4, ShaderStage::Fragment, DescriptorType::Sampler, "uMaskTexture0"},
-                DescriptorLayout{5, ShaderStage::Fragment, DescriptorType::Sampler, "uDestTexture"},
-                DescriptorLayout{6, ShaderStage::Fragment, DescriptorType::Sampler, "uGammaLUT"},
+                DescriptorLayout{0, ShaderStage::Vertex, DescriptorType::Sampler},
+                DescriptorLayout{1, ShaderStage::Vertex, DescriptorType::Sampler},
+                DescriptorLayout{2, ShaderStage::VertexAndFragment, DescriptorType::UniformBuffer},
+                DescriptorLayout{3, ShaderStage::Fragment, DescriptorType::Sampler},
+                DescriptorLayout{4, ShaderStage::Fragment, DescriptorType::Sampler},
+                DescriptorLayout{5, ShaderStage::Fragment, DescriptorType::Sampler},
+                DescriptorLayout{6, ShaderStage::Fragment, DescriptorType::Sampler},
             };
 
             tile_descriptor_set_layout_ = device->create_descriptor_set_layout(layouts);
@@ -218,11 +189,14 @@ void RendererD3D9::set_up_pipelines() {
 
         update_tile_batch_storage(DEFAULT_TILE_BATCH_COUNT);
 
-        auto tile_vert_shader = device->create_shader_module(tile_vert_source, ShaderStage::Vertex, "tile vert");
-        auto tile_frag_shader = device->create_shader_module(tile_frag_source, ShaderStage::Fragment, "tile frag");
+        auto tile_vert_shader = Shader::create_from_shdbin(tile_vert_shdbin, sizeof(tile_vert_shdbin));
+        auto tile_frag_shader = Shader::create_from_shdbin(tile_frag_shdbin, sizeof(tile_frag_shdbin));
 
-        tile_pipeline = device->create_render_pipeline(tile_vert_shader,
-                                                       tile_frag_shader,
+        auto tile_vert_shader_module = device->create_shader_module(tile_vert_shader, "tile vert");
+        auto tile_frag_shader_module = device->create_shader_module(tile_frag_shader, "tile frag");
+
+        tile_pipeline = device->create_render_pipeline(tile_vert_shader_module,
+                                                       tile_frag_shader_module,
                                                        attribute_descriptions,
                                                        BlendState::from_over(),
                                                        tile_descriptor_set_layout_,
@@ -265,18 +239,6 @@ void RendererD3D9::reallocate_alpha_tile_pages_if_necessary() {
 }
 
 void RendererD3D9::create_tile_clip_copy_pipeline() {
-    std::vector<char> tile_clip_copy_vert_source, tile_clip_copy_frag_source;
-
-    if (device->get_backend_type() == BackendType::Vulkan) {
-        tile_clip_copy_vert_source =
-            std::vector<char>(std::begin(tile_clip_copy_vert_spv), std::end(tile_clip_copy_vert_spv));
-        tile_clip_copy_frag_source =
-            std::vector<char>(std::begin(tile_clip_copy_frag_spv), std::end(tile_clip_copy_frag_spv));
-    } else {
-        tile_clip_copy_vert_source = std::vector<char>(std::begin(tile_clip_copy_vert), std::end(tile_clip_copy_vert));
-        tile_clip_copy_frag_source = std::vector<char>(std::begin(tile_clip_copy_frag), std::end(tile_clip_copy_frag));
-    }
-
     // Set vertex attributes.
     std::vector<VertexInputAttributeDescription> attribute_descriptions;
     {
@@ -290,8 +252,8 @@ void RendererD3D9::create_tile_clip_copy_pipeline() {
 
     {
         std::vector<DescriptorLayout> layouts = {
-            DescriptorLayout{0, ShaderStage::Vertex, DescriptorType::UniformBuffer, "bUniform"},
-            DescriptorLayout{1, ShaderStage::Fragment, DescriptorType::Sampler, "uSrc"},
+            DescriptorLayout{0, ShaderStage::Vertex, DescriptorType::UniformBuffer},
+            DescriptorLayout{1, ShaderStage::Fragment, DescriptorType::Sampler},
         };
 
         tile_clip_copy_descriptor_set_layout_ = device->create_descriptor_set_layout(layouts);
@@ -303,14 +265,15 @@ void RendererD3D9::create_tile_clip_copy_pipeline() {
         Descriptor::uniform(0, allocator->get_buffer(fill_ub_id)),
     });
 
-    auto tile_clip_copy_vert_shader =
-        device->create_shader_module(tile_clip_copy_vert_source, ShaderStage::Vertex, "tile clip copy vert");
-    auto tile_clip_copy_frag_shader =
-        device->create_shader_module(tile_clip_copy_frag_source, ShaderStage::Fragment, "tile clip copy frag");
+    auto vert_shader = Shader::create_from_shdbin(tile_clip_copy_vert_shdbin, sizeof(tile_clip_copy_vert_shdbin));
+    auto frag_shader = Shader::create_from_shdbin(tile_clip_copy_frag_shdbin, sizeof(tile_clip_copy_frag_shdbin));
+
+    auto vert_shader_module = device->create_shader_module(vert_shader, "tile clip copy vert");
+    auto frag_shader_module = device->create_shader_module(frag_shader, "tile clip copy frag");
 
     // We have to disable blend for tile clip copy.
-    tile_clip_copy_pipeline = device->create_render_pipeline(tile_clip_copy_vert_shader,
-                                                             tile_clip_copy_frag_shader,
+    tile_clip_copy_pipeline = device->create_render_pipeline(vert_shader_module,
+                                                             frag_shader_module,
                                                              attribute_descriptions,
                                                              {false},
                                                              tile_clip_copy_descriptor_set_layout_,
@@ -319,15 +282,6 @@ void RendererD3D9::create_tile_clip_copy_pipeline() {
 }
 
 void RendererD3D9::create_tile_clip_combine_pipeline() {
-    std::vector<char> vert_source, frag_source;
-    if (device->get_backend_type() == BackendType::Vulkan) {
-        vert_source = std::vector<char>(std::begin(tile_clip_combine_vert_spv), std::end(tile_clip_combine_vert_spv));
-        frag_source = std::vector<char>(std::begin(tile_clip_combine_frag_spv), std::end(tile_clip_combine_frag_spv));
-    } else {
-        vert_source = std::vector<char>(std::begin(tile_clip_combine_vert), std::end(tile_clip_combine_vert));
-        frag_source = std::vector<char>(std::begin(tile_clip_combine_frag), std::end(tile_clip_combine_frag));
-    }
-
     // Set vertex attributes.
     std::vector<VertexInputAttributeDescription> attribute_descriptions;
     {
@@ -347,8 +301,8 @@ void RendererD3D9::create_tile_clip_combine_pipeline() {
 
     {
         std::vector<DescriptorLayout> layouts = {
-            DescriptorLayout{0, ShaderStage::Vertex, DescriptorType::UniformBuffer, "bUniform"},
-            DescriptorLayout{1, ShaderStage::Fragment, DescriptorType::Sampler, "uSrc"},
+            DescriptorLayout{0, ShaderStage::Vertex, DescriptorType::UniformBuffer},
+            DescriptorLayout{1, ShaderStage::Fragment, DescriptorType::Sampler},
         };
 
         tile_clip_combine_descriptor_set_layout_ = device->create_descriptor_set_layout(layouts);
@@ -360,14 +314,15 @@ void RendererD3D9::create_tile_clip_combine_pipeline() {
         Descriptor::uniform(0, allocator->get_buffer(fill_ub_id)),
     });
 
-    auto tile_clip_combine_vert_shader =
-        device->create_shader_module(vert_source, ShaderStage::Vertex, "tile clip combine vert");
-    auto tile_clip_combine_frag_shader =
-        device->create_shader_module(frag_source, ShaderStage::Fragment, "tile clip combine frag");
+    auto vert_shader = Shader::create_from_shdbin(tile_clip_combine_vert_shdbin, sizeof(tile_clip_combine_vert_shdbin));
+    auto frag_shader = Shader::create_from_shdbin(tile_clip_combine_frag_shdbin, sizeof(tile_clip_combine_frag_shdbin));
+
+    auto vert_shader_module = device->create_shader_module(vert_shader, "tile clip combine vert");
+    auto frag_shader_module = device->create_shader_module(frag_shader, "tile clip combine frag");
 
     // We have to disable blend for tile clip combine.
-    tile_clip_combine_pipeline = device->create_render_pipeline(tile_clip_combine_vert_shader,
-                                                                tile_clip_combine_frag_shader,
+    tile_clip_combine_pipeline = device->create_render_pipeline(vert_shader_module,
+                                                                frag_shader_module,
                                                                 attribute_descriptions,
                                                                 {false},
                                                                 tile_clip_combine_descriptor_set_layout_,
