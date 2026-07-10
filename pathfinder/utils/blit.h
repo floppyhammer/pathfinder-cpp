@@ -23,6 +23,8 @@ private:
 
     std::shared_ptr<Texture> texture_;
 
+    std::shared_ptr<Buffer> uniform_buffer_;
+
     std::shared_ptr<RenderPipeline> pipeline_;
 
     std::shared_ptr<DescriptorSetLayout> descriptor_set_layout_;

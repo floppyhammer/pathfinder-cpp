@@ -1,5 +1,12 @@
 #version 450
 
+layout(binding = 0) uniform bUniform {
+    float flip_y;
+    float padding0;
+    float padding1;
+    float padding2;
+};
+
 layout(location = 0) out vec2 vUV;
 
 void main() {
@@ -10,4 +17,6 @@ void main() {
 
     // Maps clip space coordinates [-1, 1] to UV space [0, 1]
     vUV = gl_Position.xy * 0.5 + 0.5;
+
+    gl_Position.y *= flip_y;
 }

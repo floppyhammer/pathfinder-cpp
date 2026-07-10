@@ -66,7 +66,7 @@ ShaderModuleGl::ShaderModuleGl(const std::vector<char> &source_code,
         replaceFirst(code_string, "#version 310 es", "#version 300 es");
     }
 
-    // Deprecated, should handled by SPIRV now.
+    // Deprecated, should be handled by SPIRV now.
     // if (shader_stage == ShaderStage::Vertex) {
     //     // 1. Find where "#version" is
     //     size_t ver_pos = code_string.find("#version");
