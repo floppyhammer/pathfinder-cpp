@@ -7,6 +7,7 @@
 #include "framebuffer.h"
 #include "render_pass.h"
 #include "render_pipeline.h"
+#include "sampler.h"
 #include "shader_module.h"
 
 namespace Pathfinder {
@@ -50,7 +51,7 @@ std::shared_ptr<Texture> DeviceGl::wrap_texture(uint32_t external_gl_id, const T
 }
 
 std::shared_ptr<Sampler> DeviceGl::create_sampler(SamplerDescriptor descriptor) {
-    return std::shared_ptr<Sampler>(new Sampler(descriptor));
+    return std::shared_ptr<SamplerGl>(new SamplerGl(descriptor));
 }
 
 std::shared_ptr<CommandEncoder> DeviceGl::create_command_encoder(const std::string &label) {

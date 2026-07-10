@@ -9,6 +9,7 @@
 #include "framebuffer.h"
 #include "render_pass.h"
 #include "render_pipeline.h"
+#include "sampler.h"
 
 namespace Pathfinder {
 
@@ -177,29 +178,11 @@ bool CommandEncoderGl::finish() {
                             auto texture_gl = static_cast<TextureGl *>(descriptor.texture.get());
 
                             glActiveTexture(GL_TEXTURE0 + binding_point);
-
-                            auto sampler_descriptor = descriptor.sampler->get_descriptor();
-
                             glBindTexture(GL_TEXTURE_2D, texture_gl->get_texture_id());
 
-                            // Set texture sampler.
-                            // --------------------------------------------------------------
-                            // Set wrapping parameters.
-                            glTexParameteri(GL_TEXTURE_2D,
-                                            GL_TEXTURE_WRAP_S,
-                                            to_gl_sampler_address_mode(sampler_descriptor.address_mode_u));
-                            glTexParameteri(GL_TEXTURE_2D,
-                                            GL_TEXTURE_WRAP_T,
-                                            to_gl_sampler_address_mode(sampler_descriptor.address_mode_v));
-
-                            // Set filtering parameters.
-                            glTexParameteri(GL_TEXTURE_2D,
-                                            GL_TEXTURE_MIN_FILTER,
-                                            to_gl_sampler_filter(sampler_descriptor.min_filter));
-                            glTexParameteri(GL_TEXTURE_2D,
-                                            GL_TEXTURE_MAG_FILTER,
-                                            to_gl_sampler_filter(sampler_descriptor.mag_filter));
-                            // --------------------------------------------------------------
+                            // Set sampler.
+                            auto sampler_gl = static_cast<SamplerGl *>(descriptor.sampler.get());
+                            glBindSampler(binding_point, sampler_gl->get_handle());
 
                             gl_check_error("bind texture");
                         } break;
