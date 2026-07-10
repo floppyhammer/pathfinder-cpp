@@ -26,7 +26,7 @@ protected:
     android_app *mAppCtx;
 
     std::shared_ptr<App> pf_app;
-    std::shared_ptr<Blit> pf_blit;
+    std::shared_ptr<Pathfinder::Blit> pf_blit;
 
     std::shared_ptr<Pathfinder::WindowBuilder> window_builder;
     std::shared_ptr<Pathfinder::Window> pf_window;

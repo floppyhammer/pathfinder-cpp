@@ -13,13 +13,22 @@
 
 namespace Pathfinder {
 
-bool replace(std::string &str, const std::string &from, const std::string &to) {
+bool replaceFirst(std::string &str, const std::string &from, const std::string &to) {
     size_t start_pos = str.find(from);
     if (start_pos == std::string::npos) {
         return false;
     }
     str.replace(start_pos, from.length(), to);
     return true;
+}
+
+void replaceAll(std::string &str, const std::string &from, const std::string &to) {
+    if (from.empty()) return;
+    size_t start_pos = 0;
+    while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length();
+    }
 }
 
 ShaderModuleGl::ShaderModuleGl(const std::vector<char> &source_code,
@@ -48,9 +57,22 @@ ShaderModuleGl::ShaderModuleGl(const std::vector<char> &source_code,
 
 #ifdef PATHFINDER_MINIMUM_SHADER_VERSION_SUPPORT
     if (shader_stage == ShaderStage::Compute) {
-        replace(code_string, "#version 430", "#version 310 es");
+        replaceFirst(code_string, "#version 430", "#version 310 es");
     } else {
-        replace(code_string, "#version 310 es", "#version 300 es");
+        replaceFirst(code_string, "#version 310 es", "#version 300 es");
+    }
+
+    if (shader_stage == ShaderStage::Vertex) {
+        // 1. Find where "#version" is
+        size_t ver_pos = code_string.find("#version");
+        if (ver_pos != std::string::npos) {
+            // 2. Find the following line break
+            size_t nl_pos = code_string.find('\n', ver_pos);
+            if (nl_pos != std::string::npos) {
+                // 3. Add a new line
+                code_string.insert(nl_pos + 1, "#define gl_VertexIndex gl_VertexID\n");
+            }
+        }
     }
 #endif
 

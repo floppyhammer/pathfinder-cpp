@@ -67,7 +67,7 @@ void NativeEngine::init_app_common(Pathfinder::Vec2I window_size) {
     // Create app.
     pf_app = std::make_shared<App>(pf_device, pf_queue, window_size, svg_input, img_input);
 
-    pf_blit = std::make_shared<Blit>(pf_device, pf_queue, pf_swapchain->get_surface_format());
+    pf_blit = std::make_shared<Pathfinder::Blit>(pf_device, pf_queue, pf_swapchain->get_surface_format());
 
     auto dst_texture = pf_device->create_texture({window_size, Pathfinder::TextureFormat::Rgba8Unorm}, "dst texture");
 
