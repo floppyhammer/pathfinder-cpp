@@ -5,8 +5,6 @@
 
 #include <chrono>
 
-#include "blit.h"
-
 class App {
 public:
     App(const std::shared_ptr<Pathfinder::Device> &device,

@@ -2,11 +2,11 @@
 
 /* clang-format off */
 // SPV
-#include "../../pathfinder/shaders/generated/blit_frag_spv.h"
-#include "../../pathfinder/shaders/generated/blit_vert_spv.h"
+#include "../shaders/generated/blit_frag_spv.h"
+#include "../shaders/generated/blit_vert_spv.h"
 // GLSL
-#include "../../pathfinder/shaders/generated/blit_frag.h"
-#include "../../pathfinder/shaders/generated/blit_vert.h"
+#include "../shaders/generated/blit_frag.h"
+#include "../shaders/generated/blit_vert.h"
 /* clang-format on */
 
 using namespace Pathfinder;
@@ -15,24 +15,7 @@ Blit::Blit(const std::shared_ptr<Device> &device, const std::shared_ptr<Queue> &
     device_ = device;
     queue_ = queue;
 
-    // Set up vertex data (and buffer(s)) and configure vertex attributes.
-    constexpr float vertices[] = {
-        // Positions, UVs.
-        -1.0, -1.0, 0.0, 0.0,
-         3.0, -1.0, 2.0, 0.0,
-        -1.0,  3.0, 0.0, 2.0
-    };
-
-    vertex_buffer_ = device->create_buffer({BufferType::Vertex, sizeof(vertices), MemoryProperty::DeviceLocal},
-                                           "blit vertex buffer");
-
     sampler_ = device->create_sampler(SamplerDescriptor{});
-
-    fence_ = device->create_fence("blit fence");
-
-    auto encoder = device->create_command_encoder("upload Blit vertex buffer");
-    encoder->write_buffer(vertex_buffer_, 0, sizeof(vertices), vertices);
-    queue_->submit(encoder, fence_);
 
     // Pipeline.
     {
@@ -45,14 +28,6 @@ Blit::Blit(const std::shared_ptr<Device> &device, const std::shared_ptr<Queue> &
             vert_source = std::vector<char>(std::begin(blit_vert), std::end(blit_vert));
             frag_source = std::vector<char>(std::begin(blit_frag), std::end(blit_frag));
         }
-
-        std::vector<VertexInputAttributeDescription> attribute_descriptions;
-
-        constexpr uint32_t stride = 4 * sizeof(float);
-
-        attribute_descriptions.push_back({0, 2, DataType::f32, stride, 0, VertexInputRate::Vertex});
-
-        attribute_descriptions.push_back({0, 2, DataType::f32, stride, 2 * sizeof(float), VertexInputRate::Vertex});
 
         const auto blend_state = BlendState::from_over();
 
@@ -69,7 +44,7 @@ Blit::Blit(const std::shared_ptr<Device> &device, const std::shared_ptr<Queue> &
         pipeline_ = device->create_render_pipeline(
             device->create_shader_module(vert_source, ShaderStage::Vertex, "blit vert"),
             device->create_shader_module(frag_source, ShaderStage::Fragment, "blit frag"),
-            attribute_descriptions,
+            {},
             blend_state,
             descriptor_set_layout_,
             target_format,
@@ -87,8 +62,6 @@ void Blit::set_texture(const std::shared_ptr<Texture> &new_texture) {
 
 void Blit::draw(const std::shared_ptr<CommandEncoder> &encoder) {
     encoder->bind_render_pipeline(pipeline_);
-
-    encoder->bind_vertex_buffers({{vertex_buffer_, 0}});
 
     encoder->bind_descriptor_set(descriptor_set_);
 
