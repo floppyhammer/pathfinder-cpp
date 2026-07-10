@@ -58,6 +58,10 @@ WindowBuilderVk::WindowBuilderVk(const Vec2I &logical_size) {
 WindowBuilderVk::WindowBuilderVk(ANativeWindow *native_window, const Vec2I &physical_size) {
     native_window_ = native_window;
 
+    if (volkInitialize() != VK_SUCCESS) {
+        throw std::runtime_error("Failed to initialize volk!");
+    }
+
     create_instance();
 
     volkLoadInstance(instance_);
