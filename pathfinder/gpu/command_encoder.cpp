@@ -63,6 +63,18 @@ void CommandEncoder::bind_vertex_buffers(std::vector<std::pair<std::shared_ptr<B
     commands_.push_back(cmd);
 }
 
+void CommandEncoder::bind_index_buffer(Buffer *buffer) {
+    Command cmd{};
+    cmd.type = CommandType::BindIndexBuffer;
+
+    auto &args = cmd.args.bind_index_buffer;
+    args.buffer = buffer;
+    args.offset = 0;
+    args.data_type = DataType::u32;
+
+    commands_.push_back(cmd);
+}
+
 void CommandEncoder::bind_descriptor_set(const std::shared_ptr<DescriptorSet> &descriptor_set) {
     Command cmd{};
     cmd.type = CommandType::BindDescriptorSet;
@@ -98,7 +110,7 @@ void CommandEncoder::draw_indexed(uint32_t index_count,
                                   uint32_t instance_count,
                                   uint32_t first_index,
                                   uint32_t first_instance) {
-    Command cmd;
+    Command cmd{};
     cmd.type = CommandType::DrawIndexed;
 
     auto &args = cmd.args.draw_indexed;
@@ -122,7 +134,7 @@ void CommandEncoder::draw_instanced(uint32_t vertex_count, uint32_t instance_cou
 }
 
 void CommandEncoder::draw_indirect(Buffer *buffer, uint32_t offset) {
-    Command cmd;
+    Command cmd{};
     cmd.type = CommandType::DrawIndirect;
 
     auto &args = cmd.args.indirect;
@@ -164,7 +176,7 @@ void CommandEncoder::dispatch(uint32_t group_size_x, uint32_t group_size_y, uint
 }
 
 void CommandEncoder::dispatch_indirect(Buffer *buffer, uint32_t offset) {
-    Command cmd;
+    Command cmd{};
     cmd.type = CommandType::DispatchIndirect;
 
     auto &args = cmd.args.indirect;

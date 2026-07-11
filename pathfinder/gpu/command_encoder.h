@@ -26,6 +26,7 @@ enum class CommandType {
     SetViewport,
     BindRenderPipeline,
     BindVertexBuffers,
+    BindIndexBuffer,
     BindDescriptorSet,
     Draw,
     DrawIndexed,
@@ -73,6 +74,8 @@ struct Command {
         } bind_vertex_buffers;
         struct {
             Buffer *buffer;
+            DataType data_type; // u32 only.
+            size_t offset;      // Zero only.
         } bind_index_buffer;
         struct {
             DescriptorSet *descriptor_set;
@@ -158,6 +161,8 @@ public:
     void bind_render_pipeline(const std::shared_ptr<RenderPipeline> &pipeline);
 
     void bind_vertex_buffers(std::vector<std::pair<std::shared_ptr<Buffer>, uint64_t>> vertex_buffers);
+
+    void bind_index_buffer(Buffer *buffer);
 
     /// Bind uniform buffers and texture samplers.
     /// Image layout should be ready before calling this.

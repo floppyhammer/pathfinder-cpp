@@ -272,6 +272,16 @@ bool CommandEncoderVk::finish() {
                                        vertex_buffers.data(),
                                        offsets.data()); // Data offset of each buffer.
             } break;
+            case CommandType::BindIndexBuffer: {
+                auto &args = cmd.args.bind_index_buffer;
+
+                auto buffer_vk = static_cast<BufferVk *>(args.buffer);
+
+                VkBuffer buffer = buffer_vk->get_vk_buffer();
+                VkDeviceSize offset = args.offset;
+
+                vkCmdBindIndexBuffer(vk_command_buffer_, buffer, offset, VK_INDEX_TYPE_UINT32);
+            } break;
             case CommandType::BindDescriptorSet: {
                 auto &args = cmd.args.bind_descriptor_set;
                 auto descriptor_set_vk = static_cast<DescriptorSetVk *>(args.descriptor_set);

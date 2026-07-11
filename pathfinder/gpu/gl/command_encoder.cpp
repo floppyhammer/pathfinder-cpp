@@ -155,6 +155,14 @@ bool CommandEncoderGl::finish() {
 
                 gl_check_error("BindVertexBuffers");
             } break;
+            case CommandType::BindIndexBuffer: {
+                const auto &args = cmd.args.bind_index_buffer;
+
+                auto buffer_gl = (BufferGl *)args.buffer;
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer_gl->get_handle());
+
+                gl_check_error("BindIndexBuffer");
+            } break;
             case CommandType::BindDescriptorSet: {
                 auto &args = cmd.args.bind_descriptor_set;
 
