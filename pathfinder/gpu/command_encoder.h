@@ -29,6 +29,7 @@ enum class CommandType {
     BindDescriptorSet,
     Draw,
     DrawInstanced,
+    DrawIndirect,
     EndRenderPass,
 
     // COMPUTE PASS
@@ -36,6 +37,7 @@ enum class CommandType {
     BeginComputePass,
     BindComputePipeline,
     Dispatch,
+    DispatchIndirect,
     EndComputePass,
 
     // DATA TRANSFER
@@ -82,6 +84,10 @@ struct Command {
             uint32_t vertex_count;
             uint32_t instance_count;
         } draw_instanced;
+        struct {
+            Buffer *buffer;
+            size_t offset;
+        } indirect;
         struct {
             ComputePipeline *pipeline;
         } bind_compute_pipeline;
@@ -155,6 +161,8 @@ public:
 
     void draw_instanced(uint32_t vertex_count, uint32_t instance_count);
 
+    void draw_indirect(Buffer *buffer, uint32_t offset);
+
     void end_render_pass();
 
     // COMPUTE PASS
@@ -164,6 +172,8 @@ public:
     void bind_compute_pipeline(const std::shared_ptr<ComputePipeline> &pipeline);
 
     void dispatch(uint32_t group_size_x, uint32_t group_size_y, uint32_t group_size_z);
+
+    void dispatch_indirect(Buffer *buffer, uint32_t offset);
 
     void end_compute_pass();
 

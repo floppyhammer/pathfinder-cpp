@@ -321,6 +321,11 @@ bool CommandEncoderVk::finish() {
                 auto &args = cmd.args.draw_instanced;
                 vkCmdDraw(vk_command_buffer_, args.vertex_count, args.instance_count, 0, 0);
             } break;
+            case CommandType::DrawIndirect: {
+                auto &args = cmd.args.indirect;
+                auto buffer_vk = static_cast<BufferVk *>(args.buffer);
+                vkCmdDrawIndirect(vk_command_buffer_, buffer_vk->get_vk_buffer(), args.offset, 1, 0);
+            } break;
             case CommandType::EndRenderPass: {
                 vkCmdEndRenderPass(vk_command_buffer_);
 
@@ -352,6 +357,11 @@ bool CommandEncoderVk::finish() {
 
                 // Dispatch compute job.
                 vkCmdDispatch(vk_command_buffer_, args.group_size_x, args.group_size_y, args.group_size_z);
+            } break;
+            case CommandType::DispatchIndirect: {
+                auto &args = cmd.args.indirect;
+                auto buffer_vk = static_cast<BufferVk *>(args.buffer);
+                vkCmdDispatchIndirect(vk_command_buffer_, buffer_vk->get_vk_buffer(), args.offset);
             } break;
             case CommandType::EndComputePass: {
                 compute_pipeline_ = nullptr;

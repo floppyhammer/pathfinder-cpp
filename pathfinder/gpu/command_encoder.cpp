@@ -105,6 +105,17 @@ void CommandEncoder::draw_instanced(uint32_t vertex_count, uint32_t instance_cou
     commands_.push_back(cmd);
 }
 
+void CommandEncoder::draw_indirect(Buffer *buffer, uint32_t offset) {
+    Command cmd;
+    cmd.type = CommandType::DrawIndirect;
+
+    auto &args = cmd.args.indirect;
+    args.buffer = buffer;
+    args.offset = offset;
+
+    commands_.push_back(cmd);
+}
+
 void CommandEncoder::end_render_pass() {
     Command cmd{};
     cmd.type = CommandType::EndRenderPass;
@@ -132,6 +143,17 @@ void CommandEncoder::dispatch(uint32_t group_size_x, uint32_t group_size_y, uint
     args.group_size_x = group_size_x;
     args.group_size_y = group_size_y;
     args.group_size_z = group_size_z;
+
+    commands_.push_back(cmd);
+}
+
+void CommandEncoder::dispatch_indirect(Buffer *buffer, uint32_t offset) {
+    Command cmd;
+    cmd.type = CommandType::DispatchIndirect;
+
+    auto &args = cmd.args.indirect;
+    args.buffer = buffer;
+    args.offset = offset;
 
     commands_.push_back(cmd);
 }

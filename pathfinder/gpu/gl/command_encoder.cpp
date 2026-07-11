@@ -225,6 +225,27 @@ bool CommandEncoderGl::finish() {
 
                 gl_check_error("DrawInstanced");
             } break;
+#ifdef PATHFINDER_ENABLE_COMPUTE
+            case CommandType::DrawIndirect: {
+                auto &args = cmd.args.indirect;
+                auto buffer_gl = (BufferGl *)args.buffer;
+
+                glBindBuffer(GL_DRAW_INDIRECT_BUFFER, buffer_gl->get_handle());
+                glDrawArraysIndirect(GL_TRIANGLES, reinterpret_cast<void *>(args.offset));
+
+                gl_check_error("DrawIndirect");
+            } break;
+            case CommandType::DispatchIndirect: {
+                auto &args = cmd.args.indirect;
+                auto buffer_gl = (BufferGl *)args.buffer;
+
+                glBindBuffer(GL_DISPATCH_INDIRECT_BUFFER, buffer_gl->get_handle());
+                glDispatchComputeIndirect(static_cast<GLintptr>(args.offset));
+                glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+                gl_check_error("DispatchIndirect");
+            } break;
+#endif
             case CommandType::EndRenderPass: {
                 render_pipeline_ = nullptr;
             } break;
