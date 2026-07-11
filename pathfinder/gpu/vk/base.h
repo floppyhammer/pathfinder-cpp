@@ -117,17 +117,6 @@ inline VkSamplerAddressMode to_vk_sampler_address_mode(SamplerAddressMode addres
     }
 }
 
-const std::array<VkFormat, 32> vk_formats = {
-    VK_FORMAT_R8_SINT,    VK_FORMAT_R8G8_SINT,     VK_FORMAT_R8G8B8_SINT,      VK_FORMAT_R8G8B8A8_SINT,
-    VK_FORMAT_R8_UINT,    VK_FORMAT_R8G8_UINT,     VK_FORMAT_R8G8B8_UINT,      VK_FORMAT_R8G8B8A8_UINT,
-    VK_FORMAT_R16_SINT,   VK_FORMAT_R16G16_SINT,   VK_FORMAT_R16G16B16_SINT,   VK_FORMAT_R16G16B16A16_SINT,
-    VK_FORMAT_R16_UINT,   VK_FORMAT_R16G16_UINT,   VK_FORMAT_R16G16B16_UINT,   VK_FORMAT_R16G16B16A16_UINT,
-    VK_FORMAT_R32_SINT,   VK_FORMAT_R32G32_SINT,   VK_FORMAT_R32G32B32_SINT,   VK_FORMAT_R32G32B32A32_SINT,
-    VK_FORMAT_R32_UINT,   VK_FORMAT_R32G32_UINT,   VK_FORMAT_R32G32B32_UINT,   VK_FORMAT_R32G32B32A32_UINT,
-    VK_FORMAT_R32_SFLOAT, VK_FORMAT_R32G32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32A32_SFLOAT,
-    VK_FORMAT_R16_SFLOAT, VK_FORMAT_R16G16_SFLOAT, VK_FORMAT_R16G16B16_SFLOAT, VK_FORMAT_R16G16B16A16_SFLOAT,
-};
-
 inline VkImageLayout to_vk_layout(TextureLayout layout) {
     switch (layout) {
         case TextureLayout::Undefined:
@@ -149,24 +138,35 @@ inline VkImageLayout to_vk_layout(TextureLayout layout) {
     }
 }
 
+constexpr std::array<VkFormat, 32> VK_FORMATS = {
+    VK_FORMAT_R8_SINT,    VK_FORMAT_R8G8_SINT,     VK_FORMAT_R8G8B8_SINT,      VK_FORMAT_R8G8B8A8_SINT,
+    VK_FORMAT_R8_UINT,    VK_FORMAT_R8G8_UINT,     VK_FORMAT_R8G8B8_UINT,      VK_FORMAT_R8G8B8A8_UINT,
+    VK_FORMAT_R16_SINT,   VK_FORMAT_R16G16_SINT,   VK_FORMAT_R16G16B16_SINT,   VK_FORMAT_R16G16B16A16_SINT,
+    VK_FORMAT_R16_UINT,   VK_FORMAT_R16G16_UINT,   VK_FORMAT_R16G16B16_UINT,   VK_FORMAT_R16G16B16A16_UINT,
+    VK_FORMAT_R32_SINT,   VK_FORMAT_R32G32_SINT,   VK_FORMAT_R32G32B32_SINT,   VK_FORMAT_R32G32B32A32_SINT,
+    VK_FORMAT_R32_UINT,   VK_FORMAT_R32G32_UINT,   VK_FORMAT_R32G32B32_UINT,   VK_FORMAT_R32G32B32A32_UINT,
+    VK_FORMAT_R32_SFLOAT, VK_FORMAT_R32G32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32A32_SFLOAT,
+    VK_FORMAT_R16_SFLOAT, VK_FORMAT_R16G16_SFLOAT, VK_FORMAT_R16G16B16_SFLOAT, VK_FORMAT_R16G16B16A16_SFLOAT,
+};
+
 inline VkFormat to_vk_format(DataType type, uint32_t count) {
     switch (type) {
         case DataType::i8:
-            return vk_formats[count - 1];
+            return VK_FORMATS[count - 1];
         case DataType::u8:
-            return vk_formats[4 + count - 1];
+            return VK_FORMATS[4 + count - 1];
         case DataType::i16:
-            return vk_formats[8 + count - 1];
+            return VK_FORMATS[8 + count - 1];
         case DataType::u16:
-            return vk_formats[12 + count - 1];
+            return VK_FORMATS[12 + count - 1];
         case DataType::i32:
-            return vk_formats[16 + count - 1];
+            return VK_FORMATS[16 + count - 1];
         case DataType::u32:
-            return vk_formats[20 + count - 1];
+            return VK_FORMATS[20 + count - 1];
         case DataType::f32:
-            return vk_formats[24 + count - 1];
+            return VK_FORMATS[24 + count - 1];
         case DataType::f16:
-            return vk_formats[28 + count - 1];
+            return VK_FORMATS[28 + count - 1];
         default:
             abort();
     }
