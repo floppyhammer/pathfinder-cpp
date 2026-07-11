@@ -218,6 +218,17 @@ bool CommandEncoderGl::finish() {
 
                 gl_check_error("Draw");
             } break;
+            case CommandType::DrawIndexed: {
+                auto &args = cmd.args.draw_indexed;
+
+                glDrawElementsInstanced(GL_TRIANGLES,
+                                        GLint(args.index_count),
+                                        GL_UNSIGNED_INT,
+                                        reinterpret_cast<void *>(args.first_index),
+                                        args.instance_count);
+
+                gl_check_error("DrawIndexed");
+            } break;
             case CommandType::DrawInstanced: {
                 auto &args = cmd.args.draw_instanced;
 

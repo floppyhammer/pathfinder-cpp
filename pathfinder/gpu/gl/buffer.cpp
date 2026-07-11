@@ -26,8 +26,7 @@ BufferGl::BufferGl(const BufferDescriptor &desc) : Buffer(desc) {
             target = GL_ARRAY_BUFFER;
         } break;
         case BufferType::Index: {
-            Logger::error("Cannot handle index buffers yet!");
-            abort();
+            target = GL_ELEMENT_ARRAY_BUFFER;
         } break;
         case BufferType::Storage: {
 #ifdef PATHFINDER_ENABLE_COMPUTE
@@ -58,7 +57,7 @@ void BufferGl::upload_via_mapping(size_t data_size, size_t offset, const void *d
             gl_buffer_type = GL_UNIFORM_BUFFER;
         } break;
         case BufferType::Index: {
-            Logger::error("Cannot handle index buffers yet!");
+            gl_buffer_type = GL_ELEMENT_ARRAY_BUFFER;
         } break;
         case BufferType::Storage: {
 #ifdef PATHFINDER_ENABLE_COMPUTE

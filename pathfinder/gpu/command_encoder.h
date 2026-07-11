@@ -28,6 +28,7 @@ enum class CommandType {
     BindVertexBuffers,
     BindDescriptorSet,
     Draw,
+    DrawIndexed,
     DrawInstanced,
     DrawIndirect,
     EndRenderPass,
@@ -80,6 +81,12 @@ struct Command {
             uint32_t first_vertex;
             uint32_t vertex_count;
         } draw;
+        struct {
+            uint32_t index_count;
+            uint32_t first_index;
+            uint32_t instance_count;
+            uint32_t first_instance;
+        } draw_indexed;
         struct {
             uint32_t vertex_count;
             uint32_t instance_count;
@@ -158,6 +165,9 @@ public:
 
     /// Draw call.
     void draw(uint32_t first_vertex, uint32_t vertex_count);
+
+    /// We don't support vertex offset, as it's not supported by GLES 3.0.
+    void draw_indexed(uint32_t index_count, uint32_t instance_count, uint32_t first_index, uint32_t first_instance);
 
     void draw_instanced(uint32_t vertex_count, uint32_t instance_count);
 

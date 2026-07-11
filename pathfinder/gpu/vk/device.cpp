@@ -392,10 +392,17 @@ std::shared_ptr<Buffer> DeviceVk::create_buffer(const BufferDescriptor &desc, co
                              buffer_vk->vk_buffer_,
                              buffer_vk->vk_device_memory_);
         } break;
+        case BufferType::Index: {
+            create_vk_buffer(desc.size,
+                             VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                             vk_memory_property,
+                             buffer_vk->vk_buffer_,
+                             buffer_vk->vk_device_memory_);
+        } break;
         case BufferType::Storage: {
             create_vk_buffer(desc.size,
                              VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-                                 VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+                                 VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT,
                              vk_memory_property,
                              buffer_vk->vk_buffer_,
                              buffer_vk->vk_device_memory_);

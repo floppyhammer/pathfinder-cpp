@@ -94,6 +94,22 @@ void CommandEncoder::draw(uint32_t first_vertex, uint32_t vertex_count) {
     commands_.push_back(cmd);
 }
 
+void CommandEncoder::draw_indexed(uint32_t index_count,
+                                  uint32_t instance_count,
+                                  uint32_t first_index,
+                                  uint32_t first_instance) {
+    Command cmd;
+    cmd.type = CommandType::DrawIndexed;
+
+    auto &args = cmd.args.draw_indexed;
+    args.index_count = index_count;
+    args.first_index = first_index;
+    args.instance_count = instance_count;
+    args.first_instance = first_instance;
+
+    commands_.push_back(cmd);
+}
+
 void CommandEncoder::draw_instanced(uint32_t vertex_count, uint32_t instance_count) {
     Command cmd{};
     cmd.type = CommandType::DrawInstanced;

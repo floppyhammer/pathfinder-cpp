@@ -317,6 +317,15 @@ bool CommandEncoderVk::finish() {
                 auto &args = cmd.args.draw;
                 vkCmdDraw(vk_command_buffer_, args.vertex_count, 1, 0, 0);
             } break;
+            case CommandType::DrawIndexed: {
+                auto &args = cmd.args.draw_indexed;
+                vkCmdDrawIndexed(vk_command_buffer_,
+                                 args.index_count,
+                                 args.instance_count,
+                                 args.first_index,
+                                 0, // No support for vertex offset
+                                 args.first_instance);
+            } break;
             case CommandType::DrawInstanced: {
                 auto &args = cmd.args.draw_instanced;
                 vkCmdDraw(vk_command_buffer_, args.vertex_count, args.instance_count, 0, 0);
