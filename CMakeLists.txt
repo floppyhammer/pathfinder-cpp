@@ -11,7 +11,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 option(PATHFINDER_BACKEND_OPENGL "Enable OpenGL backend" ON)
 option(PATHFINDER_BACKEND_VULKAN "Enable Vulkan backend" ON)
 option(PATHFINDER_BUILD_DEMO "Build demo" OFF)
-option(PATHFINDER_USE_D3D11 "Use D3D11" OFF)
+option(PATHFINDER_ENABLE_COMPUTE "Enable COMPUTE render mode" ON)
 option(PATHFINDER_RUNTIME_SHADER_COMPLICATION "Compile shaders at runtime using SPV" OFF)
 option(PATHFINDER_BUILD_SHADER_GENERATOR "Shader generator" OFF)
 
@@ -28,7 +28,7 @@ if (EMSCRIPTEN)
     # No Vulkan support for web.
     set(PATHFINDER_BACKEND_VULKAN OFF)
     # No compute shader for web.
-    set(PATHFINDER_USE_D3D11 OFF)
+    set(PATHFINDER_ENABLE_COMPUTE OFF)
 elseif (APPLE)
     # No GL support for Mac.
     set(PATHFINDER_BACKEND_OPENGL OFF)
@@ -52,8 +52,8 @@ else ()
     endif ()
 endif ()
 
-if (PATHFINDER_USE_D3D11)
-    target_compile_definitions(pathfinder PUBLIC PATHFINDER_ENABLE_D3D11)
+if (PATHFINDER_ENABLE_COMPUTE)
+    target_compile_definitions(pathfinder PUBLIC PATHFINDER_ENABLE_COMPUTE)
 endif ()
 
 if (PATHFINDER_BACKEND_VULKAN)

@@ -5,7 +5,7 @@
 #include "../data/built_path.h"
 #include "gpu_data.h"
 
-#ifdef PATHFINDER_ENABLE_D3D11
+#ifdef PATHFINDER_ENABLE_COMPUTE
 
 namespace Pathfinder {
 

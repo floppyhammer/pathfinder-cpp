@@ -13,7 +13,7 @@
 #include "gpu_data.h"
 #include "scene_builder.h"
 
-#ifdef PATHFINDER_ENABLE_D3D11
+#ifdef PATHFINDER_ENABLE_COMPUTE
 /* clang-format off */
     #include "../../shaders/generated/bin_comp_shdbin.h"
     #include "../../shaders/generated/bound_comp_shdbin.h"

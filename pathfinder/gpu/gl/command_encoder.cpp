@@ -186,7 +186,7 @@ bool CommandEncoderGl::finish() {
 
                             gl_check_error("bind texture");
                         } break;
-#ifdef PATHFINDER_ENABLE_D3D11
+#ifdef PATHFINDER_ENABLE_COMPUTE
                         case DescriptorType::StorageBuffer: {
                             auto buffer_gl = static_cast<BufferGl *>(descriptor.buffer.get());
 
@@ -241,7 +241,7 @@ bool CommandEncoderGl::finish() {
                 compute_pipeline_ = args.pipeline;
             } break;
             case CommandType::Dispatch: {
-#ifdef PATHFINDER_ENABLE_D3D11
+#ifdef PATHFINDER_ENABLE_COMPUTE
                 auto &args = cmd.args.dispatch;
 
                 // Max global (total) work group counts x:2147483647 y:65535 z:65535.

@@ -16,7 +16,7 @@ App::App(const std::shared_ptr<Device> &device,
     queue_ = queue;
 
     // Set up a canvas.
-    canvas_ = std::make_shared<Canvas>(canvas_size, device, queue, RenderLevel::D3d9);
+    canvas_ = std::make_shared<Canvas>(canvas_size, device, queue, RenderMode::Hybrid);
 
     // Test: view box clipping.
     if (true) {

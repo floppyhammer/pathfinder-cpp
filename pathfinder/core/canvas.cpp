@@ -135,20 +135,20 @@ void composite_shadow_blur_render_targets(Scene &scene, const ShadowBlurRenderTa
 Canvas::Canvas(Vec2I size,
                const std::shared_ptr<Device> &_device,
                const std::shared_ptr<Queue> &_queue,
-               RenderLevel _render_level)
-    : device(_device), render_level(_render_level) {
+               RenderMode _render_mode)
+    : device(_device), render_mode(_render_mode) {
     // Create the renderer and scene builder.
-    if (render_level == RenderLevel::D3d9) {
-        Logger::info("Created new canvas using D3d9 render level");
+    if (render_mode == RenderMode::Hybrid) {
+        Logger::info("Created new canvas using Raster render mode");
         renderer = std::make_shared<RendererD3D9>(device, _queue);
         scene_builder = std::make_shared<SceneBuilderD3D9>();
     } else {
-#ifdef PATHFINDER_ENABLE_D3D11
-        Logger::info("Created new canvas using D3d11 render level");
+#ifdef PATHFINDER_ENABLE_COMPUTE
+        Logger::info("Created new canvas using Compute render mode");
         renderer = std::make_shared<RendererD3D11>(device, _queue);
         scene_builder = std::make_shared<SceneBuilderD3D11>();
 #else
-        throw std::runtime_error(std::string("Pathfinder D3d11 level is selected but not enabled!"));
+        throw std::runtime_error(std::string("Pathfinder Compute mode is selected but not enabled!"));
 #endif
     }
 

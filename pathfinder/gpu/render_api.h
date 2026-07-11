@@ -4,7 +4,7 @@
 #ifdef __ANDROID__
     #ifdef PATHFINDER_USE_OPENGL
 
-        #ifdef PATHFINDER_ENABLE_D3D11
+        #ifdef PATHFINDER_ENABLE_COMPUTE
             #include <GLES3/gl31.h>
         #else
             #include <GLES3/gl3.h>

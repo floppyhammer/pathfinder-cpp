@@ -44,9 +44,13 @@ struct MaskStorage {
     uint32_t allocated_page_count = 0;
 };
 
-enum class RenderLevel {
-    D3d9,
-    D3d11, // Buggy
+enum class RenderMode {
+    /// CPU-assisted binning and hardware rasterization.
+    /// Offers better compatibility (e.g. for mobile).
+    Hybrid,
+    /// Full GPU-driven compute pipeline using compute shaders.
+    /// Minimizes CPU overhead, but requires modern/desktop GPU features.
+    GpuDriven,
 };
 
 /// In most cases, we have only one renderer set up, while having

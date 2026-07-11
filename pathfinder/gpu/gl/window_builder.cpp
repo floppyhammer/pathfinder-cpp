@@ -34,14 +34,14 @@ WindowBuilderGl::WindowBuilderGl(const Vec2I &logical_size) {
     #if (defined(__linux__) && defined(__ARM_ARCH)) || (defined(_WIN32) && defined(_M_ARM64))
         // Set the desired OpenGL ES version.
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        #ifdef PATHFINDER_ENABLE_D3D11
+        #ifdef PATHFINDER_ENABLE_COMPUTE
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
         #else
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
         #endif
     #else
         // Major GL version.
-        #ifdef PATHFINDER_ENABLE_D3D11
+        #ifdef PATHFINDER_ENABLE_COMPUTE
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         #else
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);

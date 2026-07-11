@@ -51,7 +51,7 @@ public:
     Canvas(Vec2I size,
            const std::shared_ptr<Device> &_device,
            const std::shared_ptr<Queue> &_queue,
-           RenderLevel _render_level);
+           RenderMode _render_mode);
 
     /// Set the final render target.
     void set_dst_texture(const std::shared_ptr<Texture> &new_dst_texture);
@@ -200,7 +200,7 @@ private:
     /// Rendering API related.
     std::shared_ptr<Device> device;
 
-    RenderLevel render_level;
+    RenderMode render_mode;
 };
 
 } // namespace Pathfinder
