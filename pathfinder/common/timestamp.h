@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_TIMESTAMP_H
-#define PATHFINDER_TIMESTAMP_H
+#pragma once
 
 #include <chrono>
 #include <string>
@@ -30,5 +29,3 @@ public:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_TIMESTAMP_H

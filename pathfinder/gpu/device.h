@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_DEVICE_H
-#define PATHFINDER_GPU_DEVICE_H
+#pragma once
 
 #include "../common/logger.h"
 #include "buffer.h"
@@ -83,5 +82,3 @@ protected:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_DEVICE_H

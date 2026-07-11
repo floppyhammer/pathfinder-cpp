@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_EFFECTS_H
-#define PATHFINDER_EFFECTS_H
+#pragma once
 
 #include "../../common/color.h"
 #include "../data/line_segment.h"
@@ -307,5 +306,3 @@ struct TextureSamplingFlags {
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_EFFECTS_H

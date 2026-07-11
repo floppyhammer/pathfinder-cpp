@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_NATIVE_RENDER_API_H
-#define PATHFINDER_NATIVE_RENDER_API_H
+#pragma once
 
 #ifdef __ANDROID__
     #ifdef PATHFINDER_USE_OPENGL
@@ -39,5 +38,3 @@
     #include <GLFW/glfw3.h>
 
 #endif
-
-#endif // PATHFINDER_NATIVE_RENDER_API_H

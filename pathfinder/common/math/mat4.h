@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_MAT4_H
-#define PATHFINDER_MAT4_H
+#pragma once
 
 #include "mat3.h"
 #include "vec3.h"
@@ -78,5 +77,3 @@ struct Mat4 {
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_MAT4_H

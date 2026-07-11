@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_DATA_GL_H
-#define PATHFINDER_GPU_DATA_GL_H
+#pragma once
 
 #include "../base.h"
 #include "../render_api.h"
@@ -100,5 +99,3 @@ inline GLint to_gl_sampler_address_mode(SamplerAddressMode address_mode) {
 }
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_DATA_GL_H

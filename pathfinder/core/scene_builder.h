@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_SCENE_BUILDER_H
-#define PATHFINDER_SCENE_BUILDER_H
+#pragma once
 
 #include "data/built_path.h"
 
@@ -33,5 +32,3 @@ protected:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_SCENE_BUILDER_H

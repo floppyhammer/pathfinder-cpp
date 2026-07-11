@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_WINDOW_H
-#define PATHFINDER_GPU_WINDOW_H
+#pragma once
 
 #include "device.h"
 #include "swap_chain.h"
@@ -67,5 +66,3 @@ protected:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_WINDOW_H

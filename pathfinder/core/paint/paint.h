@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_PAINT_H
-#define PATHFINDER_PAINT_H
+#pragma once
 
 #include <map>
 #include <memory>
@@ -224,5 +223,3 @@ struct PaintMetadata {
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_PAINT_H

@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_QUEUE_H
-#define PATHFINDER_GPU_QUEUE_H
+#pragma once
 
 #include "../common/math/vec2.h"
 #include "command_encoder.h"
@@ -22,5 +21,3 @@ public:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_QUEUE_H

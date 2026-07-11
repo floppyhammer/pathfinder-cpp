@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_BUFFER_VK_H
-#define PATHFINDER_GPU_BUFFER_VK_H
+#pragma once
 
 #include "../buffer.h"
 #include "base.h"
@@ -40,5 +39,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_BUFFER_VK_H

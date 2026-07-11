@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_BASIC_MATH_H
-#define PATHFINDER_BASIC_MATH_H
+#pragma once
 
 #include <cassert>
 #include <cstdint>
@@ -107,5 +106,3 @@ inline int round_up(int number, int multiple) {
 }
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_BASIC_MATH_H

@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_SEGMENT_H
-#define PATHFINDER_SEGMENT_H
+#pragma once
 
 #include "../../common/math/transform2.h"
 #include "data.h"
@@ -126,5 +125,3 @@ public:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_SEGMENT_H

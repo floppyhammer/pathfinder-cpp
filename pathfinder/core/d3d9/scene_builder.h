@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_D3D9_SCENE_BUILDER_H
-#define PATHFINDER_D3D9_SCENE_BUILDER_H
+#pragma once
 
 #include <memory>
 #include <mutex>
@@ -95,5 +94,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_D3D9_SCENE_BUILDER_H

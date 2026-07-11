@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_D3D11_SCENE_BUILDER_H
-#define PATHFINDER_D3D11_SCENE_BUILDER_H
+#pragma once
 
 #include <vector>
 
@@ -70,5 +69,3 @@ private:
 } // namespace Pathfinder
 
 #endif
-
-#endif // PATHFINDER_D3D11_SCENE_BUILDER_H

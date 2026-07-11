@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_STROKE_H
-#define PATHFINDER_STROKE_H
+#pragma once
 
 //! Utilities for converting contour strokes to fills.
 
@@ -63,5 +62,3 @@ struct OutlineStrokeToFill {
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_STROKE_H

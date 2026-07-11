@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_DENSE_TILE_MAP_H
-#define PATHFINDER_DENSE_TILE_MAP_H
+#pragma once
 
 #include <vector>
 
@@ -89,5 +88,3 @@ struct DenseTileMap {
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_DENSE_TILE_MAP_H

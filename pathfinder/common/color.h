@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_COLOR_H
-#define PATHFINDER_COLOR_H
+#pragma once
 
 #include <algorithm>
 #include <cstdint>
@@ -144,5 +143,3 @@ inline std::ostream& operator<<(std::ostream& os, const ColorU& obj) {
 }
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_COLOR_H

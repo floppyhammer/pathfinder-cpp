@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_RECT_H
-#define PATHFINDER_RECT_H
+#pragma once
 
 #include "vec2.h"
 
@@ -212,5 +211,3 @@ typedef Rect<int32_t> RectI;
 typedef Rect<float> RectF;
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_RECT_H

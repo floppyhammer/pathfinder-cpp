@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_RENDERER_H
-#define PATHFINDER_RENDERER_H
+#pragma once
 
 #include <cstdint>
 
@@ -140,5 +139,3 @@ protected:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_RENDERER_H

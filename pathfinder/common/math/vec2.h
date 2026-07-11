@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_VEC2_H
-#define PATHFINDER_VEC2_H
+#pragma once
 
 #include <algorithm>
 #include <cmath>
@@ -184,5 +183,3 @@ typedef Vec2<int32_t> Vec2I;
 typedef Vec2<float> Vec2F;
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_VEC2_H

@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_F32X4_H
-#define PATHFINDER_F32X4_H
+#pragma once
 
 #include <algorithm>
 #include <cstdint>
@@ -292,5 +291,3 @@ struct F32x4 {
 } // namespace Pathfinder
 
 #endif // PATHFINDER_ENABLE_SIMD
-
-#endif // PATHFINDER_F32X4_H

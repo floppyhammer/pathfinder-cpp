@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_DEMO_APP_H
-#define PATHFINDER_DEMO_APP_H
+#pragma once
 
 #include <pathfinder/prelude.h>
 
@@ -28,5 +27,3 @@ private:
     std::chrono::time_point<std::chrono::steady_clock> last_time_;
     uint32_t frame_count_ = 0;
 };
-
-#endif // PATHFINDER_DEMO_APP_H

@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_DASH_H
-#define PATHFINDER_DASH_H
+#pragma once
 
 #include "data/path.h"
 
@@ -40,5 +39,3 @@ struct ContourDash {
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_DASH_H

@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_D3D9_GPU_DATA_H
-#define PATHFINDER_D3D9_GPU_DATA_H
+#pragma once
 
 #include "../../data/line_segment.h"
 #include "alpha_tile_id.h"
@@ -36,5 +35,3 @@ struct Clip {
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_D3D9_GPU_DATA_H

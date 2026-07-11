@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_MAT2_H
-#define PATHFINDER_MAT2_H
+#pragma once
 
 #include "unit_vector.h"
 
@@ -88,5 +87,3 @@ struct Mat2 {
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_MAT2_H

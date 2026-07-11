@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_COMPUTE_PIPELINE_GL_H
-#define PATHFINDER_GPU_COMPUTE_PIPELINE_GL_H
+#pragma once
 
 #include <memory>
 
@@ -25,5 +24,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_COMPUTE_PIPELINE_GL_H

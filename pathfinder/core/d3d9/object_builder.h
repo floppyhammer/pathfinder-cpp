@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_D3D9_OBJECT_BUILDER_H
-#define PATHFINDER_D3D9_OBJECT_BUILDER_H
+#pragma once
 
 #include <limits>
 
@@ -41,5 +40,3 @@ public:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_D3D9_OBJECT_BUILDER_H

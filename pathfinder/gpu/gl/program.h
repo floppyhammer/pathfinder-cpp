@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_PROGRAM_H
-#define PATHFINDER_GPU_PROGRAM_H
+#pragma once
 
 #include <fstream>
 #include <sstream>
@@ -76,5 +75,3 @@ public:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_PROGRAM_H

@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_ALLOCATOR_H
-#define PATHFINDER_ALLOCATOR_H
+#pragma once
 
 #include <array>
 #include <chrono>
@@ -108,5 +107,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_ALLOCATOR_H

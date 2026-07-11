@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_TEXTURE_ALLOCATOR_H
-#define PATHFINDER_TEXTURE_ALLOCATOR_H
+#pragma once
 
 #include <cstdint>
 #include <utility>
@@ -125,5 +124,3 @@ struct TexturePageIter {
 bool prop_allocation_and_freeing_work(uint32_t length, std::vector<Vec2I> sizes);
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_TEXTURE_ALLOCATOR_H

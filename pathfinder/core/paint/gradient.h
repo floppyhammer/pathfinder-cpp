@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GRADIENT_H
-#define PATHFINDER_GRADIENT_H
+#pragma once
 
 //! Gradient effects that paths can be filled with.
 
@@ -206,5 +205,3 @@ public:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GRADIENT_H

@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_SWAP_CHAIN_GL_H
-#define PATHFINDER_GPU_SWAP_CHAIN_GL_H
+#pragma once
 
 #ifdef __ANDROID__
     #include <EGL/egl.h>
@@ -57,5 +56,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_SWAP_CHAIN_GL_H

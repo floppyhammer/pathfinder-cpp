@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_IO_H
-#define PATHFINDER_IO_H
+#pragma once
 
 #include <cassert>
 #include <fstream>
@@ -43,5 +42,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_IO_H

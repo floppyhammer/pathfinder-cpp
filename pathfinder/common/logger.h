@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_LOGGER_H
-#define PATHFINDER_LOGGER_H
+#pragma once
 
 #include <iostream>
 #include <memory>
@@ -132,5 +131,3 @@ public:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_LOGGER_H

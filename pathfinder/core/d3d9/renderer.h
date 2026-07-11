@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_D3D9_RENDERER_H
-#define PATHFINDER_D3D9_RENDERER_H
+#pragma once
 
 #include <vector>
 
@@ -138,5 +137,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_D3D9_RENDERER_H

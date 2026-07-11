@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_DATA_H
-#define PATHFINDER_DATA_H
+#pragma once
 
 #include <vector>
 
@@ -165,5 +164,3 @@ struct TilingPathInfo {
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_DATA_H

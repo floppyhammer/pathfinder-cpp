@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_FRAMEBUFFER_H
-#define PATHFINDER_GPU_FRAMEBUFFER_H
+#pragma once
 
 #include <memory>
 
@@ -30,7 +29,7 @@ public:
 
 protected:
     /// Render to screen or swap chain.
-    Framebuffer(){}
+    Framebuffer() {}
 
     /// Render to a texture.
     explicit Framebuffer(const std::shared_ptr<Texture>& texture) : texture_(texture) {}
@@ -42,5 +41,3 @@ protected:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_FRAMEBUFFER_H

@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_SVG_H
-#define PATHFINDER_SVG_H
+#pragma once
 
 #include "canvas.h"
 #include "scene.h"
@@ -27,5 +26,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_SVG_H

@@ -184,9 +184,9 @@ void GpuMemoryAllocator::print_info() {
     }
 
     Logger::debug("Current status: ALLOCATED " + std::to_string(int(bytes_allocated / 1024.f)) + " KB | COMMITTED " +
-                  std::to_string(int(bytes_committed / 1024.f)) + " KB | Active textures " + std::to_string(texture_count) +
-                  " | Active buffers " + std::to_string(buffer_count) + " | Free (Idle/Pending) " +
-                  std::to_string(idle_count) + "/" + std::to_string(pending_count));
+                  std::to_string(int(bytes_committed / 1024.f)) + " KB | Active textures " +
+                  std::to_string(texture_count) + " | Active buffers " + std::to_string(buffer_count) +
+                  " | Free (Idle/Pending) " + std::to_string(idle_count) + "/" + std::to_string(pending_count));
 
     for (auto& allocation : active_textures) {
         Logger::debug("Active texture " + std::to_string(allocation.first) + ": " + allocation.second.tag + " - " +

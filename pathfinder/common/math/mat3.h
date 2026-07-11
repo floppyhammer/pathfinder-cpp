@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_MAT3_H
-#define PATHFINDER_MAT3_H
+#pragma once
 
 #include "vec2.h"
 
@@ -76,5 +75,3 @@ struct Mat3 {
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_MAT3_H

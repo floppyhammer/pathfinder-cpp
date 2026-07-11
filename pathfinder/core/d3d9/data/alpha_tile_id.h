@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_D3D9_ALPHA_TILE_ID_H
-#define PATHFINDER_D3D9_ALPHA_TILE_ID_H
+#pragma once
 
 #include <array>
 #include <atomic>
@@ -24,5 +23,3 @@ struct AlphaTileId {
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_D3D9_ALPHA_TILE_ID_H

@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_TEXTURE_VK_H
-#define PATHFINDER_GPU_TEXTURE_VK_H
+#pragma once
 
 #include "../texture.h"
 #include "base.h"
@@ -89,5 +88,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_TEXTURE_VK_H

@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_CANVAS_H
-#define PATHFINDER_CANVAS_H
+#pragma once
 
 #include <memory>
 
@@ -204,5 +203,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_CANVAS_H

@@ -165,7 +165,7 @@ void Path2d::add_path(const Path2d &other, const Transform2 &transform) {
     // We need to get the outline from the other path.
     // Since into_outline() might be destructive/mutating, we'll use a const_cast
     // or better, just access the internal outline if we are a member.
-    Outline other_outline = const_cast<Path2d&>(other).into_outline();
+    Outline other_outline = const_cast<Path2d &>(other).into_outline();
     other_outline.transform(transform);
 
     for (const auto &contour : other_outline.contours) {

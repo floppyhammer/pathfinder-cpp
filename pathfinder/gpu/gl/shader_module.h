@@ -1,8 +1,7 @@
-#ifndef PATHFINDER_GPU_SHADER_MODULE_GL_H
-#define PATHFINDER_GPU_SHADER_MODULE_GL_H
+#pragma once
 
-#include <vector>
 #include <cstdint>
+#include <vector>
 
 #include "../shader_module.h"
 
@@ -37,5 +36,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_SHADER_MODULE_GL_H

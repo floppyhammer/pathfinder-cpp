@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_TRANSFORM2_H
-#define PATHFINDER_TRANSFORM2_H
+#pragma once
 
 #include "mat2.h"
 #include "rect.h"
@@ -114,5 +113,3 @@ public:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_TRANSFORM2_H

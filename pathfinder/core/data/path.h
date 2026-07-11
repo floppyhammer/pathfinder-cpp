@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_PATH_H
-#define PATHFINDER_PATH_H
+#pragma once
 
 #include <vector>
 
@@ -58,5 +57,3 @@ struct ClipPath {
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_PATH_H

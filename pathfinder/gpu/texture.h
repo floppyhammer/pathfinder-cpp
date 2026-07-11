@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_TEXTURE_H
-#define PATHFINDER_GPU_TEXTURE_H
+#pragma once
 
 #include "../common/math/vec2.h"
 #include "base.h"
@@ -83,5 +82,3 @@ protected:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_TEXTURE_H

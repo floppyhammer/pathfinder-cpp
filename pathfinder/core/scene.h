@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_SCENE_H
-#define PATHFINDER_SCENE_H
+#pragma once
 
 #include <vector>
 
@@ -131,5 +130,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_SCENE_H

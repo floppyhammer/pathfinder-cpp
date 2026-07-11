@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_D3D9_DRAW_TILE_BATCH_H
-#define PATHFINDER_D3D9_DRAW_TILE_BATCH_H
+#pragma once
 
 #include <cstdint>
 #include <vector>
@@ -35,5 +34,3 @@ struct DrawTileBatchD3D9 {
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_D3D9_DRAW_TILE_BATCH_H

@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_PATTERN_H
-#define PATHFINDER_PATTERN_H
+#pragma once
 
 //! Raster image patterns.
 
@@ -245,5 +244,3 @@ struct Pattern {
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_PATTERN_H

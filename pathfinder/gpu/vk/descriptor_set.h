@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_DESCRIPTOR_SET_VK_H
-#define PATHFINDER_GPU_DESCRIPTOR_SET_VK_H
+#pragma once
 
 #include "../descriptor_set.h"
 #include "base.h"
@@ -52,5 +51,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_DESCRIPTOR_SET_VK_H

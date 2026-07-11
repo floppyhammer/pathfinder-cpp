@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_I32X4_H
-#define PATHFINDER_I32X4_H
+#pragma once
 
 #include <cstdint>
 
@@ -70,5 +69,3 @@ struct I32x4 {
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_I32X4_H

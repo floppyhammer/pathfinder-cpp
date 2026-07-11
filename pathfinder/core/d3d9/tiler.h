@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_D3D9_TILER_H
-#define PATHFINDER_D3D9_TILER_H
+#pragma once
 
 #include "../data/data.h"
 #include "../data/path.h"
@@ -40,5 +39,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_D3D9_TILER_H

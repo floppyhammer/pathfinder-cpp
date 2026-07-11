@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_CONTOUR_H
-#define PATHFINDER_CONTOUR_H
+#pragma once
 
 #include <vector>
 
@@ -102,5 +101,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_CONTOUR_H

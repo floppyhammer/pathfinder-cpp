@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_COMPUTE_PIPELINE_VK_H
-#define PATHFINDER_GPU_COMPUTE_PIPELINE_VK_H
+#pragma once
 
 #include <memory>
 #include <utility>
@@ -38,5 +37,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_COMPUTE_PIPELINE_VK_H

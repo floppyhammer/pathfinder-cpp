@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_PRELUDE_H
-#define PATHFINDER_PRELUDE_H
+#pragma once
 
 #include "common/io.h"
 #include "common/logger.h"
@@ -20,4 +19,3 @@
 #include "gpu/window_builder.h"
 #include "utils/blit.h"
 
-#endif

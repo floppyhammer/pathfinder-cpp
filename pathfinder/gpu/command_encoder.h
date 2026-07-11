@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_COMMAND_BUFFER_H
-#define PATHFINDER_GPU_COMMAND_BUFFER_H
+#pragma once
 
 #include <array>
 #include <cstdint>
@@ -231,5 +230,3 @@ protected:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_COMMAND_BUFFER_H

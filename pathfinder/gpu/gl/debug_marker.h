@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_GL_DEBUG_MARKER_H
-#define PATHFINDER_GPU_GL_DEBUG_MARKER_H
+#pragma once
 
 #include <sstream>
 
@@ -80,5 +79,3 @@ inline void gl_print_string(const char *name, GLenum s) {
 }
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_GL_DEBUG_MARKER_H

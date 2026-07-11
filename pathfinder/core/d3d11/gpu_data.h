@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_D3D11_GPU_DATA_H
-#define PATHFINDER_D3D11_GPU_DATA_H
+#pragma once
 
 #include <vector>
 
@@ -208,5 +207,3 @@ struct SegmentsD3D11 {
 } // namespace Pathfinder
 
 #endif
-
-#endif // PATHFINDER_D3D11_GPU_DATA_H

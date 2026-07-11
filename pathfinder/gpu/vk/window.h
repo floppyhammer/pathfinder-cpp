@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_WINDOW_VK_H
-#define PATHFINDER_GPU_WINDOW_VK_H
+#pragma once
 
 #include "../window.h"
 #include "device.h"
@@ -25,5 +24,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_WINDOW_VK_H

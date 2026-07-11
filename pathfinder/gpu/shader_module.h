@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_SHADER_MODULE_H
-#define PATHFINDER_GPU_SHADER_MODULE_H
+#pragma once
 
 #include <string>
 
@@ -16,5 +15,3 @@ protected:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_SHADER_MODULE_H

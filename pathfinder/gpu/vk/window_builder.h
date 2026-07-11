@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_WINDOW_BUILDER_VK_H
-#define PATHFINDER_WINDOW_BUILDER_VK_H
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -146,5 +145,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_WINDOW_BUILDER_VK_H

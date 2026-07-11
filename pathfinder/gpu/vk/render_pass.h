@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_RENDER_PASS_VK_H
-#define PATHFINDER_GPU_RENDER_PASS_VK_H
+#pragma once
 
 #include "../render_pass.h"
 #include "base.h"
@@ -27,5 +26,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_RENDER_PASS_VK_H

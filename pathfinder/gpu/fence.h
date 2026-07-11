@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_FENCE_H
-#define PATHFINDER_GPU_FENCE_H
+#pragma once
 
 #include <string>
 
@@ -15,5 +14,3 @@ public:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_FENCE_H

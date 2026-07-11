@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_BUILT_PATH_H
-#define PATHFINDER_BUILT_PATH_H
+#pragma once
 
 #include <cstdint>
 #include <utility>
@@ -58,5 +57,3 @@ struct BuiltDrawPath {
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_BUILT_PATH_H

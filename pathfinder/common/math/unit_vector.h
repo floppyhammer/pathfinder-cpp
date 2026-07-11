@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_UNIT_VECTOR_H
-#define PATHFINDER_UNIT_VECTOR_H
+#pragma once
 
 #include <cmath>
 
@@ -30,5 +29,3 @@ struct UnitVector {
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_UNIT_VECTOR_H

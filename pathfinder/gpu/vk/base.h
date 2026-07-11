@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_DATA_VK_H
-#define PATHFINDER_GPU_DATA_VK_H
+#pragma once
 
 #include <array>
 
@@ -207,5 +206,3 @@ inline VkAttachmentLoadOp to_vk_attachment_load_op(AttachmentLoadOp load_op) {
 }
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_DATA_VK_H

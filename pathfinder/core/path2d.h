@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_PATH2D_H
-#define PATHFINDER_PATH2D_H
+#pragma once
 
 #include "../common/math/rect.h"
 #include "../common/math/vec2.h"
@@ -47,5 +46,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_PATH2D_H

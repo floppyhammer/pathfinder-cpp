@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_RENDER_PIPELINE_H
-#define PATHFINDER_GPU_RENDER_PIPELINE_H
+#pragma once
 
 #include <string>
 #include <utility>
@@ -32,11 +31,9 @@ protected:
     BlendState blend_state_{};
 
     std::shared_ptr<DescriptorSetLayout> layout_;
-    
+
     /// Debug label.
     std::string label_;
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_RENDER_PIPELINE_H

@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_DESCRIPTOR_SET_H
-#define PATHFINDER_GPU_DESCRIPTOR_SET_H
+#pragma once
 
 #include <cstdint>
 #include <map>
@@ -164,5 +163,3 @@ protected:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_DESCRIPTOR_SET_H

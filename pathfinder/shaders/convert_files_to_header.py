@@ -17,8 +17,7 @@ for current_dir, dir_list, file_list in os.walk(r"./"):
         header_file_name = base_name + ".h"
 
         dst_stream = open(current_dir + "/" + header_file_name, 'w')
-        dst_stream.write("#ifndef PATHFINDER_RESOURCE_" + base_name.upper() + "_H\n")
-        dst_stream.write("#define PATHFINDER_RESOURCE_" + base_name.upper() + "_H\n\n")
+        dst_stream.write("#pragma once\n\n")
 
         dst_stream.write("namespace Pathfinder {\n    static uint8_t " + base_name + "[] = {")
 
@@ -31,7 +30,7 @@ for current_dir, dir_list, file_list in os.walk(r"./"):
                 dst_stream.write("," + str(int(char[0])))
         dst_stream.write("};\n")
 
-        dst_stream.write("}\n\n#endif //PATHFINDER_RESOURCE_" + base_name.upper() + "_H\n")
+        dst_stream.write("}\n")
         dst_stream.close()
 
         print("Converted " + file_name + " to " + header_file_name)

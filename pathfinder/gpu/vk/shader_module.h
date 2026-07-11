@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_SHADER_MODULE_VK_H
-#define PATHFINDER_GPU_SHADER_MODULE_VK_H
+#pragma once
 
 namespace Pathfinder {
 
@@ -23,5 +22,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_SHADER_MODULE_VK_H

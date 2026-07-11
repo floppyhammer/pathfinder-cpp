@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_DATA_H
-#define PATHFINDER_GPU_DATA_H
+#pragma once
 
 #include <cstdint>
 #include <cstdlib>
@@ -207,5 +206,3 @@ enum class SamplerFilter {
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_DATA_H

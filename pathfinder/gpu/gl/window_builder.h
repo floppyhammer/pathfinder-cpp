@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_WINDOW_BUILDER_GL_H
-#define PATHFINDER_WINDOW_BUILDER_GL_H
+#pragma once
 
 #include "../window_builder.h"
 
@@ -39,5 +38,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_WINDOW_BUILDER_GL_H

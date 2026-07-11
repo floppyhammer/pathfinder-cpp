@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_COMPUTE_PIPELINE_H
-#define PATHFINDER_GPU_COMPUTE_PIPELINE_H
+#pragma once
 
 #include <string>
 
@@ -18,5 +17,3 @@ protected:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_COMPUTE_PIPELINE_H

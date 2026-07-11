@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_FENCE_GL_H
-#define PATHFINDER_GPU_FENCE_GL_H
+#pragma once
 
 #include "../fence.h"
 #include "base.h"
@@ -21,5 +20,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_FENCE_GL_H

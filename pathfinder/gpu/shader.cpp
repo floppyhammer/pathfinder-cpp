@@ -64,7 +64,9 @@ bool read_shdbin(std::istream &in, ShdbinInfo &shader) {
     return (bool)in.read(shader.code.data(), shader.header.code_size);
 }
 
-void convert_shdbin_info_to_shader_code(const ShdbinInfo &shader_info, ShaderCodeKey &shader_key, ShaderCode &shader_code) {
+void convert_shdbin_info_to_shader_code(const ShdbinInfo &shader_info,
+                                        ShaderCodeKey &shader_key,
+                                        ShaderCode &shader_code) {
     const auto &shader_header = shader_info.header;
     shader_key.major_version = shader_header.major_version;
     shader_key.minor_version = shader_header.minor_version;

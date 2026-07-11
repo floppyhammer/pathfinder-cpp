@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_VK_DEBUG_MARKER_H
-#define PATHFINDER_GPU_VK_DEBUG_MARKER_H
+#pragma once
 
 // Setup and functions for the VK_EXT_debug_marker_extension
 // Extension spec can be found at
@@ -113,7 +112,8 @@ public:
         active = (vkDebugUtilsSetObjectTag != VK_NULL_HANDLE);
 
         if (!active) {
-            Logger::warn("Debug markers disabled. Try running from inside a Vulkan graphics debugger (e.g. RenderDoc).");
+            Logger::warn(
+                "Debug markers disabled. Try running from inside a Vulkan graphics debugger (e.g. RenderDoc).");
         }
     }
 
@@ -128,5 +128,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_VK_DEBUG_MARKER_H

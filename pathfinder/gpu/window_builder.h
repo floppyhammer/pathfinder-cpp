@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_WINDOW_BUILDER_H
-#define PATHFINDER_WINDOW_BUILDER_H
+#pragma once
 
 #include "device.h"
 #include "queue.h"
@@ -68,5 +67,3 @@ protected:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_WINDOW_BUILDER_H

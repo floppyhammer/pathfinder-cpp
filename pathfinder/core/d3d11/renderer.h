@@ -1,12 +1,12 @@
-#ifndef PATHFINDER_D3D11_RENDERER_H
-#define PATHFINDER_D3D11_RENDERER_H
+#pragma once
+
+#include <map>
 
 #include "../../gpu/compute_pipeline.h"
 #include "../../gpu/descriptor_set.h"
 #include "../renderer.h"
 #include "../scene.h"
 #include "gpu_data.h"
-#include <map>
 
 #ifdef PATHFINDER_ENABLE_COMPUTE
 
@@ -216,5 +216,3 @@ private:
 } // namespace Pathfinder
 
 #endif
-
-#endif // PATHFINDER_D3D11_RENDERER_H

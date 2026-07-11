@@ -32,28 +32,28 @@ WindowBuilderGl::WindowBuilderGl(const Vec2I &logical_size) {
     glfwInit();
 
     #if (defined(__linux__) && defined(__ARM_ARCH)) || (defined(_WIN32) && defined(_M_ARM64))
-        // Set the desired OpenGL ES version.
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    // Set the desired OpenGL ES version.
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         #ifdef PATHFINDER_ENABLE_COMPUTE
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
         #else
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
         #endif
     #else
         // Major GL version.
         #ifdef PATHFINDER_ENABLE_COMPUTE
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         #else
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         #endif
 
-        // Minor GL version.
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    // Minor GL version.
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         #ifdef __APPLE__
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         #endif
     #endif
 
@@ -82,12 +82,12 @@ WindowBuilderGl::WindowBuilderGl(const Vec2I &logical_size) {
     if (!gladLoadGLES2(glfwGetProcAddress)) {
         throw std::runtime_error("Failed to initialize GLAD!");
     }
-    #else
+        #else
     // GLAD: load all OpenGL function pointers.
     if (!gladLoadGL(glfwGetProcAddress)) {
         throw std::runtime_error("Failed to initialize GLAD!");
     }
-    #endif
+        #endif
 
     if (GLAD_GL_EXT_debug_label) {
         Logger::info("Debug markers enabled.");

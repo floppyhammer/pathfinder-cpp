@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_LINE_SEGMENT_H
-#define PATHFINDER_LINE_SEGMENT_H
+#pragma once
 
 #include <cstdint>
 
@@ -117,5 +116,3 @@ struct LineSegmentF {
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_LINE_SEGMENT_H

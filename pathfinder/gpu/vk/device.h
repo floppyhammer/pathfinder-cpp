@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_DRIVER_VK_H
-#define PATHFINDER_GPU_DRIVER_VK_H
+#pragma once
 
 #include "../base.h"
 #include "../device.h"
@@ -141,5 +140,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif

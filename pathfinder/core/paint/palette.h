@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_PALETTE_H
-#define PATHFINDER_PALETTE_H
+#pragma once
 
 #include <unordered_map>
 
@@ -105,5 +104,3 @@ private:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_PALETTE_H

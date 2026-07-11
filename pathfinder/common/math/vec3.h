@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_VEC3_H
-#define PATHFINDER_VEC3_H
+#pragma once
 
 #include "vec2.h"
 
@@ -13,11 +12,11 @@ struct Vec3 {
 
     Vec3() = default;
 
-    explicit Vec3(T s) : x(s), y(s), z(s){};
+    explicit Vec3(T s) : x(s), y(s), z(s) {};
 
-    Vec3(T x, T y, T z) : x(x), y(y), z(z){};
+    Vec3(T x, T y, T z) : x(x), y(y), z(z) {};
 
-    Vec3(Vec2<T> v, T z) : x(v.x), y(v.y), z(z){};
+    Vec3(Vec2<T> v, T z) : x(v.x), y(v.y), z(z) {};
 
     Vec2<T> xy() const {
         return {x, y};
@@ -41,5 +40,3 @@ struct Vec3 {
 typedef Vec3<float> Vec3F;
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_VEC3_H

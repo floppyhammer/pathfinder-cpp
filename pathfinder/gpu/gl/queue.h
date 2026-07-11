@@ -1,5 +1,4 @@
-#ifndef PATHFINDER_GPU_QUEUE_GL_H
-#define PATHFINDER_GPU_QUEUE_GL_H
+#pragma once
 
 #include "../queue.h"
 #include "fence.h"
@@ -28,5 +27,3 @@ public:
 };
 
 } // namespace Pathfinder
-
-#endif // PATHFINDER_GPU_QUEUE_GL_H
