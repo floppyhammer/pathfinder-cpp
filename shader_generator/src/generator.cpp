@@ -1,14 +1,11 @@
-#include <cassert>
+#include "generator.h"
+
 #include <fstream>
 #include <iostream>
 #include <regex>
-#include <spirv_glsl.hpp>
-#include <spirv_msl.hpp>
 #include <spirv_parser.hpp>
-#include <spirv_reflect.hpp>
 
 #include "../../pathfinder/gpu/shader_translator.h"
-#include "generator.h"
 
 using namespace Pathfinder;
 
@@ -95,7 +92,7 @@ void generate_shader(const char* input_shader_file, const char* output_binary_fi
     auto translator = std::make_shared<ShaderTranslator>(binary_shader_stage_to_shader_stage(stage));
     translator->compile_from_glsl(entry_point, shader_source, need_framebuffer_fetch);
 
-    auto prepared_shader = translator->outputShader();
+    auto prepared_shader = translator->get_shader();
 
     // 辅助 lambda 函数，用于写入不同类型的 Shader 到同一个二进制文件中
     auto write_to_bin = [&](ShaderSourceType type, uint8_t major, uint8_t minor) {

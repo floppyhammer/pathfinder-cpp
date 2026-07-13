@@ -69,7 +69,7 @@ std::shared_ptr<ShaderCode> glsl_to_spv(const ShaderCode *glsl_code) {
         return {};
     }
 
-    // Link the shader
+    // Link the shader.
     glslang::TProgram program;
     program.addShader(&shader);
 
@@ -159,11 +159,14 @@ std::shared_ptr<ShaderCode> spv_to_glsl(const ShaderCode *spv_code, bool is_es, 
     auto resource = glsl.get_shader_resources();
 
     // Update glsl resource binding map for GLES 3.0.
+
+    // Update texture binding map.
     for (const auto &r : resource.sampled_images) {
         uint32_t binding = glsl.get_decoration(r.id, spv::DecorationBinding);
         glsl_code->texture_binding_map.emplace_back(binding, r.name);
     }
 
+    // Update uniform binding map.
     std::vector<UniformBufferInfo> ubo_infos_;
 
     for (const auto &r : resource.uniform_buffers) {
@@ -173,7 +176,7 @@ std::shared_ptr<ShaderCode> spv_to_glsl(const ShaderCode *spv_code, bool is_es, 
         // Update uniform buffer info.
         ubo_infos_.emplace_back();
         auto &ubo_info = ubo_infos_.back();
-        auto ub_type = glsl.get_type(r.type_id);
+        const auto &ub_type = glsl.get_type(r.type_id);
         ubo_info.name = r.name;
         ubo_info.binding_point = binding;
         ubo_info.size = std::ceil(glsl.get_declared_struct_size(ub_type) / 16.0f) * 16;
@@ -189,7 +192,7 @@ std::shared_ptr<ShaderCode> spv_to_glsl(const ShaderCode *spv_code, bool is_es, 
     return glsl_code;
 }
 
-std::shared_ptr<ShaderCode> spv2msl(const ShaderCode *spv_code, bool need_framebuffer_fetch) {
+std::shared_ptr<ShaderCode> spv_to_msl(const ShaderCode *spv_code, bool need_framebuffer_fetch) {
     spirv_cross::CompilerMSL msl(reinterpret_cast<const uint32_t *>(spv_code->code.data()), spv_code->code.size() / 4);
     spirv_cross::ShaderResources resources = msl.get_shader_resources();
 
@@ -197,18 +200,18 @@ std::shared_ptr<ShaderCode> spv2msl(const ShaderCode *spv_code, bool need_frameb
     // 预留前 8 个索引给 Vertex Buffers ([[buffer(0)]] 到 [[buffer(7)]])
     const unsigned METAL_BUFFER_OFFSET = 8;
 
-    for (auto &resource : resources.uniform_buffers) {
-        unsigned set = msl.get_decoration(resource.id, spv::DecorationDescriptorSet);
-        unsigned binding = msl.get_decoration(resource.id, spv::DecorationBinding);
+    for (const auto &resource : resources.uniform_buffers) {
+        const unsigned set = msl.get_decoration(resource.id, spv::DecorationDescriptorSet);
+        const unsigned binding = msl.get_decoration(resource.id, spv::DecorationBinding);
 
         msl.unset_decoration(resource.id, spv::DecorationDescriptorSet);
         // MSL 中 UBO 和 Vertex Buffer 共享 buffer 索引，所以必须偏移
         msl.set_decoration(resource.id, spv::DecorationBinding, set * 16 + binding + METAL_BUFFER_OFFSET);
     }
 
-    for (auto &resource : resources.sampled_images) {
-        unsigned set = msl.get_decoration(resource.id, spv::DecorationDescriptorSet);
-        unsigned binding = msl.get_decoration(resource.id, spv::DecorationBinding);
+    for (const auto &resource : resources.sampled_images) {
+        const unsigned set = msl.get_decoration(resource.id, spv::DecorationDescriptorSet);
+        const unsigned binding = msl.get_decoration(resource.id, spv::DecorationBinding);
 
         msl.unset_decoration(resource.id, spv::DecorationDescriptorSet);
         // 采样器通常使用 [[texture(N)]] 和 [[sampler(N)]]，与 buffer 空间分开，
@@ -227,13 +230,13 @@ std::shared_ptr<ShaderCode> spv2msl(const ShaderCode *spv_code, bool need_frameb
 
     auto msl_code = std::make_shared<ShaderCode>();
     msl_code->stage = spv_code->stage;
-    msl_code->entry_point = msl_code->entry_point;
+    msl_code->entry_point = spv_code->entry_point;
     msl_code->code = msl.compile();
 
     return msl_code;
 }
 
-void ShaderTranslator::set_shader(const ShaderCodeKey &shader_key, const std::shared_ptr<ShaderCode> &code) {
+void ShaderTranslator::set_shader_code(const ShaderCodeKey &shader_key, const std::shared_ptr<ShaderCode> &code) {
     shader_->update_shader_code(shader_key, code);
 }
 
@@ -248,9 +251,13 @@ void ShaderTranslator::compile_from_glsl(const std::string &entry_point,
     glsl_code->entry_point = entry_point;
     glsl_code->code = shader_code;
 
-    set_shader({ShaderSourceType::GLSL, 4, 5}, glsl_code);
+    set_shader_code({ShaderSourceType::GLSL, 4, 5}, glsl_code);
 
     prepare(need_framebuffer_fetch);
+}
+
+std::shared_ptr<Shader> ShaderTranslator::get_shader() const {
+    return shader_;
 }
 
 bool ShaderTranslator::prepare(bool need_framebuffer_fetch) {
@@ -287,7 +294,7 @@ bool ShaderTranslator::prepare(bool need_framebuffer_fetch) {
 
     // Generate msl code.
     if (msl_code_ptr == nullptr) {
-        auto msl_code = spv2msl(spv_code_ptr.get(), need_framebuffer_fetch);
+        auto msl_code = spv_to_msl(spv_code_ptr.get(), need_framebuffer_fetch);
         shader_->update_shader_code({ShaderSourceType::MSL, 1, 2}, msl_code);
     }
 
