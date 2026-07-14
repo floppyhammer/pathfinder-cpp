@@ -38,6 +38,8 @@ void CommandEncoder::set_viewport(const RectI &viewport) {
 }
 
 void CommandEncoder::bind_render_pipeline(const std::shared_ptr<RenderPipeline> &pipeline) {
+    assert(pipeline != nullptr);
+
     Command cmd{};
     cmd.type = CommandType::BindRenderPipeline;
 

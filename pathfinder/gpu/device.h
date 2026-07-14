@@ -16,6 +16,7 @@ namespace Pathfinder {
 enum class BackendType {
     Opengl,
     Vulkan,
+    Metal,
 };
 
 /// We only need to provide a Driver to Canvas for rendering,

@@ -9,6 +9,9 @@
 #ifdef PATHFINDER_USE_VULKAN
     #include "vk/window_builder.h"
 #endif
+#ifdef PATHFINDER_USE_METAL
+    #include "mtl/window_builder.h"
+#endif
 #include "window.h"
 
 namespace Pathfinder {
@@ -33,6 +36,12 @@ std::shared_ptr<WindowBuilder> WindowBuilder::new_impl(const BackendType backend
             } else {
                 return std::make_shared<WindowBuilderVk>(size);
             }
+        }
+    #endif
+    #ifdef PATHFINDER_USE_METAL
+        case BackendType::Metal: {
+            Logger::info("Using Metal backend");
+            return std::make_shared<WindowBuilderMtl>(size);
         }
     #endif
         default:

@@ -16,12 +16,11 @@ struct DescriptorLayout {
     uint32_t binding{};
     ShaderStage stage{};
     DescriptorType type{};
-    /// For compatibility with lower versions of OpenGL. Deprecated, this has become automatic.
-    // std::string binding_name;
 };
 
 class DescriptorSetLayout {
     friend class DeviceGl;
+    friend class DeviceMtl;
 
 public:
     virtual ~DescriptorSetLayout() = default;
@@ -130,6 +129,7 @@ struct Descriptor {
  */
 class DescriptorSet {
     friend class DeviceGl;
+    friend class DeviceMtl;
 
 public:
     virtual ~DescriptorSet() = default;

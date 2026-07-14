@@ -85,12 +85,11 @@ void generate_shader(const char* input_shader_file, const char* output_binary_fi
     // Handle subpassLoad.
     bool need_framebuffer_fetch = (shader_source.find("subpassLoad") != std::string::npos);
 
-    // TODO: 可以考虑从命令行参数传入 entry_point
-    std::string entry_point = "main";
+    std::string original_entry_point = "main";
 
     // 3. 使用 ShaderTranslator 进行编译和转换
     auto translator = std::make_shared<ShaderTranslator>(binary_shader_stage_to_shader_stage(stage));
-    translator->compile_from_glsl(entry_point, shader_source, need_framebuffer_fetch);
+    translator->compile_from_glsl(original_entry_point, shader_source, need_framebuffer_fetch);
 
     auto prepared_shader = translator->get_shader();
 
@@ -107,7 +106,7 @@ void generate_shader(const char* input_shader_file, const char* output_binary_fi
         bin_info.header.minor_version = minor;
         bin_info.header.stage = stage;
 
-        bin_info.entry_point = std::vector<char>(entry_point.begin(), entry_point.end());
+        bin_info.entry_point = std::vector<char>(shader_code->entry_point.begin(), shader_code->entry_point.end());
         bin_info.code = std::vector<char>(shader_code->code.begin(), shader_code->code.end());
 
         if (!write_shdbin(ofs, bin_info)) {

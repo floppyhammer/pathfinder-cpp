@@ -7,6 +7,10 @@ if (PATHFINDER_BACKEND_VULKAN)
     file(GLOB PF_SOURCE_FILES ${PF_SOURCE_FILES} gpu/vk/*.cpp)
 endif ()
 
+if (PATHFINDER_BACKEND_METAL)
+    file(GLOB PF_SOURCE_FILES ${PF_SOURCE_FILES} gpu/mtl/*.mm gpu/mtl/*.h)
+endif ()
+
 if (PATHFINDER_BACKEND_OPENGL)
     file(GLOB PF_SOURCE_FILES ${PF_SOURCE_FILES} gpu/gl/*.cpp)
     if (CMAKE_SYSTEM_PROCESSOR MATCHES "arm|ARM|ARM64|aarch64")

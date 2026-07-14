@@ -10,6 +10,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 # Options.
 option(PATHFINDER_BACKEND_OPENGL "Enable OpenGL backend" ON)
 option(PATHFINDER_BACKEND_VULKAN "Enable Vulkan backend" ON)
+option(PATHFINDER_BACKEND_METAL "Enable Metal backend" OFF)
 option(PATHFINDER_BUILD_DEMO "Build demo" OFF)
 option(PATHFINDER_ENABLE_COMPUTE "Enable COMPUTE render mode" ON)
 option(PATHFINDER_RUNTIME_SHADER_COMPLICATION "Compile shaders at runtime using SPV" OFF)
@@ -32,7 +33,10 @@ if (EMSCRIPTEN)
 elseif (APPLE)
     # No GL support for Mac.
     set(PATHFINDER_BACKEND_OPENGL OFF)
-    set(PATHFINDER_BACKEND_VULKAN ON)
+    set(PATHFINDER_BACKEND_VULKAN OFF)
+    set(PATHFINDER_BACKEND_METAL ON)
+
+    enable_language(OBJC OBJCXX)
 endif ()
 
 add_subdirectory(pathfinder)
@@ -40,7 +44,9 @@ add_subdirectory(pathfinder)
 target_compile_features(pathfinder PUBLIC cxx_std_14)
 
 if (EMSCRIPTEN)
+    # Do nothing
 elseif (APPLE)
+
 elseif (LINUX)
     target_compile_definitions(pathfinder PUBLIC PATHFINDER_ENABLE_SIMD)
     if (NOT CMAKE_SYSTEM_PROCESSOR MATCHES "arm|aarch64")
@@ -94,6 +100,22 @@ if (PATHFINDER_BACKEND_OPENGL)
     target_compile_definitions(pathfinder PRIVATE PATHFINDER_USE_OPENGL)
 else ()
     message("[Pathfinder] Disabled OpenGL backend")
+endif ()
+
+if (PATHFINDER_BACKEND_METAL)
+    message("[Pathfinder] Enabled Metal backend")
+
+    target_compile_definitions(pathfinder PRIVATE PATHFINDER_USE_METAL)
+
+    # Config ARC.
+    target_compile_options(pathfinder PRIVATE
+            $<$<COMPILE_LANGUAGE:OBJC,OBJCXX>:-fobjc-arc>
+    )
+    set_target_properties(pathfinder PROPERTIES XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC "YES")
+
+    target_link_libraries(pathfinder PUBLIC "-framework Metal" "-framework Cocoa" "-framework QuartzCore" "-framework MetalKit")
+else ()
+    message("[Pathfinder] Disabled Metal backend")
 endif ()
 
 # Include third_party headers.

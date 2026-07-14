@@ -196,16 +196,17 @@ std::shared_ptr<ShaderCode> spv_to_msl(const ShaderCode *spv_code, bool need_fra
     spirv_cross::CompilerMSL msl(reinterpret_cast<const uint32_t *>(spv_code->code.data()), spv_code->code.size() / 4);
     spirv_cross::ShaderResources resources = msl.get_shader_resources();
 
-    // Metal 专有的绑定偏移逻辑
-    // 预留前 8 个索引给 Vertex Buffers ([[buffer(0)]] 到 [[buffer(7)]])
-    const unsigned METAL_BUFFER_OFFSET = 8;
+    // Metal-specific binding offset logic.
+    // Reserve the first 8 indices for Vertex Buffers ([[buffer(0)]] to [[buffer(7)]])
+    // ONLY for render stages (Vertex/Fragment). Compute stages do not have vertex buffers.
+    const unsigned METAL_BUFFER_OFFSET = (spv_code->stage == ShaderStage::Compute) ? 0 : 8;
 
     for (const auto &resource : resources.uniform_buffers) {
         const unsigned set = msl.get_decoration(resource.id, spv::DecorationDescriptorSet);
         const unsigned binding = msl.get_decoration(resource.id, spv::DecorationBinding);
 
         msl.unset_decoration(resource.id, spv::DecorationDescriptorSet);
-        // MSL 中 UBO 和 Vertex Buffer 共享 buffer 索引，所以必须偏移
+        // In MSL, UBO and Vertex Buffer share the buffer index space, so we must offset.
         msl.set_decoration(resource.id, spv::DecorationBinding, set * 16 + binding + METAL_BUFFER_OFFSET);
     }
 
@@ -228,10 +229,26 @@ std::shared_ptr<ShaderCode> spv_to_msl(const ShaderCode *spv_code, bool need_fra
     options.platform = spirv_cross::CompilerMSL::Options::Platform::iOS;
     msl.set_msl_options(options);
 
+    // Flip Y coordinate in vertex shader to match Metal's coordinate system behavior
+    // when rendering to textures, which is consistent with Vulkan's top-down approach.
+    spirv_cross::CompilerGLSL::Options common_options;
+    common_options.vertex.flip_vert_y = true;
+    msl.set_common_options(common_options);
+
     auto msl_code = std::make_shared<ShaderCode>();
     msl_code->stage = spv_code->stage;
-    msl_code->entry_point = spv_code->entry_point;
     msl_code->code = msl.compile();
+
+    spv::ExecutionModel execution_model;
+    switch (spv_code->stage) {
+        case ShaderStage::Vertex:   execution_model = spv::ExecutionModelVertex; break;
+        case ShaderStage::Fragment: execution_model = spv::ExecutionModelFragment; break;
+        case ShaderStage::Compute:  execution_model = spv::ExecutionModelGLCompute; break;
+        default:                    execution_model = spv::ExecutionModelMax; break;
+    }
+
+    // Entry point might be changed during conversion.
+    msl_code->entry_point = msl.get_cleansed_entry_point_name(spv_code->entry_point, execution_model);
 
     return msl_code;
 }

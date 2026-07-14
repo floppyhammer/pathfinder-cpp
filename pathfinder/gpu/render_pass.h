@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../common/math/vec2.h"
+#include <string>
 
 namespace Pathfinder {
 

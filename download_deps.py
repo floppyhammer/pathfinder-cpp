@@ -10,7 +10,7 @@ deps = [
 
 
 def download_deps():
-    for url, name, branch in dev_deps:
+    for url, name, branch in deps:
         if not os.path.exists('third_party/' + name):
             cmd = 'git clone -b ' + branch + ' ' + url + ' third_party/' + name
 
@@ -19,7 +19,7 @@ def download_deps():
 
             # Get glslang deps
             if name == "glslang":
-                os.chdir('./3rd/glslang')
+                os.chdir('./third_party/glslang')
                 os.system(python_alias + ' update_glslang_sources.py')
                 os.chdir('../..')
 
