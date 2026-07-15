@@ -399,7 +399,7 @@ uint64_t RendererD3D9::upload_fills(const std::vector<Fill> &fills,
 
     auto fill_vertex_buffer_id = allocator->allocate_buffer(byte_size, BufferType::Vertex, "fill vertex buffer");
 
-    encoder->write_buffer(allocator->get_buffer(fill_vertex_buffer_id), 0, byte_size, fills.data());
+    allocator->get_buffer(fill_vertex_buffer_id)->upload_via_mapping(byte_size, 0, fills.data());
 
     return fill_vertex_buffer_id;
 }
@@ -424,7 +424,7 @@ uint64_t RendererD3D9::upload_tiles(const std::vector<TileObjectPrimitive> &tile
 
     auto tile_vertex_buffer_id = allocator->allocate_buffer(byte_size, BufferType::Vertex, "tile vertex buffer");
 
-    encoder->write_buffer(allocator->get_buffer(tile_vertex_buffer_id), 0, byte_size, tiles.data());
+    allocator->get_buffer(tile_vertex_buffer_id)->upload_via_mapping(byte_size, 0, tiles.data());
 
     return tile_vertex_buffer_id;
 }
@@ -481,7 +481,7 @@ void RendererD3D9::draw_fills(uint64_t fill_vertex_buffer_id,
     fill_uniform.framebuffer_size = {MASK_FRAMEBUFFER_WIDTH,
                                      (float)(MASK_FRAMEBUFFER_HEIGHT * mask_storage.allocated_page_count)};
 
-    encoder->write_buffer(allocator->get_buffer(fill_ub_id), 0, sizeof(FillUniformD3d9), &fill_uniform);
+    allocator->get_buffer(fill_ub_id)->upload_via_mapping(sizeof(FillUniformD3d9), 0, &fill_uniform);
 
     encoder->begin_render_pass(mask_render_pass_clear, allocator->get_texture(*mask_storage.texture_id), ColorF());
 
@@ -508,7 +508,7 @@ ClipBufferInfo RendererD3D9::upload_clip_tiles(const std::vector<Clip> &clips,
 
     auto clip_buffer_id = allocator->allocate_buffer(byte_size, BufferType::Vertex, "clip buffer");
 
-    encoder->write_buffer(allocator->get_buffer(clip_buffer_id), 0, byte_size, clips.data());
+    allocator->get_buffer(clip_buffer_id)->upload_via_mapping(byte_size, 0, clips.data());
 
     return {clip_buffer_id, clip_count};
 }
@@ -649,10 +649,8 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
 
         // We don't need to preserve the data until the upload commands are implemented because
         // these uniform buffers are host-visible/coherent.
-        encoder->write_buffer(allocator->get_buffer(tile_ub_id),
-                              tile_uniform_offset,
-                              sizeof(TileUniformD3d9),
-                              &tile_uniform);
+        allocator->get_buffer(tile_ub_id)
+            ->upload_via_mapping(sizeof(TileUniformD3d9), tile_uniform_offset, &tile_uniform);
     }
 
     // Update descriptor set.
