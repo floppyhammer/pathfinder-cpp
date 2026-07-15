@@ -50,7 +50,7 @@ void Blit::set_texture(const std::shared_ptr<Texture> &new_texture) {
     });
 }
 
-void Blit::update_uniform(const std::shared_ptr<CommandEncoder> &encoder) {
+void Blit::draw(const std::shared_ptr<CommandEncoder> &encoder) {
     if (!uniform_buffer_) {
         auto descriptor =
             BufferDescriptor{BufferType::Uniform, 4 * sizeof(float), MemoryProperty::HostVisibleAndCoherent};
@@ -62,13 +62,11 @@ void Blit::update_uniform(const std::shared_ptr<CommandEncoder> &encoder) {
             flip_y = -1.0f;
         }
 
-        encoder->write_buffer(uniform_buffer_, 0, sizeof(float), &flip_y);
+        uniform_buffer_->upload_via_mapping(sizeof(float), 0, &flip_y);
 
         descriptor_set_->add_or_update({Descriptor::uniform(0, uniform_buffer_)});
     }
-}
 
-void Blit::draw(const std::shared_ptr<CommandEncoder> &encoder) const {
     encoder->bind_render_pipeline(pipeline_);
 
     encoder->bind_descriptor_set(descriptor_set_);
