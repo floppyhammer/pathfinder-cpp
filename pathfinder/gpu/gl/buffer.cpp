@@ -49,6 +49,11 @@ BufferGl::~BufferGl() {
 }
 
 void BufferGl::upload_via_mapping(size_t data_size, size_t offset, const void *data) {
+    if (mapped_ptr_) {
+        memcpy((uint8_t *)mapped_ptr_ + offset, data, data_size);
+        return;
+    }
+
     int gl_buffer_type = 0;
 
     switch (desc_.type) {
@@ -115,6 +120,10 @@ void BufferGl::set_label(const std::string &label) {
 }
 
 void *BufferGl::map() {
+    if (mapped_ptr_) {
+        return mapped_ptr_;
+    }
+
     GLint target = GL_NONE;
     switch (desc_.type) {
         case BufferType::Uniform:
@@ -135,8 +144,11 @@ void *BufferGl::map() {
         } break;
     }
     glBindBuffer(target, gl_id_);
-    void *ptr = glMapBufferRange(target, 0, desc_.size, GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
+    GLbitfield flags = GL_MAP_WRITE_BIT;
+    void *ptr = glMapBufferRange(target, 0, desc_.size, flags);
     glBindBuffer(target, 0);
+
+    mapped_ptr_ = ptr;
     return ptr;
 }
 
@@ -163,6 +175,7 @@ void BufferGl::unmap() {
     glBindBuffer(target, gl_id_);
     glUnmapBuffer(target);
     glBindBuffer(target, 0);
+    mapped_ptr_ = nullptr;
 }
 
 } // namespace Pathfinder

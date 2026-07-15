@@ -62,11 +62,11 @@ public:
 
     std::shared_ptr<Fence> create_fence(const std::string &label) override;
 
-    StagingAllocation allocate_staging(size_t size) override;
-
     void *map_staging(const StagingAllocation &allocation) override;
 
     void unmap_staging(const StagingAllocation &allocation) override;
+
+    std::shared_ptr<Buffer> create_staging_buffer(size_t size) override;
 
     size_t get_aligned_uniform_size(size_t original_size) override;
 

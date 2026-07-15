@@ -203,25 +203,17 @@ std::shared_ptr<Fence> DeviceMtl::create_fence(const std::string &label) {
     return std::shared_ptr<Fence>(new Fence());
 }
 
-StagingAllocation DeviceMtl::allocate_staging(size_t size) {
+std::shared_ptr<Buffer> DeviceMtl::create_staging_buffer(size_t size) {
     BufferDescriptor desc;
     desc.type = BufferType::Storage;
     desc.size = size;
     desc.property = MemoryProperty::HostVisibleAndCoherent;
-
-    auto buffer = create_buffer(desc, "Metal Staging Buffer");
-
-    StagingAllocation alloc;
-    alloc.buffer = buffer;
-    alloc.offset = 0;
-    alloc.mapped_ptr = nullptr;
-
-    return alloc;
+    return create_buffer(desc, "Metal Staging Buffer");
 }
 
 void *DeviceMtl::map_staging(const StagingAllocation &allocation) {
     auto buffer_mtl = (BufferMtl *)allocation.buffer.get();
-    return buffer_mtl->contents();
+    return (uint8_t *)buffer_mtl->contents() + allocation.offset;
 }
 
 void DeviceMtl::unmap_staging(const StagingAllocation &allocation) {

@@ -214,6 +214,11 @@ void CommandEncoder::write_buffer(const std::shared_ptr<Buffer> &buffer,
     auto device = device_.lock();
     auto allocation = device->allocate_staging(data_size);
 
+    if (!used_staging_buffer_) {
+        used_staging_buffer_ = true;
+        device->increment_staging_encoder();
+    }
+
     void *mapped_ptr = device->map_staging(allocation);
     memcpy(mapped_ptr, data, data_size);
     device->unmap_staging(allocation);
@@ -250,8 +255,13 @@ void CommandEncoder::read_buffer(const std::shared_ptr<Buffer> &buffer,
     auto device = device_.lock();
     auto allocation = device->allocate_staging(data_size);
 
+    if (!used_staging_buffer_) {
+        used_staging_buffer_ = true;
+        device->increment_staging_encoder();
+    }
+
     Command cmd{};
-    cmd.type = CommandType::ReadBuffer;
+    cmd.type = CommandType::WriteBuffer;
 
     auto &args = cmd.args.read_buffer;
     args.buffer = buffer.get();
@@ -287,6 +297,11 @@ void CommandEncoder::write_texture(const std::shared_ptr<Texture> &texture, Rect
 
     auto device = device_.lock();
     auto allocation = device->allocate_staging(data_size);
+
+    if (!used_staging_buffer_) {
+        used_staging_buffer_ = true;
+        device->increment_staging_encoder();
+    }
 
     void *mapped_ptr = device->map_staging(allocation);
     memcpy(mapped_ptr, src, data_size);
@@ -325,6 +340,11 @@ void CommandEncoder::read_texture(const std::shared_ptr<Texture> &texture, RectI
     auto device = device_.lock();
     auto allocation = device->allocate_staging(data_size);
 
+    if (!used_staging_buffer_) {
+        used_staging_buffer_ = true;
+        device->increment_staging_encoder();
+    }
+
     Command cmd{};
     cmd.type = CommandType::ReadTexture;
 
@@ -347,6 +367,21 @@ void CommandEncoder::read_texture(const std::shared_ptr<Texture> &texture, RectI
     });
 
     track_temporary_resource(allocation.buffer);
+}
+
+void CommandEncoder::invoke_callbacks() {
+    for (auto &callback : callbacks_) {
+        callback();
+    }
+
+    callbacks_.clear();
+    temp_buffers_.clear();
+
+    if (used_staging_buffer_) {
+        if (auto device = device_.lock()) {
+            device_.lock()->decrement_staging_encoder();
+        }
+    }
 }
 
 } // namespace Pathfinder

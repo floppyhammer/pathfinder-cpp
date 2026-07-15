@@ -55,6 +55,7 @@ enum class CommandType {
 struct StagingAllocation {
     std::shared_ptr<Buffer> buffer;
     size_t offset = 0;
+    size_t data_size = 0;
     void *mapped_ptr = nullptr;
 };
 
@@ -236,14 +237,7 @@ public:
         temp_buffers_.push_back(buffer);
     }
 
-    void invoke_callbacks() {
-        for (auto &callback : callbacks_) {
-            callback();
-        }
-
-        callbacks_.clear();
-        temp_buffers_.clear();
-    }
+    void invoke_callbacks();
 
 protected:
     CommandEncoder() = default;
@@ -276,6 +270,8 @@ protected:
     std::weak_ptr<Device> device_;
 
     std::vector<std::shared_ptr<Framebuffer>> framebuffers_;
+
+    bool used_staging_buffer_ = false;
 };
 
 } // namespace Pathfinder

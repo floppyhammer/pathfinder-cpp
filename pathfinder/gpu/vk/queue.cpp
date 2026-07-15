@@ -43,9 +43,6 @@ void QueueVk::submit(const std::shared_ptr<CommandEncoder> &encoder, const std::
     }
 
     encoder->invoke_callbacks();
-
-    // After callbacks are finished, we can reuse the staging blocks.
-    encoder_vk->device_vk_->reset_staging();
 }
 
 } // namespace Pathfinder

@@ -26,8 +26,10 @@ public:
 
 private:
     explicit BufferGl(const BufferDescriptor& desc);
-
     uint32_t gl_id_ = 0;
+
+    // Cache mapped pointer to improve performance.
+    void* mapped_ptr_ = nullptr;
 };
 
 } // namespace Pathfinder

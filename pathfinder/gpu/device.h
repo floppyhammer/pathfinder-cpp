@@ -72,13 +72,15 @@ public:
 
     virtual std::shared_ptr<Fence> create_fence(const std::string &label) = 0;
 
-    virtual StagingAllocation allocate_staging(size_t size) = 0;
+    StagingAllocation allocate_staging(size_t size);
 
-    virtual void *map_staging(const StagingAllocation &allocation) { return nullptr; }
+    virtual void *map_staging(const StagingAllocation &allocation) {
+        return nullptr;
+    }
 
     virtual void unmap_staging(const StagingAllocation &allocation) {}
 
-    virtual void reset_staging() {}
+    virtual void reset_staging();
 
     virtual size_t get_aligned_uniform_size(size_t original_size) = 0;
 
@@ -86,8 +88,33 @@ public:
         return backend_type;
     }
 
+public:
+    void increment_staging_encoder() {
+        pending_staging_encoders_++;
+    }
+
+    void decrement_staging_encoder() {
+        pending_staging_encoders_--;
+        if (pending_staging_encoders_ == 0) {
+            reset_staging();
+        }
+    }
+
 protected:
     BackendType backend_type = BackendType::Vulkan;
+
+    struct StagingBlock {
+        std::shared_ptr<Buffer> buffer;
+        size_t used_size = 0;
+    };
+
+    const size_t STAGING_BLOCK_SIZE = 4 * 1024 * 1024;
+
+    std::vector<StagingBlock> staging_blocks_;
+
+    uint32_t pending_staging_encoders_ = 0;
+
+    virtual std::shared_ptr<Buffer> create_staging_buffer(size_t size) = 0;
 };
 
 } // namespace Pathfinder

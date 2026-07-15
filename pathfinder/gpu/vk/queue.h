@@ -19,8 +19,6 @@ private:
 
     VkQueue vk_present_queue_{};
 
-    DeviceVk *device_vk_{};
-
 public:
     QueueVk(VkDevice vk_device, VkQueue vk_graphics_queue, VkQueue vk_present_queue) {
         vk_device_ = vk_device;
