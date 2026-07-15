@@ -17,7 +17,7 @@ public:
 
         encoder->submitted_ = true;
 
-        encoder->finish();
+        encoder->prepare();
 
         if (fence) {
             auto fence_gl = (FenceGl *)fence.get();

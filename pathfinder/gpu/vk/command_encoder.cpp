@@ -115,8 +115,8 @@ CommandEncoderVk::~CommandEncoderVk() {
     vk_command_buffer_ = VK_NULL_HANDLE;
 }
 
-bool CommandEncoderVk::finish() {
-    if (finished_) {
+bool CommandEncoderVk::prepare() {
+    if (prepared_) {
         Logger::error("Attempted to finish an encoder that's been finished previously!");
         return false;
     }
@@ -627,7 +627,7 @@ bool CommandEncoderVk::finish() {
     // End recording the command buffer.
     VK_CHECK_RESULT(vkEndCommandBuffer(vk_command_buffer_))
 
-    finished_ = true;
+    prepared_ = true;
 
     return true;
 }

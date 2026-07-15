@@ -231,34 +231,32 @@ void CommandEncoder::read_buffer(const std::shared_ptr<Buffer> &buffer,
                                  uint32_t offset,
                                  uint32_t data_size,
                                  void *data) {
-    switch (buffer->get_type()) {
-        case BufferType::Storage: {
-            if (data_size == 0 || data == nullptr) {
-                Logger::error("Tried to download invalid data from buffer!");
-            }
-
-            // Read buffer by memory mapping.
-            if (buffer->get_memory_property() == MemoryProperty::HostVisibleAndCoherent) {
-                Logger::error("You're trying to read a mappable buffer through a command. It may indicate some bug.");
-                buffer->download_via_mapping(data_size, offset, data);
-                return;
-            }
-
-            Command cmd{};
-            cmd.type = CommandType::ReadBuffer;
-
-            auto &args = cmd.args.read_buffer;
-            args.buffer = buffer.get();
-            args.offset = offset;
-            args.data_size = data_size;
-            args.data = data;
-
-            commands_.push_back(cmd);
-        } break;
-        default: {
-            Logger::error("Cannot read data from non-storage buffers!");
-        } break;
+    if (buffer->get_type() != BufferType::Storage) {
+        Logger::error("Cannot read data from non-storage buffers!");
+        return;
     }
+
+    if (data_size == 0 || data == nullptr) {
+        Logger::error("Tried to read invalid data from buffer!");
+    }
+
+    // Read buffer by memory mapping.
+    if (buffer->get_memory_property() == MemoryProperty::HostVisibleAndCoherent) {
+        Logger::error("You're trying to read a mappable buffer through a command. It may indicate some bug.");
+        buffer->download_via_mapping(data_size, offset, data);
+        return;
+    }
+
+    Command cmd{};
+    cmd.type = CommandType::ReadBuffer;
+
+    auto &args = cmd.args.read_buffer;
+    args.buffer = buffer.get();
+    args.offset = offset;
+    args.data_size = data_size;
+    args.data = data;
+
+    commands_.push_back(cmd);
 }
 
 void CommandEncoder::write_texture(const std::shared_ptr<Texture> &texture, RectI region, const void *src) {

@@ -19,7 +19,7 @@ CommandEncoderGl::~CommandEncoderGl() {
     glDeleteVertexArrays(vao_.size(), vao_.data());
 }
 
-bool CommandEncoderGl::finish() {
+bool CommandEncoderGl::prepare() {
     if (commands_.empty()) {
         return false;
     }

@@ -252,7 +252,7 @@ void SwapChainVk::submit(const std::shared_ptr<CommandEncoder> &encoder) {
 
     encoder->submitted_ = true;
 
-    if (!encoder->finish()) {
+    if (!encoder->prepare()) {
         return;
     }
 

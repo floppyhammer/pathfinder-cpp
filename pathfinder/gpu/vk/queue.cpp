@@ -13,7 +13,7 @@ void QueueVk::submit(const std::shared_ptr<CommandEncoder> &encoder, const std::
     // Mark the encoder as submitted.
     encoder->submitted_ = true;
 
-    if (!encoder->finish()) {
+    if (!encoder->prepare()) {
         return;
     }
 

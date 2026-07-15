@@ -229,20 +229,20 @@ protected:
 
     /// Prepare the encoder for submission.
     /// @return If valid for submission.
-    virtual bool finish() = 0;
+    virtual bool prepare() = 0;
 
     /// Debug label.
     std::string label_;
 
     std::deque<Command> commands_;
 
-    /// Finished recording.
-    bool finished_ = false;
+    /// Prepared for submission.
+    bool prepared_ = false;
 
     /// Submitted by a queue.
     bool submitted_ = false;
 
-    /// Callbacks after the commands are submitted and waited for finish.
+    /// Callbacks after the commands are finished (not only submitted) on GPU.
     std::vector<std::function<void()>> callbacks_;
 
     /// Currently bound pipeline.

@@ -16,7 +16,7 @@ public:
 private:
     CommandEncoderGl() = default;
 
-    bool finish() override;
+    bool prepare() override;
 
     std::vector<uint32_t> vao_;
 };

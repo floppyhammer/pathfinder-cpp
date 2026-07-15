@@ -8,7 +8,7 @@ void QueueMtl::submit(const std::shared_ptr<CommandEncoder>& encoder, const std:
     auto encoder_mtl = (CommandEncoderMtl*)encoder.get();
 
     @autoreleasepool {
-        encoder_mtl->finish();
+        encoder_mtl->prepare();
 
         auto mtl_cmd_buffer = encoder_mtl->get_handle();
 

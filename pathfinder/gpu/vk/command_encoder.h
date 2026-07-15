@@ -18,7 +18,7 @@ private:
 
     void add_barriers_for_descriptor_set(DescriptorSet *descriptor_set);
 
-    bool finish() override;
+    bool prepare() override;
 
     VkCommandBuffer vk_command_buffer_{};
 

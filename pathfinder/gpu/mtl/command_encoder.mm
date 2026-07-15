@@ -14,7 +14,7 @@
 
 namespace Pathfinder {
 
-bool CommandEncoderMtl::finish() {
+bool CommandEncoderMtl::prepare() {
     if (commands_.empty()) {
         return false;
     }

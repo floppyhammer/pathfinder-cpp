@@ -47,7 +47,7 @@ void SwapChainGl::submit(const std::shared_ptr<CommandEncoder> &encoder) {
 
     encoder->submitted_ = true;
 
-    encoder->finish();
+    encoder->prepare();
 }
 
 void SwapChainGl::present() {

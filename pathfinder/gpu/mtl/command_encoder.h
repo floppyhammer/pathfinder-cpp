@@ -34,7 +34,7 @@ private:
     CommandEncoderMtl(id<MTLDevice> mtl_device, id<MTLCommandQueue> mtl_cmd_queue)
         : mtl_device_(mtl_device), mtl_cmd_queue_(mtl_cmd_queue), mtl_cmd_buffer_(nil) {}
 
-    bool finish() override;
+    bool prepare() override;
 
     std::vector<std::function<void()>> callbacks;
 
