@@ -109,8 +109,6 @@ CommandEncoderVk::CommandEncoderVk(VkCommandBuffer vk_command_buffer, DeviceVk *
     : vk_command_buffer_(vk_command_buffer), vk_device_(device->get_device()), device_vk_(device) {}
 
 CommandEncoderVk::~CommandEncoderVk() {
-    invoke_callbacks();
-
     vkFreeCommandBuffers(vk_device_, device_vk_->get_command_pool(), 1, &vk_command_buffer_);
     vk_command_buffer_ = VK_NULL_HANDLE;
 }
@@ -388,28 +386,20 @@ bool CommandEncoderVk::prepare() {
             case CommandType::WriteBuffer: {
                 auto &args = cmd.args.write_buffer;
                 auto buffer_vk = static_cast<BufferVk *>(args.buffer);
-
-                // Create a host visible buffer and copy data to it by memory mapping.
-                // ---------------------------------
-                buffer_vk->create_staging_buffer(device_vk_);
-
-                VkBuffer staging_buffer = buffer_vk->vk_staging_buffer_;
-                VkDeviceMemory staging_buffer_memory = buffer_vk->vk_staging_device_memory_;
-
-                device_vk_->copy_data_to_mappable_memory(args.data, staging_buffer_memory, args.data_size);
-                // ---------------------------------
+                auto staging_buffer_vk = static_cast<BufferVk *>(args.staging_buffer);
 
                 device_vk_->copy_vk_buffer(vk_command_buffer_,
-                                           staging_buffer,
+                                           staging_buffer_vk->get_vk_buffer(),
                                            buffer_vk->get_vk_buffer(),
                                            args.data_size,
-                                           0,
+                                           args.staging_offset,
                                            args.offset);
             } break;
                 // Only for storage buffer.
             case CommandType::ReadBuffer: {
                 auto &args = cmd.args.read_buffer;
                 auto buffer_vk = static_cast<BufferVk *>(args.buffer);
+                auto staging_buffer_vk = static_cast<BufferVk *>(args.staging_buffer);
 
                 // Add a barrier.
                 VkBufferMemoryBarrier memory_barrier = {};
@@ -434,41 +424,17 @@ bool CommandEncoderVk::prepare() {
                                      0,
                                      nullptr);
 
-                // Create a host visible buffer and copy data to it by memory mapping.
-                // ---------------------------------
-                buffer_vk->create_staging_buffer(device_vk_);
-
-                VkBuffer staging_buffer = buffer_vk->vk_staging_buffer_;
-                VkDeviceMemory staging_buffer_memory = buffer_vk->vk_staging_device_memory_;
-                // ---------------------------------
-
                 device_vk_->copy_vk_buffer(vk_command_buffer_,
                                            buffer_vk->get_vk_buffer(),
-                                           staging_buffer,
-                                           args.data_size);
-
-                auto callback = [this, staging_buffer_memory, args] {
-                    // Wait for the data transfer to complete before memory mapping.
-                    device_vk_->copy_data_from_mappable_memory(args.data, staging_buffer_memory, args.data_size);
-                };
-                add_callback(callback);
+                                           staging_buffer_vk->get_vk_buffer(),
+                                           args.data_size,
+                                           args.offset,
+                                           args.staging_offset);
             } break;
             case CommandType::WriteTexture: {
                 auto &args = cmd.args.write_texture;
-
                 auto texture_vk = static_cast<TextureVk *>(args.texture);
-
-                // Image region size in bytes.
-                auto pixel_size = get_pixel_size(texture_vk->get_format()); // Bytes of one pixel.
-
-                // Notable that the data size is of the whole texture but of a region.
-                VkDeviceSize data_size = args.width * args.height * pixel_size;
-
-                // Prepare staging buffer.
-                texture_vk->create_staging_buffer(device_vk_);
-
-                // Copy the pixel data to the staging buffer.
-                device_vk_->copy_data_to_mappable_memory(args.data, texture_vk->vk_staging_buffer_memory_, data_size);
+                auto staging_buffer_vk = static_cast<BufferVk *>(args.staging_buffer);
 
                 // Transition the image layout to transfer dst.
                 int32_t src_stage = 0;
@@ -496,55 +462,34 @@ bool CommandEncoderVk::prepare() {
 
                 // Execute the buffer to image copy operation.
                 {
-                    // Structure specifying a buffer image copy operation.
                     VkBufferImageCopy region{};
+                    region.bufferOffset = args.staging_offset;
+                    region.bufferRowLength = 0;
+                    region.bufferImageHeight = 0;
 
-                    // Specify which part of the buffer is going to be copied.
-                    {
-                        region.bufferOffset = 0;      // Byte offset in the buffer at which the pixel values start.
-                        region.bufferRowLength = 0;   // Specify how the pixels are laid out in memory.
-                        region.bufferImageHeight = 0; // This too.
-                    }
+                    region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                    region.imageSubresource.mipLevel = 0;
+                    region.imageSubresource.baseArrayLayer = 0;
+                    region.imageSubresource.layerCount = 1;
+                    region.imageOffset = {static_cast<int32_t>(args.offset_x),
+                                          static_cast<int32_t>(args.offset_y),
+                                          0};
+                    region.imageExtent = {args.width, args.height, 1};
 
-                    // Specify which part of the image we want to copy the pixels.
-                    {
-                        // A VkImageSubresourceLayers used to specify the specific image sub-resources of the image used
-                        // for the source or destination image data.
-                        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                        region.imageSubresource.mipLevel = 0;
-                        region.imageSubresource.baseArrayLayer = 0;
-                        region.imageSubresource.layerCount = 1;
-                        // Selects the initial x, y, z offsets in texels of the subregion of the source or destination
-                        // image data.
-                        region.imageOffset = {static_cast<int32_t>(args.offset_x),
-                                              static_cast<int32_t>(args.offset_y),
-                                              0};
-                        // Size in texels of the image to copy in width, height and depth.
-                        region.imageExtent = {args.width, args.height, 1};
-                    }
-
-                    // Copy data from a buffer into an image.
                     vkCmdCopyBufferToImage(vk_command_buffer_,
-                                           texture_vk->vk_staging_buffer_,
+                                           staging_buffer_vk->get_vk_buffer(),
                                            texture_vk->get_image(),
-                                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // Final image layout after copy.
+                                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                            1,
                                            &region);
                 }
             } break;
             case CommandType::ReadTexture: {
                 auto &args = cmd.args.read_texture;
-
                 auto texture_vk = static_cast<TextureVk *>(args.texture);
+                auto staging_buffer_vk = static_cast<BufferVk *>(args.staging_buffer);
 
-                // Image region size in bytes.
-                auto pixel_size = get_pixel_size(texture_vk->get_format()); // Bytes of one pixel.
-                VkDeviceSize data_size = args.width * args.height * pixel_size;
-
-                // Prepare staging buffer.
-                texture_vk->create_staging_buffer(device_vk_);
-
-                // Transition the image layout to transfer dst.
+                // Transition the image layout to transfer src.
                 int32_t src_stage = 0;
                 int32_t dst_stage = 0;
                 auto barrier = generate_image_barrier(texture_vk->get_image(),
@@ -570,50 +515,27 @@ bool CommandEncoderVk::prepare() {
 
                 // Execute the buffer to image copy operation.
                 {
-                    // Structure specifying a buffer image copy operation.
                     VkBufferImageCopy region{};
+                    region.bufferOffset = args.staging_offset;
+                    region.bufferRowLength = 0;
+                    region.bufferImageHeight = 0;
 
-                    // Specify which part of the buffer is going to be copied.
-                    {
-                        region.bufferOffset = 0;      // Byte offset in the buffer at which the pixel values start.
-                        region.bufferRowLength = 0;   // Specify how the pixels are laid out in memory.
-                        region.bufferImageHeight = 0; // This too.
-                    }
+                    region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                    region.imageSubresource.mipLevel = 0;
+                    region.imageSubresource.baseArrayLayer = 0;
+                    region.imageSubresource.layerCount = 1;
+                    region.imageOffset = {static_cast<int32_t>(args.offset_x),
+                                          static_cast<int32_t>(args.offset_y),
+                                          0};
+                    region.imageExtent = {args.width, args.height, 1};
 
-                    // Specify which part of the image we want to copy the pixels.
-                    {
-                        // A VkImageSubresourceLayers used to specify the specific image sub-resources of the image used
-                        // for the source or destination image data.
-                        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                        region.imageSubresource.mipLevel = 0;
-                        region.imageSubresource.baseArrayLayer = 0;
-                        region.imageSubresource.layerCount = 1;
-                        // Selects the initial x, y, z offsets in texels of the subregion of the source or destination
-                        // image data.
-                        region.imageOffset = {static_cast<int32_t>(args.offset_x),
-                                              static_cast<int32_t>(args.offset_y),
-                                              0};
-                        // Size in texels of the image to copy in width, height and depth.
-                        region.imageExtent = {args.width, args.height, 1};
-                    }
-
-                    // Copy data from a buffer into an image.
                     vkCmdCopyImageToBuffer(vk_command_buffer_,
                                            texture_vk->get_image(),
                                            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                           texture_vk->vk_staging_buffer_,
+                                           staging_buffer_vk->get_vk_buffer(),
                                            1,
                                            &region);
                 }
-
-                // Callback to clean up staging resources.
-                auto callback = [this, texture_vk, data_size, args] {
-                    // Copy the pixel data from the staging buffer.
-                    device_vk_->copy_data_from_mappable_memory(args.data,
-                                                               texture_vk->vk_staging_buffer_memory_,
-                                                               data_size);
-                };
-                add_callback(callback);
             } break;
             case CommandType::Max:
                 break;

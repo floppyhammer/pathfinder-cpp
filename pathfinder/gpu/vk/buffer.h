@@ -24,18 +24,19 @@ public:
 
     VkDeviceMemory get_vk_device_memory();
 
+    void* map();
+
+    void unmap();
+
 private:
     BufferVk(VkDevice vk_device, const BufferDescriptor& desc);
-
-    void create_staging_buffer(DeviceVk* device_vk);
 
     VkBuffer vk_buffer_{};
     VkDeviceMemory vk_device_memory_{};
 
-    VkBuffer vk_staging_buffer_{};
-    VkDeviceMemory vk_staging_device_memory_{};
-
     VkDevice vk_device_{};
+
+    void* mapped_ptr_ = nullptr;
 };
 
 } // namespace Pathfinder

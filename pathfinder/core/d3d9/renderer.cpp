@@ -581,13 +581,12 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
                               const std::shared_ptr<DescriptorSet> &tile_descriptor_set,
                               uint64_t tile_uniform_offset) {
     std::shared_ptr<Texture> target_texture;
+    std::shared_ptr<RenderPass> render_pass;
 
     // If no specific RenderTarget is given, we render to the dst framebuffer.
     if (render_target_id == nullptr) {
         // Check if we should clear the dst framebuffer.
-        encoder->begin_render_pass(clear_dest_texture ? dest_render_pass_clear : dest_render_pass_load,
-                                   dest_texture,
-                                   ColorF());
+        render_pass = clear_dest_texture ? dest_render_pass_clear : dest_render_pass_load;
 
         target_texture = dest_texture;
 
@@ -596,19 +595,14 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
     }
     // Otherwise, we render to the given render target.
     else {
-        auto render_target = get_render_target(*render_target_id);
-
-        auto texture = render_target.texture;
-
         // We always clear a render target.
-        encoder->begin_render_pass(dest_render_pass_clear, texture, ColorF());
+        render_pass = dest_render_pass_clear;
 
-        target_texture = texture;
+        auto render_target = get_render_target(*render_target_id);
+        target_texture = render_target.texture;
     }
 
     Vec2F target_texture_size = target_texture->get_size().to_f32();
-
-    encoder->set_viewport({{0, 0}, target_texture_size.to_i32()});
 
     auto z_buffer_texture = allocator->get_texture(z_buffer_texture_id);
     auto color_texture = allocator->get_texture(dummy_texture_id);
@@ -669,6 +663,10 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
         Descriptor::sampled(3, color_texture, color_texture_sampler),
         Descriptor::sampled(4, allocator->get_texture(*mask_storage.texture_id), get_default_sampler()),
     });
+
+    encoder->begin_render_pass(render_pass, target_texture, ColorF());
+
+    encoder->set_viewport({{0, 0}, target_texture_size.to_i32()});
 
     encoder->bind_render_pipeline(tile_pipeline);
 

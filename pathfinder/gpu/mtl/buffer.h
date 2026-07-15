@@ -22,6 +22,10 @@ public:
         return mtl_buffer_;
     }
 
+    void* contents() noexcept {
+        return [mtl_buffer_ contents];
+    }
+
 private:
     BufferMtl(const BufferDescriptor& descriptor);
 

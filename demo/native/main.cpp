@@ -65,6 +65,8 @@ int main() {
 
         auto encoder = device->create_command_encoder("main encoder");
 
+        blit->update_uniform(encoder);
+
         // Swap chain render pass.
         {
             auto surface_texture = swap_chain->get_surface_texture();

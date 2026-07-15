@@ -52,6 +52,12 @@ enum class CommandType {
     Max,
 };
 
+struct StagingAllocation {
+    std::shared_ptr<Buffer> buffer;
+    size_t offset = 0;
+    void *mapped_ptr = nullptr;
+};
+
 struct Command {
     CommandType type = CommandType::Max;
 
@@ -111,12 +117,16 @@ struct Command {
             uint32_t offset;
             uint32_t data_size;
             const void *data;
+            Buffer *staging_buffer;
+            uint32_t staging_offset;
         } write_buffer;
         struct {
             Buffer *buffer;
             uint32_t offset;
             uint32_t data_size;
             void *data;
+            Buffer *staging_buffer;
+            uint32_t staging_offset;
         } read_buffer;
         struct {
             Texture *texture;
@@ -125,6 +135,8 @@ struct Command {
             uint32_t width;
             uint32_t height;
             const void *data;
+            Buffer *staging_buffer;
+            uint32_t staging_offset;
         } write_texture;
         struct {
             Texture *texture;
@@ -133,6 +145,8 @@ struct Command {
             uint32_t width;
             uint32_t height;
             void *data;
+            Buffer *staging_buffer;
+            uint32_t staging_offset;
         } read_texture;
     } args;
 };
@@ -194,6 +208,7 @@ public:
 
     // DATA TRANSFER
 
+    /// fixme: should set up a staging buffer every time we need to write to a buffer.
     /**
      * Upload to buffer.
      * @param buffer
@@ -206,6 +221,7 @@ public:
                               uint32_t data_size,
                               const void *data);
 
+    /// fixme: should set up a staging buffer every time we need to read from a buffer.
     void read_buffer(const std::shared_ptr<Buffer> &buffer, uint32_t offset, uint32_t data_size, void *data);
 
     void write_texture(const std::shared_ptr<Texture> &texture, RectI region, const void *data);
@@ -216,12 +232,17 @@ public:
         callbacks_.push_back(callback);
     }
 
+    void track_temporary_resource(const std::shared_ptr<Buffer> &buffer) {
+        temp_buffers_.push_back(buffer);
+    }
+
     void invoke_callbacks() {
         for (auto &callback : callbacks_) {
             callback();
         }
 
         callbacks_.clear();
+        temp_buffers_.clear();
     }
 
 protected:
@@ -244,6 +265,9 @@ protected:
 
     /// Callbacks after the commands are finished (not only submitted) on GPU.
     std::vector<std::function<void()>> callbacks_;
+
+    /// Temporary resources that should be kept alive until the command buffer is finished.
+    std::vector<std::shared_ptr<Buffer>> temp_buffers_;
 
     /// Currently bound pipeline.
     RenderPipeline *render_pipeline_{};

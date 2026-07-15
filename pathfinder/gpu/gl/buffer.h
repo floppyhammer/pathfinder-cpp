@@ -16,6 +16,10 @@ public:
 
     void download_via_mapping(size_t data_size, size_t offset, void* data) override;
 
+    void* map();
+
+    void unmap();
+
     uint32_t get_handle() const;
 
     void set_label(const std::string& label) override;

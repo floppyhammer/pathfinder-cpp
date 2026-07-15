@@ -151,7 +151,7 @@ bool CommandEncoderMtl::prepare() {
                 const auto &args = cmd.args.dispatch;
 
                 auto group_size = MTLSizeMake(args.group_size_x, args.group_size_y, args.group_size_z);
-                // fixme: threadsPerThreadgroup 需要shdbin中动态获取
+                // FIXME: threadsPerThreadgroup should be dynamically retrieved from shdbin.
                 auto subgroup_size = MTLSizeMake(64, 1, 1);
 
                 [current_compute_cmd_encoder_ dispatchThreadgroups:group_size threadsPerThreadgroup:subgroup_size];
@@ -163,21 +163,13 @@ bool CommandEncoderMtl::prepare() {
 
                 const auto &args = cmd.args.write_texture;
                 auto texture_mtl = (TextureMtl *)args.texture;
+                auto staging_buffer_mtl = (BufferMtl *)args.staging_buffer;
 
-                auto pixel_size = get_pixel_size(texture_mtl->get_format()); // Bytes of one pixel.
+                auto pixel_size = get_pixel_size(texture_mtl->get_format());
 
-                // Notable that the data size is of the whole texture but of a region.
-                uint32_t bytes_per_row = args.width * pixel_size;
-                uint32_t data_size = bytes_per_row * args.height;
-
-                // Create a staging buffer.
-                id<MTLBuffer> staging_buffer = texture_mtl->get_staging_buffer(mtl_device_);
-                void *buffer_ptr = [staging_buffer contents];
-                memcpy(buffer_ptr, args.data, data_size);
-
-                [blit_encoder copyFromBuffer:staging_buffer
-                                sourceOffset:0
-                           sourceBytesPerRow:bytes_per_row
+                [blit_encoder copyFromBuffer:staging_buffer_mtl->get_handle()
+                                sourceOffset:args.staging_offset
+                           sourceBytesPerRow:args.width * pixel_size
                          sourceBytesPerImage:0
                                   sourceSize:MTLSizeMake(args.width, args.height, 1)
                                    toTexture:texture_mtl->get_handle()
@@ -194,22 +186,13 @@ bool CommandEncoderMtl::prepare() {
 
                 const auto &args = cmd.args.write_buffer;
                 auto buffer_mtl = (BufferMtl *)args.buffer;
-                auto property = buffer_mtl->get_memory_property();
+                auto staging_buffer_mtl = (BufferMtl *)args.staging_buffer;
 
-                if (property != MemoryProperty::DeviceLocal) {
-                    buffer_mtl->upload_via_mapping(args.data_size, args.offset, args.data);
-                } else {
-                    // Create a staging buffer.
-                    id<MTLBuffer> staging_buffer = [mtl_device_ newBufferWithBytes:args.data
-                                                                            length:args.data_size
-                                                                           options:MTLResourceStorageModeShared];
-
-                    [blit_encoder copyFromBuffer:staging_buffer
-                                    sourceOffset:0
-                                        toBuffer:buffer_mtl->get_handle()
-                               destinationOffset:args.offset
-                                            size:args.data_size];
-                }
+                [blit_encoder copyFromBuffer:staging_buffer_mtl->get_handle()
+                                sourceOffset:args.staging_offset
+                                    toBuffer:buffer_mtl->get_handle()
+                           destinationOffset:args.offset
+                                        size:args.data_size];
 
                 [blit_encoder endEncoding];
                 blit_encoder = nil;
@@ -219,32 +202,21 @@ bool CommandEncoderMtl::prepare() {
 
                 const auto &args = cmd.args.read_texture;
                 auto texture_mtl = (TextureMtl *)args.texture;
+                auto staging_buffer_mtl = (BufferMtl *)args.staging_buffer;
 
-                auto pixel_size = get_pixel_size(texture_mtl->get_format()); // Bytes of one pixel.
-
-                // Notable that the data size is of the whole texture but of a region.
+                auto pixel_size = get_pixel_size(texture_mtl->get_format());
                 uint32_t bytes_per_row = args.width * pixel_size;
-
                 uint32_t data_size = bytes_per_row * args.height;
-
-                // Create a staging buffer.
-                id<MTLBuffer> staging_buffer = texture_mtl->get_staging_buffer(mtl_device_);
 
                 [blit_encoder copyFromTexture:texture_mtl->get_handle()
                                   sourceSlice:0
                                   sourceLevel:0
                                  sourceOrigin:MTLOriginMake(args.offset_x, args.offset_y, 0)
                                    sourceSize:MTLSizeMake(args.width, args.height, 1)
-                                     toBuffer:staging_buffer
-                            destinationOffset:0
+                                     toBuffer:staging_buffer_mtl->get_handle()
+                            destinationOffset:args.staging_offset
                        destinationBytesPerRow:bytes_per_row
                      destinationBytesPerImage:data_size];
-
-                auto callback = [staging_buffer, args, data_size] {
-                    unsigned char *data_ptr = reinterpret_cast<unsigned char *>([staging_buffer contents]);
-                    memcpy(args.data, data_ptr, data_size);
-                };
-                add_callback(callback);
 
                 [blit_encoder endEncoding];
                 blit_encoder = nil;
@@ -252,38 +224,18 @@ bool CommandEncoderMtl::prepare() {
             case CommandType::ReadBuffer: {
                 const auto &args = cmd.args.read_buffer;
                 auto buffer_mtl = (BufferMtl *)args.buffer;
-                auto property = buffer_mtl->get_memory_property();
+                auto staging_buffer_mtl = (BufferMtl *)args.staging_buffer;
 
-                if (property == MemoryProperty::DeviceLocal) {
-                    // For DeviceLocal buffers, we must use a blit encoder to copy data to a staging buffer.
-                    id<MTLBlitCommandEncoder> blit_encoder = [mtl_cmd_buffer_ blitCommandEncoder];
+                id<MTLBlitCommandEncoder> blit_encoder = [mtl_cmd_buffer_ blitCommandEncoder];
 
-                    // Create a temporary staging buffer.
-                    id<MTLBuffer> staging_buffer = [mtl_device_ newBufferWithLength:args.data_size
-                                                                            options:MTLResourceStorageModeShared];
+                [blit_encoder copyFromBuffer:buffer_mtl->get_handle()
+                                sourceOffset:args.offset
+                                    toBuffer:staging_buffer_mtl->get_handle()
+                           destinationOffset:args.staging_offset
+                                        size:args.data_size];
 
-                    [blit_encoder copyFromBuffer:buffer_mtl->get_handle()
-                                    sourceOffset:args.offset
-                                        toBuffer:staging_buffer
-                               destinationOffset:0
-                                            size:args.data_size];
-
-                    [blit_encoder endEncoding];
-                    blit_encoder = nil;
-
-                    // Deferred copy from staging buffer to destination pointer.
-                    auto callback = [staging_buffer, args] {
-                        void *data_ptr = [staging_buffer contents];
-                        memcpy(args.data, data_ptr, args.data_size);
-                    };
-                    add_callback(callback);
-                } else {
-                    // For HostVisible (Shared) buffers, we just need to defer the read until the GPU is done.
-                    auto callback = [buffer_mtl, args] {
-                        buffer_mtl->download_via_mapping(args.data_size, args.offset, args.data);
-                    };
-                    add_callback(callback);
-                }
+                [blit_encoder endEncoding];
+                blit_encoder = nil;
             } break;
             case CommandType::BindDescriptorSet: {
                 const auto &args = cmd.args.bind_descriptor_set;

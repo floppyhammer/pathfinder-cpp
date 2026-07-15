@@ -14,7 +14,9 @@ public:
 
     void set_texture(const std::shared_ptr<Texture> &new_texture);
 
-    void draw(const std::shared_ptr<CommandEncoder> &encoder);
+    void update_uniform(const std::shared_ptr<CommandEncoder> &encoder);
+
+    void draw(const std::shared_ptr<CommandEncoder> &encoder) const;
 
 private:
     std::shared_ptr<Device> device_;

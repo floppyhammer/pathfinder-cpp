@@ -30,6 +30,8 @@ void NativeEngine::draw_frame() {
 
     auto surface = pf_swapchain->get_surface_texture();
 
+    pf_blit->update_uniform(encoder);
+
     // Swap chain render pass.
     {
         encoder->begin_render_pass(pf_swapchain->get_render_pass(), surface, Pathfinder::ColorF(0.2, 0.2, 0.2, 1.0));

@@ -23,6 +23,8 @@ public:
             auto fence_gl = (FenceGl *)fence.get();
             fence_gl->wait();
         }
+
+        encoder->invoke_callbacks();
     }
 };
 

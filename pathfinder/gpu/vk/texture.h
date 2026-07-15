@@ -36,8 +36,6 @@ private:
     // This constructor is only a wrapper, actual GPU resource allocation is done by DeviceVk.
     TextureVk(VkDevice vk_device, const TextureDescriptor& desc);
 
-    void create_staging_buffer(DeviceVk* device_vk);
-
     /// Handle.
     VkImage vk_image_{};
 
@@ -50,11 +48,6 @@ private:
 
     /// Thin wrapper over image.
     VkImageView vk_image_view_{};
-
-    /// Cache the host visible buffer used to read/write the texture.
-    /// (Mipmap level is not considered for the buffer size yet.)
-    VkBuffer vk_staging_buffer_{};
-    VkDeviceMemory vk_staging_buffer_memory_{};
 
     /// For releasing resources in destructor.
     /// This is null for wrapped external textures.

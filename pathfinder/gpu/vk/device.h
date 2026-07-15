@@ -65,6 +65,14 @@ public:
 
     std::shared_ptr<Fence> create_fence(const std::string &label) override;
 
+    StagingAllocation allocate_staging(size_t size) override;
+
+    void *map_staging(const StagingAllocation &allocation) override;
+
+    void unmap_staging(const StagingAllocation &allocation) override;
+
+    void reset_staging() override;
+
     VkDevice get_device() const;
 
     VkPhysicalDevice get_physical_device() const;
@@ -97,6 +105,14 @@ public:
     size_t get_aligned_uniform_size(size_t original_size) override;
 
 private:
+    struct StagingBlock {
+        std::shared_ptr<Buffer> buffer;
+        void *mapped_ptr = nullptr;
+        size_t used_size = 0;
+    };
+
+    std::vector<StagingBlock> staging_blocks_;
+
     /// The graphics card that we'll end up selecting will be stored in a VkPhysicalDevice handle.
     VkPhysicalDevice vk_physical_device_{};
 
