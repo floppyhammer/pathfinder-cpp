@@ -270,8 +270,6 @@ protected:
     std::weak_ptr<Device> device_;
 
     std::vector<std::shared_ptr<Framebuffer>> framebuffers_;
-
-    bool used_staging_buffer_ = false;
 };
 
 } // namespace Pathfinder

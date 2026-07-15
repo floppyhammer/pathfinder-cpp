@@ -135,7 +135,7 @@ void SwapChainVk::destroy() {
     }
 
     // Clean up sync objects.
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    for (size_t i = 0; i < device_->get_frames_in_flight(); i++) {
         vkDestroySemaphore(vk_device, image_available_semaphores_[i], nullptr);
         vkDestroyFence(vk_device, in_flight_fences_[i], nullptr);
     }
@@ -217,9 +217,9 @@ void SwapChainVk::create_render_pass() {
 void SwapChainVk::create_sync_objects() {
     auto vk_device = device_->get_device();
 
-    image_available_semaphores_.resize(MAX_FRAMES_IN_FLIGHT);
+    image_available_semaphores_.resize(device_->get_frames_in_flight());
     render_finished_semaphores_.resize(image_count_);
-    in_flight_fences_.resize(MAX_FRAMES_IN_FLIGHT);
+    in_flight_fences_.resize(device_->get_frames_in_flight());
     images_in_flight_.resize(image_count_, VK_NULL_HANDLE);
 
     VkSemaphoreCreateInfo semaphore_info{};
@@ -233,7 +233,7 @@ void SwapChainVk::create_sync_objects() {
         VK_CHECK_RESULT(vkCreateSemaphore(vk_device, &semaphore_info, nullptr, &render_finished_semaphores_[i]))
     }
 
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    for (size_t i = 0; i < device_->get_frames_in_flight(); i++) {
         VK_CHECK_RESULT(vkCreateSemaphore(vk_device, &semaphore_info, nullptr, &image_available_semaphores_[i]))
         VK_CHECK_RESULT(vkCreateFence(vk_device, &fence_info, nullptr, &in_flight_fences_[i]))
     }
@@ -241,7 +241,7 @@ void SwapChainVk::create_sync_objects() {
 
 void SwapChainVk::submit(const std::shared_ptr<CommandEncoder> &encoder) {
     encoders_in_flight_.push_back(encoder);
-    if (encoders_in_flight_.size() > MAX_FRAMES_IN_FLIGHT) {
+    if (encoders_in_flight_.size() > device_->get_frames_in_flight()) {
         encoders_in_flight_.erase(encoders_in_flight_.begin());
     }
 
@@ -318,7 +318,7 @@ void SwapChainVk::present() {
     }
 
     // Update frame tracker.
-    current_frame_ = (current_frame_ + 1) % MAX_FRAMES_IN_FLIGHT;
+    current_frame_ = (current_frame_ + 1) % device_->get_frames_in_flight();
 }
 
 } // namespace Pathfinder

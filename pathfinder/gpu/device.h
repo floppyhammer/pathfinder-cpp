@@ -89,18 +89,28 @@ public:
     }
 
 public:
-    void increment_staging_encoder() {
-        pending_staging_encoders_++;
-    }
+    void begin_frame() {
+        current_frame_index_++;
 
-    void decrement_staging_encoder() {
-        pending_staging_encoders_--;
-        if (pending_staging_encoders_ == 0) {
-            reset_staging();
+        auto &bucket = staging_buckets_[current_frame_index_ % frames_in_flight_];
+        for (auto &block : bucket.blocks) {
+            block.used_size = 0;
         }
     }
 
+    int get_frames_in_flight() const {
+        return frames_in_flight_;
+    }
+
+    uint32_t get_current_frame_index() const {
+        return current_frame_index_;
+    }
+
 protected:
+    Device(int frames_in_flight) : frames_in_flight_(frames_in_flight) {
+        staging_buckets_.resize(frames_in_flight_);
+    }
+
     BackendType backend_type = BackendType::Vulkan;
 
     struct StagingBlock {
@@ -108,11 +118,17 @@ protected:
         size_t used_size = 0;
     };
 
+    struct StagingBucket {
+        std::vector<StagingBlock> blocks;
+    };
+
     const size_t STAGING_BLOCK_SIZE = 4 * 1024 * 1024;
 
-    std::vector<StagingBlock> staging_blocks_;
+    std::vector<StagingBucket> staging_buckets_;
 
-    uint32_t pending_staging_encoders_ = 0;
+    int frames_in_flight_;
+
+    uint32_t current_frame_index_ = 0;
 
     virtual std::shared_ptr<Buffer> create_staging_buffer(size_t size) = 0;
 };

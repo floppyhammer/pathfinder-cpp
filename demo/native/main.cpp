@@ -49,6 +49,8 @@ int main() {
             continue;
         }
 
+        device->begin_frame();
+
         auto current_window_size = window->get_physical_size();
 
         if (current_window_size != app.canvas_->get_dst_texture()->get_size() && current_window_size.area() != 0) {

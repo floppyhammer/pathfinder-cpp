@@ -22,8 +22,10 @@ DeviceVk::DeviceVk(VkDevice vk_device,
                    VkPhysicalDevice vk_physical_device,
                    VkQueue vk_graphics_queue,
                    VkQueue vk_present_queue,
-                   VkCommandPool vk_command_pool)
-    : vk_physical_device_(vk_physical_device), vk_device_(vk_device), vk_graphics_queue_(vk_graphics_queue),
+                   VkCommandPool vk_command_pool,
+                   int frames_in_flight)
+    : Device(frames_in_flight),
+      vk_physical_device_(vk_physical_device), vk_device_(vk_device), vk_graphics_queue_(vk_graphics_queue),
       vk_present_queue_(vk_present_queue), vk_command_pool_(vk_command_pool) {
     backend_type = BackendType::Vulkan;
 

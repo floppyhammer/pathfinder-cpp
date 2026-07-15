@@ -19,9 +19,7 @@ const size_t MAX_BUFFER_SIZE_CLASS = 16 * 1024 * 1024;
 // Number of seconds before unused memory is purged from idle_pool.
 const float DECAY_TIME = 2.0;
 
-// Maximum number of frames that can be in flight on the GPU.
-// We assume GPU won't lag behind more than this many frames.
-const int MAX_FRAMES_IN_FLIGHT = 3;
+
 
 struct BufferAllocation {
     std::shared_ptr<Buffer> buffer;
@@ -58,7 +56,9 @@ struct FrameBucket {
 /// GPU memory management.
 class GpuMemoryAllocator {
 public:
-    explicit GpuMemoryAllocator(const std::shared_ptr<Device>& _device) : device(_device) {}
+    explicit GpuMemoryAllocator(const std::shared_ptr<Device>& _device) : device(_device), frames_in_flight_(device->get_frames_in_flight()) {
+        pending_buckets.resize(frames_in_flight_);
+    }
 
     uint64_t allocate_buffer(size_t byte_size, BufferType type, const std::string& tag);
 
@@ -89,13 +89,15 @@ private:
     uint64_t next_buffer_id = 0;
     uint64_t next_texture_id = 0;
 
-    // Resources that are confirmed to be safe for reuse (at least MAX_FRAMES_IN_FLIGHT old).
+    // Resources that are confirmed to be safe for reuse (at least frames_in_flight_ old).
     std::vector<FreeObject> idle_pool;
 
     // Resources organized by their free-frame index.
-    std::array<FrameBucket, MAX_FRAMES_IN_FLIGHT> pending_buckets;
+    std::vector<FrameBucket> pending_buckets;
 
-    uint32_t current_frame_index = 0;
+    int frames_in_flight_;
+
+    uint32_t last_frame_index_ = std::numeric_limits<uint32_t>::max();
 
     // Statistic data.
 

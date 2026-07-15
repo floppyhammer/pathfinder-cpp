@@ -12,7 +12,7 @@
 
 namespace Pathfinder {
 
-DeviceGl::DeviceGl() {
+DeviceGl::DeviceGl(int frames_in_flight) : Device(frames_in_flight) {
     backend_type = BackendType::Opengl;
 
     glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &min_uniform_alignment_);

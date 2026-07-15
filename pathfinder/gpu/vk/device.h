@@ -17,7 +17,8 @@ public:
              VkPhysicalDevice vk_physical_device,
              VkQueue vk_graphics_queue,
              VkQueue vk_present_queue,
-             VkCommandPool vk_command_pool);
+             VkCommandPool vk_command_pool,
+             int frames_in_flight);
 
     std::shared_ptr<RenderPass> create_render_pass(TextureFormat format,
                                                    AttachmentLoadOp load_op,

@@ -14,7 +14,9 @@ StagingAllocation Device::allocate_staging(size_t size) {
         return alloc;
     }
 
-    for (auto &block : staging_blocks_) {
+    auto &bucket = staging_buckets_[current_frame_index_ % frames_in_flight_];
+
+    for (auto &block : bucket.blocks) {
         size_t aligned_offset = (block.used_size + 15) & ~15;
 
         if (aligned_offset + size <= STAGING_BLOCK_SIZE) {
@@ -34,7 +36,7 @@ StagingAllocation Device::allocate_staging(size_t size) {
     StagingBlock new_block;
     new_block.buffer = buffer;
     new_block.used_size = size;
-    staging_blocks_.push_back(new_block);
+    bucket.blocks.push_back(new_block);
 
     StagingAllocation alloc;
     alloc.buffer = buffer;
@@ -46,8 +48,10 @@ StagingAllocation Device::allocate_staging(size_t size) {
 }
 
 void Device::reset_staging() {
-    for (auto &block : staging_blocks_) {
-        block.used_size = 0;
+    for (auto &bucket : staging_buckets_) {
+        for (auto &block : bucket.blocks) {
+            block.used_size = 0;
+        }
     }
 }
 

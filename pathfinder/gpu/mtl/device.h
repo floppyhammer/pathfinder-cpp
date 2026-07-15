@@ -13,7 +13,7 @@ class QueueMtl;
 
 class DeviceMtl final : public Device {
 public:
-    DeviceMtl(id<MTLDevice> device, id<MTLCommandQueue> mtl_cmd_queue);
+    DeviceMtl(id<MTLDevice> device, id<MTLCommandQueue> mtl_cmd_queue, int frames_in_flight);
 
     ~DeviceMtl() override;
 

@@ -95,7 +95,8 @@ void GpuMemoryAllocator::free_buffer(uint64_t id) {
     free_obj.buffer_allocation = allocation;
 
     // Put into current frame bucket.
-    pending_buckets[current_frame_index % MAX_FRAMES_IN_FLIGHT].objects.push_back(free_obj);
+    uint32_t frame_index = device->get_current_frame_index();
+    pending_buckets[frame_index % frames_in_flight_].objects.push_back(free_obj);
 }
 
 void GpuMemoryAllocator::free_texture(uint64_t id) {
@@ -117,7 +118,8 @@ void GpuMemoryAllocator::free_texture(uint64_t id) {
     free_obj.texture_allocation = allocation;
 
     // Put into current frame bucket.
-    pending_buckets[current_frame_index % MAX_FRAMES_IN_FLIGHT].objects.push_back(free_obj);
+    uint32_t frame_index = device->get_current_frame_index();
+    pending_buckets[frame_index % frames_in_flight_].objects.push_back(free_obj);
 }
 
 std::shared_ptr<Buffer> GpuMemoryAllocator::get_buffer(uint64_t id) {
@@ -139,12 +141,17 @@ std::shared_ptr<Texture> GpuMemoryAllocator::get_texture(uint64_t id) {
 }
 
 void GpuMemoryAllocator::begin_frame() {
-    // Move to next frame.
-    current_frame_index++;
+    uint32_t frame_index = device->get_current_frame_index();
+
+    if (frame_index == last_frame_index_) {
+        return;
+    }
+
+    last_frame_index_ = frame_index;
 
     // Reclaim the bucket we are about to overwrite.
-    // This bucket contains objects that have been "cooling down" for MAX_FRAMES_IN_FLIGHT frames.
-    auto& bucket = pending_buckets[current_frame_index % MAX_FRAMES_IN_FLIGHT];
+    // This bucket contains objects that have been "cooling down" for frames_in_flight_ frames.
+    auto& bucket = pending_buckets[frame_index % frames_in_flight_];
     if (!bucket.objects.empty()) {
         idle_pool.insert(idle_pool.end(), bucket.objects.begin(), bucket.objects.end());
         bucket.objects.clear();

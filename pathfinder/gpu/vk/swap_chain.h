@@ -11,11 +11,6 @@ namespace Pathfinder {
 
 class WindowBuilderVk;
 
-/// How many frames should be processed concurrently by CPU.
-/// Typical Value: Usually 2. This provides a balance: the CPU can work on the next frame while the GPU finishes the
-/// current one, but it doesn't add too much "input lag" (latency).
-constexpr int MAX_FRAMES_IN_FLIGHT = 2; // (CPU-to-GPU Buffering)
-
 class SwapChainVk : public SwapChain {
     friend class DeviceVk;
     friend class QueueVk;

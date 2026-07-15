@@ -15,8 +15,8 @@
 
 namespace Pathfinder {
 
-DeviceMtl::DeviceMtl(id<MTLDevice> device, id<MTLCommandQueue> mtl_cmd_queue)
-    : mtl_device_(device), mtl_cmd_queue_(mtl_cmd_queue) {
+DeviceMtl::DeviceMtl(id<MTLDevice> device, id<MTLCommandQueue> mtl_cmd_queue, int frames_in_flight)
+    : Device(frames_in_flight), mtl_device_(device), mtl_cmd_queue_(mtl_cmd_queue) {
     backend_type = BackendType::Metal;
     queue_ = std::shared_ptr<QueueMtl>(new QueueMtl(device, mtl_cmd_queue));
 }
