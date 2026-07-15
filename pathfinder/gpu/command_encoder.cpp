@@ -1,5 +1,7 @@
 #include "command_encoder.h"
 
+#include <cstring>
+
 #include "../common/logger.h"
 #include "device.h"
 
