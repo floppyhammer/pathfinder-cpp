@@ -72,6 +72,14 @@ public:
 
     virtual std::shared_ptr<Fence> create_fence(const std::string &label) = 0;
 
+    virtual StagingAllocation allocate_staging(size_t size) = 0;
+
+    virtual void *map_staging(const StagingAllocation &allocation) { return nullptr; }
+
+    virtual void unmap_staging(const StagingAllocation &allocation) {}
+
+    virtual void reset_staging() {}
+
     virtual size_t get_aligned_uniform_size(size_t original_size) = 0;
 
     BackendType get_backend_type() const {

@@ -517,6 +517,74 @@ std::shared_ptr<Fence> DeviceVk::create_fence(const std::string &label) {
     return fence_vk;
 }
 
+const size_t STAGING_BLOCK_SIZE = 4 * 1024 * 1024; // 4MB
+
+StagingAllocation DeviceVk::allocate_staging(size_t size) {
+    if (size > STAGING_BLOCK_SIZE) {
+        BufferDescriptor desc;
+        desc.type = BufferType::Storage;
+        desc.size = size;
+        desc.property = MemoryProperty::HostVisibleAndCoherent;
+        auto buffer = create_buffer(desc, "Large Staging Buffer");
+        auto buffer_vk = (BufferVk *)buffer.get();
+        buffer_vk->map();
+
+        StagingAllocation alloc;
+        alloc.buffer = buffer;
+        alloc.offset = 0;
+        alloc.mapped_ptr = nullptr;
+        return alloc;
+    }
+
+    for (auto &block : staging_blocks_) {
+        size_t aligned_offset = (block.used_size + 15) & ~15;
+
+        if (aligned_offset + size <= STAGING_BLOCK_SIZE) {
+            StagingAllocation alloc;
+            alloc.buffer = block.buffer;
+            alloc.offset = aligned_offset;
+            alloc.mapped_ptr = nullptr;
+
+            block.used_size = aligned_offset + size;
+            return alloc;
+        }
+    }
+
+    BufferDescriptor desc;
+    desc.type = BufferType::Storage;
+    desc.size = STAGING_BLOCK_SIZE;
+    desc.property = MemoryProperty::HostVisibleAndCoherent;
+    auto buffer = create_buffer(desc, "Staging Block");
+    auto buffer_vk = (BufferVk *)buffer.get();
+
+    StagingBlock new_block;
+    new_block.buffer = buffer;
+    new_block.mapped_ptr = buffer_vk->map();
+    new_block.used_size = size;
+    staging_blocks_.push_back(new_block);
+
+    StagingAllocation alloc;
+    alloc.buffer = buffer;
+    alloc.offset = 0;
+    alloc.mapped_ptr = nullptr;
+
+    return alloc;
+}
+
+void *DeviceVk::map_staging(const StagingAllocation &allocation) {
+    auto buffer_vk = (BufferVk *)allocation.buffer.get();
+    return (uint8_t *)buffer_vk->map() + allocation.offset;
+}
+
+void DeviceVk::unmap_staging(const StagingAllocation &allocation) {
+}
+
+void DeviceVk::reset_staging() {
+    for (auto &block : staging_blocks_) {
+        block.used_size = 0;
+    }
+}
+
 VkShaderModule DeviceVk::create_shader_module(const std::vector<char> &code) {
     VkShaderModuleCreateInfo create_info{};
     create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;

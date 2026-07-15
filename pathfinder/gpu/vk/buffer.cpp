@@ -11,13 +11,11 @@ namespace Pathfinder {
 BufferVk::BufferVk(VkDevice vk_device, const BufferDescriptor& desc) : Buffer(desc), vk_device_(vk_device) {}
 
 BufferVk::~BufferVk() {
+    if (mapped_ptr_) {
+        unmap();
+    }
     vkDestroyBuffer(vk_device_, vk_buffer_, nullptr);
     vkFreeMemory(vk_device_, vk_device_memory_, nullptr);
-
-    if (vk_staging_buffer_) {
-        vkDestroyBuffer(vk_device_, vk_staging_buffer_, nullptr);
-        vkFreeMemory(vk_device_, vk_staging_device_memory_, nullptr);
-    }
 }
 
 VkBuffer BufferVk::get_vk_buffer() {
@@ -70,16 +68,24 @@ void BufferVk::set_label(const std::string& label) {
     DebugMarker::get_singleton()->set_object_name(vk_device_, (uint64_t)vk_buffer_, VK_OBJECT_TYPE_BUFFER, label);
 }
 
-void BufferVk::create_staging_buffer(DeviceVk* device_vk) {
-    if (vk_staging_buffer_ != VK_NULL_HANDLE) {
-        return;
+void* BufferVk::map() {
+    if (mapped_ptr_) {
+        return mapped_ptr_;
     }
 
-    device_vk->create_vk_buffer(get_size(),
-                                VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                vk_staging_buffer_,
-                                vk_staging_device_memory_);
+    if (vkMapMemory(vk_device_, vk_device_memory_, 0, get_size(), 0, &mapped_ptr_) != VK_SUCCESS) {
+        Logger::error("Failed to map buffer memory!");
+        return nullptr;
+    }
+
+    return mapped_ptr_;
+}
+
+void BufferVk::unmap() {
+    if (mapped_ptr_) {
+        vkUnmapMemory(vk_device_, vk_device_memory_);
+        mapped_ptr_ = nullptr;
+    }
 }
 
 } // namespace Pathfinder

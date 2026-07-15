@@ -14,8 +14,6 @@
 namespace Pathfinder {
 
 CommandEncoderGl::~CommandEncoderGl() {
-    invoke_callbacks();
-
     glDeleteVertexArrays(vao_.size(), vao_.data());
 }
 
@@ -24,9 +22,7 @@ bool CommandEncoderGl::prepare() {
         return false;
     }
 
-    while (!commands_.empty()) {
-        auto &cmd = commands_.front();
-
+    for (const auto &cmd : commands_) {
         switch (cmd.type) {
             case CommandType::BeginRenderPass: {
                 assert(compute_pipeline_ == nullptr);
@@ -301,33 +297,41 @@ bool CommandEncoderGl::prepare() {
             } break;
             case CommandType::WriteBuffer: {
                 auto &args = cmd.args.write_buffer;
+                auto buffer_gl = (BufferGl *)args.buffer;
+                auto staging_buffer_gl = (BufferGl *)args.staging_buffer;
 
-                args.buffer->upload_via_mapping(args.data_size, args.offset, args.data);
+                glBindBuffer(GL_COPY_READ_BUFFER, staging_buffer_gl->get_handle());
+                glBindBuffer(GL_COPY_WRITE_BUFFER, buffer_gl->get_handle());
+                glCopyBufferSubData(GL_COPY_READ_BUFFER,
+                                    GL_COPY_WRITE_BUFFER,
+                                    args.staging_offset,
+                                    args.offset,
+                                    args.data_size);
+                glBindBuffer(GL_COPY_READ_BUFFER, 0);
+                glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
             } break;
             case CommandType::ReadBuffer: {
                 auto &args = cmd.args.read_buffer;
+                auto buffer_gl = (BufferGl *)args.buffer;
+                auto staging_buffer_gl = (BufferGl *)args.staging_buffer;
 
-                args.buffer->download_via_mapping(args.data_size, args.offset, args.data);
+                glBindBuffer(GL_COPY_READ_BUFFER, buffer_gl->get_handle());
+                glBindBuffer(GL_COPY_WRITE_BUFFER, staging_buffer_gl->get_handle());
+                glCopyBufferSubData(GL_COPY_READ_BUFFER,
+                                    GL_COPY_WRITE_BUFFER,
+                                    args.offset,
+                                    args.staging_offset,
+                                    args.data_size);
+                glBindBuffer(GL_COPY_READ_BUFFER, 0);
+                glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
             } break;
             case CommandType::WriteTexture: {
                 const auto &args = cmd.args.write_texture;
 
                 auto texture_gl = static_cast<TextureGl *>(args.texture);
-                texture_gl->prepare_pbo();
+                auto staging_buffer_gl = (BufferGl *)args.staging_buffer;
 
-                const GLsizeiptr region_data_size = (args.width - args.offset_x) * (args.height - args.offset_y) *
-                                                    get_pixel_size(texture_gl->get_format());
-
-                glBindBuffer(GL_PIXEL_UNPACK_BUFFER, texture_gl->get_pbo_id());
-
-                void *ptr = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER,
-                                             0,
-                                             region_data_size,
-                                             GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
-                if (ptr) {
-                    memcpy(ptr, args.data, region_data_size);
-                    glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-                }
+                glBindBuffer(GL_PIXEL_UNPACK_BUFFER, staging_buffer_gl->get_handle());
 
                 glBindTexture(GL_TEXTURE_2D, texture_gl->get_texture_id());
                 glTexSubImage2D(GL_TEXTURE_2D,
@@ -338,9 +342,8 @@ bool CommandEncoderGl::prepare() {
                                 (GLint)args.height,
                                 to_gl_pixel_data_format(args.texture->get_format()),
                                 to_gl_data_type(texture_format_to_data_type(args.texture->get_format())),
-                                0);
+                                (void *)(size_t)args.staging_offset);
 
-                // Unbind.
                 glBindTexture(GL_TEXTURE_2D, 0);
                 glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
@@ -348,14 +351,19 @@ bool CommandEncoderGl::prepare() {
             } break;
             case CommandType::ReadTexture: {
                 const auto &args = cmd.args.read_texture;
-
                 auto texture_gl = static_cast<TextureGl *>(args.texture);
-                texture_gl->prepare_pbo();
+                auto staging_buffer_gl = (BufferGl *)args.staging_buffer;
 
-                const GLsizeiptr region_data_size = (args.width - args.offset_x) * (args.height - args.offset_y) *
-                                                    get_pixel_size(texture_gl->get_format());
+                GLuint temp_fbo;
+                glGenFramebuffers(1, &temp_fbo);
+                glBindFramebuffer(GL_READ_FRAMEBUFFER, temp_fbo);
+                glFramebufferTexture2D(GL_READ_FRAMEBUFFER,
+                                       GL_COLOR_ATTACHMENT0,
+                                       GL_TEXTURE_2D,
+                                       texture_gl->get_texture_id(),
+                                       0);
 
-                glBindBuffer(GL_PIXEL_PACK_BUFFER, texture_gl->get_pbo_id());
+                glBindBuffer(GL_PIXEL_PACK_BUFFER, staging_buffer_gl->get_handle());
 
                 glReadPixels(args.offset_x,
                              args.offset_y,
@@ -363,25 +371,20 @@ bool CommandEncoderGl::prepare() {
                              args.height,
                              to_gl_pixel_data_format(args.texture->get_format()),
                              to_gl_data_type(texture_format_to_data_type(args.texture->get_format())),
-                             0);
+                             (void *)(size_t)args.staging_offset);
 
-                void *ptr = glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, region_data_size, GL_MAP_READ_BIT);
-                if (ptr) {
-                    memcpy(args.data, ptr, region_data_size);
-                    glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
-                }
-
-                // Unbind.
                 glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+                glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+                glDeleteFramebuffers(1, &temp_fbo);
 
-                gl_check_error("ReadTexture");
+                gl_check_error("ReadTexture with PBO and Temp FBO");
             } break;
             case CommandType::Max:
                 break;
         }
-
-        commands_.pop_front();
     }
+
+    commands_.clear();
 
     return true;
 }

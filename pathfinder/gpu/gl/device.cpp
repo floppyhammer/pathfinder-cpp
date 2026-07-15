@@ -138,6 +138,32 @@ std::shared_ptr<Fence> DeviceGl::create_fence(const std::string &label) {
     return fence_gl;
 }
 
+StagingAllocation DeviceGl::allocate_staging(size_t size) {
+    BufferDescriptor desc;
+    desc.type = BufferType::Storage;
+    desc.size = size;
+    desc.property = MemoryProperty::HostVisibleAndCoherent;
+
+    auto buffer = create_buffer(desc, "GL Staging Buffer");
+
+    StagingAllocation alloc;
+    alloc.buffer = buffer;
+    alloc.offset = 0;
+    alloc.mapped_ptr = nullptr;
+
+    return alloc;
+}
+
+void *DeviceGl::map_staging(const StagingAllocation &allocation) {
+    auto buffer_gl = (BufferGl *)allocation.buffer.get();
+    return buffer_gl->map();
+}
+
+void DeviceGl::unmap_staging(const StagingAllocation &allocation) {
+    auto buffer_gl = (BufferGl *)allocation.buffer.get();
+    buffer_gl->unmap();
+}
+
 size_t DeviceGl::get_aligned_uniform_size(size_t original_size) {
     GLint aligned_size = (original_size + min_uniform_alignment_ - 1) & ~(min_uniform_alignment_ - 1);
     return aligned_size;

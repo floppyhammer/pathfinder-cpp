@@ -33,7 +33,19 @@ void QueueVk::submit(const std::shared_ptr<CommandEncoder> &encoder, const std::
         fence_vk->wait();
     } else {
         vkQueueSubmit(vk_graphics_queue_, 1, &submit_info, VK_NULL_HANDLE);
+
+        // If no fence is provided, but there are callbacks (e.g. from read_buffer),
+        // we must ensure the GPU is finished before invoking them.
+        // A simple way is to wait for the queue to be idle.
+        if (!encoder->callbacks_.empty()) {
+            vkQueueWaitIdle(vk_graphics_queue_);
+        }
     }
+
+    encoder->invoke_callbacks();
+
+    // After callbacks are finished, we can reuse the staging blocks.
+    encoder_vk->device_vk_->reset_staging();
 }
 
 } // namespace Pathfinder

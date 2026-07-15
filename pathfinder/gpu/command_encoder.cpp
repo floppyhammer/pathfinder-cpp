@@ -209,11 +209,12 @@ void CommandEncoder::write_buffer(const std::shared_ptr<Buffer> &buffer,
         return;
     }
 
-    // Write buffer by memory mapping.
-    if (buffer->get_memory_property() == MemoryProperty::HostVisibleAndCoherent) {
-        buffer->upload_via_mapping(data_size, offset, data);
-        return;
-    }
+    auto device = device_.lock();
+    auto allocation = device->allocate_staging(data_size);
+
+    void *mapped_ptr = device->map_staging(allocation);
+    memcpy(mapped_ptr, data, data_size);
+    device->unmap_staging(allocation);
 
     Command cmd{};
     cmd.type = CommandType::WriteBuffer;
@@ -222,9 +223,12 @@ void CommandEncoder::write_buffer(const std::shared_ptr<Buffer> &buffer,
     args.buffer = buffer.get();
     args.offset = offset;
     args.data_size = data_size;
-    args.data = data;
+    args.staging_buffer = allocation.buffer.get();
+    args.staging_offset = (uint32_t)allocation.offset;
 
     commands_.push_back(cmd);
+
+    track_temporary_resource(allocation.buffer);
 }
 
 void CommandEncoder::read_buffer(const std::shared_ptr<Buffer> &buffer,
@@ -238,14 +242,11 @@ void CommandEncoder::read_buffer(const std::shared_ptr<Buffer> &buffer,
 
     if (data_size == 0 || data == nullptr) {
         Logger::error("Tried to read invalid data from buffer!");
-    }
-
-    // Read buffer by memory mapping.
-    if (buffer->get_memory_property() == MemoryProperty::HostVisibleAndCoherent) {
-        Logger::error("You're trying to read a mappable buffer through a command. It may indicate some bug.");
-        buffer->download_via_mapping(data_size, offset, data);
         return;
     }
+
+    auto device = device_.lock();
+    auto allocation = device->allocate_staging(data_size);
 
     Command cmd{};
     cmd.type = CommandType::ReadBuffer;
@@ -255,21 +256,39 @@ void CommandEncoder::read_buffer(const std::shared_ptr<Buffer> &buffer,
     args.offset = offset;
     args.data_size = data_size;
     args.data = data;
+    args.staging_buffer = allocation.buffer.get();
+    args.staging_offset = (uint32_t)allocation.offset;
 
     commands_.push_back(cmd);
+
+    add_callback([allocation, data, data_size, device] {
+        void *mapped_ptr = device->map_staging(allocation);
+        memcpy(data, mapped_ptr, data_size);
+        device->unmap_staging(allocation);
+    });
+
+    track_temporary_resource(allocation.buffer);
 }
 
 void CommandEncoder::write_texture(const std::shared_ptr<Texture> &texture, RectI region, const void *src) {
     auto whole_region = RectI({0, 0}, {texture->get_size()});
 
-    // Invalid region represents the whole texture.
     auto effective_region = region.is_valid() ? region : whole_region;
 
-    // Check if the region is a subset of the whole texture region.
     if (!effective_region.union_rect(whole_region).is_valid() || effective_region.area() == 0) {
         Logger::error("Tried to write invalid region of a texture!");
         return;
     }
+
+    auto pixel_size = get_pixel_size(texture->get_format());
+    size_t data_size = (size_t)effective_region.width() * effective_region.height() * pixel_size;
+
+    auto device = device_.lock();
+    auto allocation = device->allocate_staging(data_size);
+
+    void *mapped_ptr = device->map_staging(allocation);
+    memcpy(mapped_ptr, src, data_size);
+    device->unmap_staging(allocation);
 
     Command cmd{};
     cmd.type = CommandType::WriteTexture;
@@ -280,22 +299,29 @@ void CommandEncoder::write_texture(const std::shared_ptr<Texture> &texture, Rect
     args.offset_y = effective_region.top;
     args.width = effective_region.width();
     args.height = effective_region.height();
-    args.data = src;
+    args.staging_buffer = allocation.buffer.get();
+    args.staging_offset = (uint32_t)allocation.offset;
 
     commands_.push_back(cmd);
+
+    track_temporary_resource(allocation.buffer);
 }
 
 void CommandEncoder::read_texture(const std::shared_ptr<Texture> &texture, RectI region, void *dst) {
     auto whole_region = RectI({0, 0}, {texture->get_size()});
 
-    // Invalid region represents the whole texture.
     auto effective_region = region.is_valid() ? region : whole_region;
 
-    // Check if the region is a subset of the whole texture region.
     if (!effective_region.union_rect(whole_region).is_valid() || effective_region.area() == 0) {
         Logger::error("Tried to write invalid region of a texture!");
         return;
     }
+
+    auto pixel_size = get_pixel_size(texture->get_format());
+    size_t data_size = (size_t)effective_region.width() * effective_region.height() * pixel_size;
+
+    auto device = device_.lock();
+    auto allocation = device->allocate_staging(data_size);
 
     Command cmd{};
     cmd.type = CommandType::ReadTexture;
@@ -307,8 +333,18 @@ void CommandEncoder::read_texture(const std::shared_ptr<Texture> &texture, RectI
     args.width = effective_region.width();
     args.height = effective_region.height();
     args.data = dst;
+    args.staging_buffer = allocation.buffer.get();
+    args.staging_offset = (uint32_t)allocation.offset;
 
     commands_.push_back(cmd);
+
+    add_callback([allocation, dst, data_size, device] {
+        void *mapped_ptr = device->map_staging(allocation);
+        memcpy(dst, mapped_ptr, data_size);
+        device->unmap_staging(allocation);
+    });
+
+    track_temporary_resource(allocation.buffer);
 }
 
 } // namespace Pathfinder

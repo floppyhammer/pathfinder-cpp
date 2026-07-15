@@ -203,6 +203,30 @@ std::shared_ptr<Fence> DeviceMtl::create_fence(const std::string &label) {
     return std::shared_ptr<Fence>(new Fence());
 }
 
+StagingAllocation DeviceMtl::allocate_staging(size_t size) {
+    BufferDescriptor desc;
+    desc.type = BufferType::Storage;
+    desc.size = size;
+    desc.property = MemoryProperty::HostVisibleAndCoherent;
+
+    auto buffer = create_buffer(desc, "Metal Staging Buffer");
+
+    StagingAllocation alloc;
+    alloc.buffer = buffer;
+    alloc.offset = 0;
+    alloc.mapped_ptr = nullptr;
+
+    return alloc;
+}
+
+void *DeviceMtl::map_staging(const StagingAllocation &allocation) {
+    auto buffer_mtl = (BufferMtl *)allocation.buffer.get();
+    return buffer_mtl->contents();
+}
+
+void DeviceMtl::unmap_staging(const StagingAllocation &allocation) {
+}
+
 std::shared_ptr<CommandEncoder> DeviceMtl::create_command_encoder(const std::string &label) {
     auto encoder = std::shared_ptr<CommandEncoderMtl>(new CommandEncoderMtl(mtl_device_, mtl_cmd_queue_));
     encoder->device_ = shared_from_this();

@@ -12,6 +12,10 @@ void QueueMtl::submit(const std::shared_ptr<CommandEncoder>& encoder, const std:
 
         auto mtl_cmd_buffer = encoder_mtl->get_handle();
 
+        [mtl_cmd_buffer addCompletedHandler:^(id<MTLCommandBuffer> cb) {
+            encoder->invoke_callbacks();
+        }];
+
         [mtl_cmd_buffer commit];
 
         // If fence is provided, we should probably handle it.
@@ -20,8 +24,6 @@ void QueueMtl::submit(const std::shared_ptr<CommandEncoder>& encoder, const std:
         if (fence) {
             [mtl_cmd_buffer waitUntilCompleted];
         }
-
-        encoder_mtl->clear_pending_ops();
     }
 }
 

@@ -36,19 +36,6 @@ private:
 
     bool prepare() override;
 
-    std::vector<std::function<void()>> callbacks;
-
-    void add_callback(const std::function<void()> &callback) {
-        callbacks.push_back(callback);
-    }
-
-    void clear_pending_ops() {
-        for (auto &callback : callbacks) {
-            callback();
-        }
-        callbacks.clear();
-    }
-
     id<MTLDevice> mtl_device_ = nil;
     id<MTLCommandQueue> mtl_cmd_queue_ = nil;
     id<MTLCommandBuffer> mtl_cmd_buffer_ = nil;
