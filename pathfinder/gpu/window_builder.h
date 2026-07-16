@@ -16,7 +16,7 @@ class Window;
 
 static auto PRIMARY_WINDOW_TITLE = "Primary Window";
 
-constexpr int MAX_FRAMES_IN_FLIGHT = 2;
+constexpr int MAX_FRAMES_IN_FLIGHT = 1;
 
 /// Window management.
 class WindowBuilder {
