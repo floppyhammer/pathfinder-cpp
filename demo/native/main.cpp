@@ -50,6 +50,7 @@ int main() {
         }
 
         device->begin_frame();
+        queue->begin_frame(device->get_current_frame_index());
 
         auto current_window_size = window->get_physical_size();
 

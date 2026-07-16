@@ -39,10 +39,17 @@ void QueueVk::submit(const std::shared_ptr<CommandEncoder> &encoder, const std::
         // A simple way is to wait for the queue to be idle.
         if (!encoder->callbacks_.empty()) {
             vkQueueWaitIdle(vk_graphics_queue_);
+        } else {
+            encoders_in_flight_[current_frame_index_ % frames_in_flight_].push_back(encoder);
         }
     }
 
     encoder->invoke_callbacks();
+}
+
+void QueueVk::begin_frame(uint32_t current_frame_index) {
+    current_frame_index_ = current_frame_index;
+    encoders_in_flight_[current_frame_index_ % frames_in_flight_].clear();
 }
 
 } // namespace Pathfinder

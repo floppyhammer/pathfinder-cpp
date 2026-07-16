@@ -162,7 +162,7 @@ std::vector<PaintMetadata> Palette::build_paint_info(Renderer *renderer) {
         }
     }
 
-    renderer->queue->submit(encoder, renderer->fence);
+    renderer->queue->submit(encoder, nullptr);
 
     // Free transient locations and unused images, now that they're no longer needed.
     free_transient_locations(*paint_texture_manager, transient_paint_locations);

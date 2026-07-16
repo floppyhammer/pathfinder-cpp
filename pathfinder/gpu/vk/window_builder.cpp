@@ -155,7 +155,7 @@ std::shared_ptr<Device> WindowBuilderVk::request_device() {
 }
 
 std::shared_ptr<Queue> WindowBuilderVk::create_queue() {
-    auto queue = std::shared_ptr<QueueVk>(new QueueVk(device_, graphics_queue_, present_queue_));
+    auto queue = std::shared_ptr<QueueVk>(new QueueVk(device_, graphics_queue_, present_queue_, MAX_FRAMES_IN_FLIGHT));
     return queue;
 }
 

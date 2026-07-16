@@ -33,7 +33,7 @@ Renderer::Renderer(const std::shared_ptr<Device> &_device, const std::shared_ptr
 
     encoder->write_texture(allocator->get_texture(area_lut_texture_id), {}, image_buffer->get_data());
 
-    queue->submit(encoder, fence);
+    queue->submit(encoder, nullptr);
 }
 
 Renderer::~Renderer() {

@@ -59,7 +59,7 @@ RendererD3D9::RendererD3D9(const std::shared_ptr<Device> &_device, const std::sh
                           quad_vertex_data_size,
                           QUAD_VERTEX_POSITIONS);
 
-    queue->submit(encoder, fence);
+    queue->submit(encoder, nullptr);
 }
 
 void RendererD3D9::set_dest_texture(const std::shared_ptr<Texture> &texture) {
@@ -365,7 +365,7 @@ void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &_scene_builder, boo
 
     upload_and_draw_tiles(scene_builder->tile_batches, encoder);
 
-    queue->submit(encoder, fence);
+    queue->submit(encoder, nullptr);
 
     // Clean up.
     if (fill_vertex_buffer_id) {

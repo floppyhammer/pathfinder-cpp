@@ -98,7 +98,7 @@ public:
         }
     }
 
-    int get_frames_in_flight() const {
+    uint32_t get_frames_in_flight() const {
         return frames_in_flight_;
     }
 
@@ -126,7 +126,7 @@ protected:
 
     std::vector<StagingBucket> staging_buckets_;
 
-    int frames_in_flight_;
+    uint32_t frames_in_flight_;
 
     uint32_t current_frame_index_ = 0;
 
