@@ -146,8 +146,6 @@ void WindowBuilderVk::initialize_after_surface_creation(VkSurfaceKHR surface) {
     initialized_ = true;
 }
 
-constexpr int MAX_FRAMES_IN_FLIGHT = 2;
-
 std::shared_ptr<Device> WindowBuilderVk::request_device() {
     auto device = std::shared_ptr<DeviceVk>(
         new DeviceVk(device_, physical_device_, graphics_queue_, present_queue_, command_pool_, MAX_FRAMES_IN_FLIGHT));

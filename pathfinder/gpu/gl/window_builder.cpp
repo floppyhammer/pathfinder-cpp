@@ -232,8 +232,6 @@ uint8_t WindowBuilderGl::create_window(const Vec2I &size, const std::string &tit
 #endif
 }
 
-constexpr int MAX_FRAMES_IN_FLIGHT = 2;
-
 std::shared_ptr<Device> WindowBuilderGl::request_device() {
     return std::make_shared<DeviceGl>(MAX_FRAMES_IN_FLIGHT);
 }

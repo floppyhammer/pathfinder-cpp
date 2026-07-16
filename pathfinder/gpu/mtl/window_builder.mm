@@ -53,8 +53,6 @@ uint8_t WindowBuilderMtl::create_window(const Vec2I& logical_size, const std::st
     return sub_windows_.size();
 }
 
-constexpr int MAX_FRAMES_IN_FLIGHT = 2;
-
 std::shared_ptr<Device> WindowBuilderMtl::request_device() {
     id<MTLDevice> device = (__bridge id<MTLDevice>)mtl_device_;
     id<MTLCommandQueue> queue = (__bridge id<MTLCommandQueue>)mtl_cmd_queue_;
