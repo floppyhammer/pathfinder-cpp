@@ -15,11 +15,14 @@
 namespace Pathfinder {
 
 bool CommandEncoderMtl::prepare() {
+    if (mtl_cmd_buffer_ != nil) {
+        return true;
+    }
+
     if (commands_.empty()) {
         return false;
     }
 
-    assert(mtl_cmd_buffer_ == nil);
     mtl_cmd_buffer_ = [mtl_cmd_queue_ commandBuffer];
 
     id<MTLRenderCommandEncoder> current_render_cmd_encoder_ = nil;

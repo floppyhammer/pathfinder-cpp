@@ -30,11 +30,11 @@ public:
         return mtl_cmd_buffer_;
     }
 
+    bool prepare() override;
+
 private:
     CommandEncoderMtl(id<MTLDevice> mtl_device, id<MTLCommandQueue> mtl_cmd_queue)
         : mtl_device_(mtl_device), mtl_cmd_queue_(mtl_cmd_queue), mtl_cmd_buffer_(nil) {}
-
-    bool prepare() override;
 
     id<MTLDevice> mtl_device_ = nil;
     id<MTLCommandQueue> mtl_cmd_queue_ = nil;

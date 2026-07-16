@@ -18,7 +18,7 @@ namespace Pathfinder {
 DeviceMtl::DeviceMtl(id<MTLDevice> device, id<MTLCommandQueue> mtl_cmd_queue, int frames_in_flight)
     : Device(frames_in_flight), mtl_device_(device), mtl_cmd_queue_(mtl_cmd_queue) {
     backend_type = BackendType::Metal;
-    queue_ = std::shared_ptr<QueueMtl>(new QueueMtl(device, mtl_cmd_queue));
+    queue_ = std::shared_ptr<QueueMtl>(new QueueMtl(device, mtl_cmd_queue, frames_in_flight));
 }
 
 std::shared_ptr<Buffer> DeviceMtl::create_buffer(const BufferDescriptor &descriptor, const std::string &label) {
@@ -184,7 +184,7 @@ std::shared_ptr<ShaderModule> DeviceMtl::create_shader_module(const std::shared_
 }
 
 std::shared_ptr<QueueMtl> DeviceMtl::wrap_queue(id<MTLCommandQueue> mtl_cmd_queue, bool has_resource_ownership) {
-    return std::shared_ptr<QueueMtl>(new QueueMtl(mtl_device_, mtl_cmd_queue));
+    return std::shared_ptr<QueueMtl>(new QueueMtl(mtl_device_, mtl_cmd_queue, frames_in_flight_));
 }
 
 DeviceMtl::~DeviceMtl() {}

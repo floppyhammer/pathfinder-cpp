@@ -43,10 +43,9 @@ bool SwapChainMtl::acquire_image() {
 void SwapChainMtl::submit(const std::shared_ptr<CommandEncoder>& encoder) {
     if (current_drawable_) {
         auto encoder_mtl = (CommandEncoderMtl*)encoder.get();
-        // Since prepare() might create the command buffer, we should call it or ensure it's called.
-        // However, prepare() has an assert(mtl_cmd_buffer_ == nil), so it can only be called once.
-        // QueueMtl::submit() also calls prepare().
-        // For now, let's let QueueMtl::submit() do the heavy lifting.
+        // Prepare the command buffer and link it to the drawable for presentation.
+        encoder_mtl->prepare();
+        [encoder_mtl->get_handle() presentDrawable:current_drawable_];
     }
 
     device_->get_queue()->submit(encoder, nullptr);
@@ -54,7 +53,7 @@ void SwapChainMtl::submit(const std::shared_ptr<CommandEncoder>& encoder) {
 
 void SwapChainMtl::present() {
     if (current_drawable_) {
-        [current_drawable_ present];
+        // The drawable is now presented as part of the command buffer submission.
         current_drawable_ = nil;
     }
 }

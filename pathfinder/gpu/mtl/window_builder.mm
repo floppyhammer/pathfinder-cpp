@@ -63,7 +63,7 @@ std::shared_ptr<Queue> WindowBuilderMtl::create_queue() {
     id<MTLDevice> device = (__bridge id<MTLDevice>)mtl_device_;
     id<MTLCommandQueue> queue = (__bridge id<MTLCommandQueue>)mtl_cmd_queue_;
 
-    return std::shared_ptr<Queue>(new QueueMtl(device, queue));
+    return std::shared_ptr<Queue>(new QueueMtl(device, queue, MAX_FRAMES_IN_FLIGHT));
 }
 
 } // namespace Pathfinder

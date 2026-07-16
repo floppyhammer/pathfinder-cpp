@@ -18,11 +18,15 @@ public:
     }
 
 private:
-    QueueMtl(id<MTLDevice> mtl_device, id<MTLCommandQueue> mtl_cmd_queue)
-        : mtl_device_(mtl_device), mtl_queue_(mtl_cmd_queue) {}
+    QueueMtl(id<MTLDevice> mtl_device, id<MTLCommandQueue> mtl_cmd_queue, int frames_in_flight)
+        : mtl_device_(mtl_device), mtl_queue_(mtl_cmd_queue) {
+        // Limit the number of frames in flight to prevent GPU flooding.
+        in_flight_semaphore_ = dispatch_semaphore_create(frames_in_flight);
+    }
 
     id<MTLCommandQueue> mtl_queue_ = nil;
     id<MTLDevice> mtl_device_ = nil;
+    dispatch_semaphore_t in_flight_semaphore_;
 };
 
 } // namespace Pathfinder
