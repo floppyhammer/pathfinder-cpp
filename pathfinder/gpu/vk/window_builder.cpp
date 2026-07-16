@@ -332,15 +332,23 @@ VkSurfaceFormatKHR choose_swap_surface_format(const std::vector<VkSurfaceFormatK
     return available_formats[0];
 }
 
-VkPresentModeKHR choose_swap_present_mode(const std::vector<VkPresentModeKHR> &available_present_modes) {
-    for (const auto &present_mode : available_present_modes) {
-        // Fast V-Sync
-        if (present_mode == VK_PRESENT_MODE_MAILBOX_KHR) {
-            return present_mode;
+VkPresentModeKHR choose_swap_present_mode(const std::vector<VkPresentModeKHR> &available_present_modes,
+                                          PresentMode preferred_mode) {
+    if (preferred_mode == PresentMode::Immediate) {
+        for (const auto &present_mode : available_present_modes) {
+            if (present_mode == VK_PRESENT_MODE_IMMEDIATE_KHR) {
+                return present_mode;
+            }
+        }
+    } else if (preferred_mode == PresentMode::Mailbox) {
+        for (const auto &present_mode : available_present_modes) {
+            if (present_mode == VK_PRESENT_MODE_MAILBOX_KHR) {
+                return present_mode;
+            }
         }
     }
 
-    // Traditional V-Sync
+    // Default to FIFO (Traditional V-Sync), which is always guaranteed to be available.
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 

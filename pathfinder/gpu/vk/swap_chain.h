@@ -16,7 +16,7 @@ class SwapChainVk : public SwapChain {
     friend class QueueVk;
 
 public:
-    SwapChainVk(Vec2I size, WindowVk *window, DeviceVk *device);
+    SwapChainVk(Vec2I size, WindowVk *window, DeviceVk *device, PresentMode present_mode);
 
     std::shared_ptr<RenderPass> get_render_pass() override;
 

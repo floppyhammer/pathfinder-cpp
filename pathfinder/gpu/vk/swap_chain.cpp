@@ -10,7 +10,8 @@
 
 namespace Pathfinder {
 
-SwapChainVk::SwapChainVk(Vec2I size, WindowVk *window, DeviceVk *device) : SwapChain(size) {
+SwapChainVk::SwapChainVk(Vec2I size, WindowVk *window, DeviceVk *device, PresentMode present_mode)
+    : SwapChain(size, present_mode) {
     window_ = window;
     device_ = device;
 
@@ -147,7 +148,7 @@ void SwapChainVk::create_swapchain(VkPhysicalDevice physical_device) {
     SwapchainSupportDetails swapchain_support = query_swapchain_support(physical_device, window_->surface_);
 
     VkSurfaceFormatKHR surface_format = choose_swap_surface_format(swapchain_support.formats);
-    VkPresentModeKHR present_mode = choose_swap_present_mode(swapchain_support.present_modes);
+    VkPresentModeKHR present_mode = choose_swap_present_mode(swapchain_support.present_modes, present_mode_);
     VkExtent2D vk_extent = window_->choose_swap_extent(swapchain_support.capabilities);
 
     uint32_t image_count = swapchain_support.capabilities.minImageCount + 1;

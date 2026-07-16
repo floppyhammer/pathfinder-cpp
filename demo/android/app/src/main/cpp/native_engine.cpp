@@ -61,7 +61,7 @@ void NativeEngine::init_app_common(Pathfinder::Vec2I window_size) {
     pf_queue = window_builder->create_queue();
 
     // Create swap chains for windows.
-    pf_swapchain = pf_window->get_swap_chain(pf_device);
+    pf_swapchain = pf_window->get_swap_chain(pf_device, Pathfinder::PresentMode::Fifo);
 
     auto svg_input = Pathfinder::load_asset(mAppCtx->activity->assetManager, "features.svg");
     auto img_input = Pathfinder::load_asset(mAppCtx->activity->assetManager, "sea.png");

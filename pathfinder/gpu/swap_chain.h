@@ -7,14 +7,22 @@
 
 namespace Pathfinder {
 
+enum class PresentMode {
+    Immediate, // V-Sync off
+    Fifo,      // V-Sync on
+    Mailbox,   // Fast V-Sync (triple buffering if available)
+};
+
 class SwapChain {
 public:
-    explicit SwapChain(const Vec2I size) : size_(size) {}
+    explicit SwapChain(const Vec2I size, PresentMode present_mode) : size_(size), present_mode_(present_mode) {}
 
     virtual ~SwapChain() = default;
 
     /// Swap chain framebuffer size.
     Vec2I size_;
+
+    PresentMode present_mode_;
 
     /**
      * Get a swap chain render pass.

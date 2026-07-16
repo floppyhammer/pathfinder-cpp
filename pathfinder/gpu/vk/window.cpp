@@ -37,10 +37,10 @@ VkExtent2D WindowVk::choose_swap_extent(const VkSurfaceCapabilitiesKHR& capabili
     return actual_extent;
 }
 
-std::shared_ptr<SwapChain> WindowVk::get_swap_chain(const std::shared_ptr<Device>& device) {
+std::shared_ptr<SwapChain> WindowVk::get_swap_chain(const std::shared_ptr<Device>& device, PresentMode present_mode) {
     if (!swapchain_) {
         auto device_vk = static_cast<DeviceVk*>(device.get());
-        swapchain_ = std::make_shared<SwapChainVk>(get_physical_size(), this, device_vk);
+        swapchain_ = std::make_shared<SwapChainVk>(get_physical_size(), this, device_vk, present_mode);
     }
 
     return swapchain_;

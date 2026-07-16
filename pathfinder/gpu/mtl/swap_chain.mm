@@ -7,9 +7,15 @@
 
 namespace Pathfinder {
 
-SwapChainMtl::SwapChainMtl(const Vec2I& size, const std::shared_ptr<DeviceMtl>& device, CAMetalLayer* layer)
-    : SwapChain(size), device_(device), layer_(layer) {
+SwapChainMtl::SwapChainMtl(
+    const Vec2I& size, const std::shared_ptr<DeviceMtl>& device, CAMetalLayer* layer, PresentMode present_mode)
+    : SwapChain(size, present_mode), device_(device), layer_(layer) {
     layer_.device = device_->get_handle();
+
+    // Enable/disable V-Sync based on present mode.
+    // In Metal, displaySyncEnabled = YES corresponds to FIFO (V-Sync on).
+    // displaySyncEnabled = NO corresponds to Immediate (V-Sync off).
+    layer_.displaySyncEnabled = (present_mode != PresentMode::Immediate);
 
     render_pass_ = device_->create_swap_chain_render_pass(get_surface_format(), AttachmentLoadOp::Clear);
 }

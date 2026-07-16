@@ -10,7 +10,8 @@ namespace Pathfinder {
 
 class SwapChainMtl : public SwapChain {
 public:
-    SwapChainMtl(const Vec2I& size, const std::shared_ptr<DeviceMtl>& device, CAMetalLayer* layer);
+    SwapChainMtl(
+        const Vec2I& size, const std::shared_ptr<DeviceMtl>& device, CAMetalLayer* layer, PresentMode present_mode);
 
     std::shared_ptr<RenderPass> get_render_pass() override;
 

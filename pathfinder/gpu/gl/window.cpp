@@ -15,15 +15,17 @@ WindowGl::WindowGl(const Vec2I &size, EGLDisplay egl_display, EGLSurface egl_sur
 }
 #endif
 
-std::shared_ptr<SwapChain> WindowGl::get_swap_chain(const std::shared_ptr<Device> &device) {
+std::shared_ptr<SwapChain> WindowGl::get_swap_chain(const std::shared_ptr<Device> &device,
+                                                  PresentMode present_mode) {
     if (swapchain_) {
         return swapchain_;
     }
 
 #ifndef __ANDROID__
-    swapchain_ = std::make_shared<SwapChainGl>(get_physical_size(), glfw_window_);
+    swapchain_ = std::make_shared<SwapChainGl>(get_physical_size(), glfw_window_, present_mode);
 #else
-    swapchain_ = std::make_shared<SwapChainGl>(get_physical_size(), egl_display_, egl_surface_, egl_context_);
+    swapchain_ =
+        std::make_shared<SwapChainGl>(get_physical_size(), egl_display_, egl_surface_, egl_context_, present_mode);
 #endif
 
     return swapchain_;

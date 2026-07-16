@@ -18,7 +18,8 @@ public:
     WindowGl(const Vec2I &size, EGLDisplay egl_display, EGLSurface egl_surface, EGLContext egl_context);
 #endif
 
-    std::shared_ptr<SwapChain> get_swap_chain(const std::shared_ptr<Device> &device) override;
+    std::shared_ptr<SwapChain> get_swap_chain(const std::shared_ptr<Device> &device,
+                                              PresentMode present_mode = PresentMode::Fifo) override;
 
 private:
     void destroy() override;

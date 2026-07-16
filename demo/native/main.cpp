@@ -20,7 +20,8 @@ int main() {
     auto queue = window_builder->create_queue();
 
     // Create swap chains for windows.
-    auto swap_chain = window->get_swap_chain(device);
+    // Use Pathfinder::PresentMode::Immediate for profiling (V-Sync off).
+    auto swap_chain = window->get_swap_chain(device, Pathfinder::PresentMode::Fifo);
 
     // Create app.
     App app(device,

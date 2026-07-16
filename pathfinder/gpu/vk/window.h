@@ -13,7 +13,8 @@ public:
 
     VkExtent2D choose_swap_extent(const VkSurfaceCapabilitiesKHR &capabilities) const;
 
-    std::shared_ptr<SwapChain> get_swap_chain(const std::shared_ptr<Device> &device) override;
+    std::shared_ptr<SwapChain> get_swap_chain(const std::shared_ptr<Device> &device,
+                                              PresentMode present_mode = PresentMode::Fifo) override;
 
     VkSurfaceKHR surface_{};
 

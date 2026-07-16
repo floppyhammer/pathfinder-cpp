@@ -17,9 +17,13 @@ class SwapChainGl : public SwapChain {
 
 public:
 #ifndef __ANDROID__
-    SwapChainGl(Vec2I size, void *window_handle);
+    SwapChainGl(Vec2I size, void *window_handle, PresentMode present_mode);
 #else
-    SwapChainGl(Vec2I size, EGLDisplay egl_display, EGLSurface egl_surface, EGLContext egl_context);
+    SwapChainGl(Vec2I size,
+                EGLDisplay egl_display,
+                EGLSurface egl_surface,
+                EGLContext egl_context,
+                PresentMode present_mode);
 #endif
 
     std::shared_ptr<RenderPass> get_render_pass() override {
