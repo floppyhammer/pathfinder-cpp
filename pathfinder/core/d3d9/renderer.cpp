@@ -72,9 +72,11 @@ std::shared_ptr<Texture> RendererD3D9::get_dest_texture() {
 }
 
 void RendererD3D9::update_tile_batch_storage(uint32_t new_tile_batch_count) {
-    if (tile_batch_storage_count > 0) {
-        allocator->free_buffer(tile_ub_id);
+    if (new_tile_batch_count <= tile_batch_storage_count) {
+        return;
     }
+
+    uint64_t old_tile_ub_id = tile_ub_id;
 
     // Create a new uniform buffer.
     tile_ub_id =
@@ -82,9 +84,11 @@ void RendererD3D9::update_tile_batch_storage(uint32_t new_tile_batch_count) {
                                    BufferType::Uniform,
                                    "tile uniform buffer");
 
-    for (int i = tile_batch_storage_count; i < new_tile_batch_count; i++) {
+    for (uint32_t i = tile_batch_storage_count; i < new_tile_batch_count; i++) {
         // Set descriptor set.
         auto tile_descriptor_set = device->create_descriptor_set(tile_descriptor_set_layout_);
+        // We will update binding 2 (uniform) in draw_tiles() anyway,
+        // but let's initialize it with the current buffer here.
         tile_descriptor_set->add_or_update({
             Descriptor::uniform(2, allocator->get_buffer(tile_ub_id)),
             // Unused binding.
@@ -93,6 +97,10 @@ void RendererD3D9::update_tile_batch_storage(uint32_t new_tile_batch_count) {
             Descriptor::sampled(6, allocator->get_texture(dummy_texture_id), get_default_sampler()),
         });
         tile_descriptor_sets.push_back(tile_descriptor_set);
+    }
+
+    if (tile_batch_storage_count > 0) {
+        allocator->free_buffer(old_tile_ub_id);
     }
 
     tile_batch_storage_count = new_tile_batch_count;
@@ -213,8 +221,9 @@ TextureFormat RendererD3D9::mask_texture_format() const {
     return TextureFormat::Rgba16Float;
 }
 
+// todo: should handle descriptor set caching during multiple draws per frame (because bound mask texture changes)
 void RendererD3D9::reallocate_alpha_tile_pages_if_necessary() {
-    // Make sure at least one page is allocated even when thers's no alpha tile.
+    // Make sure at least one page is allocated even when there's no alpha tile.
     // Because we use `*mask_storage.framebuffer_id` in several places.
     uint32_t alpha_tile_pages_needed = std::max((alpha_tile_count + 0xffff) >> 16, 1u);
 
@@ -347,7 +356,12 @@ void RendererD3D9::draw(const std::shared_ptr<SceneBuilder> &_scene_builder, boo
 
     reallocate_alpha_tile_pages_if_necessary();
 
-    allocator->begin_frame();
+    uint32_t current_frame_index = device->get_current_frame_index();
+    if (current_frame_index != last_frame_index) {
+        allocator->begin_frame();
+        tile_batch_idx = 0;
+        last_frame_index = current_frame_index;
+    }
 
     auto encoder = device->create_command_encoder("upload & draw fills, tiles");
 
@@ -431,10 +445,8 @@ uint64_t RendererD3D9::upload_tiles(const std::vector<TileObjectPrimitive> &tile
 
 void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &tile_batches,
                                          const std::shared_ptr<CommandEncoder> &encoder) {
-    int tile_batch_idx = 0;
-
-    if (tile_batches.size() > tile_batch_storage_count) {
-        update_tile_batch_storage(tile_batches.size());
+    if (tile_batch_idx + tile_batches.size() > tile_batch_storage_count) {
+        update_tile_batch_storage(tile_batch_idx + tile_batches.size());
     }
 
     // One draw call for each batch.

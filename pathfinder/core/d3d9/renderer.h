@@ -64,6 +64,9 @@ private:
     uint64_t fill_ub_id, tile_ub_id;
 
     uint32_t tile_batch_storage_count = 0;
+    uint32_t tile_batch_idx = 0;
+
+    uint32_t last_frame_index = std::numeric_limits<uint32_t>::max();
 
     // Temp
     std::vector<uint64_t> tile_vertex_buffer_ids;
