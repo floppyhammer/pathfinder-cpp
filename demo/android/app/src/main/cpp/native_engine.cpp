@@ -90,5 +90,7 @@ bool NativeEngine::init_app(bool use_vulkan) {
 
     init_app_common(window_size);
 
+    pf_queue->wait_idle();
+
     return true;
 }

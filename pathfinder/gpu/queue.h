@@ -21,6 +21,8 @@ public:
 
     virtual void begin_frame(uint32_t current_frame_index) {}
 
+    virtual void wait_idle() {}
+
 protected:
     uint32_t current_frame_index_{};
 };

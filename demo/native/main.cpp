@@ -40,6 +40,9 @@ int main() {
         blit->set_texture(dst_texture);
     }
 
+    // Make sure encoders submitted are all finished before the main loop starts and the ring buffers starts to work.
+    queue->wait_idle();
+
     // Main loop.
     while (!window->should_close()) {
         window_builder->poll_events();

@@ -55,4 +55,8 @@ void QueueVk::begin_frame(uint32_t current_frame_index) {
     encoders_in_flight_[current_frame_index_ % frames_in_flight_].clear();
 }
 
+void QueueVk::wait_idle() {
+    vkQueueWaitIdle(vk_graphics_queue_);
+}
+
 } // namespace Pathfinder

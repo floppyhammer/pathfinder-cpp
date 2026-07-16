@@ -14,6 +14,8 @@ public:
 
     void begin_frame(uint32_t current_frame_index) override;
 
+    void wait_idle() override;
+
 private:
     VkDevice vk_device_{};
 
