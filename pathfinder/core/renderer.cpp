@@ -247,15 +247,7 @@ void Renderer::upload_texture_metadata(const std::vector<TextureMetadataEntry> &
     auto region_rect =
         RectI(0, 0, TEXTURE_METADATA_TEXTURE_WIDTH, texels.size() / (4 * TEXTURE_METADATA_TEXTURE_WIDTH));
 
-    // Don't use a vector as we need to delay the deallocation until the image data is uploaded to GPU.
-    auto raw_texels = new half[texels.size()];
-    std::copy(texels.begin(), texels.end(), raw_texels);
-
-    // Callback to clean up staging resources.
-    auto callback = [raw_texels] { delete[] raw_texels; };
-
-    encoder->add_callback(callback);
-    encoder->write_texture(allocator->get_texture(metadata_texture_id), region_rect, raw_texels);
+    encoder->write_texture(allocator->get_texture(metadata_texture_id), region_rect, texels.data());
 }
 
 } // namespace Pathfinder

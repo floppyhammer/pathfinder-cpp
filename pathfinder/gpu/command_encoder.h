@@ -229,14 +229,6 @@ public:
 
     void read_texture(const std::shared_ptr<Texture> &texture, RectI region, void *data);
 
-    void add_callback(const std::function<void()> &callback) {
-        callbacks_.push_back(callback);
-    }
-
-    void track_temporary_resource(const std::shared_ptr<Buffer> &buffer) {
-        temp_buffers_.push_back(buffer);
-    }
-
     void invoke_callbacks();
 
 protected:
@@ -245,6 +237,14 @@ protected:
     /// Prepare the encoder for submission.
     /// @return If valid for submission.
     virtual bool prepare() = 0;
+
+    void add_callback(const std::function<void()> &callback) {
+        callbacks_.push_back(callback);
+    }
+
+    void track_temporary_resource(const std::shared_ptr<Buffer> &buffer) {
+        temp_buffers_.push_back(buffer);
+    }
 
     /// Debug label.
     std::string label_;

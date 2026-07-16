@@ -39,6 +39,9 @@ void QueueVk::submit(const std::shared_ptr<CommandEncoder> &encoder, const std::
         // A simple way is to wait for the queue to be idle.
         if (!encoder->callbacks_.empty()) {
             vkQueueWaitIdle(vk_graphics_queue_);
+            // Print performance warning.
+            Logger::warn(
+                "vkQueueWaitIdle is used because a command encoder with callbacks has been called without a fence!");
         } else {
             encoders_in_flight_[current_frame_index_ % frames_in_flight_].push_back(encoder);
         }
