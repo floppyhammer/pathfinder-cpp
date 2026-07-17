@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../queue.h"
-#include "swap_chain.h"
 
 namespace Pathfinder {
 

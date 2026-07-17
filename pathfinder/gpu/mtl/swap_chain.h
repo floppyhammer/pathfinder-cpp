@@ -33,6 +33,7 @@ private:
     id<CAMetalDrawable> current_drawable_ = nil;
     std::shared_ptr<TextureMtl> surface_texture_;
     std::shared_ptr<RenderPass> render_pass_;
+    std::shared_ptr<Queue> queue_;
 };
 
 } // namespace Pathfinder

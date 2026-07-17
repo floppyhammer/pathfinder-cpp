@@ -15,6 +15,7 @@ option(PATHFINDER_BUILD_DEMO "Build demo" OFF)
 option(PATHFINDER_ENABLE_COMPUTE "Enable COMPUTE render mode" ON)
 option(PATHFINDER_RUNTIME_SHADER_COMPLICATION "Compile shaders at runtime using SPV" OFF)
 option(PATHFINDER_BUILD_SHADER_GENERATOR "Shader generator" OFF)
+option(PATHFINDER_WINDOW "Shipping a window builder" ON)
 
 # Identify Linux.
 if (UNIX AND NOT APPLE AND NOT ANDROID)
@@ -23,7 +24,7 @@ endif ()
 
 # Should handle EMSCRIPTEN before other platforms.
 if (EMSCRIPTEN)
-    message("[Pathfinder] Build for Web")
+    message(STATUS "[Pathfinder] Build for Web")
 
     set(PATHFINDER_BACKEND_OPENGL ON)
     # No Vulkan support for web.
@@ -63,16 +64,7 @@ if (PATHFINDER_ENABLE_COMPUTE)
 endif ()
 
 if (PATHFINDER_BACKEND_VULKAN)
-    message("[Pathfinder] Enabled Vulkan backend")
-
-    # Load Vulkan dll
-    #    find_package(Vulkan REQUIRED)
-    #
-    #    target_link_libraries(pathfinder PUBLIC Vulkan::Vulkan)
-    #
-    #    # This is to please GitHub Actions.
-    #    target_include_directories(pathfinder PUBLIC "${Vulkan_INCLUDE_DIRS}")
-    #
+    message(STATUS "[Pathfinder] Enabled Vulkan backend")
 
     # Load Vulkan dynamically
     if (ANDROID)
@@ -90,20 +82,20 @@ if (PATHFINDER_BACKEND_VULKAN)
         target_compile_definitions(pathfinder PRIVATE PATHFINDER_VKB_ENABLE_PORTABILITY)
     endif ()
 else ()
-    message("[Pathfinder] Disabled Vulkan backend")
+    message(STATUS "[Pathfinder] Disabled Vulkan backend")
 endif ()
 
 if (PATHFINDER_BACKEND_OPENGL)
-    message("[Pathfinder] Enabled OpenGL backend")
+    message(STATUS "[Pathfinder] Enabled OpenGL backend")
 
     # Don't use add_compile_definitions, which doesn't propagate to parent projects.
     target_compile_definitions(pathfinder PRIVATE PATHFINDER_USE_OPENGL)
 else ()
-    message("[Pathfinder] Disabled OpenGL backend")
+    message(STATUS "[Pathfinder] Disabled OpenGL backend")
 endif ()
 
 if (PATHFINDER_BACKEND_METAL)
-    message("[Pathfinder] Enabled Metal backend")
+    message(STATUS "[Pathfinder] Enabled Metal backend")
 
     target_compile_definitions(pathfinder PRIVATE PATHFINDER_USE_METAL)
 
@@ -113,16 +105,20 @@ if (PATHFINDER_BACKEND_METAL)
     )
     set_target_properties(pathfinder PROPERTIES XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC "YES")
 
-    target_link_libraries(pathfinder PUBLIC "-framework Metal" "-framework Cocoa" "-framework QuartzCore" "-framework MetalKit")
+    target_link_libraries(pathfinder PUBLIC "-framework Metal" "-framework QuartzCore" "-framework MetalKit")
+
+    if (PATHFINDER_WINDOW)
+        target_link_libraries(pathfinder PUBLIC "-framework Cocoa")
+    endif ()
 else ()
-    message("[Pathfinder] Disabled Metal backend")
+    message(STATUS "[Pathfinder] Disabled Metal backend")
 endif ()
 
 # Include third_party headers.
 target_include_directories(pathfinder PUBLIC "third_party" "third_party/glad/include")
 
 # We don't need GLFW on Android, and Emscripten has its own version of GLFW.
-if ((WIN32 OR LINUX OR APPLE) AND NOT (EMSCRIPTEN OR ANDROID))
+if ((WIN32 OR LINUX OR APPLE) AND NOT (EMSCRIPTEN OR ANDROID) AND PATHFINDER_WINDOW)
     add_subdirectory("third_party/glfw")
     target_include_directories(pathfinder PUBLIC "third_party/glfw/include")
     target_link_libraries(pathfinder PUBLIC glfw)
@@ -136,7 +132,7 @@ if (PATHFINDER_RUNTIME_SHADER_COMPLICATION)
 endif ()
 
 if (PATHFINDER_BUILD_DEMO)
-    message("[Pathfinder] Build demo")
+    message(STATUS "[Pathfinder] Build demo")
 
     file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
 

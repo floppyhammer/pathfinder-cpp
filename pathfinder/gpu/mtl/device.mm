@@ -183,13 +183,9 @@ std::shared_ptr<ShaderModule> DeviceMtl::create_shader_module(const std::shared_
     return shader_module;
 }
 
-std::shared_ptr<QueueMtl> DeviceMtl::wrap_queue(id<MTLCommandQueue> mtl_cmd_queue, bool has_resource_ownership) {
-    return std::shared_ptr<QueueMtl>(new QueueMtl(mtl_device_, mtl_cmd_queue, frames_in_flight_));
-}
-
 DeviceMtl::~DeviceMtl() {}
 
-std::shared_ptr<TextureMtl> DeviceMtl::wrap_texture(id<MTLTexture> mtl_texture, bool has_resource_ownership) {
+std::shared_ptr<Texture> DeviceMtl::wrap_texture(id<MTLTexture> mtl_texture) {
     TextureDescriptor descriptor;
     descriptor.size = {(int32_t)mtl_texture.width, (int32_t)mtl_texture.height};
     descriptor.format = from_mtl_pixel_format(mtl_texture.pixelFormat);

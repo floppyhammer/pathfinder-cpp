@@ -17,6 +17,8 @@ SwapChainMtl::SwapChainMtl(
     // displaySyncEnabled = NO corresponds to Immediate (V-Sync off).
     layer_.displaySyncEnabled = (present_mode != PresentMode::Immediate);
 
+    queue_ = device->queue_;
+
     render_pass_ = device_->create_swap_chain_render_pass(get_surface_format(), AttachmentLoadOp::Clear);
 }
 
@@ -26,7 +28,7 @@ std::shared_ptr<RenderPass> SwapChainMtl::get_render_pass() {
 
 std::shared_ptr<Texture> SwapChainMtl::get_surface_texture() {
     if (current_drawable_) {
-        return device_->wrap_texture(current_drawable_.texture, false);
+        return device_->wrap_texture(current_drawable_.texture);
     }
     return nullptr;
 }
@@ -48,7 +50,7 @@ void SwapChainMtl::submit(const std::shared_ptr<CommandEncoder>& encoder) {
         [encoder_mtl->get_handle() presentDrawable:current_drawable_];
     }
 
-    device_->get_queue()->submit(encoder, nullptr);
+    queue_->submit(encoder, nullptr);
 }
 
 void SwapChainMtl::present() {

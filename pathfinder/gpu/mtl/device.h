@@ -12,6 +12,8 @@ class FramebufferMtl;
 class QueueMtl;
 
 class DeviceMtl final : public Device {
+    friend class SwapChainMtl;
+
 public:
     DeviceMtl(id<MTLDevice> device, id<MTLCommandQueue> mtl_cmd_queue, int frames_in_flight);
 
@@ -74,13 +76,7 @@ public:
 
     size_t get_aligned_uniform_size(size_t original_size) override;
 
-    std::shared_ptr<TextureMtl> wrap_texture(id<MTLTexture> mtl_texture, bool has_resource_ownership);
-
-    std::shared_ptr<QueueMtl> wrap_queue(id<MTLCommandQueue> mtl_cmd_queue, bool has_resource_ownership);
-
-    std::shared_ptr<QueueMtl> get_queue() {
-        return queue_;
-    }
+    std::shared_ptr<Texture> wrap_texture(id<MTLTexture> mtl_texture);
 
     id<MTLDevice> get_handle() {
         return mtl_device_;
