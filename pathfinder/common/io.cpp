@@ -71,7 +71,10 @@ std::vector<char> load_asset(void *asset_manager, const std::string &filename) {
     assert(asset_manager);
 
     AAsset *file = AAssetManager_open((AAssetManager *)asset_manager, filename.c_str(), AASSET_MODE_BUFFER);
-    assert(file);
+    if (!file) {
+        Logger::error("Failed to load asset: " + filename);
+        return {};
+    }
 
     size_t file_length = AAsset_getLength(file);
 
