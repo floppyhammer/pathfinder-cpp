@@ -60,6 +60,16 @@ struct Descriptor {
     /// 3. For sampling
     std::shared_ptr<Sampler> sampler;
 
+    bool operator==(const Descriptor& other) const {
+        return binding == other.binding && type == other.type && buffer == other.buffer &&
+               buffer_offset == other.buffer_offset && buffer_range == other.buffer_range && texture == other.texture &&
+               sampler == other.sampler;
+    }
+
+    bool operator!=(const Descriptor& other) const {
+        return !(*this == other);
+    }
+
     static Descriptor uniform(uint32_t binding,
                               const std::shared_ptr<Buffer>& buffer = nullptr,
                               uint64_t buffer_offset = 0,
@@ -136,10 +146,13 @@ public:
 
     void add_or_update(const std::vector<Descriptor>& _descriptors) {
         for (auto& d : _descriptors) {
-            descriptors[d.binding] = d;
-        }
+            auto it = descriptors.find(d.binding);
 
-        dirty = true;
+            if (it == descriptors.end() || it->second != d) {
+                descriptors[d.binding] = d;
+                dirty = true;
+            }
+        }
     }
 
     const std::map<uint32_t, Descriptor>& get_descriptors() const {
