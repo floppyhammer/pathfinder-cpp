@@ -75,7 +75,7 @@ if (PATHFINDER_BACKEND_VULKAN)
     add_subdirectory("third_party/volk")
     target_link_libraries(pathfinder PUBLIC volk)
 
-    target_compile_definitions(pathfinder PRIVATE PATHFINDER_USE_VULKAN)
+    target_compile_definitions(pathfinder PUBLIC PATHFINDER_USE_VULKAN)
 
     # Enable this for Vulkan 1.3 and higher on macOS.
     if (APPLE)
@@ -89,7 +89,7 @@ if (PATHFINDER_BACKEND_OPENGL)
     message(STATUS "[Pathfinder] Enabled OpenGL backend")
 
     # Don't use add_compile_definitions, which doesn't propagate to parent projects.
-    target_compile_definitions(pathfinder PRIVATE PATHFINDER_USE_OPENGL)
+    target_compile_definitions(pathfinder PUBLIC PATHFINDER_USE_OPENGL)
 else ()
     message(STATUS "[Pathfinder] Disabled OpenGL backend")
 endif ()
@@ -97,7 +97,7 @@ endif ()
 if (PATHFINDER_BACKEND_METAL)
     message(STATUS "[Pathfinder] Enabled Metal backend")
 
-    target_compile_definitions(pathfinder PRIVATE PATHFINDER_USE_METAL)
+    target_compile_definitions(pathfinder PUBLIC PATHFINDER_USE_METAL)
 
     # Config ARC.
     target_compile_options(pathfinder PRIVATE
@@ -128,7 +128,7 @@ if (PATHFINDER_RUNTIME_SHADER_COMPLICATION)
     add_subdirectory("third_party/spirv-cross")
     add_subdirectory("third_party/glslang")
     target_link_libraries(pathfinder PUBLIC spirv-cross glslang)
-    target_compile_definitions(pathfinder PRIVATE PATHFINDER_USE_GLSLANG)
+    target_compile_definitions(pathfinder PUBLIC PATHFINDER_USE_GLSLANG)
 endif ()
 
 if (PATHFINDER_BUILD_DEMO)
