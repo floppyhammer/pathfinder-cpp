@@ -1,5 +1,6 @@
 #include "queue.h"
 
+#include "command_encoder.h"
 #include "fence.h"
 
 namespace Pathfinder {

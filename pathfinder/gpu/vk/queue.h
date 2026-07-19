@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../queue.h"
+#include "base.h"
 
 namespace Pathfinder {
 
