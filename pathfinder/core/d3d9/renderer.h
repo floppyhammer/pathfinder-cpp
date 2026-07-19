@@ -72,7 +72,7 @@ private:
     std::vector<uint64_t> tile_vertex_buffer_ids;
     std::vector<uint64_t> z_buffer_texture_ids;
     std::vector<ClipBufferInfo> clip_buffer_infos;
-    uint64_t *temp_mask_texture_id = nullptr;
+    std::shared_ptr<uint64_t> temp_mask_texture_id;
 
     /// Where the final rendering output goes.
     /// This is not managed by the memory allocator.

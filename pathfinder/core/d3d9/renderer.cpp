@@ -528,7 +528,7 @@ ClipBufferInfo RendererD3D9::upload_clip_tiles(const std::vector<Clip> &clips,
 void RendererD3D9::clip_tiles(const ClipBufferInfo &clip_buffer_info, const std::shared_ptr<CommandEncoder> &encoder) {
     // A temporary mask framebuffer for clipping.
     if (!temp_mask_texture_id) {
-        temp_mask_texture_id = new uint64_t;
+        temp_mask_texture_id = std::make_shared<uint64_t>();
         *temp_mask_texture_id = allocator->allocate_texture(
             Vec2I(MASK_FRAMEBUFFER_WIDTH, MASK_FRAMEBUFFER_HEIGHT * mask_storage.allocated_page_count),
             TextureFormat::Rgba16Float,
