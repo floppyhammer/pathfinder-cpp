@@ -13,6 +13,7 @@ void NativeEngine::draw_frame() {
     }
 
     pf_device->begin_frame();
+    pf_queue->begin_frame(pf_device->get_current_frame_index());
 
     auto current_window_size = pf_window->get_logical_size();
 
