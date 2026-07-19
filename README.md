@@ -58,9 +58,8 @@ The native demo uses a common application framework.
 
 ### Android
 
-1. Copy `assets` into `demo/android/app/src/main`.
-2. Open `demo/android` in Android Studio.
-3. Deploy to a device supporting GLES 3.0+.
+1. Open `demo/android` in Android Studio.
+2. Deploy to a device supporting GLES 3.0+.
 
 ### Web (Emscripten)
 

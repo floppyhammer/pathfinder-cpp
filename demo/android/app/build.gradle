@@ -37,6 +37,12 @@ android {
     }
     buildFeatures.prefab = true
     namespace 'graphics.pathfinder.demo'
+
+    sourceSets {
+        main {
+            assets.srcDirs += ['../../../assets']
+        }
+    }
 }
 
 dependencies {
