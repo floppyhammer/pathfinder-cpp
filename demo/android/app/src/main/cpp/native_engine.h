@@ -14,7 +14,7 @@ public:
 
     ~NativeEngine() = default;
 
-    bool init_app(bool use_vulkan);
+    bool init_app(Pathfinder::BackendType backend_type);
 
     void draw_frame();
 

@@ -21,7 +21,11 @@ constexpr int MAX_FRAMES_IN_FLIGHT = 1;
 /// Window management.
 class WindowBuilder {
 public:
+#ifndef __ANDROID__
     static std::shared_ptr<WindowBuilder> new_impl(BackendType backend_type, const Vec2I &size);
+#else
+    static std::shared_ptr<WindowBuilder> new_impl(ANativeWindow *native_window, BackendType backend_type, const Vec2I &size);
+#endif
 
     virtual ~WindowBuilder() = default;
 

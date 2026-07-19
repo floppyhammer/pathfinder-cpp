@@ -16,8 +16,8 @@
 
 namespace Pathfinder {
 
-std::shared_ptr<WindowBuilder> WindowBuilder::new_impl(const BackendType backend_type, const Vec2I &size) {
 #ifndef __ANDROID__
+std::shared_ptr<WindowBuilder> WindowBuilder::new_impl(const BackendType backend_type, const Vec2I &size) {
     switch (backend_type) {
     #ifdef PATHFINDER_USE_OPENGL
         case BackendType::Opengl: {
@@ -52,10 +52,41 @@ std::shared_ptr<WindowBuilder> WindowBuilder::new_impl(const BackendType backend
             throw std::invalid_argument("None of the render backends is supported!");
     #endif
     }
-#else
-    return nullptr;
-#endif
 }
+#else
+std::shared_ptr<WindowBuilder> WindowBuilder::new_impl(ANativeWindow *native_window,
+                                                       const BackendType backend_type,
+                                                       const Vec2I &size) {
+    switch (backend_type) {
+    #ifdef PATHFINDER_USE_OPENGL
+        case BackendType::Opengl: {
+            Logger::info("Using OpenGL backend");
+            return std::make_shared<WindowBuilderGl>(native_window, size);
+        }
+    #endif
+    #ifdef PATHFINDER_USE_VULKAN
+        case BackendType::Vulkan: {
+            Logger::info("Using Vulkan backend");
+
+            // Load Vulkan functions.
+            if (volkInitialize()) {
+                Logger::error("Vulkan is not supported on this platform");
+                // Go to the default branch.
+            } else {
+                return std::make_shared<WindowBuilderVk>(native_window, size);
+            }
+        }
+    #endif
+        default:
+    #ifdef PATHFINDER_USE_OPENGL
+            Logger::info("Vulkan backend unavailable, falling back to OpenGL backend");
+            return std::make_shared<WindowBuilderGl>(native_window, size);
+    #else
+            throw std::invalid_argument("None of the render backends is supported!");
+    #endif
+    }
+}
+#endif
 
 std::weak_ptr<Window> WindowBuilder::get_window(uint8_t window_index) const {
     if (window_index == 0) {

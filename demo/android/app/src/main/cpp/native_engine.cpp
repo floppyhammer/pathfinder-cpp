@@ -2,8 +2,7 @@
 
 // clang-format off
 #include <volk/volk.h>
-#include "pathfinder/gpu/gl/window_builder.h"
-#include "pathfinder/gpu/vk/window_builder.h"
+#include "pathfinder/gpu/window_builder.h"
 // clang-format on
 
 void NativeEngine::draw_frame() {
@@ -79,15 +78,11 @@ void NativeEngine::init_app_common(Pathfinder::Vec2I window_size) {
     pf_blit->set_texture(dst_texture);
 }
 
-bool NativeEngine::init_app(bool use_vulkan) {
+bool NativeEngine::init_app(Pathfinder::BackendType backend_type) {
     auto window_size =
         Pathfinder::Vec2I(ANativeWindow_getWidth(mAppCtx->window), ANativeWindow_getHeight(mAppCtx->window));
 
-    if (!use_vulkan) {
-        window_builder = std::make_shared<Pathfinder::WindowBuilderGl>(mAppCtx->window, window_size);
-    } else {
-        window_builder = std::make_shared<Pathfinder::WindowBuilderVk>(mAppCtx->window, window_size);
-    }
+    window_builder = Pathfinder::WindowBuilder::new_impl(mAppCtx->window, backend_type, window_size);
 
     init_app_common(window_size);
 
