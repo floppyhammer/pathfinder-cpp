@@ -27,37 +27,13 @@ VkDeviceMemory BufferVk::get_vk_device_memory() {
 }
 
 void BufferVk::upload_via_mapping(size_t data_size, size_t offset, const void* data) {
-    if (desc_.property != MemoryProperty::HostVisibleAndCoherent) {
-        abort();
-    }
-
-    void* mapped_data;
-    auto res = vkMapMemory(vk_device_, vk_device_memory_, offset, data_size, 0, &mapped_data);
-
-    if (res != VK_SUCCESS) {
-        Logger::error("Failed to map memory!");
-        return;
-    }
-
+    void* mapped_data = static_cast<uint8_t*>(map()) + offset;
     memcpy(mapped_data, data, data_size);
-    vkUnmapMemory(vk_device_, vk_device_memory_);
 }
 
 void BufferVk::download_via_mapping(size_t data_size, size_t offset, void* data) {
-    if (desc_.property != MemoryProperty::HostVisibleAndCoherent) {
-        abort();
-    }
-
-    void* mapped_data;
-    auto res = vkMapMemory(vk_device_, vk_device_memory_, offset, data_size, 0, &mapped_data);
-
-    if (res != VK_SUCCESS) {
-        Logger::error("Failed to map memory!");
-        return;
-    }
-
+    const void* mapped_data = static_cast<uint8_t*>(map()) + offset;
     memcpy(data, mapped_data, data_size);
-    vkUnmapMemory(vk_device_, vk_device_memory_);
 }
 
 void BufferVk::set_label(const std::string& label) {
@@ -69,10 +45,15 @@ void BufferVk::set_label(const std::string& label) {
 }
 
 void* BufferVk::map() {
+    if (desc_.property != MemoryProperty::HostVisibleAndCoherent) {
+        abort();
+    }
+
     if (mapped_ptr_) {
         return mapped_ptr_;
     }
 
+    // This is a base pointer, note that offset is zero.
     if (vkMapMemory(vk_device_, vk_device_memory_, 0, get_size(), 0, &mapped_ptr_) != VK_SUCCESS) {
         Logger::error("Failed to map buffer memory!");
         return nullptr;

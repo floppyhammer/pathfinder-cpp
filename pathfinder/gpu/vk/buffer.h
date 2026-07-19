@@ -24,6 +24,7 @@ public:
 
     VkDeviceMemory get_vk_device_memory();
 
+    /// Map the whole buffer once, offset is zero.
     void* map();
 
     void unmap();
