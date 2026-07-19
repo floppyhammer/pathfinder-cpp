@@ -78,15 +78,6 @@ void WindowBuilder::set_dpi_scaling_factor(uint8_t window_index, float new_scale
 }
 
 void WindowBuilder::poll_events() {
-    // Reset window flags.
-    {
-        primary_window_->just_resized_ = false;
-
-        for (const auto &w : sub_windows_) {
-            w->just_resized_ = false;
-        }
-    }
-
 #ifndef __ANDROID__
     glfwPollEvents();
 #endif
@@ -113,8 +104,6 @@ void WindowBuilder::set_fullscreen(bool fullscreen) {
                              mode->width,
                              mode->height,
                              GLFW_DONT_CARE);
-
-        primary_window_->physical_size_ = Vec2I(mode->width, mode->height);
     } else {
         glfwSetWindowMonitor((GLFWwindow *)primary_window_->glfw_window_,
                              nullptr,
@@ -123,8 +112,6 @@ void WindowBuilder::set_fullscreen(bool fullscreen) {
                              reserved_window_physical_size_.x,
                              reserved_window_physical_size_.y,
                              GLFW_DONT_CARE);
-
-        primary_window_->physical_size_ = reserved_window_physical_size_;
     }
 #endif
 }

@@ -312,7 +312,7 @@ void SwapChainVk::present() {
     VkResult result = vkQueuePresentKHR(vk_present_queue, &present_info);
     // -------------------------------------
 
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window_->get_resize_flag()) {
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
         recreate_swapchain();
     } else if (result != VK_SUCCESS) {
         throw std::runtime_error("Failed to present swap chain image!");

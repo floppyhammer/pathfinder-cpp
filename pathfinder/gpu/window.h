@@ -33,6 +33,8 @@ public:
 
     bool get_resize_flag() const;
 
+    void clear_resize_flag();
+
     bool is_minimized() const;
 
     void* get_glfw_handle() const;

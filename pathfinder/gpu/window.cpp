@@ -59,6 +59,10 @@ bool Window::get_resize_flag() const {
     return just_resized_;
 }
 
+void Window::clear_resize_flag() {
+    just_resized_ = false;
+}
+
 bool Window::is_minimized() const {
     return minimized_;
 }
