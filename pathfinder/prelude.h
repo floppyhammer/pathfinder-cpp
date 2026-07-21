@@ -18,4 +18,3 @@
 #include "gpu/window.h"
 #include "gpu/window_builder.h"
 #include "utils/blit.h"
-

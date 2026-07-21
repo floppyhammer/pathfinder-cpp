@@ -437,11 +437,21 @@ void Segment::add_to_contour(float distance,
     contour.push_segment(*this, push_flags);
 }
 
-void Segment::offset(float distance, LineJoin join, float join_miter_limit, Contour &contour) const {
+void Segment::offset(float distance,
+                     LineJoin join,
+                     float join_miter_limit,
+                     Contour &contour,
+                     uint32_t recursion_depth) const {
+    // If the segment contains NaN or Inf, just return.
+    if (!is_valid()) {
+        return;
+    }
+
     auto join_point = baseline.from();
 
-    // If the segment is short enough.
-    if (baseline.square_length() < STROKE_TOL * STROKE_TOL) {
+    // If the segment is short enough, or we've reached the maximum recursion depth.
+    // 16 levels of recursion means 2^16 = 65536 subdivisions, which is enough for any reasonable path.
+    if (baseline.square_length() < STROKE_TOL * STROKE_TOL || recursion_depth >= 16) {
         add_to_contour(distance, join, join_point, join_miter_limit, contour);
         return;
     }
@@ -456,8 +466,8 @@ void Segment::offset(float distance, LineJoin join, float join_miter_limit, Cont
     Segment before, after;
     split(0.5f, before, after);
 
-    before.offset(distance, join, join_miter_limit, contour);
-    after.offset(distance, join, join_miter_limit, contour);
+    before.offset(distance, join, join_miter_limit, contour, recursion_depth + 1);
+    after.offset(distance, join, join_miter_limit, contour, recursion_depth + 1);
 }
 
 } // namespace Pathfinder

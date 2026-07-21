@@ -82,8 +82,13 @@ public:
      * @param join Join type.
      * @param join_miter_limit Only for miter join.
      * @param contour Target contour to add new segment.
+     * @param recursion_depth Current recursion depth to prevent infinite recursion.
      */
-    void offset(float distance, LineJoin join, float join_miter_limit, Contour &contour) const;
+    void offset(float distance,
+                LineJoin join,
+                float join_miter_limit,
+                Contour &contour,
+                uint32_t recursion_depth = 0) const;
 
     /**
      * Change segment's orientation.
