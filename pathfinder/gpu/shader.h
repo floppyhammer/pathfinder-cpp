@@ -69,6 +69,20 @@ struct ShdbinInfo {
 // Predefined magic number for validation ('S' | 'H'<<8 | 'D'<<16 | 'B'<<24)
 constexpr uint32_t SHDB_MAGIC = 0x42444853;
 
+struct UniformBlockMember {
+    std::string name;
+    std::uint32_t offset;
+    std::uint32_t size;
+};
+
+/// Complete reflection info for uniform blocks.
+struct UniformBlockInfo {
+    std::string name;
+    std::uint32_t binding_point;
+    std::uint32_t size;
+    std::vector<UniformBlockMember> members;
+};
+
 /// Shader code for a specific backend.
 struct ShaderCode {
     ShaderStage stage;
@@ -78,6 +92,8 @@ struct ShaderCode {
     /// For GLES 3.0, in which we need to know the uniform names.
     std::vector<std::pair<uint32_t, std::string>> texture_binding_map;
     std::vector<std::pair<uint32_t, std::string>> uniform_buffer_binding_map;
+    /// Currently unused.
+    std::vector<UniformBlockInfo> ub_infos;
 };
 
 /// Raw shader sources for all backends.

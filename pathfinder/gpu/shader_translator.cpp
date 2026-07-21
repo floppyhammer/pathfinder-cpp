@@ -89,7 +89,7 @@ std::shared_ptr<ShaderCode> glsl_to_spv(const ShaderCode *glsl_code) {
     return spv_code;
 }
 
-std::shared_ptr<ShaderCode> spv_to_glsl(const ShaderCode *spv_code, bool is_es, bool need_framebuffer_fetch) {
+std::shared_ptr<ShaderCode> spv_to_glsl(const ShaderCode *spv_code, bool is_es, bool use_framebuffer_fetch) {
     spirv_cross::CompilerGLSL::Options options;
     if (is_es) {
         options.es = true;
@@ -114,7 +114,7 @@ std::shared_ptr<ShaderCode> spv_to_glsl(const ShaderCode *spv_code, bool is_es, 
     glsl_code->stage = spv_code->stage;
     glsl_code->entry_point = spv_code->entry_point;
 
-    if (is_es && ShaderStage::Fragment == spv_code->stage && need_framebuffer_fetch) {
+    if (is_es && ShaderStage::Fragment == spv_code->stage && use_framebuffer_fetch) {
         glsl.remap_ext_framebuffer_fetch(0, 0, true);
         glsl.remap_ext_framebuffer_fetch(1, 1, true);
         glsl.remap_ext_framebuffer_fetch(2, 2, true);
@@ -167,32 +167,36 @@ std::shared_ptr<ShaderCode> spv_to_glsl(const ShaderCode *spv_code, bool is_es, 
     }
 
     // Update uniform binding map.
-    std::vector<UniformBufferInfo> ubo_infos_;
+    std::vector<UniformBlockInfo> ub_infos;
 
     for (const auto &r : resource.uniform_buffers) {
         uint32_t binding = glsl.get_decoration(r.id, spv::DecorationBinding);
         glsl_code->uniform_buffer_binding_map.emplace_back(binding, r.name);
 
-        // Update uniform buffer info.
-        ubo_infos_.emplace_back();
-        auto &ubo_info = ubo_infos_.back();
+        // Update uniform block info.
+        UniformBlockInfo ub_info{};
+
         const auto &ub_type = glsl.get_type(r.type_id);
-        ubo_info.name = r.name;
-        ubo_info.binding_point = binding;
-        ubo_info.size = std::ceil(glsl.get_declared_struct_size(ub_type) / 16.0f) * 16;
-        ubo_info.elements.resize(ub_type.member_types.size());
-        ubo_info.stage = static_cast<ShaderStage>(spv_code->stage);
-        for (auto i = 0; i < ubo_info.elements.size(); ++i) {
-            ubo_info.elements[i].name = glsl.get_member_name(ub_type.self, i);
-            ubo_info.elements[i].offset = glsl.type_struct_member_offset(ub_type, i);
-            ubo_info.elements[i].size = glsl.get_declared_struct_member_size(ub_type, i);
+        ub_info.name = r.name;
+        ub_info.binding_point = binding;
+        ub_info.size = std::ceil(glsl.get_declared_struct_size(ub_type) / 16.0f) * 16;
+
+        ub_info.members.resize(ub_type.member_types.size());
+        for (auto i = 0; i < ub_info.members.size(); ++i) {
+            ub_info.members[i].name = glsl.get_member_name(ub_type.self, i);
+            ub_info.members[i].offset = glsl.type_struct_member_offset(ub_type, i);
+            ub_info.members[i].size = glsl.get_declared_struct_member_size(ub_type, i);
         }
+
+        ub_infos.push_back(ub_info);
     }
+
+    glsl_code->ub_infos = ub_infos;
 
     return glsl_code;
 }
 
-std::shared_ptr<ShaderCode> spv_to_msl(const ShaderCode *spv_code, bool need_framebuffer_fetch) {
+std::shared_ptr<ShaderCode> spv_to_msl(const ShaderCode *spv_code, bool use_framebuffer_fetch) {
     spirv_cross::CompilerMSL msl(reinterpret_cast<const uint32_t *>(spv_code->code.data()), spv_code->code.size() / 4);
     spirv_cross::ShaderResources resources = msl.get_shader_resources();
 
@@ -223,7 +227,7 @@ std::shared_ptr<ShaderCode> spv_to_msl(const ShaderCode *spv_code, bool need_fra
     spirv_cross::CompilerMSL::Options options;
     options.enable_decoration_binding = true;
     options.msl_version = 120;
-    if (need_framebuffer_fetch && spv_code->stage == ShaderStage::Fragment) {
+    if (use_framebuffer_fetch && spv_code->stage == ShaderStage::Fragment) {
         options.use_framebuffer_fetch_subpasses = true;
     }
     options.platform = spirv_cross::CompilerMSL::Options::Platform::iOS;
@@ -241,10 +245,18 @@ std::shared_ptr<ShaderCode> spv_to_msl(const ShaderCode *spv_code, bool need_fra
 
     spv::ExecutionModel execution_model;
     switch (spv_code->stage) {
-        case ShaderStage::Vertex:   execution_model = spv::ExecutionModelVertex; break;
-        case ShaderStage::Fragment: execution_model = spv::ExecutionModelFragment; break;
-        case ShaderStage::Compute:  execution_model = spv::ExecutionModelGLCompute; break;
-        default:                    execution_model = spv::ExecutionModelMax; break;
+        case ShaderStage::Vertex:
+            execution_model = spv::ExecutionModelVertex;
+            break;
+        case ShaderStage::Fragment:
+            execution_model = spv::ExecutionModelFragment;
+            break;
+        case ShaderStage::Compute:
+            execution_model = spv::ExecutionModelGLCompute;
+            break;
+        default:
+            execution_model = spv::ExecutionModelMax;
+            break;
     }
 
     // Entry point might be changed during conversion.
@@ -259,7 +271,7 @@ void ShaderTranslator::set_shader_code(const ShaderCodeKey &shader_key, const st
 
 void ShaderTranslator::compile_from_glsl(const std::string &entry_point,
                                          const std::string &shader_code,
-                                         bool need_framebuffer_fetch) {
+                                         bool use_framebuffer_fetch) {
     // Reset shader since prepare() only overwrites nonexistent shader keys.
     shader_ = std::make_shared<Shader>();
 
@@ -270,14 +282,14 @@ void ShaderTranslator::compile_from_glsl(const std::string &entry_point,
 
     set_shader_code({ShaderSourceType::GLSL, 4, 5}, glsl_code);
 
-    prepare(need_framebuffer_fetch);
+    prepare(use_framebuffer_fetch);
 }
 
 std::shared_ptr<Shader> ShaderTranslator::get_shader() const {
     return shader_;
 }
 
-bool ShaderTranslator::prepare(bool need_framebuffer_fetch) {
+bool ShaderTranslator::prepare(bool use_framebuffer_fetch) {
     auto spv_code_ptr = shader_->get_shader_code({ShaderSourceType::SPIRV, 1, 1});
     auto glsl_code_ptr = shader_->get_shader_code({ShaderSourceType::GLSL, 4, 5});
     auto es_code_ptr = shader_->get_shader_code({ShaderSourceType::GLSLES, 3, 0});
@@ -298,20 +310,20 @@ bool ShaderTranslator::prepare(bool need_framebuffer_fetch) {
         spv_code_ptr = shader_->get_shader_code({ShaderSourceType::SPIRV, 1, 1});
 
         // Modify the original GLSL shader code.
-        auto new_glsl_code = spv_to_glsl(spv_code_ptr.get(), false, need_framebuffer_fetch);
+        auto new_glsl_code = spv_to_glsl(spv_code_ptr.get(), false, use_framebuffer_fetch);
         shader_->update_shader_code({ShaderSourceType::GLSL, 4, 5}, new_glsl_code);
     }
 
     // Generate es code.
     if (es_code_ptr == nullptr) {
         auto minor_version = stage_ == ShaderStage::Compute ? 1u : 0u;
-        auto es_code = spv_to_glsl(spv_code_ptr.get(), true, need_framebuffer_fetch);
+        auto es_code = spv_to_glsl(spv_code_ptr.get(), true, use_framebuffer_fetch);
         shader_->update_shader_code({ShaderSourceType::GLSLES, 3, uint8_t(minor_version)}, es_code);
     }
 
     // Generate msl code.
     if (msl_code_ptr == nullptr) {
-        auto msl_code = spv_to_msl(spv_code_ptr.get(), need_framebuffer_fetch);
+        auto msl_code = spv_to_msl(spv_code_ptr.get(), use_framebuffer_fetch);
         shader_->update_shader_code({ShaderSourceType::MSL, 1, 2}, msl_code);
     }
 

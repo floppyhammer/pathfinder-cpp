@@ -9,21 +9,6 @@
 
 namespace Pathfinder {
 
-/// For GLES 3.0 compatibility
-struct UniformBufferElement {
-    std::string name;
-    std::uint32_t offset;
-    std::uint32_t size;
-};
-
-struct UniformBufferInfo {
-    std::string name;
-    std::uint32_t binding_point;
-    std::uint32_t size;
-    ShaderStage stage;
-    std::vector<UniformBufferElement> elements;
-};
-
 /// Translates GLSL/SPV into SPV, MSL, GLSL ES etc. at runtime. Optional.
 class ShaderTranslator {
 public:
@@ -35,17 +20,16 @@ public:
     void set_shader_code(const ShaderCodeKey &key, const std::shared_ptr<ShaderCode> &code);
 
     /// Compile shader module at runtime using provided Glsl 4.4 code.
-    void compile_from_glsl(const std::string &entry_point, const std::string &shader_code, bool need_framebuffer_fetch);
+    void compile_from_glsl(const std::string &entry_point, const std::string &shader_code, bool use_framebuffer_fetch);
 
     std::shared_ptr<Shader> get_shader() const;
 
 private:
-    bool prepare(bool need_framebuffer_fetch);
+    bool prepare(bool use_framebuffer_fetch);
 
     std::string name_;
     ShaderStage stage_;
     std::shared_ptr<Shader> shader_;
-    std::vector<UniformBufferInfo> ubo_infos_;
 };
 
 } // namespace Pathfinder

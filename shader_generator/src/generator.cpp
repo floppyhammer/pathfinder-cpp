@@ -58,7 +58,7 @@ bool write_shdbin(std::ostream& out, ShdbinInfo& shader) {
 }
 
 void generate_shader(const char* input_shader_file, const char* output_binary_file, ShaderKind stage) {
-    // 1. 使用 std::ifstream 读取输入文件，更符合 C++ 习惯且安全
+    // 1. Use std::ifstream to read input file
     std::ifstream ifs(input_shader_file, std::ios::binary | std::ios::ate);
     if (!ifs.is_open()) {
         std::cerr << "Input file does not exist or cannot be opened: " << input_shader_file << std::endl;
@@ -75,7 +75,7 @@ void generate_shader(const char* input_shader_file, const char* output_binary_fi
     }
     ifs.close();
 
-    // 2. 使用 std::ofstream 以二进制模式打开输出文件
+    // 2. Use std::ofstream to output to file as binary
     std::ofstream ofs(output_binary_file, std::ios::binary);
     if (!ofs.is_open()) {
         std::cerr << "Failed to open output file: " << output_binary_file << std::endl;
@@ -83,17 +83,17 @@ void generate_shader(const char* input_shader_file, const char* output_binary_fi
     }
 
     // Handle subpassLoad.
-    bool need_framebuffer_fetch = (shader_source.find("subpassLoad") != std::string::npos);
+    bool use_framebuffer_fetch = shader_source.find("subpassLoad") != std::string::npos;
 
     std::string original_entry_point = "main";
 
-    // 3. 使用 ShaderTranslator 进行编译和转换
+    // 3. Use ShaderTranslator to compile and convert
     auto translator = std::make_shared<ShaderTranslator>(binary_shader_stage_to_shader_stage(stage));
-    translator->compile_from_glsl(original_entry_point, shader_source, need_framebuffer_fetch);
+    translator->compile_from_glsl(original_entry_point, shader_source, use_framebuffer_fetch);
 
     auto prepared_shader = translator->get_shader();
 
-    // 辅助 lambda 函数，用于写入不同类型的 Shader 到同一个二进制文件中
+    // Use a lambda to write different ShaderCodes into the same binary
     auto write_to_bin = [&](ShaderSourceType type, uint8_t major, uint8_t minor) {
         auto shader_code = prepared_shader->get_shader_code(ShaderCodeKey{type, major, minor});
         if (!shader_code) {
@@ -114,11 +114,10 @@ void generate_shader(const char* input_shader_file, const char* output_binary_fi
         }
     };
 
-    // 4. 依次写入各个后端的 Shader 代码
     // SPIRV
     write_to_bin(ShaderSourceType::SPIRV, 1, 1);
 
-    // GLSL (使用转换后的代码，包含 Binding 元数据)
+    // GLSL (including binding infos)
     write_to_bin(ShaderSourceType::GLSL, 4, 5);
 
     // GLSLES
