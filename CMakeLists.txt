@@ -134,8 +134,6 @@ endif ()
 if (PATHFINDER_BUILD_DEMO)
     message(STATUS "[Pathfinder] Build demo")
 
-    file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
-
     # Demo common library.
     add_subdirectory(demo/common)
 

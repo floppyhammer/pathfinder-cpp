@@ -27,8 +27,8 @@ int main() {
     App app(device,
             queue,
             window->get_physical_size(),
-            Pathfinder::load_file_as_bytes("../assets/features.svg"),
-            Pathfinder::load_file_as_bytes("../assets/sea.png"));
+            Pathfinder::load_file_as_bytes("assets/features.svg"),
+            Pathfinder::load_file_as_bytes("assets/sea.png"));
 
     auto blit = std::make_shared<Pathfinder::Blit>(device, queue, swap_chain->get_surface_format());
 
