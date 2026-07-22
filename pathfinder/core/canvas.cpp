@@ -173,81 +173,65 @@ void Canvas::push_path(Outline &outline, PathOp path_op, FillRule fill_rule) {
 
     // Add shadow.
     if (current_state.shadow_color.is_visible()) {
+        // Shadow should be of pure color.
+        auto shadow_paint = Paint::from_color(ColorU(current_state.shadow_color));
+        auto shadow_paint_id = scene->push_paint(shadow_paint);
+
         // Copy outline.
         Outline shadow_outline = outline;
 
         // Set shadow offset.
         shadow_outline.transform(Transform2::from_translation(current_state.shadow_offset));
 
-        auto shadow_blur_info = push_shadow_blur_render_targets(*scene, current_state, shadow_outline.bounds);
+        if (current_state.shadow_blur > 0.f) {
+            auto shadow_blur_info = push_shadow_blur_render_targets(*scene, current_state, shadow_outline.bounds);
 
-        Vec2I scaled_size = (shadow_blur_info.bounds.size().to_f32() * SHADOW_DOWNSAMPLING_SCALE).to_i32();
-        float inv_scale_x = (float)shadow_blur_info.bounds.width() / (float)scaled_size.x;
-        float inv_scale_y = (float)shadow_blur_info.bounds.height() / (float)scaled_size.y;
+            Vec2I scaled_size = (shadow_blur_info.bounds.size().to_f32() * SHADOW_DOWNSAMPLING_SCALE).to_i32();
+            float inv_scale_x = (float)shadow_blur_info.bounds.width() / (float)scaled_size.x;
+            float inv_scale_y = (float)shadow_blur_info.bounds.height() / (float)scaled_size.y;
 
-        // 输入端：先平移到局部原点，再缩小。对应顺序：Scale * Translate
-        shadow_outline.transform(Transform2::from_scale(Vec2F(1.0f / inv_scale_x, 1.0f / inv_scale_y)) *
-                                 Transform2::from_translation(-shadow_blur_info.bounds.origin().to_f32()));
+            // 输入端：先平移到局部原点，再缩小。对应顺序：Scale * Translate
+            shadow_outline.transform(Transform2::from_scale(Vec2F(1.0f / inv_scale_x, 1.0f / inv_scale_y)) *
+                                     Transform2::from_translation(-shadow_blur_info.bounds.origin().to_f32()));
 
-        // Per spec the shadow must respect the alpha of the shadowed path, but otherwise have
-        // the color of the shadow paint.
-        auto shadow_paint = paint;
+            // Create a new draw path from the outline.
+            DrawPath shadow_path;
+            shadow_path.outline = shadow_outline;
+            shadow_path.paint = shadow_paint_id;
+            shadow_path.fill_rule = fill_rule;
+            shadow_path.blend_mode = blend_mode;
 
-        auto original_overlay = paint.get_overlay();
-        if (original_overlay) {
-            auto new_overlay = std::make_shared<PaintOverlay>(*original_overlay);
+            // This path goes to the blur viewport x.
+            scene->push_draw_path(shadow_path);
 
-            // CRITICAL FIX: Compensate for the shadow outline's offset.
-            // Shadow coordinates: P' = P + offset - blur_origin.
-            // We want to sample the original source at point P, i.e., Transform_orig * P.
-            // Setting Transform_shadow * P' = Transform_orig * P,
-            // we get: Transform_shadow = Transform_orig * Translation(blur_origin - offset).
-            if (original_overlay->contents.type == PaintContents::Type::Pattern) {
-                auto shadow_pattern = original_overlay->contents.pattern;
+            composite_shadow_blur_render_targets(*scene, shadow_blur_info);
+        } else {
+            // Create a new draw path from the outline.
+            DrawPath shadow_path;
+            shadow_path.outline = shadow_outline;
+            shadow_path.paint = shadow_paint_id;
+            shadow_path.fill_rule = fill_rule;
+            shadow_path.blend_mode = blend_mode;
 
-                auto compensation = Transform2::from_scale({SHADOW_DOWNSAMPLING_SCALE, SHADOW_DOWNSAMPLING_SCALE}) *
-                                    Transform2::from_translation(current_state.shadow_offset -
-                                                                 shadow_blur_info.bounds.origin().to_f32());
-                shadow_pattern.apply_transform(compensation);
-
-                shadow_paint = Paint::from_pattern(shadow_pattern);
-            }
-
-            new_overlay->composite_op = PaintCompositeOp::DestIn;
+            // Where blur is zero, we just draw a pure color copy.
+            scene->push_draw_path(shadow_path);
         }
+    }
 
-        auto shadow_base_alpha = shadow_paint.get_base_color().a_;
-        auto shadow_color = current_state.shadow_color.to_f32();
-        shadow_color.a_ = shadow_color.a_ * (float)shadow_base_alpha / 255.f;
-        shadow_paint.set_base_color(ColorU(shadow_color));
-
-        auto shadow_paint_id = scene->push_paint(shadow_paint);
-
-        // Create a new draw path from the outline.
+    if (paint.get_base_color().is_visible()) {
         DrawPath path;
-        path.outline = shadow_outline;
-        path.paint = shadow_paint_id;
+        path.outline = outline;
+        path.paint = paint_id;
+        path.clip_path = clip_path;
         path.fill_rule = fill_rule;
         path.blend_mode = blend_mode;
 
-        // This path goes to the blur viewport x.
         scene->push_draw_path(path);
-
-        composite_shadow_blur_render_targets(*scene, shadow_blur_info);
     }
-
-    DrawPath path;
-    path.outline = outline;
-    path.paint = paint_id;
-    path.clip_path = clip_path;
-    path.fill_rule = fill_rule;
-    path.blend_mode = blend_mode;
-
-    scene->push_draw_path(path);
 }
 
 void Canvas::fill_path(Path2d &path2d, FillRule fill_rule) {
-    if (current_state.fill_paint.is_visible()) {
+    if (current_state.fill_paint.is_visible() || current_state.shadow_color.is_visible()) {
         auto outline = path2d.into_outline();
         push_path(outline, PathOp::Fill, fill_rule);
     }
@@ -262,7 +246,7 @@ void Canvas::stroke_path(Path2d &path2d) {
     style.line_cap = line_cap();
 
     // No need to draw an invisible stroke.
-    if (current_state.stroke_paint.is_visible() && style.line_width > 0) {
+    if ((current_state.stroke_paint.is_visible() && style.line_width > 0) || current_state.shadow_color.is_visible()) {
         auto outline = path2d.into_outline();
 
         // Do dash before converting stroke to fill.
