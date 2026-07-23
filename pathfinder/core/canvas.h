@@ -29,6 +29,7 @@ struct BrushState {
     // Shadow.
     ColorU shadow_color;
     float shadow_blur = 0;
+    float shadow_strength = 1.0f;
     Vec2F shadow_offset;
 
     // Blend.
@@ -104,6 +105,10 @@ public:
     ColorU shadow_color() const;
 
     void set_shadow_color(const ColorU &new_shadow_color);
+
+    float shadow_strength() const;
+
+    void set_shadow_strength(float new_shadow_strength);
 
     Vec2F shadow_offset() const;
 

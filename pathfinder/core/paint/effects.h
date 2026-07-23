@@ -37,6 +37,8 @@ struct PatternFilter {
         BlurDirection direction{};
         /// Half the blur radius.
         float sigma = 0;
+        /// Intensity of the blur effect. 1.0 is default.
+        float strength = 1.0f;
     };
 
     union {

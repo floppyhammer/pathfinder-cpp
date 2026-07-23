@@ -20,6 +20,8 @@ struct ShadowBlurRenderTargetInfo {
     RenderTargetId id_y;
     /// Shadow color.
     ColorU color;
+    /// Shadow strength.
+    float strength = 1.0f;
     /// Shadow bounds.
     RectI bounds;
     /// Blur size.
@@ -56,6 +58,7 @@ ShadowBlurRenderTargetInfo push_shadow_blur_render_targets(Scene &scene,
     shadow_blur_info.bounds = bounds;
 
     shadow_blur_info.color = current_state.shadow_color;
+    shadow_blur_info.strength = current_state.shadow_strength;
 
     return shadow_blur_info;
 }
@@ -85,9 +88,15 @@ void composite_shadow_blur_render_targets(Scene &scene, const ShadowBlurRenderTa
     filter.type = PatternFilter::Type::Blur;
     filter.blur.sigma = info.sigma;
 
+    // Pass 1: Horizontal blur.
+    // We set strength to 1.0 here to avoid premature clamping in the intermediate render target.
+    filter.blur.strength = 1.0f;
     filter.blur.direction = BlurDirection::X;
     pattern_x.set_filter(filter);
 
+    // Pass 2: Vertical blur.
+    // Apply the actual strength here for the final compositing.
+    filter.blur.strength = info.strength;
     filter.blur.direction = BlurDirection::Y;
     pattern_y.set_filter(filter);
 
@@ -346,6 +355,14 @@ ColorU Canvas::shadow_color() const {
 
 void Canvas::set_shadow_color(const ColorU &new_shadow_color) {
     current_state.shadow_color = new_shadow_color;
+}
+
+float Canvas::shadow_strength() const {
+    return current_state.shadow_strength;
+}
+
+void Canvas::set_shadow_strength(float new_shadow_strength) {
+    current_state.shadow_strength = new_shadow_strength;
 }
 
 Vec2F Canvas::shadow_offset() const {

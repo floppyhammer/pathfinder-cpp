@@ -62,6 +62,7 @@ FilterParams compute_filter_params(const PaintFilter &filter,
 
                 filter_params.p0 = F32x4(src_offset, Vec2F(support, 0.0));
                 filter_params.p1 = F32x4(gauss_coeff_x, gauss_coeff_y, gauss_coeff_z, 0.0);
+                filter_params.p2 = F32x4(pattern.blur.strength, 0, 0, 0);
                 filter_params.ctrl = ctrl | (COMBINER_CTRL_FILTER_BLUR << COMBINER_CTRL_COLOR_FILTER_SHIFT);
             } else {
                 throw std::runtime_error("Text pattern filter is not supported yet!");

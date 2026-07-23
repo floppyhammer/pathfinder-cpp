@@ -332,11 +332,13 @@ vec4 filterBlur(vec2 colorTexCoord,
                 sampler2D colorTexture,
                 vec2 colorTextureSize,
                 vec4 filterParams0,
-                vec4 filterParams1) {
+                vec4 filterParams1,
+                vec4 filterParams2) {
     // Unpack.
     vec2 srcOffsetScale = filterParams0.xy / colorTextureSize;
     int support = int(filterParams0.z);
     vec3 gaussCoeff = filterParams1.xyz;
+    float strength = filterParams2.x;
 
     // Set up our incremental calculation.
     float gaussSum = gaussCoeff.x; // weight[0]
@@ -369,7 +371,7 @@ vec4 filterBlur(vec2 colorTexCoord,
     }
 
     // Finish.
-    return color / gaussSum;
+    return (color / gaussSum) * strength;
 }
 
 vec4 filterColorMatrix(vec2 colorTexCoord,
@@ -415,7 +417,8 @@ vec4 filterColor(
                           colorTexture,
                           colorTextureSize,
                           filterParams0,
-                          filterParams1);
+                          filterParams1,
+                          filterParams2);
         case COMBINER_CTRL_FILTER_TEXT:
         return filterText(colorTexCoord,
                           colorTexture,
