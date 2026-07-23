@@ -102,9 +102,15 @@ enum class ArcDirection {
     CCW,
 };
 
+/// Low-level shader flags that determine how the color texture (if any)
+/// is combined with the solid base color during the tile rendering pass.
 enum class ColorCombineMode {
+    /// No color texture is used; only the base_color is rendered.
     None,
+    /// The texture provides the color, which is then masked by the base color's alpha.
+    /// Note: Standard SrcIn will trigger premultiplication in the shader.
     SrcIn,
+    /// The base color provides the color, which is then masked by the texture's alpha.
     DestIn,
 };
 

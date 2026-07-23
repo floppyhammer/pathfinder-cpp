@@ -183,8 +183,12 @@ std::vector<TextureMetadataEntry> Palette::create_texture_metadata(const std::ve
         if (metadata.color_texture_metadata) {
             entry.color_transform = metadata.color_texture_metadata->transform;
 
-            // Changed from SrcIn to DestIn to get pure shadow.
-            entry.color_combine_mode = ColorCombineMode::SrcIn;
+            // Map PaintCompositeOp to ColorCombineMode.
+            if (metadata.color_texture_metadata->composite_op == PaintCompositeOp::SrcIn) {
+                entry.color_combine_mode = ColorCombineMode::SrcIn;
+            } else {
+                entry.color_combine_mode = ColorCombineMode::DestIn;
+            }
         } else {
             // No color combine mode if there's no need to mix with a color texture.
             entry.color_combine_mode = ColorCombineMode::None;

@@ -14,11 +14,14 @@
 
 namespace Pathfinder {
 
-/// How an overlay is to be composited over a base color.
+/// High-level description of how an overlay (gradient/pattern) is to be
+/// composited over a base color at the paint level.
 enum class PaintCompositeOp {
-    /// The source that overlaps the destination, replaces the destination.
+    /// The overlay color is masked by the destination's alpha.
+    /// Used when the overlay provides the color (e.g., an image pattern).
     SrcIn,
-    /// Destination which overlaps the source, replaces the source.
+    /// The base color is masked by the overlay's alpha.
+    /// Used when the base color provides the color and the overlay acts as a mask (e.g., shadows).
     DestIn,
 };
 

@@ -93,8 +93,11 @@ void composite_shadow_blur_render_targets(Scene &scene, const ShadowBlurRenderTa
 
     auto paint_x = Paint::from_pattern(pattern_x);
     paint_x.set_base_color(info.color);
+    paint_x.get_overlay()->composite_op = PaintCompositeOp::DestIn;
+
     auto paint_y = Paint::from_pattern(pattern_y);
     paint_y.set_base_color(info.color);
+    paint_y.get_overlay()->composite_op = PaintCompositeOp::DestIn;
 
     auto paint_id_x = scene.push_paint(paint_x);
     auto paint_id_y = scene.push_paint(paint_y);
