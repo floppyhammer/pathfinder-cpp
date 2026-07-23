@@ -18,6 +18,8 @@ App::App(const std::shared_ptr<Device> &device,
     // Set up a canvas.
     canvas_ = std::make_shared<Canvas>(canvas_size, device, queue, RenderMode::Hybrid);
 
+    canvas_->save_state();
+
     // Test: view box clipping.
     if (true) {
         Path2d path;
@@ -38,8 +40,8 @@ App::App(const std::shared_ptr<Device> &device,
     if (true) {
         canvas_->set_shadow_color(ColorU::white());
         canvas_->set_shadow_blur(16);
-        canvas_->set_shadow_offset({0, 0});
-        canvas_->set_shadow_strength(1.0);
+        canvas_->set_shadow_offset({8, 8});
+        canvas_->set_shadow_strength(2.0);
     }
 
     // Test: draw image.
@@ -73,6 +75,8 @@ App::App(const std::shared_ptr<Device> &device,
 
         canvas_->stroke_path(path);
     }
+
+    canvas_->restore_state();
 
     // Test: draw a target pattern.
     if (true) {

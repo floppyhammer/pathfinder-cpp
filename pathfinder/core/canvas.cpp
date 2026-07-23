@@ -26,6 +26,8 @@ struct ShadowBlurRenderTargetInfo {
     RectI bounds;
     /// Blur size.
     float sigma = 0;
+    /// Clip path.
+    std::shared_ptr<uint32_t> clip_path;
 };
 
 /**
@@ -59,6 +61,7 @@ ShadowBlurRenderTargetInfo push_shadow_blur_render_targets(Scene &scene,
 
     shadow_blur_info.color = current_state.shadow_color;
     shadow_blur_info.strength = current_state.shadow_strength;
+    shadow_blur_info.clip_path = current_state.clip_path;
 
     return shadow_blur_info;
 }
@@ -130,6 +133,7 @@ void composite_shadow_blur_render_targets(Scene &scene, const ShadowBlurRenderTa
         path_y.outline = path2d.into_outline();
     }
     path_y.paint = paint_id_y;
+    path_y.clip_path = info.clip_path;
 
     // Pop viewport x.
     scene.pop_render_target();
@@ -202,9 +206,11 @@ void Canvas::push_path(Outline &outline, PathOp path_op, FillRule fill_rule) {
             float inv_scale_x = (float)shadow_blur_info.bounds.width() / (float)scaled_size.x;
             float inv_scale_y = (float)shadow_blur_info.bounds.height() / (float)scaled_size.y;
 
-            // 输入端：先平移到局部原点，再缩小。对应顺序：Scale * Translate
-            shadow_outline.transform(Transform2::from_scale(Vec2F(1.0f / inv_scale_x, 1.0f / inv_scale_y)) *
-                                     Transform2::from_translation(-shadow_blur_info.bounds.origin().to_f32()));
+            // Inverse transform of the shadow render target.
+            auto shadow_rt_transform = Transform2::from_scale(Vec2F(1.0f / inv_scale_x, 1.0f / inv_scale_y)) *
+                                       Transform2::from_translation(-shadow_blur_info.bounds.origin().to_f32());
+
+            shadow_outline.transform(shadow_rt_transform);
 
             // Create a new draw path from the outline.
             DrawPath shadow_path;
@@ -212,6 +218,12 @@ void Canvas::push_path(Outline &outline, PathOp path_op, FillRule fill_rule) {
             shadow_path.paint = shadow_paint_id;
             shadow_path.fill_rule = fill_rule;
             shadow_path.blend_mode = blend_mode;
+
+            if (clip_path) {
+                ClipPath shadow_clip = scene->clip_paths[*clip_path];
+                shadow_clip.outline.transform(shadow_rt_transform);
+                shadow_path.clip_path = std::make_shared<uint32_t>(scene->push_clip_path(shadow_clip));
+            }
 
             // This path goes to the blur viewport x.
             scene->push_draw_path(shadow_path);
@@ -222,6 +234,12 @@ void Canvas::push_path(Outline &outline, PathOp path_op, FillRule fill_rule) {
             DrawPath shadow_path;
             shadow_path.outline = shadow_outline;
             shadow_path.paint = shadow_paint_id;
+
+            if (clip_path) {
+                ClipPath shadow_clip = scene->clip_paths[*clip_path];
+                shadow_path.clip_path = std::make_shared<uint32_t>(scene->push_clip_path(shadow_clip));
+            }
+
             shadow_path.fill_rule = fill_rule;
             shadow_path.blend_mode = blend_mode;
 
@@ -585,7 +603,8 @@ Pattern Canvas::create_pattern_from_canvas(Canvas &canvas, const Transform2 &tra
     auto render_target_desc = RenderTargetDesc{subscene_size, "Pattern Render Pass"};
     auto render_target_id = scene->push_render_target(render_target_desc);
 
-    scene->append_scene(*subscene, transform);
+    // Keep the subscene as is. The tiling process handles coordinate alignment.
+    scene->append_scene(*subscene, Transform2());
     scene->pop_render_target();
 
     auto pattern = Pattern::from_render_target(render_target_id, subscene_size);
