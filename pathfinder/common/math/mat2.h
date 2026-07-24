@@ -26,7 +26,7 @@ struct Mat2 {
     }
 
     static Mat2 from_rotation(float theta) {
-        return Mat2::from_rotation_vector(UnitVector::from_angle(theta));
+        return from_rotation_vector(UnitVector::from_angle(theta));
     }
 
     static Mat2 from_rotation_vector(const UnitVector &vector) {

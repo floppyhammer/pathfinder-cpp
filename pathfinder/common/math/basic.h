@@ -45,7 +45,6 @@ T clamp(T value, T min, T max) {
 }
 
 inline float lerp(float current, float target, float t) {
-    assert(t >= 0 && t <= 1);
     t = clamp(t, 0.0f, 1.0f);
     return current + (target - current) * t;
 }
