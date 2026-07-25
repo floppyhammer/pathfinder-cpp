@@ -178,6 +178,12 @@ Outline Path2d::into_outline() {
     return outline;
 }
 
+void Path2d::transform(const Transform2 &transform) {
+    // Make sure to flush current contour into outline before applying transform.
+    flush_current_contour();
+    outline.transform(transform);
+}
+
 void Path2d::flush_current_contour() {
     if (!current_contour.is_empty()) {
         outline.push_contour(current_contour);

@@ -37,6 +37,8 @@ public:
     /// Returns the outline.
     Outline into_outline();
 
+    void transform(const Transform2 &transform);
+
 private:
     Contour current_contour;
 
