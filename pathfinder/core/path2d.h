@@ -6,6 +6,12 @@
 
 namespace Pathfinder {
 
+/**
+ * @brief Represents a 2D path consisting of multiple contours.
+ * @note This structure does NOT strictly reflect the original input data as it automatically
+ * performs point deduplication and simplifies degenerate segments during construction for
+ * numerical stability.
+ */
 class Path2d {
 public:
     // Basic geometries.

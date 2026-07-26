@@ -6,6 +6,9 @@
 
 namespace Pathfinder {
 
+const float PATH_MIN_DIST = 0.05f;
+const float PATH_MIN_DIST_SQ = PATH_MIN_DIST * PATH_MIN_DIST;
+
 void Path2d::close_path() {
     current_contour.close();
 }
@@ -16,7 +19,13 @@ void Path2d::move_to(float x, float y) {
 }
 
 void Path2d::line_to(float x, float y) {
-    current_contour.push_endpoint({x, y});
+    Vec2F to = {x, y};
+    if (!current_contour.points.empty()) {
+        if ((to - current_contour.points.back()).square_length() < PATH_MIN_DIST_SQ) {
+            return;
+        }
+    }
+    current_contour.push_endpoint(to);
 }
 
 void Path2d::quadratic_to(float cx, float cy, float x, float y) {
@@ -25,8 +34,8 @@ void Path2d::quadratic_to(float cx, float cy, float x, float y) {
     Vec2F point1 = {x, y};
 
     // Degenerates into a line.
-    if (point0.approx_eq(ctrl, FLOAT_EPSILON) || point1.approx_eq(ctrl, FLOAT_EPSILON)) {
-        current_contour.push_endpoint(point1);
+    if (point0.approx_eq(ctrl, PATH_MIN_DIST) || point1.approx_eq(ctrl, PATH_MIN_DIST)) {
+        line_to(x, y);
         return;
     }
 
@@ -40,8 +49,8 @@ void Path2d::cubic_to(float cx0, float cy0, float cx1, float cy1, float x, float
     Vec2F point1 = {x, y};
 
     // Degenerates into a line.
-    if (ctrl0.approx_eq(ctrl1, FLOAT_EPSILON) && ctrl1.approx_eq(point1, FLOAT_EPSILON)) {
-        current_contour.push_endpoint(point1);
+    if (ctrl0.approx_eq(ctrl1, PATH_MIN_DIST) && ctrl1.approx_eq(point1, PATH_MIN_DIST)) {
+        line_to(x, y);
         return;
     }
 
@@ -194,19 +203,17 @@ void Path2d::flush_current_contour() {
 }
 
 std::string Path2d::to_svg_path_data() {
-    flush_current_contour();
-
     std::ostringstream oss;
 
-    for (const auto &contour : outline.contours) {
+    auto append_contour = [&](const Contour &contour) {
         if (contour.is_empty()) {
-            continue;
+            return;
         }
 
         auto segments = contour.get_segments(false);
 
         if (segments.empty()) {
-            continue;
+            return;
         }
 
         // Start point.
@@ -218,8 +225,8 @@ std::string Path2d::to_svg_path_data() {
                     oss << "L " << segment.baseline.to().x << " " << segment.baseline.to().y << " ";
                     break;
                 case SegmentKind::Quadratic:
-                    oss << "Q " << segment.ctrl.from().x << " " << segment.ctrl.from().y << " " << segment.baseline.to().x
-                        << " " << segment.baseline.to().y << " ";
+                    oss << "Q " << segment.ctrl.from().x << " " << segment.ctrl.from().y << " "
+                        << segment.baseline.to().x << " " << segment.baseline.to().y << " ";
                     break;
                 case SegmentKind::Cubic:
                     oss << "C " << segment.ctrl.from().x << " " << segment.ctrl.from().y << " " << segment.ctrl.to().x
@@ -234,17 +241,26 @@ std::string Path2d::to_svg_path_data() {
         if (contour.closed) {
             oss << "Z ";
         }
+    };
+
+    // Append finished contours.
+    for (const auto &contour : outline.contours) {
+        append_contour(contour);
     }
+
+    // Append active contour without flushing.
+    append_contour(current_contour);
 
     return oss.str();
 }
 
 std::string Path2d::to_svg_string() {
-    flush_current_contour();
-
     auto path_data = to_svg_path_data();
 
     auto b = outline.bounds;
+    if (!current_contour.is_empty()) {
+        b = b.union_rect(current_contour.bounds);
+    }
 
     if (!b.is_valid()) {
         b = RectF(0, 0, 0, 0);
