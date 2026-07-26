@@ -39,6 +39,18 @@ public:
 
     void transform(const Transform2 &transform);
 
+    /**
+     * @brief Get SVG path data string (the 'd' attribute).
+     * @return SVG path data.
+     */
+    std::string to_svg_path_data();
+
+    /**
+     * @brief Get a full SVG string containing this path.
+     * @return Full SVG string.
+     */
+    std::string to_svg_string();
+
 private:
     Contour current_contour;
 

@@ -1,5 +1,7 @@
 #include "path2d.h"
 
+#include <sstream>
+
 #include "../common/math/basic.h"
 
 namespace Pathfinder {
@@ -189,6 +191,73 @@ void Path2d::flush_current_contour() {
         outline.push_contour(current_contour);
         current_contour = Contour();
     }
+}
+
+std::string Path2d::to_svg_path_data() {
+    flush_current_contour();
+
+    std::ostringstream oss;
+
+    for (const auto &contour : outline.contours) {
+        if (contour.is_empty()) {
+            continue;
+        }
+
+        auto segments = contour.get_segments(false);
+
+        if (segments.empty()) {
+            continue;
+        }
+
+        // Start point.
+        oss << "M " << segments[0].baseline.from().x << " " << segments[0].baseline.from().y << " ";
+
+        for (const auto &segment : segments) {
+            switch (segment.kind) {
+                case SegmentKind::Line:
+                    oss << "L " << segment.baseline.to().x << " " << segment.baseline.to().y << " ";
+                    break;
+                case SegmentKind::Quadratic:
+                    oss << "Q " << segment.ctrl.from().x << " " << segment.ctrl.from().y << " " << segment.baseline.to().x
+                        << " " << segment.baseline.to().y << " ";
+                    break;
+                case SegmentKind::Cubic:
+                    oss << "C " << segment.ctrl.from().x << " " << segment.ctrl.from().y << " " << segment.ctrl.to().x
+                        << " " << segment.ctrl.to().y << " " << segment.baseline.to().x << " "
+                        << segment.baseline.to().y << " ";
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if (contour.closed) {
+            oss << "Z ";
+        }
+    }
+
+    return oss.str();
+}
+
+std::string Path2d::to_svg_string() {
+    flush_current_contour();
+
+    auto path_data = to_svg_path_data();
+
+    auto b = outline.bounds;
+
+    if (!b.is_valid()) {
+        b = RectF(0, 0, 0, 0);
+    }
+
+    std::ostringstream oss;
+
+    oss << "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"" << b.min_x() << " " << b.min_y() << " " << b.width()
+        << " " << b.height() << "\">";
+    oss << "<path d=\"" << path_data << "\" fill=\"black\" />";
+    oss << "</svg>";
+
+    return oss.str();
 }
 
 } // namespace Pathfinder
