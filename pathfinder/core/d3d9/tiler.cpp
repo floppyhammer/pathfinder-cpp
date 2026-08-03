@@ -278,31 +278,38 @@ void process_line_segment(LineSegmentF line_segment, SceneBuilderD3D9 &scene_bui
     }
 }
 
-/// Recursive call.
+/// Recursive segment flattening and tile processing.
+/// Uses the native call stack (zero heap allocation) — recursion depth is bounded by
+/// the flattening tolerance (typically < 16 levels for FLATTENING_TOLERANCE = 1.0).
 void process_segment(Segment &segment, SceneBuilderD3D9 &scene_builder, ObjectBuilder &object_builder) {
-    // TODO(pcwalton): Stop degree elevating.
-    // 1. If the segment is a quadratic curve, convert it into a cubic one, then process it.
-    if (segment.is_quadratic()) {
-        auto cubic = segment.to_cubic();
-        process_segment(cubic, scene_builder, object_builder);
-
-        // Remember to return to avoid running code below.
-        return;
-    }
-
-    // 2. If the segment is a line or a cubic curve that is flat enough, go to next step.
-    if (segment.is_line() || (segment.is_cubic() && segment.is_flat(FLATTENING_TOLERANCE))) {
-        // (Next step) Process the segment as a line segment.
+    // 1. Line: process directly.
+    if (segment.is_line()) {
         process_line_segment(segment.baseline, scene_builder, object_builder);
-
-        // Remember to return to avoid running code below.
         return;
     }
 
-    // 3. If the segment is a cubic curve, split it and process the split segments.
+    // 2. Quadratic: handle directly without degree-elevating to cubic.
+    if (segment.is_quadratic()) {
+        if (segment.is_flat_quadratic(FLATTENING_TOLERANCE)) {
+            process_line_segment(segment.baseline, scene_builder, object_builder);
+            return;
+        }
+
+        Segment prev, next;
+        segment.split_quadratic(0.5f, prev, next);
+        process_segment(prev, scene_builder, object_builder);
+        process_segment(next, scene_builder, object_builder);
+        return;
+    }
+
+    // 3. Cubic: flatten check, then split if needed.
+    if (segment.is_flat(FLATTENING_TOLERANCE)) {
+        process_line_segment(segment.baseline, scene_builder, object_builder);
+        return;
+    }
+
     Segment prev, next;
     segment.split(0.5f, prev, next);
-
     process_segment(prev, scene_builder, object_builder);
     process_segment(next, scene_builder, object_builder);
 }

@@ -52,6 +52,10 @@ public:
      */
     bool is_flat(float tol) const;
 
+    /// Check if a quadratic segment is flat enough to be treated as a line segment.
+    /// Equivalent to is_flat() after degree elevation, but avoids the conversion.
+    bool is_flat_quadratic(float tol) const;
+
     /// Splits this segment.
     void split(float t, Segment &segment0, Segment &segment1) const;
 
@@ -59,6 +63,10 @@ public:
     /// which will be clamped to the range 0.0 to 1.0.
     /// This uses de Casteljau subdivision.
     void split_cubic(float t, Segment &segment0, Segment &segment1) const;
+
+    /// Splits this quadratic Bézier curve into two at the given parametric t value.
+    /// Uses de Casteljau subdivision (3 lerps — simpler than cubic's 6 lerps).
+    void split_quadratic(float t, Segment &segment0, Segment &segment1) const;
 
     LineSegmentF as_line_segment() const;
 

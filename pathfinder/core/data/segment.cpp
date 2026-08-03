@@ -17,6 +17,22 @@ bool Segment::is_flat(float tol) const {
     return uv.get<0>() + uv.get<1>() <= tol;
 }
 
+bool Segment::is_flat_quadratic(float tol) const {
+    // For a quadratic P0, P1, P2, degree-elevating to cubic gives:
+    //   C1 = (P0 + 2*P1) / 3,  C2 = (2*P1 + P2) / 3
+    // Substituting into the cubic is_flat formula:
+    //   3*C1 - 2*P0 - P2 = 2*(P1 - mid)
+    //   3*C2 - P0 - 2*P2 = 2*(P1 - mid)   (same!)
+    // So cubic is_flat checks: 4 * |P1 - mid|^2 <= tol.
+    // We check the equivalent: |P1 - mid|^2 <= tol / 4.
+    auto p0 = baseline.from();
+    auto p1 = ctrl.from(); // quadratic control point (ctrl.to() is ignored)
+    auto p2 = baseline.to();
+    auto mid = (p0 + p2) * 0.5f;
+    auto dev = p1 - mid;
+    return dev.x * dev.x + dev.y * dev.y <= tol * 0.25f;
+}
+
 LineSegmentF Segment::as_line_segment() const {
     return baseline;
 }
@@ -81,14 +97,42 @@ void Segment::split_cubic(float t, Segment& segment0, Segment& segment1) const {
     segment1.kind = SegmentKind::Cubic;
 }
 
+void Segment::split_quadratic(float t, Segment& segment0, Segment& segment1) const {
+    // Quadratic de Casteljau: P0, P1, P2
+    //   A = lerp(P0, P1, t)
+    //   B = lerp(P1, P2, t)
+    //   C = lerp(A, B, t)  ← point on curve at t
+    // Left:  P0, A, C
+    // Right: C, B, P2
+    auto p0 = baseline.from();
+    auto p1 = ctrl.from(); // quadratic control point
+    auto p2 = baseline.to();
+
+    auto a = p0 + (p1 - p0) * t;
+    auto b = p1 + (p2 - p1) * t;
+    auto c = a + (b - a) * t;
+
+    segment0.baseline = LineSegmentF(p0, c);
+    segment0.ctrl = LineSegmentF(a, a); // ctrl.to() ignored for quadratics
+    segment0.kind = SegmentKind::Quadratic;
+    segment0.flags = flags;
+
+    segment1.baseline = LineSegmentF(c, p2);
+    segment1.ctrl = LineSegmentF(b, b);
+    segment1.kind = SegmentKind::Quadratic;
+    segment1.flags = flags;
+}
+
 void Segment::split(float t, Segment& segment0, Segment& segment1) const {
     // Split line.
     if (is_line()) {
         as_line_segment().split(t, segment0.baseline, segment1.baseline);
         segment0.kind = SegmentKind::Line;
         segment1.kind = SegmentKind::Line;
-    } else { // Split cubic. Convert quadratic to cubic first.
-        to_cubic().split_cubic(t, segment0, segment1);
+    } else if (is_quadratic()) {
+        split_quadratic(t, segment0, segment1);
+    } else { // Split cubic.
+        split_cubic(t, segment0, segment1);
     }
 }
 
