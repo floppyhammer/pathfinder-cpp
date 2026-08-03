@@ -27,13 +27,13 @@ struct StrokeStyle {
 
 /// Contour stroke to fill.
 struct ContourStrokeToFill {
-    Contour input;
+    const Contour *input = nullptr;
     Contour output;
     float radius;
     LineJoin join;
     float join_miter_limit = 10; // Only used when line join is miter.
 
-    ContourStrokeToFill(Contour _input, float _radius, LineJoin _join, float _join_miter_limit);
+    ContourStrokeToFill(const Contour *_input, float _radius, LineJoin _join, float _join_miter_limit);
 
     /// Scale the input contour up, forming an outer contour.
     void offset_forward();
@@ -56,7 +56,7 @@ struct OutlineStrokeToFill {
     /// Returns the resulting stroked outline. This should be called after `offset()`.
     Outline into_outline() const;
 
-    void push_stroked_contour(std::vector<Contour> &new_contours, ContourStrokeToFill stroker, bool closed) const;
+    void push_stroked_contour(std::vector<Contour> &new_contours, ContourStrokeToFill &stroker, bool closed) const;
 
     void add_cap(Contour &contour) const;
 };

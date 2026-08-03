@@ -10,15 +10,22 @@ namespace Pathfinder {
 
 // Tweak these constants to improve stroking performance.
 
+// Tolerance for stroke offset verification in scene units. Controls how closely the
+// approximated offset curve must match the ideal offset. Smaller values are more
+// precise but require more subdivision (recursive splitting).
 constexpr float STROKE_TOL = 0.1f;
 
-constexpr uint32_t SAMPLE_COUNT = 16;
+// Number of sample points per curve used to verify offset accuracy. The verification
+// function samples SAMPLE_COUNT + 1 points along each curve; fewer samples means
+// faster verification but may accept slightly less accurate approximations, which
+// the recursive subdivision will correct for on the next level if needed.
+constexpr uint32_t SAMPLE_COUNT = 8;
 
-ContourStrokeToFill::ContourStrokeToFill(Contour _input, float _radius, LineJoin _join, float _join_miter_limit)
-    : input(std::move(_input)), radius(_radius), join(_join), join_miter_limit(_join_miter_limit) {}
+ContourStrokeToFill::ContourStrokeToFill(const Contour *_input, float _radius, LineJoin _join, float _join_miter_limit)
+    : input(_input), radius(_radius), join(_join), join_miter_limit(_join_miter_limit) {}
 
 void ContourStrokeToFill::offset_forward() {
-    auto segments_iter = SegmentsIter(input.points, input.flags, input.closed);
+    auto segments_iter = SegmentsIter(input->points, input->flags, input->closed);
 
     int32_t segment_index = -1;
 
@@ -42,17 +49,72 @@ void ContourStrokeToFill::offset_forward() {
 }
 
 void ContourStrokeToFill::offset_backward() {
-    auto segments = input.get_segments();
+    const auto &pts = input->points;
+    const auto &flgs = input->flags;
+    const int n = (int)pts.size();
 
-    std::reverse(segments.begin(), segments.end());
+    int tail = n - 1;
+    int32_t segment_index = -1;
 
-    for (int segment_index = 0; segment_index < segments.size(); segment_index++) {
-        auto segment = segments[segment_index].reversed();
+    // Handle closing segment first for closed contours.
+    // In the original implementation, get_segments() returns segments in forward order
+    // [seg1, seg2, ..., closing], then std::reverse makes it [closing, ..., seg2, seg1],
+    // and each segment is reversed. The closing segment (reversed) becomes the first segment
+    // and gets a Bevel join.
+    if (input->closed && n > 1) {
+        if (!pts.front().approx_eq(pts.back(), FLOAT_EPSILON)) {
+            Segment closing;
+            closing.baseline.set_from(pts.front());
+            closing.baseline.set_to(pts.back());
+            closing.kind = SegmentKind::Line;
 
-        // FIXME(pcwalton): We negate the radius here so that round end caps can be drawn clockwise.
-        // Of course, we should just implement anticlockwise arcs to begin with...
+            segment_index++;
+            LineJoin line_join = segment_index == 0 ? LineJoin::Bevel : join;
+            closing.offset(-radius, line_join, join_miter_limit, output);
+        }
+    }
+
+    // Iterate backward through regular segments without allocating a intermediate vector.
+    while (tail >= 0) {
+        if (tail >= (int)flgs.size() || flgs[tail] != PointFlag::ON_CURVE_POINT) {
+            break;
+        }
+
+        Segment segment;
+
+        if (tail >= 3 && flgs[tail - 1] == PointFlag::CONTROL_POINT_1 &&
+            flgs[tail - 2] == PointFlag::CONTROL_POINT_0 &&
+            flgs[tail - 3] == PointFlag::ON_CURVE_POINT) {
+            // Cubic: points[tail-3] -> points[tail-2] -> points[tail-1] -> points[tail]
+            // Reversed: points[tail] -> points[tail-1] -> points[tail-2] -> points[tail-3]
+            segment.baseline.set_from(pts[tail]);
+            segment.ctrl.set_from(pts[tail - 1]);
+            segment.ctrl.set_to(pts[tail - 2]);
+            segment.baseline.set_to(pts[tail - 3]);
+            segment.kind = SegmentKind::Cubic;
+            tail -= 3;
+        } else if (tail >= 2 && flgs[tail - 1] == PointFlag::CONTROL_POINT_0 &&
+                   flgs[tail - 2] == PointFlag::ON_CURVE_POINT) {
+            // Quadratic: points[tail-2] -> points[tail-1] -> points[tail]
+            // Reversed: points[tail] -> points[tail-1] -> points[tail-2]
+            segment.baseline.set_from(pts[tail]);
+            segment.ctrl.set_from(pts[tail - 1]);
+            segment.baseline.set_to(pts[tail - 2]);
+            segment.kind = SegmentKind::Quadratic;
+            tail -= 2;
+        } else if (tail >= 1 && flgs[tail - 1] == PointFlag::ON_CURVE_POINT) {
+            // Line: points[tail-1] -> points[tail]
+            // Reversed: points[tail] -> points[tail-1]
+            segment.baseline.set_from(pts[tail]);
+            segment.baseline.set_to(pts[tail - 1]);
+            segment.kind = SegmentKind::Line;
+            tail -= 1;
+        } else {
+            break;
+        }
+
+        segment_index++;
         LineJoin line_join = segment_index == 0 ? LineJoin::Bevel : join;
-
         segment.offset(-radius, line_join, join_miter_limit, output);
     }
 }
@@ -68,7 +130,7 @@ void OutlineStrokeToFill::offset() {
         auto closed = contour.closed;
 
         // Note that we need to pass radius instead of width.
-        auto stroker = ContourStrokeToFill(contour, style.line_width * 0.5f, style.line_join, style.miter_limit);
+        auto stroker = ContourStrokeToFill(&contour, style.line_width * 0.5f, style.line_join, style.miter_limit);
 
         // Scale the contour up, forming an outer contour.
         stroker.offset_forward();
@@ -77,7 +139,7 @@ void OutlineStrokeToFill::offset() {
         // to get the stroke fill.
         if (closed) {
             push_stroked_contour(new_contours, stroker, true);
-            stroker = ContourStrokeToFill(contour, style.line_width * 0.5f, style.line_join, style.miter_limit);
+            stroker = ContourStrokeToFill(&contour, style.line_width * 0.5f, style.line_join, style.miter_limit);
         }
         // If not closed (hard case), we need to connect the outer and inner contours into a single contour with caps.
         else {
@@ -122,7 +184,7 @@ Outline OutlineStrokeToFill::into_outline() const {
 }
 
 void OutlineStrokeToFill::push_stroked_contour(std::vector<Contour> &new_contours,
-                                               ContourStrokeToFill stroker,
+                                               ContourStrokeToFill &stroker,
                                                bool closed) const {
     // Add join if necessary.
     if (closed && stroker.output.might_need_join(style.line_join)) {
@@ -132,7 +194,7 @@ void OutlineStrokeToFill::push_stroked_contour(std::vector<Contour> &new_contour
         auto final_segment = LineSegmentF(p1, p0);
         stroker.output.add_join(style.line_width * 0.5f,
                                 style.line_join,
-                                stroker.input.points[0],
+                                stroker.input->points[0],
                                 final_segment,
                                 style.miter_limit);
     }
@@ -453,6 +515,13 @@ void Segment::offset(float distance,
     // 16 levels of recursion means 2^16 = 65536 subdivisions, which is enough for any reasonable path.
     if (baseline.square_length() < STROKE_TOL * STROKE_TOL || recursion_depth >= 16) {
         add_to_contour(distance, join, join_point, join_miter_limit, contour);
+        return;
+    }
+
+    // Line segments don't need tolerance checking — offset_once is exact for lines.
+    if (is_line()) {
+        auto candidate = offset_once(distance);
+        candidate.add_to_contour(distance, join, join_point, join_miter_limit, contour);
         return;
     }
 
