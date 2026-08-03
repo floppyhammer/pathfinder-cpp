@@ -47,7 +47,10 @@ target_compile_features(pathfinder PUBLIC cxx_std_14)
 if (EMSCRIPTEN)
     # Do nothing
 elseif (APPLE)
-
+    target_compile_definitions(pathfinder PUBLIC PATHFINDER_ENABLE_SIMD)
+    if (CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|i386")
+        target_compile_options(pathfinder PUBLIC -msse4.1)
+    endif ()
 elseif (LINUX)
     target_compile_definitions(pathfinder PUBLIC PATHFINDER_ENABLE_SIMD)
     if (NOT CMAKE_SYSTEM_PROCESSOR MATCHES "arm|aarch64")
