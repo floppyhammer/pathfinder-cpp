@@ -338,6 +338,11 @@ void Tiler::generate_tiles() {
 void Tiler::generate_fills() {
     // Traverse paths in the shape.
     for (const auto &contour : outline.contours) {
+        // Skip empty contours to avoid dereferencing a null pointer in SegmentsIter.
+        if (contour.points.empty() || contour.flags.empty()) {
+            continue;
+        }
+
         auto segments_iter = SegmentsIter(contour.points, contour.flags, contour.closed);
 
         // Traverse curve/line segments.

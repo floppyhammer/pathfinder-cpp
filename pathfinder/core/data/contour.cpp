@@ -113,7 +113,8 @@ Segment SegmentsIter::get_next(bool force_closed) {
     auto points_count = points.size();
 
     // The first point in a segment must be an on-curve point instead of a control point.
-    if (flags[head] != PointFlag::ON_CURVE_POINT || head >= points.size()) {
+    // Check bounds before accessing flags[] to avoid dereferencing a null pointer on an empty vector.
+    if (head >= points_count || head >= flags.size() || flags[head] != PointFlag::ON_CURVE_POINT) {
         return segment;
     }
 
