@@ -7,7 +7,7 @@ Segment::Segment(const LineSegmentF& _baseline, const LineSegmentF& _ctrl) : bas
 Segment::Segment(const LineSegmentF& _baseline, const LineSegmentF& _ctrl, SegmentKind _kind, SegmentFlags _flags)
     : baseline(_baseline), ctrl(_ctrl), kind(_kind), flags(_flags) {}
 
-bool Segment::is_flat(float tol) const {
+bool Segment::is_flat_cubic(float tol) const {
     F32x4 uv = F32x4::splat(3.0) * ctrl.value - baseline.value - baseline.value - baseline.value.zwxy();
 
     uv = uv * uv;
@@ -20,10 +20,10 @@ bool Segment::is_flat(float tol) const {
 bool Segment::is_flat_quadratic(float tol) const {
     // For a quadratic P0, P1, P2, degree-elevating to cubic gives:
     //   C1 = (P0 + 2*P1) / 3,  C2 = (2*P1 + P2) / 3
-    // Substituting into the cubic is_flat formula:
+    // Substituting into the cubic is_flat_cubic formula:
     //   3*C1 - 2*P0 - P2 = 2*(P1 - mid)
     //   3*C2 - P0 - 2*P2 = 2*(P1 - mid)   (same!)
-    // So cubic is_flat checks: 4 * |P1 - mid|^2 <= tol.
+    // So cubic is_flat_cubic checks: 4 * |P1 - mid|^2 <= tol.
     // We check the equivalent: |P1 - mid|^2 <= tol / 4.
     auto p0 = baseline.from();
     auto p1 = ctrl.from(); // quadratic control point (ctrl.to() is ignored)

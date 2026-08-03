@@ -303,7 +303,7 @@ void process_segment(Segment &segment, SceneBuilderD3D9 &scene_builder, ObjectBu
     }
 
     // 3. Cubic: flatten check, then split if needed.
-    if (segment.is_flat(FLATTENING_TOLERANCE)) {
+    if (segment.is_flat_cubic(FLATTENING_TOLERANCE)) {
         process_line_segment(segment.baseline, scene_builder, object_builder);
         return;
     }

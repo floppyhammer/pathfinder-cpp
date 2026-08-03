@@ -50,10 +50,10 @@ public:
      * @param tol Calculation tolerance.
      * @return If it is true.
      */
-    bool is_flat(float tol) const;
+    bool is_flat_cubic(float tol) const;
 
     /// Check if a quadratic segment is flat enough to be treated as a line segment.
-    /// Equivalent to is_flat() after degree elevation, but avoids the conversion.
+    /// Equivalent to is_flat_cubic() after degree elevation, but avoids the conversion.
     bool is_flat_quadratic(float tol) const;
 
     /// Splits this segment.
@@ -70,6 +70,11 @@ public:
 
     LineSegmentF as_line_segment() const;
 
+    /// Degree-elevate this segment to a cubic Bézier curve.
+    /// - If already cubic, returns a copy of this segment.
+    /// - If quadratic (P0, P1, P2), produces the equivalent cubic with
+    ///   control points C1 = (P0 + 2*P1) / 3 and C2 = (2*P1 + P2) / 3.
+    /// - If a line, returns a degenerate cubic.
     Segment to_cubic() const;
 
     Vec2F sample(float t) const;
