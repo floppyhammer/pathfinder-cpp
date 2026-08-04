@@ -44,6 +44,10 @@ add_subdirectory(pathfinder)
 
 target_compile_features(pathfinder PUBLIC cxx_std_14)
 
+if (MSVC)
+    target_compile_options(pathfinder PUBLIC "/utf-8")
+endif ()
+
 if (EMSCRIPTEN)
     # Do nothing
 elseif (APPLE)
