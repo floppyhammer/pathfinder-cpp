@@ -115,7 +115,7 @@ private:
 
 struct TexturePageIter {
     TextureAllocator* allocator{};
-    size_t next_index{};
+    uint32_t next_index{};
 
     std::shared_ptr<uint32_t> next();
 };
