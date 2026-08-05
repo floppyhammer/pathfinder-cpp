@@ -282,11 +282,21 @@ PaintLocationsInfo Palette::assign_paint_locations(const std::shared_ptr<PaintTe
 
                     auto index = render_target_id.render_target;
 
+                    if (index >= render_target_metadata.size()) {
+                        Logger::warn("Render target index out of bounds, skipping paint location.");
+                        continue;
+                    }
+
                     location = render_target_metadata[index];
                 }
                 // Image
                 else if (pattern.source.type == PatternSource::Type::Image) {
                     auto image = pattern.source.image;
+
+                    if (!image) {
+                        Logger::warn("Pattern image is null, skipping paint location.");
+                        continue;
+                    }
 
                     // TODO(pcwalton): We should be able to use tile cleverness to
                     // repeat inside the atlas in some cases.
@@ -342,8 +352,13 @@ PaintLocationsInfo Palette::assign_paint_locations(const std::shared_ptr<PaintTe
 
                 // Texture
                 if (pattern.source.type == PatternSource::Type::Texture) {
+                    auto locked_texture = pattern.source.texture.lock();
+                    if (!locked_texture) {
+                        Logger::warn("Pattern texture has been destroyed, skipping paint location.");
+                        continue;
+                    }
                     color_texture_metadata->raw_texture = pattern.source.texture;
-                    location.rect = RectI({}, pattern.source.texture.lock()->get_size());
+                    location.rect = RectI({}, locked_texture->get_size());
                     // No page info for raw textures.
                 } else {
                     color_texture_metadata->page_scale = allocator.page_scale(location.page);
