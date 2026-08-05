@@ -11,12 +11,19 @@ void QueueMtl::submit(const std::shared_ptr<CommandEncoder>& encoder, const std:
         // Wait for a frame to become available.
         dispatch_semaphore_wait(in_flight_semaphore_, DISPATCH_TIME_FOREVER);
 
-        encoder_mtl->prepare();
+        bool prepared = encoder_mtl->prepare();
 
         auto mtl_cmd_buffer = encoder_mtl->get_handle();
 
-        // We must create a local shared_ptr copy to ensure the block captures the object by value,
-        // rather than capturing the reference to the parameter which will go out of scope.
+        // If for any reason we couldn't create a command buffer, signal the semaphore back
+        // to avoid a permanent deadlock of the rendering thread.
+        if (mtl_cmd_buffer == nil || !prepared) {
+            dispatch_semaphore_signal(in_flight_semaphore_);
+            Logger::error("Metal: Failed to create or prepare command buffer! Deadlock averted.");
+            return;
+        }
+
+        // We must create a local shared_ptr copy to ensure the block captures the object by value.
         auto encoder_captured = encoder;
         auto semaphore_captured = in_flight_semaphore_;
 
