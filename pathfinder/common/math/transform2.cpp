@@ -21,6 +21,10 @@ Transform2 Transform2::rotate(float theta) const {
     return from_rotation(theta) * *this;
 }
 
+Transform2 Transform2::scale(const Vec2F &_scale) const {
+    return from_scale(_scale) * *this;
+}
+
 bool Transform2::is_identity() const {
     return matrix == Mat2::from_scale({1, 1}) && vector == Vec2F();
 }

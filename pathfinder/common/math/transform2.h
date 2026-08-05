@@ -53,6 +53,13 @@ public:
      */
     Transform2 rotate(float theta) const;
 
+    /**
+     * Left-multiply a scale matrix.
+     * @param _scale Scale
+     * @return New transform
+     */
+    Transform2 scale(const Vec2F &_scale) const;
+
     Vec2F get_position() const;
 
     float m11() const {
