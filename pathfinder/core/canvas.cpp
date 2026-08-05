@@ -571,11 +571,13 @@ void Canvas::set_scene(const std::shared_ptr<Scene> &new_scene) {
 
     scene = new_scene;
 
-    // Clear all states.
-    // Otherwise, if a clip path is set for a state, loading and appending a scene will cause crash.
-    // Because the clip path doesn't exist in the new scene but only in the previous scene.
-    current_state = {};
-    saved_states.clear();
+    // Only clear clip paths, not the entire canvas state.
+    // Clip paths are scene-dependent and could cause crashes if used with a different scene.
+    // Other state (transform, paint, line width, etc.) is safe to preserve across scene switches.
+    current_state.clip_path = nullptr;
+    for (auto &state : saved_states) {
+        state.clip_path = nullptr;
+    }
 }
 
 std::shared_ptr<Scene> Canvas::take_scene() {
