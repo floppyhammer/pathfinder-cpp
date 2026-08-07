@@ -104,6 +104,8 @@ Paint Palette::get_paint(uint32_t paint_id) const {
 }
 
 RenderTargetId Palette::push_render_target(const RenderTargetDesc &render_target_desc) {
+    assert(!render_target_desc.size.is_any_zero());
+
     uint32_t id = render_targets_desc.size();
     render_targets_desc.push_back(render_target_desc);
     return {scene_id, id};
