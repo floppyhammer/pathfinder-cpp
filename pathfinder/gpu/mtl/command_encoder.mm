@@ -15,6 +15,7 @@
 namespace Pathfinder {
 
 bool CommandEncoderMtl::prepare() {
+    // For presentDrawable.
     if (mtl_cmd_buffer_ != nil) {
         return true;
     }
@@ -24,6 +25,11 @@ bool CommandEncoderMtl::prepare() {
     }
 
     mtl_cmd_buffer_ = [mtl_cmd_queue_ commandBuffer];
+
+    // Fail to allocate a command buffer.
+    if (mtl_cmd_buffer_ == nil) {
+        return false;
+    }
 
     id<MTLRenderCommandEncoder> current_render_cmd_encoder_ = nil;
     id<MTLComputeCommandEncoder> current_compute_cmd_encoder_ = nil;

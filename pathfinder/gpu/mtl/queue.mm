@@ -19,7 +19,9 @@ void QueueMtl::submit(const std::shared_ptr<CommandEncoder>& encoder, const std:
         // to avoid a permanent deadlock of the rendering thread.
         if (mtl_cmd_buffer == nil || !prepared) {
             dispatch_semaphore_signal(in_flight_semaphore_);
-            Logger::error("Metal: Failed to create or prepare command buffer! Deadlock averted.");
+            if (!encoder_mtl->is_empty()) {
+                Logger::error("Metal: Failed to create or prepare command buffer! Deadlock averted.");
+            }
             return;
         }
 

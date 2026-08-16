@@ -358,4 +358,8 @@ void CommandEncoder::invoke_callbacks() {
     temp_buffers_.clear();
 }
 
+bool CommandEncoder::is_empty() const {
+    return commands_.empty();
+}
+
 } // namespace Pathfinder

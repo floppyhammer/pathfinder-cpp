@@ -231,6 +231,8 @@ public:
 
     void invoke_callbacks();
 
+    bool is_empty() const;
+
 protected:
     CommandEncoder() = default;
 

@@ -445,6 +445,15 @@ uint64_t RendererD3D9::upload_tiles(const std::vector<TileObjectPrimitive> &tile
 
 void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &tile_batches,
                                          const std::shared_ptr<CommandEncoder> &encoder) {
+    if (tile_batches.empty()) {
+        if (clear_dest_texture) {
+            encoder->begin_render_pass(dest_render_pass_clear, dest_texture, ColorF());
+            encoder->end_render_pass();
+            clear_dest_texture = false;
+        }
+        return;
+    }
+
     if (tile_batch_idx + tile_batches.size() > tile_batch_storage_count) {
         update_tile_batch_storage(tile_batch_idx + tile_batches.size());
     }
@@ -453,24 +462,24 @@ void RendererD3D9::upload_and_draw_tiles(const std::vector<DrawTileBatchD3D9> &t
     for (const auto &batch : tile_batches) {
         uint32_t tile_count = batch.tiles.size();
 
-        // No tiles to draw.
-        if (tile_count == 0) {
-            continue;
-        }
-
         // Apply clip paths.
-        if (!batch.clips.empty()) {
+        if (!batch.clips.empty() && tile_count > 0) {
             auto clip_buffer_info = upload_clip_tiles(batch.clips, encoder);
             clip_tiles(clip_buffer_info, encoder);
 
             clip_buffer_infos.push_back(clip_buffer_info);
         }
 
-        auto tile_vertex_buffer_id = upload_tiles(batch.tiles, encoder);
-        tile_vertex_buffer_ids.push_back(tile_vertex_buffer_id);
+        uint64_t tile_vertex_buffer_id = 0;
+        uint64_t z_buffer_texture_id = 0;
 
-        auto z_buffer_texture_id = upload_z_buffer(batch.z_buffer_data, encoder);
-        z_buffer_texture_ids.push_back(z_buffer_texture_id);
+        if (tile_count > 0) {
+            tile_vertex_buffer_id = upload_tiles(batch.tiles, encoder);
+            tile_vertex_buffer_ids.push_back(tile_vertex_buffer_id);
+
+            z_buffer_texture_id = upload_z_buffer(batch.z_buffer_data, encoder);
+            z_buffer_texture_ids.push_back(z_buffer_texture_id);
+        }
 
         draw_tiles(tile_vertex_buffer_id,
                    tile_count,
@@ -615,6 +624,12 @@ void RendererD3D9::draw_tiles(uint64_t tile_vertex_buffer_id,
     }
 
     Vec2F target_texture_size = target_texture->get_size().to_f32();
+
+    if (tiles_count == 0) {
+        encoder->begin_render_pass(render_pass, target_texture, ColorF());
+        encoder->end_render_pass();
+        return;
+    }
 
     auto z_buffer_texture = allocator->get_texture(z_buffer_texture_id);
     auto color_texture = allocator->get_texture(dummy_texture_id);
