@@ -3,6 +3,7 @@
 #include <cassert>
 
 #include "debug_marker.h"
+#include "device.h"
 
 namespace Pathfinder {
 
@@ -10,7 +11,7 @@ RenderPassVk::RenderPassVk(DeviceVk* device,
                            TextureFormat texture_format,
                            AttachmentLoadOp load_op,
                            bool is_swap_chain_pass,
-                           const std::string &label) {
+                           const std::string& label) {
     device_ = device;
     vk_device_ = device->get_device();
     label_ = label;
@@ -67,7 +68,7 @@ RenderPassVk::RenderPassVk(DeviceVk* device,
     renderPassInfo.dependencyCount = 1;
     renderPassInfo.pDependencies = &dependency;
 
-    VK_CHECK_RESULT(vkCreateRenderPass(vk_device, &renderPassInfo, nullptr, &vk_render_pass_))
+    VK_CHECK_RESULT(vkCreateRenderPass(vk_device_, &renderPassInfo, nullptr, &vk_render_pass_))
 
     device_->get_debug_marker().set_object_name(vk_device_,
                                                 (uint64_t)vk_render_pass_,

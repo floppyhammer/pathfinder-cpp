@@ -132,7 +132,9 @@ bool CommandEncoderVk::prepare() {
     VK_CHECK_RESULT(vkBeginCommandBuffer(vk_command_buffer_, &begin_info))
 
     // Start a new debug marker region.
-    ((DeviceVk*)device_.get())->get_debug_marker().begin_region(vk_command_buffer_, label_, ColorF(1.0f, 0.78f, 0.05f, 1.0f));
+    ((DeviceVk *)device_.lock().get())
+        ->get_debug_marker()
+        .begin_region(vk_command_buffer_, label_, ColorF(1.0f, 0.78f, 0.05f, 1.0f));
 
     for (auto cmd_iter = commands_.begin(); cmd_iter < commands_.end(); ++cmd_iter) {
         auto const &cmd = *cmd_iter;
@@ -471,9 +473,7 @@ bool CommandEncoderVk::prepare() {
                     region.imageSubresource.mipLevel = 0;
                     region.imageSubresource.baseArrayLayer = 0;
                     region.imageSubresource.layerCount = 1;
-                    region.imageOffset = {static_cast<int32_t>(args.offset_x),
-                                          static_cast<int32_t>(args.offset_y),
-                                          0};
+                    region.imageOffset = {static_cast<int32_t>(args.offset_x), static_cast<int32_t>(args.offset_y), 0};
                     region.imageExtent = {args.width, args.height, 1};
 
                     vkCmdCopyBufferToImage(vk_command_buffer_,
@@ -524,9 +524,7 @@ bool CommandEncoderVk::prepare() {
                     region.imageSubresource.mipLevel = 0;
                     region.imageSubresource.baseArrayLayer = 0;
                     region.imageSubresource.layerCount = 1;
-                    region.imageOffset = {static_cast<int32_t>(args.offset_x),
-                                          static_cast<int32_t>(args.offset_y),
-                                          0};
+                    region.imageOffset = {static_cast<int32_t>(args.offset_x), static_cast<int32_t>(args.offset_y), 0};
                     region.imageExtent = {args.width, args.height, 1};
 
                     vkCmdCopyImageToBuffer(vk_command_buffer_,
@@ -544,7 +542,7 @@ bool CommandEncoderVk::prepare() {
 
     commands_.clear();
 
-    ((DeviceVk*)device_.get())->get_debug_marker().end_region(vk_command_buffer_);
+    ((DeviceVk *)device_.lock().get())->get_debug_marker().end_region(vk_command_buffer_);
 
     // End recording the command buffer.
     VK_CHECK_RESULT(vkEndCommandBuffer(vk_command_buffer_))

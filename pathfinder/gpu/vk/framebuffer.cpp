@@ -4,12 +4,12 @@
 #include <cassert>
 
 #include "debug_marker.h"
+#include "device.h"
 
 namespace Pathfinder {
 
-FramebufferVk::FramebufferVk(DeviceVk* device, VkRenderPass vk_render_pass, const std::shared_ptr<Texture> &texture)
+FramebufferVk::FramebufferVk(DeviceVk *device, VkRenderPass vk_render_pass, const std::shared_ptr<Texture> &texture)
     : Framebuffer(texture), device_(device), vk_device_(device->get_device()) {
-
     auto texture_vk = static_cast<TextureVk *>(texture.get());
 
     std::array<VkImageView, 1> attachments = {texture_vk->get_image_view()};
@@ -23,10 +23,10 @@ FramebufferVk::FramebufferVk(DeviceVk* device, VkRenderPass vk_render_pass, cons
     framebufferInfo.height = texture->get_size().y;
     framebufferInfo.layers = 1;
 
-    VK_CHECK_RESULT(vkCreateFramebuffer(vk_device, &framebufferInfo, nullptr, &vk_framebuffer_))
+    VK_CHECK_RESULT(vkCreateFramebuffer(vk_device_, &framebufferInfo, nullptr, &vk_framebuffer_))
 }
 
-FramebufferVk::FramebufferVk(DeviceVk* device, VkRenderPass vk_render_pass, Vec2I size, VkImageView vk_image_view)
+FramebufferVk::FramebufferVk(DeviceVk *device, VkRenderPass vk_render_pass, Vec2I size, VkImageView vk_image_view)
     : device_(device), vk_device_(device->get_device()) {
     label_ = "Swapchain framebuffer";
 
@@ -41,7 +41,7 @@ FramebufferVk::FramebufferVk(DeviceVk* device, VkRenderPass vk_render_pass, Vec2
     framebufferInfo.height = size.y;
     framebufferInfo.layers = 1;
 
-    VK_CHECK_RESULT(vkCreateFramebuffer(vk_device, &framebufferInfo, nullptr, &vk_framebuffer_))
+    VK_CHECK_RESULT(vkCreateFramebuffer(vk_device_, &framebufferInfo, nullptr, &vk_framebuffer_))
 }
 
 FramebufferVk::~FramebufferVk() {
