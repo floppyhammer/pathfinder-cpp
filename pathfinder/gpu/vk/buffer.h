@@ -30,8 +30,9 @@ public:
     void unmap();
 
 private:
-    BufferVk(VkDevice vk_device, const BufferDescriptor& desc);
+    BufferVk(DeviceVk* device, const BufferDescriptor& desc);
 
+    DeviceVk* device_{};
     VkBuffer vk_buffer_{};
     VkDeviceMemory vk_device_memory_{};
 

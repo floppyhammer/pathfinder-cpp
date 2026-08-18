@@ -17,10 +17,7 @@ namespace Pathfinder {
 
 class DebugMarker {
 public:
-    static DebugMarker* get_singleton() {
-        static DebugMarker singleton;
-        return &singleton;
-    }
+    DebugMarker() = default;
 
     /// Set the tag for an object.
     void set_object_tag(VkDevice device,

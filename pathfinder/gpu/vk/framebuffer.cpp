@@ -7,9 +7,8 @@
 
 namespace Pathfinder {
 
-FramebufferVk::FramebufferVk(VkDevice vk_device, VkRenderPass vk_render_pass, const std::shared_ptr<Texture> &texture)
-    : Framebuffer(texture) {
-    vk_device_ = vk_device;
+FramebufferVk::FramebufferVk(DeviceVk* device, VkRenderPass vk_render_pass, const std::shared_ptr<Texture> &texture)
+    : Framebuffer(texture), device_(device), vk_device_(device->get_device()) {
 
     auto texture_vk = static_cast<TextureVk *>(texture.get());
 
@@ -27,8 +26,8 @@ FramebufferVk::FramebufferVk(VkDevice vk_device, VkRenderPass vk_render_pass, co
     VK_CHECK_RESULT(vkCreateFramebuffer(vk_device, &framebufferInfo, nullptr, &vk_framebuffer_))
 }
 
-FramebufferVk::FramebufferVk(VkDevice vk_device, VkRenderPass vk_render_pass, Vec2I size, VkImageView vk_image_view) {
-    vk_device_ = vk_device;
+FramebufferVk::FramebufferVk(DeviceVk* device, VkRenderPass vk_render_pass, Vec2I size, VkImageView vk_image_view)
+    : device_(device), vk_device_(device->get_device()) {
     label_ = "Swapchain framebuffer";
 
     std::array<VkImageView, 1> attachments = {vk_image_view};
@@ -56,10 +55,12 @@ VkFramebuffer FramebufferVk::get_vk_handle() const {
 void FramebufferVk::set_label(const std::string &label) {
     Framebuffer::set_label(label);
 
-    DebugMarker::get_singleton()->set_object_name(vk_device_,
-                                                  (uint64_t)vk_framebuffer_,
-                                                  VK_OBJECT_TYPE_FRAMEBUFFER,
-                                                  label);
+    if (device_) {
+        device_->get_debug_marker().set_object_name(vk_device_,
+                                                    (uint64_t)vk_framebuffer_,
+                                                    VK_OBJECT_TYPE_FRAMEBUFFER,
+                                                    label);
+    }
 }
 
 } // namespace Pathfinder

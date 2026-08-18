@@ -8,7 +8,8 @@
 
 namespace Pathfinder {
 
-BufferVk::BufferVk(VkDevice vk_device, const BufferDescriptor& desc) : Buffer(desc), vk_device_(vk_device) {}
+BufferVk::BufferVk(DeviceVk* device, const BufferDescriptor& desc)
+    : Buffer(desc), device_(device), vk_device_(device->get_device()) {}
 
 BufferVk::~BufferVk() {
     if (mapped_ptr_) {
@@ -41,7 +42,7 @@ void BufferVk::set_label(const std::string& label) {
 
     Buffer::set_label(label);
 
-    DebugMarker::get_singleton()->set_object_name(vk_device_, (uint64_t)vk_buffer_, VK_OBJECT_TYPE_BUFFER, label);
+    device_->get_debug_marker().set_object_name(vk_device_, (uint64_t)vk_buffer_, VK_OBJECT_TYPE_BUFFER, label);
 }
 
 void* BufferVk::map() {

@@ -14,11 +14,13 @@ public:
     VkRenderPass get_vk_render_pass() const;
 
 private:
-    RenderPassVk(VkDevice vk_device,
+    RenderPassVk(DeviceVk* device,
                  TextureFormat texture_format,
                  AttachmentLoadOp load_op,
                  bool is_swap_chain_pass,
                  const std::string &label);
+
+    DeviceVk* device_{};
 
     VkRenderPass vk_render_pass_{};
 

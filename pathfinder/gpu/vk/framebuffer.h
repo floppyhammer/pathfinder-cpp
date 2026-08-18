@@ -20,10 +20,12 @@ public:
 
 private:
     /// Texture framebuffer.
-    FramebufferVk(VkDevice vk_device, VkRenderPass vk_render_pass, const std::shared_ptr<Texture>& texture);
+    FramebufferVk(DeviceVk* device, VkRenderPass vk_render_pass, const std::shared_ptr<Texture>& texture);
 
     /// Swap chain framebuffer.
-    FramebufferVk(VkDevice vk_device, VkRenderPass vk_render_pass, Vec2I size, VkImageView vk_image_view);
+    FramebufferVk(DeviceVk* device, VkRenderPass vk_render_pass, Vec2I size, VkImageView vk_image_view);
+
+    DeviceVk* device_{};
 
     VkFramebuffer vk_framebuffer_{};
 

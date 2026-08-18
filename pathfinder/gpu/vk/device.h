@@ -2,6 +2,7 @@
 
 #include "../base.h"
 #include "../device.h"
+#include "debug_marker.h"
 #include "render_pass.h"
 
 namespace Pathfinder {
@@ -13,7 +14,8 @@ class DeviceVk : public Device {
     friend class WindowBuilderVk;
 
 public:
-    DeviceVk(VkDevice vk_device,
+    DeviceVk(VkInstance vk_instance,
+             VkDevice vk_device,
              VkPhysicalDevice vk_physical_device,
              VkQueue vk_graphics_queue,
              VkQueue vk_present_queue,
@@ -103,7 +105,13 @@ public:
 
     size_t get_aligned_uniform_size(size_t original_size) override;
 
+    DebugMarker &get_debug_marker() {
+        return debug_marker_;
+    }
+
 private:
+    VkInstance vk_instance_{};
+
     /// The graphics card that we'll end up selecting will be stored in a VkPhysicalDevice handle.
     VkPhysicalDevice vk_physical_device_{};
 
@@ -116,6 +124,8 @@ private:
     VkCommandPool vk_command_pool_{};
 
     VkDeviceSize min_uniform_alignment_{};
+
+    DebugMarker debug_marker_;
 
     VkShaderModule create_shader_module(const std::vector<char> &code);
 

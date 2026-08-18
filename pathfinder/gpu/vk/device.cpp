@@ -18,16 +18,19 @@
 
 namespace Pathfinder {
 
-DeviceVk::DeviceVk(VkDevice vk_device,
+DeviceVk::DeviceVk(VkInstance vk_instance,
+                   VkDevice vk_device,
                    VkPhysicalDevice vk_physical_device,
                    VkQueue vk_graphics_queue,
                    VkQueue vk_present_queue,
                    VkCommandPool vk_command_pool,
                    int frames_in_flight)
-    : Device(frames_in_flight),
-      vk_physical_device_(vk_physical_device), vk_device_(vk_device), vk_graphics_queue_(vk_graphics_queue),
-      vk_present_queue_(vk_present_queue), vk_command_pool_(vk_command_pool) {
+    : Device(frames_in_flight), vk_instance_(vk_instance), vk_physical_device_(vk_physical_device),
+      vk_device_(vk_device), vk_graphics_queue_(vk_graphics_queue), vk_present_queue_(vk_present_queue),
+      vk_command_pool_(vk_command_pool) {
     backend_type = BackendType::Vulkan;
+
+    debug_marker_.setup(vk_instance_);
 
     VkPhysicalDeviceProperties props;
     vkGetPhysicalDeviceProperties(vk_physical_device, &props);
@@ -126,7 +129,7 @@ std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
         std::shared_ptr<RenderPipelineVk>(new RenderPipelineVk(vk_device_, attribute_descriptions, blend_state, label));
 
     auto render_pass_vk = std::shared_ptr<RenderPassVk>(
-        new RenderPassVk(vk_device_, target_format, AttachmentLoadOp::Load, false, label + " pass"));
+        new RenderPassVk(this, target_format, AttachmentLoadOp::Load, false, label + " pass"));
     render_pipeline_vk->render_pass_vk_ = render_pass_vk;
 
     auto descriptor_set_layout_vk = (DescriptorSetLayoutVk *)descriptor_set_layout.get();
@@ -287,10 +290,10 @@ std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
                                               nullptr,
                                               &render_pipeline_vk->vk_pipeline_))
 
-    DebugMarker::get_singleton()->set_object_name(vk_device_,
-                                                  (uint64_t)render_pipeline_vk->vk_pipeline_,
-                                                  VK_OBJECT_TYPE_PIPELINE,
-                                                  label);
+    debug_marker_.set_object_name(vk_device_,
+                                  (uint64_t)render_pipeline_vk->vk_pipeline_,
+                                  VK_OBJECT_TYPE_PIPELINE,
+                                  label);
 
     return render_pipeline_vk;
 }
@@ -343,10 +346,10 @@ std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(
                                              nullptr,
                                              &compute_pipeline_vk->vk_pipeline_))
 
-    DebugMarker::get_singleton()->set_object_name(vk_device_,
-                                                  (uint64_t)compute_pipeline_vk->vk_pipeline_,
-                                                  VK_OBJECT_TYPE_PIPELINE,
-                                                  label);
+    debug_marker_.set_object_name(vk_device_,
+                                  (uint64_t)compute_pipeline_vk->vk_pipeline_,
+                                  VK_OBJECT_TYPE_PIPELINE,
+                                  label);
 
     return compute_pipeline_vk;
 }
@@ -354,11 +357,11 @@ std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(
 std::shared_ptr<RenderPass> DeviceVk::create_render_pass(TextureFormat format,
                                                          AttachmentLoadOp load_op,
                                                          const std::string &label) {
-    return std::shared_ptr<RenderPassVk>(new RenderPassVk(vk_device_, format, load_op, false, label));
+    return std::shared_ptr<RenderPassVk>(new RenderPassVk(this, format, load_op, false, label));
 }
 
 std::shared_ptr<RenderPass> DeviceVk::create_swap_chain_render_pass(TextureFormat format, AttachmentLoadOp load_op) {
-    return std::shared_ptr<RenderPassVk>(new RenderPassVk(vk_device_, format, load_op, true, "Swap chain render pass"));
+    return std::shared_ptr<RenderPassVk>(new RenderPassVk(this, format, load_op, true, "Swap chain render pass"));
 }
 
 std::shared_ptr<Framebuffer> DeviceVk::create_framebuffer(const std::shared_ptr<RenderPass> &render_pass,
@@ -367,7 +370,7 @@ std::shared_ptr<Framebuffer> DeviceVk::create_framebuffer(const std::shared_ptr<
     auto render_pass_vk = static_cast<RenderPassVk *>(render_pass.get());
 
     auto framebuffer_vk =
-        std::shared_ptr<FramebufferVk>(new FramebufferVk(vk_device_, render_pass_vk->vk_render_pass_, texture));
+        std::shared_ptr<FramebufferVk>(new FramebufferVk(this, render_pass_vk->vk_render_pass_, texture));
 
     framebuffer_vk->set_label(label);
 
@@ -375,7 +378,7 @@ std::shared_ptr<Framebuffer> DeviceVk::create_framebuffer(const std::shared_ptr<
 }
 
 std::shared_ptr<Buffer> DeviceVk::create_buffer(const BufferDescriptor &desc, const std::string &label) {
-    auto buffer_vk = std::shared_ptr<BufferVk>(new BufferVk(vk_device_, desc));
+    auto buffer_vk = std::shared_ptr<BufferVk>(new BufferVk(this, desc));
 
     auto vk_memory_property = to_vk_memory_property(desc.property);
 
@@ -419,7 +422,7 @@ std::shared_ptr<Buffer> DeviceVk::create_buffer(const BufferDescriptor &desc, co
 }
 
 std::shared_ptr<Texture> DeviceVk::create_texture(const TextureDescriptor &desc, const std::string &label) {
-    auto texture_vk = std::shared_ptr<TextureVk>(new TextureVk(vk_device_, desc));
+    auto texture_vk = std::shared_ptr<TextureVk>(new TextureVk(this, desc));
 
     create_vk_image(desc.size.x,
                     desc.size.y,

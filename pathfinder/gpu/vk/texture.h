@@ -34,7 +34,9 @@ public:
 
 private:
     // This constructor is only a wrapper, actual GPU resource allocation is done by DeviceVk.
-    TextureVk(VkDevice vk_device, const TextureDescriptor& desc);
+    TextureVk(DeviceVk* device, const TextureDescriptor& desc);
+
+    DeviceVk* device_{};
 
     /// Handle.
     VkImage vk_image_{};

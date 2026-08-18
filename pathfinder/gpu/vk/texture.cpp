@@ -5,7 +5,8 @@
 
 namespace Pathfinder {
 
-TextureVk::TextureVk(VkDevice vk_device, const TextureDescriptor& desc) : Texture(desc), vk_device_(vk_device) {}
+TextureVk::TextureVk(DeviceVk* device, const TextureDescriptor& desc)
+    : Texture(desc), device_(device), vk_device_(device->get_device()) {}
 
 TextureVk::~TextureVk() {
     if (!resource_ownership_) {
@@ -64,7 +65,9 @@ void TextureVk::set_label(const std::string& label) {
 
     Texture::set_label(label);
 
-    DebugMarker::get_singleton()->set_object_name(vk_device_, (uint64_t)vk_image_, VK_OBJECT_TYPE_IMAGE, label);
+    if (device_) {
+        device_->get_debug_marker().set_object_name(vk_device_, (uint64_t)vk_image_, VK_OBJECT_TYPE_IMAGE, label);
+    }
 }
 
 } // namespace Pathfinder

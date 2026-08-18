@@ -6,12 +6,13 @@
 
 namespace Pathfinder {
 
-RenderPassVk::RenderPassVk(VkDevice vk_device,
+RenderPassVk::RenderPassVk(DeviceVk* device,
                            TextureFormat texture_format,
                            AttachmentLoadOp load_op,
                            bool is_swap_chain_pass,
                            const std::string &label) {
-    vk_device_ = vk_device;
+    device_ = device;
+    vk_device_ = device->get_device();
     label_ = label;
     load_op_ = load_op;
 
@@ -68,10 +69,10 @@ RenderPassVk::RenderPassVk(VkDevice vk_device,
 
     VK_CHECK_RESULT(vkCreateRenderPass(vk_device, &renderPassInfo, nullptr, &vk_render_pass_))
 
-    DebugMarker::get_singleton()->set_object_name(vk_device,
-                                                  (uint64_t)vk_render_pass_,
-                                                  VK_OBJECT_TYPE_RENDER_PASS,
-                                                  label);
+    device_->get_debug_marker().set_object_name(vk_device_,
+                                                (uint64_t)vk_render_pass_,
+                                                VK_OBJECT_TYPE_RENDER_PASS,
+                                                label);
 }
 
 RenderPassVk::~RenderPassVk() {
