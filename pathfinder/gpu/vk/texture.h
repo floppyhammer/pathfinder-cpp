@@ -30,8 +30,6 @@ public:
 
     void set_layout(TextureLayout new_layout);
 
-    void set_label(const std::string& label) override;
-
 private:
     // This constructor is only a wrapper, actual GPU resource allocation is done by DeviceVk.
     TextureVk(VkDevice vk_device, const TextureDescriptor& desc);

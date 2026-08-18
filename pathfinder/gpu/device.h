@@ -88,7 +88,6 @@ public:
         return backend_type;
     }
 
-public:
     void begin_frame() {
         current_frame_index_++;
 
@@ -104,6 +103,20 @@ public:
 
     uint32_t get_current_frame_index() const {
         return current_frame_index_;
+    }
+
+    virtual void set_debug_label(const std::shared_ptr<Texture> &texture, const std::string &label) {
+        if (!texture) {
+            return;
+        }
+        texture->set_label(label);
+    }
+
+    virtual void set_debug_label(const std::shared_ptr<Buffer> &buffer, const std::string &label) {
+        if (!buffer) {
+            return;
+        }
+        buffer->set_label(label);
     }
 
 protected:

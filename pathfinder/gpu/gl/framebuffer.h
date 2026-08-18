@@ -16,8 +16,6 @@ public:
 
     uint32_t get_gl_handle() const;
 
-    void set_label(const std::string& label) override;
-
 private:
     /// Texture framebuffer.
     explicit FramebufferGl(const std::shared_ptr<Texture>& texture);

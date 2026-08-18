@@ -25,11 +25,13 @@ std::shared_ptr<Framebuffer> DeviceGl::create_framebuffer(const std::shared_ptr<
 
     if (texture) {
         framebuffer_gl = std::shared_ptr<FramebufferGl>(new FramebufferGl(texture));
+        DebugMarkerGl::label_framebuffer(framebuffer_gl->get_gl_handle(), label);
     } else {
         framebuffer_gl = std::shared_ptr<FramebufferGl>(new FramebufferGl());
     }
 
-    framebuffer_gl->set_label(label);
+    framebuffer_gl->label_ = label;
+
     return framebuffer_gl;
 }
 
@@ -158,6 +160,26 @@ void DeviceGl::unmap_staging(const StagingAllocation &allocation) {
 size_t DeviceGl::get_aligned_uniform_size(size_t original_size) {
     GLint aligned_size = (original_size + min_uniform_alignment_ - 1) & ~(min_uniform_alignment_ - 1);
     return aligned_size;
+}
+
+void DeviceGl::set_debug_label(const std::shared_ptr<Texture> &texture, const std::string &label) {
+    if (!texture) {
+        return;
+    }
+
+    texture->set_label(label);
+    auto texture_gl = (TextureGl *)texture.get();
+    DebugMarkerGl::label_texture(texture_gl->get_texture_id(), label);
+}
+
+void DeviceGl::set_debug_label(const std::shared_ptr<Buffer> &buffer, const std::string &label) {
+    if (!buffer) {
+        return;
+    }
+
+    buffer->set_label(label);
+    auto buffer_gl = (BufferGl *)buffer.get();
+    DebugMarkerGl::label_buffer(buffer_gl->get_handle(), label);
 }
 
 } // namespace Pathfinder

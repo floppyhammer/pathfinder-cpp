@@ -36,14 +36,6 @@ void BufferVk::download_via_mapping(size_t data_size, size_t offset, void* data)
     memcpy(data, mapped_data, data_size);
 }
 
-void BufferVk::set_label(const std::string& label) {
-    assert(vk_device_ != nullptr && vk_buffer_ != nullptr);
-
-    Buffer::set_label(label);
-
-    DebugMarker::get_singleton()->set_object_name(vk_device_, (uint64_t)vk_buffer_, VK_OBJECT_TYPE_BUFFER, label);
-}
-
 void* BufferVk::map() {
     if (desc_.property != MemoryProperty::HostVisibleAndCoherent) {
         abort();

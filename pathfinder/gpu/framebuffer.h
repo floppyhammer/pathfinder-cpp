@@ -22,11 +22,6 @@ public:
         return {};
     }
 
-    // Sometimes, we need to update label for a framebuffer as we reuse it for another purpose.
-    virtual void set_label(const std::string& label) {
-        label_ = label;
-    }
-
 protected:
     /// Render to screen or swap chain.
     Framebuffer() {}

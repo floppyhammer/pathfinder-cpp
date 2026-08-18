@@ -70,6 +70,10 @@ public:
 
     size_t get_aligned_uniform_size(size_t original_size) override;
 
+    void set_debug_label(const std::shared_ptr<Texture> &texture, const std::string &label) override;
+
+    void set_debug_label(const std::shared_ptr<Buffer> &buffer, const std::string &label) override;
+
 private:
     GLint min_uniform_alignment_{};
 };

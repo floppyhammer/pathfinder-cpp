@@ -66,12 +66,7 @@ RenderPassVk::RenderPassVk(VkDevice vk_device,
     renderPassInfo.dependencyCount = 1;
     renderPassInfo.pDependencies = &dependency;
 
-    VK_CHECK_RESULT(vkCreateRenderPass(vk_device, &renderPassInfo, nullptr, &vk_render_pass_))
-
-    DebugMarker::get_singleton()->set_object_name(vk_device,
-                                                  (uint64_t)vk_render_pass_,
-                                                  VK_OBJECT_TYPE_RENDER_PASS,
-                                                  label);
+    VK_CHECK_RESULT(vkCreateRenderPass(vk_device_, &renderPassInfo, nullptr, &vk_render_pass_))
 }
 
 RenderPassVk::~RenderPassVk() {

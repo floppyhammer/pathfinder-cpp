@@ -19,8 +19,6 @@ const size_t MAX_BUFFER_SIZE_CLASS = 16 * 1024 * 1024;
 // Number of seconds before unused memory is purged from idle_pool.
 const float DECAY_TIME = 2.0;
 
-
-
 struct BufferAllocation {
     std::shared_ptr<Buffer> buffer;
     BufferDescriptor descriptor;
@@ -56,7 +54,8 @@ struct FrameBucket {
 /// GPU memory management.
 class GpuMemoryAllocator {
 public:
-    explicit GpuMemoryAllocator(const std::shared_ptr<Device>& _device) : device(_device), frames_in_flight_(device->get_frames_in_flight()) {
+    explicit GpuMemoryAllocator(const std::shared_ptr<Device>& _device)
+        : device(_device), frames_in_flight_(device->get_frames_in_flight()) {
         pending_buckets.resize(frames_in_flight_);
     }
 

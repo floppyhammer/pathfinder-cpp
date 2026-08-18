@@ -16,8 +16,6 @@ public:
 
     VkFramebuffer get_vk_handle() const;
 
-    void set_label(const std::string& label) override;
-
 private:
     /// Texture framebuffer.
     FramebufferVk(VkDevice vk_device, VkRenderPass vk_render_pass, const std::shared_ptr<Texture>& texture);

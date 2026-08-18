@@ -28,7 +28,7 @@ private:
 
         gl_check_error("create_render_pipeline");
 
-        DebugMarker::label_program(program_->get_handle(), label_ + " program");
+        DebugMarkerGl::label_program(program_->get_handle(), label_ + " program");
     }
 
     std::shared_ptr<RasterProgram> program_;

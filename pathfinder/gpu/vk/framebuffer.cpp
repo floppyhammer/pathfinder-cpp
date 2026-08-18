@@ -42,7 +42,7 @@ FramebufferVk::FramebufferVk(VkDevice vk_device, VkRenderPass vk_render_pass, Ve
     framebufferInfo.height = size.y;
     framebufferInfo.layers = 1;
 
-    VK_CHECK_RESULT(vkCreateFramebuffer(vk_device, &framebufferInfo, nullptr, &vk_framebuffer_))
+    VK_CHECK_RESULT(vkCreateFramebuffer(vk_device_, &framebufferInfo, nullptr, &vk_framebuffer_))
 }
 
 FramebufferVk::~FramebufferVk() {
@@ -51,15 +51,6 @@ FramebufferVk::~FramebufferVk() {
 
 VkFramebuffer FramebufferVk::get_vk_handle() const {
     return vk_framebuffer_;
-}
-
-void FramebufferVk::set_label(const std::string &label) {
-    Framebuffer::set_label(label);
-
-    DebugMarker::get_singleton()->set_object_name(vk_device_,
-                                                  (uint64_t)vk_framebuffer_,
-                                                  VK_OBJECT_TYPE_FRAMEBUFFER,
-                                                  label);
 }
 
 } // namespace Pathfinder

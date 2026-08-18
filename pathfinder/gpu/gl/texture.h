@@ -16,8 +16,6 @@ public:
 
     uint32_t get_pbo_id() const;
 
-    void set_label(const std::string& label) override;
-
     void prepare_pbo();
 
 private:

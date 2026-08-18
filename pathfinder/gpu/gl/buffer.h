@@ -22,8 +22,6 @@ public:
 
     uint32_t get_handle() const;
 
-    void set_label(const std::string& label) override;
-
 private:
     explicit BufferGl(const BufferDescriptor& desc);
     uint32_t gl_id_ = 0;

@@ -18,16 +18,19 @@
 
 namespace Pathfinder {
 
-DeviceVk::DeviceVk(VkDevice vk_device,
+DeviceVk::DeviceVk(VkInstance vk_instance,
+                   VkDevice vk_device,
                    VkPhysicalDevice vk_physical_device,
                    VkQueue vk_graphics_queue,
                    VkQueue vk_present_queue,
                    VkCommandPool vk_command_pool,
                    int frames_in_flight)
-    : Device(frames_in_flight),
-      vk_physical_device_(vk_physical_device), vk_device_(vk_device), vk_graphics_queue_(vk_graphics_queue),
-      vk_present_queue_(vk_present_queue), vk_command_pool_(vk_command_pool) {
+    : Device(frames_in_flight), vk_instance_(vk_instance), vk_physical_device_(vk_physical_device),
+      vk_device_(vk_device), vk_graphics_queue_(vk_graphics_queue), vk_present_queue_(vk_present_queue),
+      vk_command_pool_(vk_command_pool) {
     backend_type = BackendType::Vulkan;
+
+    debug_marker_.setup(vk_instance_);
 
     VkPhysicalDeviceProperties props;
     vkGetPhysicalDeviceProperties(vk_physical_device, &props);
@@ -287,10 +290,10 @@ std::shared_ptr<RenderPipeline> DeviceVk::create_render_pipeline(
                                               nullptr,
                                               &render_pipeline_vk->vk_pipeline_))
 
-    DebugMarker::get_singleton()->set_object_name(vk_device_,
-                                                  (uint64_t)render_pipeline_vk->vk_pipeline_,
-                                                  VK_OBJECT_TYPE_PIPELINE,
-                                                  label);
+    debug_marker_.set_object_name(vk_device_,
+                                  (uint64_t)render_pipeline_vk->vk_pipeline_,
+                                  VK_OBJECT_TYPE_PIPELINE,
+                                  label);
 
     return render_pipeline_vk;
 }
@@ -343,10 +346,10 @@ std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(
                                              nullptr,
                                              &compute_pipeline_vk->vk_pipeline_))
 
-    DebugMarker::get_singleton()->set_object_name(vk_device_,
-                                                  (uint64_t)compute_pipeline_vk->vk_pipeline_,
-                                                  VK_OBJECT_TYPE_PIPELINE,
-                                                  label);
+    debug_marker_.set_object_name(vk_device_,
+                                  (uint64_t)compute_pipeline_vk->vk_pipeline_,
+                                  VK_OBJECT_TYPE_PIPELINE,
+                                  label);
 
     return compute_pipeline_vk;
 }
@@ -354,7 +357,15 @@ std::shared_ptr<ComputePipeline> DeviceVk::create_compute_pipeline(
 std::shared_ptr<RenderPass> DeviceVk::create_render_pass(TextureFormat format,
                                                          AttachmentLoadOp load_op,
                                                          const std::string &label) {
-    return std::shared_ptr<RenderPassVk>(new RenderPassVk(vk_device_, format, load_op, false, label));
+    auto render_pass_vk = std::shared_ptr<RenderPassVk>(new RenderPassVk(vk_device_, format, load_op, false, label));
+    render_pass_vk->label_ = label;
+
+    debug_marker_.set_object_name(vk_device_,
+                                  (uint64_t)render_pass_vk->get_vk_render_pass(),
+                                  VK_OBJECT_TYPE_RENDER_PASS,
+                                  label);
+
+    return render_pass_vk;
 }
 
 std::shared_ptr<RenderPass> DeviceVk::create_swap_chain_render_pass(TextureFormat format, AttachmentLoadOp load_op) {
@@ -369,7 +380,11 @@ std::shared_ptr<Framebuffer> DeviceVk::create_framebuffer(const std::shared_ptr<
     auto framebuffer_vk =
         std::shared_ptr<FramebufferVk>(new FramebufferVk(vk_device_, render_pass_vk->vk_render_pass_, texture));
 
-    framebuffer_vk->set_label(label);
+    framebuffer_vk->label_ = label;
+    debug_marker_.set_object_name(vk_device_,
+                                  (uint64_t)framebuffer_vk->get_vk_handle(),
+                                  VK_OBJECT_TYPE_FRAMEBUFFER,
+                                  label);
 
     return framebuffer_vk;
 }
@@ -785,6 +800,26 @@ void DeviceVk::copy_data_from_mappable_memory(void *dst, VkDeviceMemory buffer_m
 size_t DeviceVk::get_aligned_uniform_size(size_t original_size) {
     VkDeviceSize aligned_size = (original_size + min_uniform_alignment_ - 1) & ~(min_uniform_alignment_ - 1);
     return aligned_size;
+}
+
+void DeviceVk::set_debug_label(const std::shared_ptr<Texture> &texture, const std::string &label) {
+    if (!texture) {
+        return;
+    }
+
+    texture->set_label(label);
+    auto texture_vk = (TextureVk *)texture.get();
+    debug_marker_.set_object_name(vk_device_, (uint64_t)texture_vk->get_image(), VK_OBJECT_TYPE_IMAGE, label);
+}
+
+void DeviceVk::set_debug_label(const std::shared_ptr<Buffer> &buffer, const std::string &label) {
+    if (!buffer) {
+        return;
+    }
+
+    buffer->set_label(label);
+    auto buffer_vk = (BufferVk *)buffer.get();
+    debug_marker_.set_object_name(vk_device_, (uint64_t)buffer_vk->get_vk_buffer(), VK_OBJECT_TYPE_BUFFER, label);
 }
 
 } // namespace Pathfinder

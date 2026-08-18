@@ -21,7 +21,7 @@ uint64_t GpuMemoryAllocator::allocate_buffer(size_t byte_size, BufferType type, 
             idle_pool.erase(idle_pool.begin() + i);
 
             allocation.tag = tag;
-            allocation.buffer->set_label(tag);
+            device->set_debug_label(allocation.buffer, tag);
 
             bytes_committed += byte_size;
             active_buffers[id] = allocation;
@@ -57,7 +57,7 @@ uint64_t GpuMemoryAllocator::allocate_texture(Vec2I size, TextureFormat format, 
             idle_pool.erase(idle_pool.begin() + i);
 
             allocation.tag = tag;
-            allocation.texture->set_label(tag);
+            device->set_debug_label(allocation.texture, tag);
 
             bytes_committed += byte_size;
             active_textures[id] = allocation;

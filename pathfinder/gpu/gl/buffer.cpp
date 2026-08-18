@@ -113,12 +113,6 @@ uint32_t BufferGl::get_handle() const {
     return gl_id_;
 }
 
-void BufferGl::set_label(const std::string &label) {
-    Buffer::set_label(label);
-
-    DebugMarker::label_buffer(gl_id_, label);
-}
-
 void *BufferGl::map() {
     if (mapped_ptr_) {
         return mapped_ptr_;

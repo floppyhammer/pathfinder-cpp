@@ -34,7 +34,7 @@ TextureGl::TextureGl(const TextureDescriptor& desc) : Texture(desc) {
 
     gl_check_error("create_texture");
 
-    DebugMarker::label_texture(gl_id_, label_);
+    DebugMarkerGl::label_texture(gl_id_, label_);
 }
 
 TextureGl::TextureGl(uint32_t external_gl_id, const TextureDescriptor& desc) : Texture(desc) {
@@ -59,12 +59,6 @@ uint32_t TextureGl::get_texture_id() const {
 
 uint32_t TextureGl::get_pbo_id() const {
     return pbo_id_;
-}
-
-void TextureGl::set_label(const std::string& label) {
-    Texture::set_label(label);
-
-    DebugMarker::label_texture(gl_id_, label);
 }
 
 void TextureGl::prepare_pbo() {

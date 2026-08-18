@@ -42,9 +42,12 @@ public:
 
     virtual void download_via_mapping(size_t data_size, size_t offset, void* data) = 0;
 
-    // Sometimes, we need to update label for a buffer as we reuse it for another purpose.
-    virtual void set_label(const std::string& label) {
+    void set_label(const std::string& label) {
         label_ = label;
+    }
+
+    std::string get_label() const {
+        return label_;
     }
 
 protected:

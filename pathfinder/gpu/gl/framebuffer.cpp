@@ -36,13 +36,4 @@ uint32_t FramebufferGl::get_gl_handle() const {
     return gl_framebuffer_;
 }
 
-void FramebufferGl::set_label(const std::string &label) {
-    if (gl_framebuffer_ == 0) {
-        return;
-    }
-
-    Framebuffer::set_label(label);
-    DebugMarker::label_framebuffer(gl_framebuffer_, label_);
-}
-
 } // namespace Pathfinder

@@ -62,8 +62,7 @@ public:
         return desc_;
     }
 
-    // Sometimes, we need to update label for a texture as we reuse it for another purpose.
-    virtual void set_label(const std::string& label) {
+    void set_label(const std::string& label) {
         label_ = label;
     }
 

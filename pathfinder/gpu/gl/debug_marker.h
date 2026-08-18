@@ -7,7 +7,8 @@
 
 namespace Pathfinder {
 
-struct DebugMarker {
+class DebugMarkerGl {
+public:
     static void label_buffer(GLuint object, const std::string &label) {
 #if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
         if (GLAD_GL_EXT_debug_label) {
