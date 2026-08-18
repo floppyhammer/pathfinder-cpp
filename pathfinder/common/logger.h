@@ -1,7 +1,10 @@
 #pragma once
 
+#include <atomic>
 #include <iostream>
 #include <memory>
+#include <mutex>
+#include <shared_mutex>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -11,7 +14,7 @@
     #include <android/log.h>
 #endif
 
-#define PATHFINDER_DEFAULT_LOG_TAG "Pathfinder Default"
+#define PATHFINDER_DEFAULT_LOG_TAG "PF"
 
 namespace Pathfinder {
 
@@ -30,99 +33,135 @@ public:
         Warn,
         Error,
         Silence,
-    } global_level_ = Level::Info;
-
-    std::unordered_map<std::string, Level> module_levels;
+    };
 
     static void set_global_level(const Level level) {
-        get_singleton()->global_level_ = level;
+        get_singleton()->global_level_.store(level, std::memory_order_relaxed);
     }
 
     static void set_module_level(const std::string &module, const Level level) {
         if (module.empty()) {
             return;
         }
-        get_singleton()->module_levels[module] = level;
+        auto *s = get_singleton();
+        std::unique_lock<std::shared_timed_mutex> lock(s->level_mutex_);
+        s->module_levels[module] = level;
     }
 
     static Level get_effective_level(const std::string &module) {
-        const auto global_level = get_singleton()->global_level_;
+        auto *s = get_singleton();
+        const auto global_level = s->global_level_.load(std::memory_order_relaxed);
 
         if (module.empty()) {
             return global_level;
         }
-        if (get_singleton()->module_levels.find(module) == get_singleton()->module_levels.end()) {
+
+        std::shared_lock<std::shared_timed_mutex> lock(s->level_mutex_);
+        auto it = s->module_levels.find(module);
+        if (it == s->module_levels.end()) {
             return global_level;
         }
 
-        const auto module_level = get_singleton()->module_levels.at(module);
+        const auto module_level = it->second;
 
         return global_level > module_level ? global_level : module_level;
     }
 
     static void verbose(const std::string &label, const std::string &module = PATHFINDER_DEFAULT_LOG_TAG) {
-        const auto level = get_effective_level(module);
-        if (level <= Level::Verbose) {
-            auto tag = module.c_str();
-#ifdef __ANDROID__
-            __android_log_write(ANDROID_LOG_VERBOSE, tag, label.c_str());
-#else
-            std::cout << "<" << tag << ">[VERBOSE] " << label << std::endl;
-#endif
-        }
+        log(Level::Verbose, label, module);
     }
 
     static void debug(const std::string &label, const std::string &module = PATHFINDER_DEFAULT_LOG_TAG) {
-        const auto level = get_effective_level(module);
-        if (level <= Level::Debug) {
-            auto tag = module.c_str();
-#ifdef __ANDROID__
-            __android_log_write(ANDROID_LOG_DEBUG, tag, label.c_str());
-#else
-            std::cout << "<" << tag << ">[DEBUG] " << label << std::endl;
-#endif
-        }
+        log(Level::Debug, label, module);
     }
 
     static void info(const std::string &label, const std::string &module = PATHFINDER_DEFAULT_LOG_TAG) {
-        const auto level = get_effective_level(module);
-        if (level <= Level::Info) {
-            auto tag = module.c_str();
-#ifdef __ANDROID__
-            __android_log_write(ANDROID_LOG_INFO, tag, label.c_str());
-#else
-            std::cout << "<" << tag << ">[INFO] " << label << std::endl;
-#endif
-        }
+        log(Level::Info, label, module);
     }
 
     static void warn(const std::string &label, const std::string &module = PATHFINDER_DEFAULT_LOG_TAG) {
-        const auto level = get_effective_level(module);
-        if (level <= Level::Warn) {
-            auto tag = module.c_str();
-#ifdef __ANDROID__
-            __android_log_write(ANDROID_LOG_WARN, tag, label.c_str());
-#else
-            std::cout << "<" << tag << ">[WARN] " << label << std::endl;
-#endif
-        }
+        log(Level::Warn, label, module);
     }
 
     static void error(const std::string &label, const std::string &module = PATHFINDER_DEFAULT_LOG_TAG) {
-        const auto level = get_effective_level(module);
-        if (level <= Level::Error) {
-            auto tag = module.c_str();
-#ifdef __ANDROID__
-            __android_log_write(ANDROID_LOG_ERROR, tag, label.c_str());
-#else
-            std::cout << "<" << tag << ">[ERROR] " << label << std::endl;
-#endif
-        }
+        log(Level::Error, label, module);
     }
 
 private:
     // So it can't be instantiated by outsiders.
-    Logger() = default;
+    Logger() : global_level_(Level::Info) {}
+
+    static void log(Level level, const std::string &label, const std::string &module) {
+        auto *s = get_singleton();
+
+        // Fast path: Atomic check against global level.
+        // If the message level is lower than the global floor, we can skip everything immediately.
+        if (level < s->global_level_.load(std::memory_order_relaxed)) {
+            return;
+        }
+
+        // Slow path: Check if the specific module has a stricter level.
+        if (get_effective_level(module) <= level) {
+            std::lock_guard<std::mutex> lock(s->output_mutex_);
+
+#ifdef __ANDROID__
+            int android_level = ANDROID_LOG_INFO;
+            switch (level) {
+                case Level::Verbose:
+                    android_level = ANDROID_LOG_VERBOSE;
+                    break;
+                case Level::Debug:
+                    android_level = ANDROID_LOG_DEBUG;
+                    break;
+                case Level::Info:
+                    android_level = ANDROID_LOG_INFO;
+                    break;
+                case Level::Warn:
+                    android_level = ANDROID_LOG_WARN;
+                    break;
+                case Level::Error:
+                    android_level = ANDROID_LOG_ERROR;
+                    break;
+                default:
+                    break;
+            }
+            __android_log_write(android_level, module.c_str(), label.c_str());
+#else
+            const char *level_str = "[INFO]";
+            std::ostream *os = &std::cout;
+
+            switch (level) {
+                case Level::Verbose:
+                    level_str = "[VERBOSE]";
+                    break;
+                case Level::Debug:
+                    level_str = "[DEBUG]";
+                    break;
+                case Level::Info:
+                    level_str = "[INFO]";
+                    break;
+                case Level::Warn:
+                    level_str = "[WARN]";
+                    os = &std::cerr;
+                    break;
+                case Level::Error:
+                    level_str = "[ERROR]";
+                    os = &std::cerr;
+                    break;
+                default:
+                    break;
+            }
+
+            *os << "<" << module << ">" << level_str << " " << label << std::endl;
+#endif
+        }
+    }
+
+    std::atomic<Level> global_level_;
+    std::unordered_map<std::string, Level> module_levels;
+
+    mutable std::shared_timed_mutex level_mutex_;
+    mutable std::mutex output_mutex_;
 
 public:
     Logger(Logger const &) = delete;
