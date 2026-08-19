@@ -16,8 +16,6 @@ public:
 
     void download_via_mapping(size_t data_size, size_t offset, void* data) override;
 
-    void set_label(const std::string& label) override;
-
     id<MTLBuffer> get_handle() noexcept {
         return mtl_buffer_;
     }
