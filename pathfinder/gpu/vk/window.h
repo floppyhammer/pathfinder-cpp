@@ -13,15 +13,13 @@ public:
 
     VkExtent2D choose_swap_extent(const VkSurfaceCapabilitiesKHR &capabilities) const;
 
-    std::shared_ptr<SwapChain> get_swap_chain(const std::shared_ptr<Device> &device,
-                                              PresentMode present_mode = PresentMode::Fifo) override;
+    std::shared_ptr<SwapChain> get_swap_chain(const std::shared_ptr<Device> &device, PresentMode present_mode) override;
+
+    void destroy() override;
 
     VkSurfaceKHR surface_{};
 
     VkInstance instance_{};
-
-private:
-    void destroy() override;
 };
 
 } // namespace Pathfinder

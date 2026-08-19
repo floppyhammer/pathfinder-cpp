@@ -1,7 +1,5 @@
 #include "window.h"
 
-#include <set>
-
 #include "debug_marker.h"
 #include "device.h"
 #include "queue.h"

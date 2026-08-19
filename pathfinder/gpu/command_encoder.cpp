@@ -9,13 +9,18 @@ namespace Pathfinder {
 
 void CommandEncoder::begin_render_pass(const std::shared_ptr<RenderPass> &render_pass,
                                        const std::shared_ptr<Texture> &texture,
-                                       ColorF clear_color) {
+                                       const ColorF clear_color) {
     std::shared_ptr<Framebuffer> framebuffer;
     if (texture) {
-        framebuffer = device_.lock()->create_framebuffer(render_pass, texture, texture->get_label() + " framebuffer");
-    } else {
+        framebuffer =
+            device_.lock()->create_framebuffer(render_pass, texture, render_pass->get_label() + " - framebuffer");
+    } else if (device_.lock()->get_backend_type() == BackendType::Opengl) {
+        // GL only.
         framebuffer = device_.lock()->create_framebuffer(render_pass, nullptr, "screen framebuffer");
+    } else {
+        throw std::runtime_error("Invalid texture when beginning a render pass");
     }
+
     framebuffers_.push_back(framebuffer);
 
     Command cmd{};

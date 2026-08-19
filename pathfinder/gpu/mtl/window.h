@@ -16,7 +16,7 @@ public:
     void destroy() override;
 
     std::shared_ptr<SwapChain> get_swap_chain(const std::shared_ptr<Device>& device,
-                                              PresentMode present_mode = PresentMode::Fifo) override;
+                                              PresentMode present_mode) override;
 
     CAMetalLayer* get_metal_layer() const {
         return metal_layer_;

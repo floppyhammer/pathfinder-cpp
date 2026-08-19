@@ -19,7 +19,7 @@ public:
     virtual void destroy() = 0;
 
     virtual std::shared_ptr<SwapChain> get_swap_chain(const std::shared_ptr<Device>& device,
-                                                      PresentMode present_mode = PresentMode::Fifo) = 0;
+                                                      PresentMode present_mode) = 0;
 
     Vec2I get_physical_size() const;
 

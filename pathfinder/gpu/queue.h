@@ -1,10 +1,7 @@
 #pragma once
 
-#include "../common/math/vec2.h"
 #include "command_encoder.h"
 #include "fence.h"
-#include "framebuffer.h"
-#include "render_pass.h"
 
 namespace Pathfinder {
 

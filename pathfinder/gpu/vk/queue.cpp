@@ -51,7 +51,7 @@ void QueueVk::submit(const std::shared_ptr<CommandEncoder> &encoder, const std::
     encoder->invoke_callbacks();
 }
 
-void QueueVk::begin_frame(uint32_t current_frame_index) {
+void QueueVk::begin_frame(const uint32_t current_frame_index) {
     current_frame_index_ = current_frame_index;
     encoders_in_flight_[current_frame_index_ % frames_in_flight_].clear();
 }

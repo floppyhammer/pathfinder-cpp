@@ -14,6 +14,10 @@ public:
         return load_op_;
     }
 
+    std::string get_label() const {
+        return label_;
+    }
+
 protected:
     RenderPass() = default;
 

@@ -19,7 +19,7 @@ public:
 #endif
 
     std::shared_ptr<SwapChain> get_swap_chain(const std::shared_ptr<Device> &device,
-                                              PresentMode present_mode = PresentMode::Fifo) override;
+                                              PresentMode present_mode) override;
 
 private:
     void destroy() override;

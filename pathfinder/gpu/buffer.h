@@ -7,8 +7,8 @@
 
 namespace Pathfinder {
 
-// Maximum binding number of vertex buffers for a draw call.
-const uint32_t MAX_VERTEX_BUFFER_BINDINGS = 8;
+/// Maximum binding number of vertex buffers for a draw call.
+constexpr uint32_t MAX_VERTEX_BUFFER_BINDINGS = 8;
 
 struct BufferDescriptor {
     BufferType type;
@@ -44,10 +44,6 @@ public:
 
     void set_label(const std::string& label) {
         label_ = label;
-    }
-
-    std::string get_label() const {
-        return label_;
     }
 
 protected:

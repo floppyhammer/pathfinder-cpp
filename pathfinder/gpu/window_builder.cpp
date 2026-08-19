@@ -104,7 +104,7 @@ float WindowBuilder::get_dpi_scaling_factor(uint8_t window_index) const {
     return get_window(window_index).lock()->get_dpi_scaling_factor();
 }
 
-void WindowBuilder::set_dpi_scaling_factor(uint8_t window_index, float new_scale) {
+void WindowBuilder::set_dpi_scaling_factor(uint8_t window_index, float new_scale) const {
     get_window(window_index).lock()->set_dpi_scaling_factor(new_scale);
 }
 

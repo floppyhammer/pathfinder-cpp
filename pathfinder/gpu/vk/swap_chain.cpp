@@ -10,7 +10,7 @@
 
 namespace Pathfinder {
 
-SwapChainVk::SwapChainVk(Vec2I size, WindowVk *window, DeviceVk *device, PresentMode present_mode)
+SwapChainVk::SwapChainVk(const Vec2I size, WindowVk *window, DeviceVk *device, PresentMode present_mode)
     : SwapChain(size, present_mode) {
     window_ = window;
     device_ = device;

@@ -40,7 +40,7 @@ public:
 
     float get_dpi_scaling_factor(uint8_t window_index) const;
 
-    void set_dpi_scaling_factor(uint8_t window_index, float new_scale);
+    void set_dpi_scaling_factor(uint8_t window_index, float new_scale) const;
 
     virtual std::shared_ptr<Device> request_device() = 0;
 

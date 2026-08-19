@@ -43,7 +43,7 @@ private:
     /// Typical Value: Usually 3 (for Triple Buffering) or 2 (for Double Buffering).
     std::vector<VkImage> swapchain_images_;
 
-    uint32_t image_count_; // (GPU-to-Display Buffering)
+    uint32_t image_count_ = 0; // (GPU-to-Display Buffering)
 
     /// VkImageView defines which part of VkImage to use.
     std::vector<VkImageView> swapchain_image_views_;

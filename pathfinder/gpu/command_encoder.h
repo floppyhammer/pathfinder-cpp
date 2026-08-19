@@ -209,7 +209,6 @@ public:
 
     // DATA TRANSFER
 
-    /// fixme: should set up a staging buffer every time we need to write to a buffer.
     /**
      * Upload to buffer.
      * @param buffer
@@ -222,7 +221,6 @@ public:
                               uint32_t data_size,
                               const void *data);
 
-    /// fixme: should set up a staging buffer every time we need to read from a buffer.
     void read_buffer(const std::shared_ptr<Buffer> &buffer, uint32_t offset, uint32_t data_size, void *data);
 
     void write_texture(const std::shared_ptr<Texture> &texture, RectI region, const void *data);

@@ -13,7 +13,7 @@ class CommandEncoderGl : public CommandEncoder {
 public:
     ~CommandEncoderGl() override;
 
-private:
+protected:
     CommandEncoderGl() = default;
 
     bool prepare() override;
