@@ -147,8 +147,13 @@ void WindowBuilderVk::initialize_after_surface_creation(VkSurfaceKHR surface) {
 }
 
 std::shared_ptr<Device> WindowBuilderVk::request_device() {
-    auto device = std::shared_ptr<DeviceVk>(new DeviceVk(
-        instance_, device_, physical_device_, graphics_queue_, present_queue_, command_pool_, MAX_FRAMES_IN_FLIGHT));
+    auto device = std::shared_ptr<DeviceVk>(new DeviceVk(instance_,
+                                                         device_,
+                                                         physical_device_,
+                                                         graphics_queue_,
+                                                         present_queue_,
+                                                         command_pool_,
+                                                         MAX_FRAMES_IN_FLIGHT));
     return device;
 }
 
@@ -170,7 +175,8 @@ void WindowBuilderVk::create_command_pool(VkSurfaceKHR surface) {
 
 void WindowBuilderVk::create_instance() {
     if (enable_validation_layers_ && !check_validation_layer_support()) {
-        throw std::runtime_error("Validation layers requested, but not available!");
+        enable_validation_layers_ = false;
+        Logger::error("Validation layers requested, but not available!");
     }
 
     // Structure specifying application information.

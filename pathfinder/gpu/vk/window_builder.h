@@ -87,7 +87,7 @@ private:
     VkDebugUtilsMessengerEXT debug_messenger_{};
 
     // See https://developer.android.com/ndk/guides/graphics/validation-layer for enabling validation layer on Android.
-    static constexpr bool enable_validation_layers_ =
+    bool enable_validation_layers_ =
 #if !defined(NDEBUG) && !(defined(_WIN32) && defined(_M_ARM64)) && !defined(__ANDROID__)
         true;
 #else
@@ -122,7 +122,7 @@ private:
                                    VkImageTiling tiling,
                                    VkFormatFeatureFlags features) const;
 
-    static std::vector<const char *> get_required_instance_extensions();
+    std::vector<const char *> get_required_instance_extensions();
 
     /// Should be called every time a surface is (re)created.
     void initialize_after_surface_creation(VkSurfaceKHR surface);
