@@ -274,6 +274,7 @@ PaintLocationsInfo Palette::assign_paint_locations(const std::shared_ptr<PaintTe
             else {
                 const auto &pattern = overlay->contents.pattern;
 
+                // Calculate guard border: 1px for CLAMP mode to avoid bleeding; 0px for REPEAT mode for seamlessness.
                 auto border = Vec2I(pattern.repeat_x() ? 0 : 1, pattern.repeat_y() ? 0 : 1);
 
                 TextureLocation location;
