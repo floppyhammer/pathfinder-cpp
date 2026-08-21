@@ -12,13 +12,7 @@ bool Paint::is_opaque() const {
     }
 
     if (overlay) {
-        auto &content = overlay->contents;
-
-        if (content.type == PaintContents::Type::Gradient) {
-            return content.gradient.is_opaque();
-        }
-
-        return content.pattern.is_opaque();
+        return std::visit([](auto &&content) { return content.is_opaque(); }, overlay->contents);
     }
 
     return true;
@@ -33,11 +27,7 @@ bool Paint::is_visible() const {
         return true;
     }
 
-    const auto &content = overlay->contents;
-    if (content.type == PaintContents::Type::Gradient) {
-        return content.gradient.is_visible();
-    }
-    return content.pattern.is_visible();
+    return std::visit([](auto &&content) { return content.is_visible(); }, overlay->contents);
 }
 
 ColorU Paint::get_base_color() const {

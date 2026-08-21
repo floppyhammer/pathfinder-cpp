@@ -33,7 +33,7 @@ rasterization to the C++ ecosystem, with native **Vulkan**, **OpenGL**, and **Me
 
 ### Prerequisites
 
-* C++14 compatible compiler.
+* C++17 compatible compiler.
 * CMake 3.15+.
 * Vulkan SDK (if building with Vulkan support or regenerating shaders).
 

@@ -241,6 +241,19 @@ struct Pattern {
         // We assume all images and render targets are visible for the sake of simplicity.
         return true;
     }
+
+    bool operator<(const Pattern &rhs) const {
+        if (source < rhs.source) return true;
+        if (rhs.source < source) return false;
+
+        if (transform < rhs.transform) return true;
+        if (rhs.transform < transform) return false;
+
+        if (filter < rhs.filter) return true;
+        if (rhs.filter < filter) return false;
+
+        return flags.value < rhs.flags.value;
+    }
 };
 
 } // namespace Pathfinder

@@ -4,6 +4,7 @@
 #include <memory>
 #include <set>
 #include <utility>
+#include <variant>
 
 #include "../../common/math/rect.h"
 #include "../../common/math/transform2.h"
@@ -54,28 +55,7 @@ struct TileBatchTextureInfo {
 RectF rect_to_uv(const RectI &rect, const Vec2F &texture_scale);
 
 /// The contents of an overlay: either a gradient or a pattern.
-struct PaintContents {
-    enum class Type {
-        Gradient,
-        Pattern,
-    } type = Type::Gradient;
-
-    Gradient gradient;
-    Pattern pattern;
-
-    // For being used as key in ordered maps.
-    bool operator<(const PaintContents &rhs) const {
-        if (type == rhs.type) {
-            if (type == PaintContents::Type::Gradient) {
-                return gradient < rhs.gradient;
-            } else {
-                return pattern.source < rhs.pattern.source;
-            }
-        } else {
-            return type < rhs.type;
-        }
-    }
-};
+using PaintContents = std::variant<Gradient, Pattern>;
 
 /// What is to be overlaid on top of a base color.
 ///
@@ -105,32 +85,24 @@ public:
 
     /// Creates a paint from a gradient.
     static Paint from_gradient(const Gradient &gradient) {
-        PaintContents contents;
-        contents.type = PaintContents::Type::Gradient;
-        contents.gradient = gradient;
-
         Paint paint;
         paint.base_color = ColorU::white();
 
         paint.overlay = std::make_shared<PaintOverlay>();
         paint.overlay->composite_op = PaintCompositeOp::SrcIn;
-        paint.overlay->contents = contents;
+        paint.overlay->contents = gradient;
 
         return paint;
     }
 
     /// Creates a paint from a raster pattern.
     static Paint from_pattern(const Pattern &pattern) {
-        PaintContents contents;
-        contents.type = PaintContents::Type::Pattern;
-        contents.pattern = pattern;
-
         Paint paint;
         paint.base_color = ColorU::white();
 
         paint.overlay = std::make_shared<PaintOverlay>();
         paint.overlay->composite_op = PaintCompositeOp::SrcIn;
-        paint.overlay->contents = contents;
+        paint.overlay->contents = pattern;
 
         return paint;
     }

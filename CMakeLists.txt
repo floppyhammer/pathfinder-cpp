@@ -42,7 +42,7 @@ endif ()
 
 add_subdirectory(pathfinder)
 
-target_compile_features(pathfinder PUBLIC cxx_std_14)
+target_compile_features(pathfinder PUBLIC cxx_std_17)
 
 if (MSVC)
     target_compile_options(pathfinder PUBLIC "/utf-8")

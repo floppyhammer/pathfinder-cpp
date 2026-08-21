@@ -243,15 +243,18 @@ PaintLocationsInfo Palette::assign_paint_locations(const std::shared_ptr<PaintTe
             color_texture_metadata = std::make_shared<PaintColorTextureMetadata>();
 
             // Gradient.
-            if (overlay->contents.type == PaintContents::Type::Gradient) {
-                const auto &gradient = overlay->contents.gradient;
+            if (std::holds_alternative<Gradient>(overlay->contents)) {
+                const auto &gradient = std::get<Gradient>(overlay->contents);
 
                 TextureSamplingFlags sampling_flags;
                 if (gradient.wrap == GradientWrap::Repeat) {
                     sampling_flags.value |= TextureSamplingFlags::REPEAT_U;
                 }
 
-                // FIXME(pcwalton): The gradient size might not be big enough. Detect this.
+                // FIXME(floppyhammer): The default GRADIENT_TILE_LENGTH (256px) may lack sufficient
+                // horizontal resolution for wide gradients or those with many stops, potentially
+                // causing banding. We should also detect when the number of unique gradients
+                // exceeds the 256-slot vertical capacity of a single texture page.
                 auto location = gradient_tile_builder.allocate(gradient, allocator, transient_paint_locations);
 
                 if (gradient.geometry.type == GradientGeometry::Type::Linear) {
@@ -272,7 +275,7 @@ PaintLocationsInfo Palette::assign_paint_locations(const std::shared_ptr<PaintTe
             }
             // Pattern.
             else {
-                const auto &pattern = overlay->contents.pattern;
+                const auto &pattern = std::get<Pattern>(overlay->contents);
 
                 // Calculate guard border: 1px for CLAMP mode to avoid bleeding; 0px for REPEAT mode for seamlessness.
                 auto border = Vec2I(pattern.repeat_x() ? 0 : 1, pattern.repeat_y() ? 0 : 1);
@@ -404,8 +407,8 @@ void Palette::calculate_texture_transforms(std::vector<PaintMetadata> &paint_met
 
         // Calculate transform.
         if (overlay) {
-            if (overlay->contents.type == PaintContents::Type::Gradient) {
-                auto gradient_geometry = overlay->contents.gradient.geometry;
+            if (std::holds_alternative<Gradient>(overlay->contents)) {
+                const auto &gradient_geometry = std::get<Gradient>(overlay->contents).geometry;
 
                 // TODO: Use a texture manager.
                 auto texture_scale = Vec2F(1.f / GRADIENT_TILE_LENGTH, 1.f / GRADIENT_TILE_LENGTH);
@@ -426,7 +429,7 @@ void Palette::calculate_texture_transforms(std::vector<PaintMetadata> &paint_met
                     color_texture_metadata->transform = gradient_geometry.radial.transform.inverse();
                 }
             } else {
-                auto pattern = overlay->contents.pattern;
+                auto pattern = std::get<Pattern>(overlay->contents);
 
                 auto texture_scale = Vec2F(1.f / texture_rect.width(), 1.f / texture_rect.height());
 
@@ -496,23 +499,25 @@ MergedPaletteInfo Palette::append_palette(const Palette &palette, const Transfor
         if (paint.get_overlay()) {
             auto &contents = paint.get_overlay()->contents;
 
-            if (contents.type == PaintContents::Type::Pattern) {
-                if (contents.pattern.source.type == PatternSource::Type::RenderTarget) {
-                    auto new_pattern = Pattern::from_render_target(contents.pattern.source.render_target_id,
-                                                                   contents.pattern.source.size);
+            if (std::holds_alternative<Pattern>(contents)) {
+                const auto &pattern = std::get<Pattern>(contents);
+                if (pattern.source.type == PatternSource::Type::RenderTarget) {
+                    auto new_pattern =
+                        Pattern::from_render_target(pattern.source.render_target_id, pattern.source.size);
                     //                            new_pattern.set_filter(pattern.filter());
-                    new_pattern.apply_transform(transform * contents.pattern.transform);
-                    new_pattern.set_repeat_x(contents.pattern.repeat_x());
-                    new_pattern.set_repeat_y(contents.pattern.repeat_y());
-                    new_pattern.set_smoothing_enabled(contents.pattern.smoothing_enabled());
+                    new_pattern.apply_transform(transform * pattern.transform);
+                    new_pattern.set_repeat_x(pattern.repeat_x());
+                    new_pattern.set_repeat_y(pattern.repeat_y());
+                    new_pattern.set_smoothing_enabled(pattern.smoothing_enabled());
 
                     auto new_paint = Paint::from_pattern(new_pattern);
-                    push_paint(new_paint);
+                    new_paint_id = push_paint(new_paint);
                 } else {
                     new_paint_id = push_paint(paint);
                 }
             } else {
-                contents.gradient.geometry.apply_transform(transform);
+                auto &gradient = std::get<Gradient>(contents);
+                gradient.geometry.apply_transform(transform);
                 new_paint_id = push_paint(paint);
             }
         } else {
