@@ -14,10 +14,10 @@ namespace Pathfinder {
 
 // Everything above 16 MB is allocated exactly for general buffers.
 // This improves general buffer re-usability in a GPU memory allocator.
-const size_t MAX_BUFFER_SIZE_CLASS = 16 * 1024 * 1024;
+constexpr size_t MAX_BUFFER_SIZE_CLASS = 16 * 1024 * 1024;
 
 // Number of seconds before unused memory is purged from idle_pool.
-const float DECAY_TIME = 2.0;
+constexpr float DECAY_TIME = 2.0;
 
 struct BufferAllocation {
     std::shared_ptr<Buffer> buffer;

@@ -76,7 +76,7 @@ float LineSegmentF::square_length() const {
 }
 
 bool LineSegmentF::intersection_t(const LineSegmentF &other, float &output) const {
-    const float EPSILON = 0.0001;
+    constexpr float EPSILON = 0.0001;
 
     auto p0p1 = vector();
     auto matrix = Mat2(other.vector().x, other.vector().y, -p0p1.x, -p0p1.y);

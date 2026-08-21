@@ -6,8 +6,8 @@
 
 namespace Pathfinder {
 
-const float PATH_MIN_DIST = 0.05f;
-const float PATH_MIN_DIST_SQ = PATH_MIN_DIST * PATH_MIN_DIST;
+constexpr float PATH_MIN_DIST = 0.05f;
+constexpr float PATH_MIN_DIST_SQ = PATH_MIN_DIST * PATH_MIN_DIST;
 
 void Path2d::close_path() {
     current_contour.close();
@@ -66,7 +66,7 @@ void Path2d::add_line(const Vec2F &start, const Vec2F &end) {
     line_to(end.x, end.y);
 }
 
-const float CIRCLE_RATIO = 0.552284749831; // 4.0f * (sqrt(2.0f) - 1.0f) / 3.0f
+constexpr float CIRCLE_RATIO = 0.552284749831; // 4.0f * (sqrt(2.0f) - 1.0f) / 3.0f
 
 void Path2d::add_rect(const RectF &rect, float corner_radius) {
     if (rect.size().x == 0 || rect.size().y == 0) {

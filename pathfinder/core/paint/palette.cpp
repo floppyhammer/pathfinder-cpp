@@ -7,16 +7,16 @@
 namespace Pathfinder {
 
 // 1.0 / sqrt(2 * pi)
-const float SQRT_2_PI_INV = 0.3989422804014327;
+constexpr float SQRT_2_PI_INV = 0.3989422804014327;
 
-const int32_t COMBINER_CTRL_FILTER_RADIAL_GRADIENT = 0x1;
-const int32_t COMBINER_CTRL_FILTER_TEXT = 0x2;
-const int32_t COMBINER_CTRL_FILTER_BLUR = 0x3;
-const int32_t COMBINER_CTRL_FILTER_COLOR_MATRIX = 0x4;
+constexpr int32_t COMBINER_CTRL_FILTER_RADIAL_GRADIENT = 0x1;
+constexpr int32_t COMBINER_CTRL_FILTER_TEXT = 0x2;
+constexpr int32_t COMBINER_CTRL_FILTER_BLUR = 0x3;
+constexpr int32_t COMBINER_CTRL_FILTER_COLOR_MATRIX = 0x4;
 
-const int32_t COMBINER_CTRL_COLOR_FILTER_SHIFT = 4;
-const int32_t COMBINER_CTRL_COLOR_COMBINE_SHIFT = 8;
-const int32_t COMBINER_CTRL_COMPOSITE_SHIFT = 10;
+constexpr int32_t COMBINER_CTRL_COLOR_FILTER_SHIFT = 4;
+constexpr int32_t COMBINER_CTRL_COLOR_COMBINE_SHIFT = 8;
+constexpr int32_t COMBINER_CTRL_COMPOSITE_SHIFT = 10;
 
 FilterParams compute_filter_params(const PaintFilter &filter,
                                    BlendMode blend_mode,

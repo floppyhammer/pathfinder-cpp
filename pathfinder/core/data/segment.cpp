@@ -209,7 +209,7 @@ Segment Segment::quarter_circle_arc() {
 }
 
 Segment Segment::arc_from_cos(float cos_sweep_angle) {
-    const float EPSILON = 0.001;
+    constexpr float EPSILON = 0.001;
 
     // Richard A. DeVeneza, "How to determine the control points of a Bézier curve that
     // approximates a small arc", 2004.

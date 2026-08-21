@@ -4,7 +4,7 @@
 
 namespace Pathfinder {
 
-const float DASH_EPSILON = 0.0001;
+constexpr float DASH_EPSILON = 0.0001;
 
 DashState::DashState(const std::vector<float> &_dashes, float _offset) : dashes(_dashes) {
     float total = 0;
