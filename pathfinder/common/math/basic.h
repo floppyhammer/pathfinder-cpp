@@ -7,8 +7,11 @@
 
 namespace Pathfinder {
 
-// To handle floating point error.
-constexpr float FLOAT_EPSILON = 0.0001;
+// Standard epsilon for general floating point comparisons (1e-4).
+constexpr float FLOAT_EPSILON = 0.0001f;
+
+// Epsilon for geometric approximations, such as flattening curves to lines (1e-3).
+constexpr float GEOMETRIC_EPSILON = 0.001f;
 
 constexpr float PI = 3.141592653589f;
 

@@ -1,5 +1,7 @@
 #include "segment.h"
 
+#include "../../common/math/basic.h"
+
 namespace Pathfinder {
 
 Segment::Segment(const LineSegmentF& _baseline, const LineSegmentF& _ctrl) : baseline(_baseline), ctrl(_ctrl) {}
@@ -209,13 +211,11 @@ Segment Segment::quarter_circle_arc() {
 }
 
 Segment Segment::arc_from_cos(float cos_sweep_angle) {
-    constexpr float EPSILON = 0.001;
-
     // Richard A. DeVeneza, "How to determine the control points of a Bézier curve that
     // approximates a small arc", 2004.
     //
     // https://www.tinaja.com/glib/bezcirc2.pdf
-    if (cos_sweep_angle >= 1.0 - EPSILON) {
+    if (cos_sweep_angle >= 1.0 - GEOMETRIC_EPSILON) {
         return Segment::line(LineSegmentF(Vec2F(1.0, 0.0), Vec2F(1.0, 0.0)));
     }
 

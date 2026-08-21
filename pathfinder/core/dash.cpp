@@ -2,9 +2,9 @@
 
 #include <cmath>
 
-namespace Pathfinder {
+#include "../common/math/basic.h"
 
-constexpr float DASH_EPSILON = 0.0001;
+namespace Pathfinder {
 
 DashState::DashState(const std::vector<float> &_dashes, float _offset) : dashes(_dashes) {
     float total = 0;
@@ -107,7 +107,7 @@ void ContourDash::dash() {
 
         state.distance_left -= distance;
 
-        if (state.distance_left < DASH_EPSILON) {
+        if (state.distance_left < FLOAT_EPSILON) {
             if (state.is_on()) {
                 output.push_contour(state.output);
                 state.output = Contour();
