@@ -86,21 +86,23 @@ void composite_shadow_blur_render_targets(Scene &scene, const ShadowBlurRenderTa
 
     pattern_y.apply_transform(transform);
 
-    auto filter = PatternFilter();
-
-    filter.type = PatternFilter::Type::Blur;
-    filter.blur.sigma = info.sigma;
+    auto filter = PatternFilter(BlurPatternFilter{
+        BlurDirection::X,
+        info.sigma,
+        1.0f,
+    });
 
     // Pass 1: Horizontal blur.
     // We set strength to 1.0 here to avoid premature clamping in the intermediate render target.
-    filter.blur.strength = 1.0f;
-    filter.blur.direction = BlurDirection::X;
     pattern_x.set_filter(filter);
 
     // Pass 2: Vertical blur.
     // Apply the actual strength here for the final compositing.
-    filter.blur.strength = info.strength;
-    filter.blur.direction = BlurDirection::Y;
+    filter = BlurPatternFilter{
+        BlurDirection::Y,
+        info.sigma,
+        info.strength,
+    };
     pattern_y.set_filter(filter);
 
     auto paint_x = Paint::from_pattern(pattern_x);

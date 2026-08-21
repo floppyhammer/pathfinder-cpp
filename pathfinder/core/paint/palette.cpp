@@ -31,46 +31,48 @@ FilterParams compute_filter_params(const PaintFilter &filter,
     FilterParams filter_params;
     filter_params.ctrl = ctrl;
 
-    // Add flag for filter.
-    switch (filter.type) {
-        case PaintFilter::Type::RadialGradient: {
-            auto gradient = filter.gradient_filter;
+    std::visit(
+        overloaded{
+            [&](const RadialGradientPaintFilter &f) {
+                filter_params.p0 = F32x4(f.line.from(), f.line.vector());
+                filter_params.p1 = F32x4(f.radii, f.uv_origin);
+                filter_params.ctrl = ctrl | (COMBINER_CTRL_FILTER_RADIAL_GRADIENT << COMBINER_CTRL_COLOR_FILTER_SHIFT);
+            },
+            [&](const PatternFilter &f) {
+                std::visit(overloaded{
+                               [&](const BlurPatternFilter &pf) {
+                                   auto sigma = pf.sigma;
+                                   auto direction = pf.direction;
 
-            filter_params.p0 = F32x4(gradient.line.from(), gradient.line.vector());
-            filter_params.p1 = F32x4(gradient.radii, gradient.uv_origin);
-            filter_params.ctrl = ctrl | (COMBINER_CTRL_FILTER_RADIAL_GRADIENT << COMBINER_CTRL_COLOR_FILTER_SHIFT);
-        } break;
-        case PaintFilter::Type::PatternFilter: {
-            auto pattern = filter.pattern_filter;
+                                   if (sigma > 0) {
+                                       auto sigma_inv = 1.f / sigma;
+                                       auto gauss_coeff_x = SQRT_2_PI_INV * sigma_inv;
+                                       auto gauss_coeff_y = std::exp(-0.5f * sigma_inv * sigma_inv);
+                                       auto gauss_coeff_z = gauss_coeff_y * gauss_coeff_y;
 
-            if (pattern.type == PatternFilter::Type::Blur) {
-                auto sigma = pattern.blur.sigma;
-                auto direction = pattern.blur.direction;
+                                       auto src_offset =
+                                           direction == BlurDirection::X ? Vec2F(1.0, 0.0) : Vec2F(0.0, 1.0);
 
-                if (sigma <= 0) {
-                    break;
-                }
+                                       auto support = std::ceil(1.5f * sigma) * 2.f;
 
-                auto sigma_inv = 1.f / sigma;
-                auto gauss_coeff_x = SQRT_2_PI_INV * sigma_inv;
-                auto gauss_coeff_y = std::exp(-0.5f * sigma_inv * sigma_inv);
-                auto gauss_coeff_z = gauss_coeff_y * gauss_coeff_y;
-
-                auto src_offset = direction == BlurDirection::X ? Vec2F(1.0, 0.0) : Vec2F(0.0, 1.0);
-
-                auto support = std::ceil(1.5f * sigma) * 2.f;
-
-                filter_params.p0 = F32x4(src_offset, Vec2F(support, 0.0));
-                filter_params.p1 = F32x4(gauss_coeff_x, gauss_coeff_y, gauss_coeff_z, 0.0);
-                filter_params.p2 = F32x4(pattern.blur.strength, 0, 0, 0);
-                filter_params.ctrl = ctrl | (COMBINER_CTRL_FILTER_BLUR << COMBINER_CTRL_COLOR_FILTER_SHIFT);
-            } else {
-                throw std::runtime_error("Text pattern filter is not supported yet!");
-            }
-        } break;
-        default: // No filter.
-            break;
-    }
+                                       filter_params.p0 = F32x4(src_offset, Vec2F(support, 0.0));
+                                       filter_params.p1 = F32x4(gauss_coeff_x, gauss_coeff_y, gauss_coeff_z, 0.0);
+                                       filter_params.p2 = F32x4(pf.strength, 0, 0, 0);
+                                       filter_params.ctrl =
+                                           ctrl | (COMBINER_CTRL_FILTER_BLUR << COMBINER_CTRL_COLOR_FILTER_SHIFT);
+                                   }
+                               },
+                               [&](const TextPatternFilter &pf) {
+                                   // TODO: Implement text pattern filter support.
+                               },
+                           },
+                           f);
+            },
+            [](std::monostate) {
+                // No filter applied.
+            },
+        },
+        filter);
 
     return filter_params;
 }
@@ -258,11 +260,13 @@ PaintLocationsInfo Palette::assign_paint_locations(const std::shared_ptr<PaintTe
                 auto location = gradient_tile_builder.allocate(gradient, allocator, transient_paint_locations);
 
                 if (gradient.geometry.type == GradientGeometry::Type::Linear) {
-                    color_texture_metadata->filter.type = PaintFilter::Type::None;
+                    color_texture_metadata->filter = std::monostate{};
                 } else {
-                    color_texture_metadata->filter.type = PaintFilter::Type::RadialGradient;
-                    color_texture_metadata->filter.gradient_filter.line = gradient.geometry.radial.line;
-                    color_texture_metadata->filter.gradient_filter.radii = gradient.geometry.radial.radii;
+                    color_texture_metadata->filter = RadialGradientPaintFilter{
+                        gradient.geometry.radial.line,
+                        gradient.geometry.radial.radii,
+                        {}, // uv_origin will be calculated later in PaintMetadata::filter()
+                    };
                 }
 
                 // Assign the gradient to a color texture location.
@@ -350,10 +354,9 @@ PaintLocationsInfo Palette::assign_paint_locations(const std::shared_ptr<PaintTe
                 PaintFilter paint_filter;
                 // We can have a pattern without a filter.
                 if (pattern.filter == nullptr) {
-                    paint_filter.type = PaintFilter::Type::None;
+                    paint_filter = std::monostate{};
                 } else {
-                    paint_filter.type = PaintFilter::Type::PatternFilter;
-                    paint_filter.pattern_filter = *pattern.filter;
+                    paint_filter = *pattern.filter;
                 }
 
                 // Texture

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <variant>
+
 #include "../../common/color.h"
 #include "../data/line_segment.h"
 
@@ -13,66 +15,42 @@ enum class BlurDirection {
     Y,
 };
 
+/// Performs postprocessing operations useful for monochrome text.
+struct TextPatternFilter {
+    /// The foreground color of the text.
+    ColorF fg_color;
+    /// The background color of the text.
+    ColorF bg_color;
+};
+
+/// A blur operation in one direction, either horizontal or vertical.
+///
+/// To produce a full Gaussian blur, perform two successive blur operations, one in each
+/// direction.
+struct BlurPatternFilter {
+    /// The axis of the blur: horizontal or vertical.
+    BlurDirection direction{};
+    /// Half the blur radius.
+    float sigma = 0;
+    /// Intensity of the blur effect. 1.0 is default.
+    float strength = 1.0f;
+};
+
 /// Shaders applicable to patterns.
-struct PatternFilter {
-    enum class Type {
-        Text,
-        Blur,
-    } type = Type::Blur;
+using PatternFilter = std::variant<TextPatternFilter, BlurPatternFilter>;
 
-    /// Performs postprocessing operations useful for monochrome text.
-    struct Text {
-        /// The foreground color of the text.
-        ColorF fg_color;
-        /// The background color of the text.
-        ColorF bg_color;
-    };
-
-    /// A blur operation in one direction, either horizontal or vertical.
-    ///
-    /// To produce a full Gaussian blur, perform two successive blur operations, one in each
-    /// direction.
-    struct Blur {
-        /// The axis of the blur: horizontal or vertical.
-        BlurDirection direction{};
-        /// Half the blur radius.
-        float sigma = 0;
-        /// Intensity of the blur effect. 1.0 is default.
-        float strength = 1.0f;
-    };
-
-    union {
-        Text text;
-        Blur blur;
-    };
-
-    /// We need this constructor to get union work.
-    PatternFilter() {}
+/// Converts a linear gradient to a radial one.
+struct RadialGradientPaintFilter {
+    /// The line that the circles lie along.
+    LineSegmentF line;
+    /// The radii of the circles at the two endpoints.
+    Vec2F radii;
+    /// The origin of the linearized gradient in the texture.
+    Vec2F uv_origin;
 };
 
 /// The shader that should be used when compositing this layer onto its destination.
-struct PaintFilter {
-    /// Filter type.
-    enum class Type {
-        None,
-        RadialGradient,
-        PatternFilter,
-    } type = Type::None;
-
-    /// Converts a linear gradient to a radial one.
-    struct RadialGradient {
-        /// The line that the circles lie along.
-        LineSegmentF line;
-        /// The radii of the circles at the two endpoints.
-        Vec2F radii;
-        /// The origin of the linearized gradient in the texture.
-        Vec2F uv_origin;
-    };
-
-    RadialGradient gradient_filter; // For RadialGradient type.
-
-    PatternFilter pattern_filter; // For PatternFilter type.
-};
+using PaintFilter = std::variant<std::monostate, RadialGradientPaintFilter, PatternFilter>;
 
 /// Blend modes that can be applied to individual paths.
 enum class BlendMode {
@@ -298,7 +276,7 @@ struct TextureSamplingFlags {
 
     uint8_t value = 0;
 
-    bool contains(uint8_t flags) const {
+    bool contains(const uint8_t flags) const {
         return value & flags;
     }
 

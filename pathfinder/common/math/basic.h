@@ -104,4 +104,12 @@ inline int round_up(int number, int multiple) {
     return number + multiple - remainder;
 }
 
+// Helper for std::visit to enable pattern matching style syntax.
+template <class... Ts>
+struct overloaded : Ts... {
+    using Ts::operator()...;
+};
+template <class... Ts>
+overloaded(Ts...) -> overloaded<Ts...>;
+
 } // namespace Pathfinder
