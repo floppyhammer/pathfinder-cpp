@@ -53,32 +53,39 @@ struct GradientRadial {
     /// Like `gradientTransform` in SVG. Note that this is the inverse of Cairo's gradient
     /// transform.
     Transform2 transform;
+
+    bool operator==(const GradientRadial &rhs) const {
+        return line == rhs.line && radii == rhs.radii && transform == rhs.transform;
+    }
+
+    bool operator!=(const GradientRadial &rhs) const {
+        return !(*this == rhs);
+    }
+
+    bool operator<(const GradientRadial &rhs) const {
+        return std::forward_as_tuple(line, radii, transform) <
+               std::forward_as_tuple(rhs.line, rhs.radii, rhs.transform);
+    }
+};
+
+struct GradientLinear {
+    LineSegmentF line;
+
+    bool operator==(const GradientLinear &rhs) const {
+        return line == rhs.line;
+    }
+
+    bool operator!=(const GradientLinear &rhs) const {
+        return !(*this == rhs);
+    }
+
+    bool operator<(const GradientLinear &rhs) const {
+        return line < rhs.line;
+    }
 };
 
 /// The type of gradient: linear or radial.
-struct GradientGeometry {
-    enum class Type {
-        Linear,
-        Radial,
-    } type = Type::Linear;
-
-    /// A linear gradient that follows a line.
-    ///
-    /// The line is in scene coordinates, not relative to the bounding box of the path.
-    LineSegmentF linear;
-
-    /// A radial gradient that radiates outward from a line connecting two circles (or from one
-    /// circle).
-    GradientRadial radial;
-
-    void apply_transform(const Transform2 &transform) {
-        if (type == Type::Linear) {
-            linear = linear.apply_transform(transform);
-        } else {
-            radial.transform = transform * radial.transform;
-        }
-    }
-};
+using GradientGeometry = std::variant<GradientLinear, GradientRadial>;
 
 /// What should be rendered outside the color stops.
 enum class GradientWrap {
@@ -104,8 +111,7 @@ public:
     /// The line is in scene coordinates, not relative to the bounding box of the current path.
     static Gradient linear(const LineSegmentF &line) {
         Gradient gradient;
-        gradient.geometry.type = GradientGeometry::Type::Linear;
-        gradient.geometry.linear = line;
+        gradient.geometry = GradientLinear{line};
 
         return gradient;
     }
@@ -119,9 +125,7 @@ public:
     /// circle, pass zero for the first radius.
     static Gradient radial(const LineSegmentF &line, const Vec2F &radii) {
         Gradient gradient;
-        gradient.geometry.type = GradientGeometry::Type::Radial;
-        gradient.geometry.radial.line = line;
-        gradient.geometry.radial.radii = radii;
+        gradient.geometry = GradientRadial{line, radii, Transform2()};
 
         return gradient;
     }
@@ -144,37 +148,14 @@ public:
 
     // For being used as ordered key.
     bool operator<(const Gradient &rhs) const {
-        // 1. Compare the outer wrap mode first.
         if (wrap != rhs.wrap) {
             return wrap < rhs.wrap;
         }
 
-        // 2. Compare the gradient geometry type.
-        if (geometry.type != rhs.geometry.type) {
-            return geometry.type < rhs.geometry.type;
+        if (geometry != rhs.geometry) {
+            return geometry < rhs.geometry;
         }
 
-        // 3. Branch based on the type and perform strict lexicographical comparison.
-        if (geometry.type == GradientGeometry::Type::Linear) {
-            // Standard total-ordering chain for linear gradient.
-            if (geometry.linear < rhs.geometry.linear) return true;
-            if (rhs.geometry.linear < geometry.linear) return false;
-        } else { // Radial
-            // CRITICAL FIX: Replaced the incorrect '&&' logic with lexicographical comparison
-            // using std::forward_as_tuple to maintain Strict Weak Ordering for rvalues/lvalues.
-            auto tuple_lhs =
-                std::forward_as_tuple(geometry.radial.line, geometry.radial.radii, geometry.radial.transform);
-            auto tuple_rhs = std::forward_as_tuple(rhs.geometry.radial.line,
-                                                   rhs.geometry.radial.radii,
-                                                   rhs.geometry.radial.transform);
-            if (tuple_lhs != tuple_rhs) {
-                return tuple_lhs < tuple_rhs;
-            }
-        }
-
-        // 4. CRITICAL FIX: Compare the 'stops' vector (color stops).
-        // If all geometry attributes are identical, gradients with different colors must not be treated as equivalent.
-        // std::vector's operator< automatically performs a sequential lexicographical comparison on its elements.
         return stops < rhs.stops;
     }
 

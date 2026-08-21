@@ -259,15 +259,16 @@ PaintLocationsInfo Palette::assign_paint_locations(const std::shared_ptr<PaintTe
                 // exceeds the 256-slot vertical capacity of a single texture page.
                 auto location = gradient_tile_builder.allocate(gradient, allocator, transient_paint_locations);
 
-                if (gradient.geometry.type == GradientGeometry::Type::Linear) {
-                    color_texture_metadata->filter = std::monostate{};
-                } else {
-                    color_texture_metadata->filter = RadialGradientPaintFilter{
-                        gradient.geometry.radial.line,
-                        gradient.geometry.radial.radii,
-                        {}, // uv_origin will be calculated later in PaintMetadata::filter()
-                    };
-                }
+                std::visit(
+                    overloaded{[&](const GradientLinear &linear) { color_texture_metadata->filter = std::monostate{}; },
+                               [&](const GradientRadial &radial) {
+                                   color_texture_metadata->filter = RadialGradientPaintFilter{
+                                       radial.line,
+                                       radial.radii,
+                                       {}, // uv_origin will be calculated later in PaintMetadata::filter()
+                                   };
+                               }},
+                    gradient.geometry);
 
                 // Assign the gradient to a color texture location.
                 color_texture_metadata->location = location;
@@ -411,26 +412,28 @@ void Palette::calculate_texture_transforms(std::vector<PaintMetadata> &paint_met
         // Calculate transform.
         if (overlay) {
             if (std::holds_alternative<Gradient>(overlay->contents)) {
-                const auto &gradient_geometry = std::get<Gradient>(overlay->contents).geometry;
+                const auto &gradient = std::get<Gradient>(overlay->contents);
 
                 // TODO: Use a texture manager.
                 auto texture_scale = Vec2F(1.f / GRADIENT_TILE_LENGTH, 1.f / GRADIENT_TILE_LENGTH);
 
                 color_texture_metadata->page_scale = texture_scale;
 
-                // Convert linear to radical.
-                if (gradient_geometry.type == GradientGeometry::Type::Linear) {
-                    auto gradient_line = gradient_geometry.linear;
-                    auto v0 = texture_rect.to_f32().center().y * texture_scale.y;
+                std::visit(overloaded{[&](const GradientLinear &linear) {
+                                          const auto gradient_line = linear.line;
+                                          auto v0 = texture_rect.to_f32().center().y * texture_scale.y;
 
-                    auto dp = gradient_line.vector();
-                    auto m0 = dp / gradient_line.square_length();
-                    auto m13 = m0 * -gradient_line.from();
+                                          auto dp = gradient_line.vector();
+                                          auto m0 = dp / gradient_line.square_length();
+                                          auto m13 = m0 * -gradient_line.from();
 
-                    color_texture_metadata->transform = Transform2({m0.x, 0.0, m0.y, 0.0}, {m13.x + m13.y, v0});
-                } else { // Radical
-                    color_texture_metadata->transform = gradient_geometry.radial.transform.inverse();
-                }
+                                          color_texture_metadata->transform =
+                                              Transform2({m0.x, 0.0, m0.y, 0.0}, {m13.x + m13.y, v0});
+                                      },
+                                      [&](const GradientRadial &radial) {
+                                          color_texture_metadata->transform = radial.transform.inverse();
+                                      }},
+                           gradient.geometry);
             } else {
                 auto pattern = std::get<Pattern>(overlay->contents);
 
@@ -520,7 +523,10 @@ MergedPaletteInfo Palette::append_palette(const Palette &palette, const Transfor
                 }
             } else {
                 auto &gradient = std::get<Gradient>(contents);
-                gradient.geometry.apply_transform(transform);
+                std::visit(
+                    overloaded{[&](GradientLinear &linear) { linear.line = linear.line.apply_transform(transform); },
+                               [&](GradientRadial &radial) { radial.transform = transform * radial.transform; }},
+                    gradient.geometry);
                 new_paint_id = push_paint(paint);
             }
         } else {

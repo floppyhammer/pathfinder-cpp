@@ -95,7 +95,7 @@ Paint convert_nsvg_paint(NSVGpaint nsvg_paint) {
 
                 gradient = Gradient::radial(LineSegmentF(from, to), Vec2F(0.0, nsvg_gradient->r));
 
-                gradient.geometry.radial.transform = path_xform * gradient_xform;
+                std::get<GradientRadial>(gradient.geometry).transform = path_xform * gradient_xform;
             }
 
             // TODO: Allow change color texture sampling mode.
