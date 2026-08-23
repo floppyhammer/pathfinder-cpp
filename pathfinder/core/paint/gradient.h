@@ -146,6 +146,14 @@ public:
     /// Returns true if any colors of any stops in this gradient are visible.
     bool is_visible() const;
 
+    const std::vector<ColorStop> &get_stops() const {
+        return stops;
+    }
+
+    std::vector<ColorStop> &get_stops() {
+        return stops;
+    }
+
     // For being used as ordered key.
     bool operator<(const Gradient &rhs) const {
         if (wrap != rhs.wrap) {
@@ -157,6 +165,14 @@ public:
         }
 
         return stops < rhs.stops;
+    }
+
+    bool operator==(const Gradient &rhs) const {
+        return geometry == rhs.geometry && wrap == rhs.wrap && stops == rhs.stops;
+    }
+
+    bool operator!=(const Gradient &rhs) const {
+        return !(*this == rhs);
     }
 
 private:
