@@ -136,12 +136,21 @@ void WindowBuilder::set_fullscreen(bool fullscreen) {
                              mode->height,
                              GLFW_DONT_CARE);
     } else {
+        Vec2I target_size;
+    #ifdef __APPLE__
+        // macOS expects logical coordinates (points).
+        target_size = (reserved_window_physical_size_.to_f32() / primary_window_->get_dpi_scaling_factor()).to_i32();
+    #else
+        // Other platforms expect physical coordinates (pixels).
+        target_size = reserved_window_physical_size_;
+    #endif
+
         glfwSetWindowMonitor((GLFWwindow *)primary_window_->glfw_window_,
                              nullptr,
                              reserved_window_position_.x,
                              reserved_window_position_.y,
-                             reserved_window_physical_size_.x,
-                             reserved_window_physical_size_.y,
+                             target_size.x,
+                             target_size.y,
                              GLFW_DONT_CARE);
     }
 #endif
