@@ -37,7 +37,10 @@ void WindowMtl::destroy() {
 
 std::shared_ptr<SwapChain> WindowMtl::get_swap_chain(const std::shared_ptr<Device>& device,
                                                   PresentMode present_mode) {
-    if (!swapchain_) {
+    NSWindow* nswin = glfwGetCocoaWindow((GLFWwindow*)glfw_window_);
+    metal_layer_.contentsScale = nswin.backingScaleFactor;
+
+    if (!swapchain_ || swapchain_->size_ != physical_size_) {
         swapchain_ = std::make_shared<SwapChainMtl>(
             physical_size_, std::static_pointer_cast<DeviceMtl>(device), metal_layer_, present_mode);
     }

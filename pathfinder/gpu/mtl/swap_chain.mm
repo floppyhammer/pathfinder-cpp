@@ -12,6 +12,9 @@ SwapChainMtl::SwapChainMtl(
     : SwapChain(size, present_mode), device_(device), layer_(layer) {
     layer_.device = device_->get_handle();
 
+    // Set drawable size to physical pixel size.
+    layer_.drawableSize = CGSizeMake(size.x, size.y);
+
     // Enable/disable V-Sync based on present mode.
     // In Metal, displaySyncEnabled = YES corresponds to FIFO (V-Sync on).
     // displaySyncEnabled = NO corresponds to Immediate (V-Sync off).

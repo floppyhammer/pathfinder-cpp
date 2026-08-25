@@ -24,6 +24,13 @@ void framebuffer_resize_callback(GLFWwindow* glfw_window, int width, int height)
     }
 }
 
+void window_content_scale_callback(GLFWwindow* glfw_window, float xscale, float yscale) {
+    auto window = static_cast<Window*>(glfwGetWindowUserPointer(glfw_window));
+    if (window) {
+        window->set_dpi_scaling_factor(xscale);
+    }
+}
+
 void* Window::get_glfw_handle() const {
     return glfw_window_;
 }
@@ -36,6 +43,7 @@ Window::Window(const Vec2I& size, void* window_handle) : physical_size_(size) {
     // Assign this to window user, so we can fetch it when window size changes.
     glfwSetWindowUserPointer((GLFWwindow*)glfw_window_, this);
     glfwSetFramebufferSizeCallback((GLFWwindow*)glfw_window_, framebuffer_resize_callback);
+    glfwSetWindowContentScaleCallback((GLFWwindow*)glfw_window_, window_content_scale_callback);
 #endif
 }
 
