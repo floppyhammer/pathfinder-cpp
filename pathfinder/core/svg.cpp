@@ -129,7 +129,7 @@ SvgScene::SvgScene(const std::string &svg, Canvas &canvas) {
     // We use std::string instead of std::vector<char> here, otherwise NanoSVG occasionally crashes.
 
     if (svg.empty()) {
-        Logger::error("SVG input is empty!");
+        Logger::warn("SVG input is empty!");
         return;
     }
 
@@ -141,14 +141,15 @@ SvgScene::SvgScene(const std::string &svg, Canvas &canvas) {
 
     // Check if image loading is successful.
     if (image == nullptr) {
-        Logger::error("NanoSVG loading image failed!");
+        Logger::warn("NanoSVG loading image failed!");
         return;
     }
 
     // Check if image loading is successful.
     if (image->shapes == nullptr || image->width == 0 || image->height == 0) {
-        Logger::error("NanoSVG loaded image is invalid!");
-        // Don't return here, as we still need to free the allocated NSVGimage.
+        Logger::warn("NanoSVG loaded image is invalid!");
+        nsvgDelete(image);
+        return;
     }
 
     size_ = {image->width, image->height};
