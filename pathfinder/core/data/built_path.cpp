@@ -11,7 +11,7 @@ BuiltPath::BuiltPath(uint32_t path_id,
                      FillRule _fill_rule,
                      const std::shared_ptr<uint32_t> &clip_path_id,
                      const TilingPathInfo &tiling_path_info)
-    : fill_rule(_fill_rule), clip_path_id(clip_path_id) {
+    : fill_rule(_fill_rule) {
     if (tiling_path_info.type == TilingPathInfo::Type::Draw) {
         paint_id = tiling_path_info.info.paint_id;
     }
