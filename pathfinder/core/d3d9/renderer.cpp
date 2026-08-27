@@ -172,7 +172,7 @@ void RendererD3D9::set_up_pipelines() {
             // Attributes in the second buffer.
             attribute_descriptions.push_back({1, 2, DataType::i16, stride, 0, VertexInputRate::Instance});
             attribute_descriptions.push_back(
-                {1, 4, DataType::u8, stride, offsetof(TileObjectPrimitive, alpha_tile_id), VertexInputRate::Instance});
+                {1, 1, DataType::u32, stride, offsetof(TileObjectPrimitive, alpha_tile_id), VertexInputRate::Instance});
             attribute_descriptions.push_back(
                 {1, 1, DataType::i32, stride, offsetof(TileObjectPrimitive, path_id), VertexInputRate::Instance});
             attribute_descriptions.push_back(
@@ -225,7 +225,8 @@ TextureFormat RendererD3D9::mask_texture_format() const {
 void RendererD3D9::reallocate_alpha_tile_pages_if_necessary() {
     // Make sure at least one page is allocated even when there's no alpha tile.
     // Because we use `*mask_storage.framebuffer_id` in several places.
-    uint32_t alpha_tile_pages_needed = std::max((alpha_tile_count + 0xffff) >> 16, 1u);
+    uint32_t tiles_per_page = MASK_TILES_ACROSS * MASK_TILES_DOWN;
+    uint32_t alpha_tile_pages_needed = std::max((alpha_tile_count + tiles_per_page - 1) / tiles_per_page, 1u);
 
     if (alpha_tile_pages_needed <= mask_storage.allocated_page_count) {
         return;

@@ -27,7 +27,7 @@ layout(binding = 2) uniform bUniform {
 
 layout(location = 0) in uvec2 aTileOffset; // Tile local coordinates
 layout(location = 1) in ivec2 aTileOrigin; // Tile index
-layout(location = 2) in uvec4 aMaskTexCoord0;
+layout(location = 2) in uint aAlphaTileId;
 layout(location = 3) in int aPathIndex;
 layout(location = 4) in ivec2 aCtrlBackdrop;
 layout(location = 5) in uint aMetadataIndex;
@@ -119,11 +119,12 @@ void main() {
     // --------------------------------------------------
 
     // Global position of the corresponding mask tile.
-    uvec2 maskTileCoord = uvec2(aMaskTexCoord0.x, aMaskTexCoord0.y + 256u * aMaskTexCoord0.z);
+    uint tilesPerRow = uint(uMaskTextureSize0.x / uTileSize.x);
+    uvec2 maskTileCoord = uvec2(aAlphaTileId % tilesPerRow, aAlphaTileId / tilesPerRow);
     vec2 maskTexCoord0 = (vec2(maskTileCoord) + tileOffset) * uTileSize;
 
-    // aMaskTexCoord0.w != 0u means alpha_tile_id is too large (invalid in that case).
-    if (aCtrlBackdrop.y == 0 && aMaskTexCoord0.w != 0u) {
+    // aAlphaTileId == 0xFFFFFFFFu means alpha_tile_id is invalid.
+    if (aCtrlBackdrop.y == 0 && aAlphaTileId == 0xFFFFFFFFu) {
         gl_Position = vec4(0.0);
         return;
     }

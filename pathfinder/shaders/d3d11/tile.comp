@@ -774,7 +774,8 @@ void main() {
             // alphaTileIndex < 0 -> solid tiles.
             if (alphaTileIndex >= 0) {
                 backdrop = 0;
-                maskTileCoord = uvec2(alphaTileIndex & 0xff, alphaTileIndex >> 8) * uvec2(uTileSize);
+                uint tilesPerRow = uint(uMaskTextureSize0.x / uTileSize.x);
+                maskTileCoord = uvec2(uint(alphaTileIndex) % tilesPerRow, uint(alphaTileIndex) / tilesPerRow) * uvec2(uTileSize);
 
                 // Uncomment this to hide alpha tiles.
                 //return;

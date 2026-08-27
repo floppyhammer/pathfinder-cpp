@@ -969,9 +969,10 @@ void RendererD3D11::draw_fills(FillBufferInfoD3D11 &fill_storage_info,
 
     // Update uniform buffer.
     auto framebuffer_tile_size0 = framebuffer_tile_size();
-    std::array<int32_t, 2> ubo_data = {static_cast<int32_t>(alpha_tile_range.start),
-                                       static_cast<int32_t>(alpha_tile_range.end)};
-    encoder->write_buffer(allocator->get_buffer(fill_ub_id), 0, 2 * sizeof(int32_t), ubo_data.data());
+    std::array<int32_t, 3> ubo_data = {static_cast<int32_t>(alpha_tile_range.start),
+                                       static_cast<int32_t>(alpha_tile_range.end),
+                                       static_cast<int32_t>(MASK_TILES_ACROSS)};
+    encoder->write_buffer(allocator->get_buffer(fill_ub_id), 0, 3 * sizeof(int32_t), ubo_data.data());
 
     auto fill_vertex_buffer = allocator->get_buffer(fill_storage_info.fill_vertex_buffer_id);
     auto tiles_d3d11_buffer = allocator->get_buffer(tiles_d3d11_buffer_id);
@@ -1056,7 +1057,8 @@ TextureFormat RendererD3D11::mask_texture_format() const {
 }
 
 void RendererD3D11::reallocate_alpha_tile_pages_if_necessary() {
-    uint32_t alpha_tile_pages_needed = std::max((alpha_tile_count + 0xffff) >> 16, 1u);
+    uint32_t tiles_per_page = MASK_TILES_ACROSS * MASK_TILES_DOWN;
+    uint32_t alpha_tile_pages_needed = std::max((alpha_tile_count + tiles_per_page - 1) / tiles_per_page, 1u);
 
     if (alpha_tile_pages_needed <= mask_storage.allocated_page_count) {
         return;

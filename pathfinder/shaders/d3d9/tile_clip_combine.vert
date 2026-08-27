@@ -30,8 +30,9 @@ layout(location = 2) out vec2 vTexCoord1;
 layout(location = 3) out float vBackdrop1;
 
 void main() {
-    vec2 destPosition = vec2(ivec2(aDestTileIndex % 256, aDestTileIndex / 256) + ivec2(aTileOffset));
-    vec2 srcPosition  = vec2(ivec2(aSrcTileIndex  % 256, aSrcTileIndex  / 256) + ivec2(aTileOffset));
+    int tilesPerRow = int(uFramebufferSize.x / uTileSize.x);
+    vec2 destPosition = vec2(ivec2(aDestTileIndex % tilesPerRow, aDestTileIndex / tilesPerRow) + ivec2(aTileOffset));
+    vec2 srcPosition  = vec2(ivec2(aSrcTileIndex  % tilesPerRow, aSrcTileIndex  / tilesPerRow) + ivec2(aTileOffset));
     destPosition *= vec2(16.0, 4.0) / uFramebufferSize;
     srcPosition  *= vec2(16.0, 4.0) / uFramebufferSize;
 

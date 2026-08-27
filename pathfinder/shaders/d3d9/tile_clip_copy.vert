@@ -24,7 +24,8 @@ layout(location = 1) in int aTileIndex;
 layout(location = 0) out vec2 vTexCoord;
 
 void main() {
-    vec2 position = vec2(ivec2(aTileIndex % 256, aTileIndex / 256) + ivec2(aTileOffset));
+    int tilesPerRow = int(uFramebufferSize.x / uTileSize.x);
+    vec2 position = vec2(ivec2(aTileIndex % tilesPerRow, aTileIndex / tilesPerRow) + ivec2(aTileOffset));
     position *= vec2(16.0, 4.0) / uFramebufferSize;
 
     vTexCoord = position;

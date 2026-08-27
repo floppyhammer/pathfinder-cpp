@@ -11,7 +11,7 @@
 namespace Pathfinder {
 
 /// Mask tile dimension.
-constexpr uint32_t MASK_TILES_ACROSS = 256;
+constexpr uint32_t MASK_TILES_ACROSS = 128;
 constexpr uint32_t MASK_TILES_DOWN = 256;
 
 /// Mask framebuffer size.
