@@ -61,12 +61,13 @@ struct BackdropInfoD3D11 {
 
 struct PropagateMetadataD3D11 {
     RectI tile_rect;
+
     uint32_t tile_offset = 0;
     uint32_t path_index = 0;
     uint32_t z_write = 0;
-
     // This will generally not refer to the same batch as `path_index`.
     uint32_t clip_path_index = 0;
+
     uint32_t backdrop_offset = 0;
     uint32_t pad0 = 0;
     uint32_t pad1 = 0;

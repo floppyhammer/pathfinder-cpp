@@ -42,6 +42,7 @@ restrict readonly layout(std430, binding = 1) buffer bClipMetadata {
     // [1].y: unused
     // [1].z: unused
     // [1].w: unused
+    // [2].x: backdrop column offset
     uvec4 iClipMetadata[];
 };
 
@@ -110,8 +111,8 @@ void main() {
     int clipPathIndex = int(drawOffsets.w);
     uvec4 clipTileRect = uvec4(0u), clipOffsets = uvec4(0u);
     if (clipPathIndex >= 0) {
-        clipTileRect = iClipMetadata[clipPathIndex * 2 + 0];
-        clipOffsets = iClipMetadata[clipPathIndex * 2 + 1];
+        clipTileRect = iClipMetadata[clipPathIndex * 3u + 0u];
+        clipOffsets = iClipMetadata[clipPathIndex * 3u + 1u];
     }
     uint clipTileBufferOffset = clipOffsets.x, clipBackdropOffset = clipOffsets.y;
 
