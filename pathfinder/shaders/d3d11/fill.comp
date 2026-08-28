@@ -4,7 +4,7 @@ precision highp float;
 precision highp sampler2D;
 precision highp image2D;
 
-layout(local_size_x = 16, local_size_y = 4) in;
+layout(local_size_x = 64) in;
 
 #define TILE_FIELD_NEXT_TILE_ID             0u
 #define TILE_FIELD_FIRST_FILL_ID            1u
@@ -101,15 +101,20 @@ vec4 accumulateCoverageForFillList(int fillIndex, ivec2 tileSubCoord) {
 }
 
 ivec2 computeTileCoord(uint alphaTileIndex) {
+    uint localX = gl_LocalInvocationIndex % 16u;
+    uint localY = gl_LocalInvocationIndex / 16u;
     uint x = alphaTileIndex % uint(uTilesPerRow);
     uint y = alphaTileIndex / uint(uTilesPerRow);
-    return ivec2(16, 4) * ivec2(x, y) + ivec2(gl_LocalInvocationID.xy);
+    return ivec2(16, 4) * ivec2(x, y) + ivec2(localX, localY);
 }
 
 /// Fill alpha tiles.
 void main() {
+    uint localX = gl_LocalInvocationIndex % 16u;
+    uint localY = gl_LocalInvocationIndex / 16u;
+
     // Local coordinates out of local size (16, 4) * ivec2(1, 4).
-    ivec2 tileSubCoord = ivec2(gl_LocalInvocationID.xy) * ivec2(1, 4);
+    ivec2 tileSubCoord = ivec2(localX, localY) * ivec2(1, 4);
 
     // This is a workaround for the 64K workgroup dispatch limit in OpenGL.
     uint batchAlphaTileIndex = (gl_WorkGroupID.x | (gl_WorkGroupID.y << 15));

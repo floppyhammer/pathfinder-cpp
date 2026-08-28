@@ -4,7 +4,7 @@ precision highp float;
 precision highp sampler2D;
 precision highp image2D;
 
-layout(local_size_x = 16, local_size_y = 4) in;
+layout(local_size_x = 64) in;
 
 #define LOAD_ACTION_CLEAR   0
 #define LOAD_ACTION_LOAD    1
@@ -738,8 +738,11 @@ ivec2 toImageCoords(ivec2 coords) {
 }
 
 void main() {
+    uint localX = gl_LocalInvocationIndex % 16u;
+    uint localY = gl_LocalInvocationIndex / 16u;
+
     ivec2 tileCoord = ivec2(gl_WorkGroupID.xy);
-    ivec2 firstTileSubCoord = ivec2(gl_LocalInvocationID.xy) * ivec2(1, 4);
+    ivec2 firstTileSubCoord = ivec2(localX, localY) * ivec2(1, 4);
     ivec2 firstFragCoord = tileCoord * ivec2(uTileSize) + firstTileSubCoord;
 
     // Quick exit if this is guaranteed to be empty.
