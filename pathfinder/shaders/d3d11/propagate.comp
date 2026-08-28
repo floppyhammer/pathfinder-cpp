@@ -33,7 +33,7 @@ restrict readonly layout(std430, binding = 0) buffer bDrawMetadata {
     // [1].z: Z write enabled?
     // [1].w: clip path ID, or ~0
     // [2].x: backdrop column offset
-    uvec4 iDrawMetadata[];
+    ivec4 iDrawMetadata[];
 };
 
 restrict readonly layout(std430, binding = 1) buffer bClipMetadata {
@@ -43,7 +43,7 @@ restrict readonly layout(std430, binding = 1) buffer bClipMetadata {
     // [1].z: unused
     // [1].w: unused
     // [2].x: backdrop column offset
-    uvec4 iClipMetadata[];
+    ivec4 iClipMetadata[];
 };
 
 restrict readonly layout(std430, binding = 2) buffer bBackdrops {
@@ -89,8 +89,8 @@ restrict writeonly layout(std430, binding = 7) buffer bAlphaTiles {
     uint iAlphaTiles[];
 };
 
-uint calculateTileIndex(uint bufferOffset, uvec4 tileRect, uvec2 tileCoord) {
-    return bufferOffset + tileCoord.y * (tileRect.z - tileRect.x) + tileCoord.x;
+uint calculateTileIndex(uint bufferOffset, ivec4 tileRect, ivec2 tileCoord) {
+    return bufferOffset + uint(tileCoord.y * (tileRect.z - tileRect.x) + tileCoord.x);
 }
 
 void main() {
@@ -102,22 +102,22 @@ void main() {
     int tileX = iBackdrops[columnIndex * 3u + 1u];
     uint drawPathIndex = uint(iBackdrops[columnIndex * 3u + 2u]);
 
-    uvec4 drawTileRect = iDrawMetadata[drawPathIndex * 3u + 0u];
-    uvec4 drawOffsets = iDrawMetadata[drawPathIndex * 3u + 1u];
-    uvec2 drawTileSize = drawTileRect.zw - drawTileRect.xy;
-    uint drawTileBufferOffset = drawOffsets.x;
-    bool zWrite = drawOffsets.z != 0u;
+    ivec4 drawTileRect = iDrawMetadata[drawPathIndex * 3u + 0u];
+    ivec4 drawOffsets = iDrawMetadata[drawPathIndex * 3u + 1u];
+    ivec2 drawTileSize = drawTileRect.zw - drawTileRect.xy;
+    uint drawTileBufferOffset = uint(drawOffsets.x);
+    bool zWrite = drawOffsets.z != 0;
 
-    int clipPathIndex = int(drawOffsets.w);
-    uvec4 clipTileRect = uvec4(0u), clipOffsets = uvec4(0u);
+    int clipPathIndex = drawOffsets.w;
+    ivec4 clipTileRect = ivec4(0), clipOffsets = ivec4(0);
     if (clipPathIndex >= 0) {
         clipTileRect = iClipMetadata[clipPathIndex * 3u + 0u];
         clipOffsets = iClipMetadata[clipPathIndex * 3u + 1u];
     }
-    uint clipTileBufferOffset = clipOffsets.x, clipBackdropOffset = clipOffsets.y;
+    uint clipTileBufferOffset = uint(clipOffsets.x), clipBackdropOffset = uint(clipOffsets.y);
 
-    for (uint tileY = 0u; tileY < drawTileSize.y; tileY++) {
-        uvec2 drawTileCoord = uvec2(tileX, tileY);
+    for (int tileY = 0; tileY < drawTileSize.y; tileY++) {
+        ivec2 drawTileCoord = ivec2(tileX, tileY);
         uint drawTileIndex = calculateTileIndex(drawTileBufferOffset, drawTileRect, drawTileCoord);
 
         int drawAlphaTileIndex = -1;
@@ -133,9 +133,9 @@ void main() {
 
         // Handle clip if necessary.
         if (clipPathIndex >= 0) {
-            uvec2 tileCoord = drawTileCoord + drawTileRect.xy;
+            ivec2 tileCoord = drawTileCoord + drawTileRect.xy;
             if (all(bvec4(greaterThanEqual(tileCoord, clipTileRect.xy), lessThan(tileCoord, clipTileRect.zw)))) {
-                uvec2 clipTileCoord = tileCoord - clipTileRect.xy;
+                ivec2 clipTileCoord = tileCoord - clipTileRect.xy;
                 uint clipTileIndex = calculateTileIndex(clipTileBufferOffset, clipTileRect, clipTileCoord);
 
                 int thisClipAlphaTileIndex = int(iClipTiles[clipTileIndex * 4u + TILE_FIELD_BACKDROP_ALPHA_TILE_ID] << 8) >> 8;
