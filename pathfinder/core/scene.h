@@ -88,6 +88,12 @@ public:
     /// top of the stack.
     RenderTargetId push_render_target(const RenderTargetDesc &render_target_desc);
 
+    /**
+     * Push an existing render target onto the stack.
+     * @param render_target_id
+     */
+    void push_render_target(RenderTargetId render_target_id);
+
     /// Removes the most-recently-pushed render target from the top of the stack.
     ///
     /// After calling this method, drawing will go to the previous render target. If no render

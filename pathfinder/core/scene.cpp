@@ -157,6 +157,15 @@ RenderTargetId Scene::push_render_target(const RenderTargetDesc &render_target_d
     return render_target_id;
 }
 
+void Scene::push_render_target(RenderTargetId render_target_id) {
+    DisplayItem item{};
+    item.type = DisplayItem::Type::PushRenderTarget;
+    item.render_target_id = render_target_id;
+
+    display_list.push_back(item);
+    epoch.next();
+}
+
 void Scene::pop_render_target() {
     DisplayItem item{};
     item.type = DisplayItem::Type::PopRenderTarget;

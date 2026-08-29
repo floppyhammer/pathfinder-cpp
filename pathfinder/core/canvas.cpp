@@ -78,46 +78,20 @@ void composite_shadow_blur_render_targets(Scene &scene, const ShadowBlurRenderTa
 
     Vec2I scaled_size = (info.bounds.size().to_f32() * SHADOW_DOWNSAMPLING_SCALE).to_i32();
 
+    // Pass 1: Horizontal blur from id_x to id_y.
     auto pattern_x = Pattern::from_render_target(info.id_x, scaled_size);
-    auto pattern_y = Pattern::from_render_target(info.id_y, scaled_size);
-
-    Transform2 transform = Transform2::from_translation(info.bounds.origin().to_f32()) *
-                           Transform2::from_scale(Vec2F(1.0 / SHADOW_DOWNSAMPLING_SCALE));
-
-    pattern_y.apply_transform(transform);
-
-    auto filter = PatternFilter(BlurPatternFilter{
+    auto filter_x = PatternFilter(BlurPatternFilter{
         BlurDirection::X,
         info.sigma,
         1.0f,
     });
-
-    // Pass 1: Horizontal blur.
-    // We set strength to 1.0 here to avoid premature clamping in the intermediate render target.
-    pattern_x.set_filter(filter);
-
-    // Pass 2: Vertical blur.
-    // Apply the actual strength here for the final compositing.
-    filter = BlurPatternFilter{
-        BlurDirection::Y,
-        info.sigma,
-        info.strength,
-    };
-    pattern_y.set_filter(filter);
+    pattern_x.set_filter(filter_x);
 
     auto paint_x = Paint::from_pattern(pattern_x);
     paint_x.set_base_color(info.color);
     paint_x.get_overlay()->composite_op = PaintCompositeOp::DestIn;
-
-    auto paint_y = Paint::from_pattern(pattern_y);
-    paint_y.set_base_color(info.color);
-    paint_y.get_overlay()->composite_op = PaintCompositeOp::DestIn;
-
     auto paint_id_x = scene.push_paint(paint_x);
-    auto paint_id_y = scene.push_paint(paint_y);
 
-    // A rect path used to blur the shadow path.
-    // Judging by the size, this path will be drawn to a small texture.
     DrawPath path_x;
     {
         Path2d path2d;
@@ -126,28 +100,66 @@ void composite_shadow_blur_render_targets(Scene &scene, const ShadowBlurRenderTa
     }
     path_x.paint = paint_id_x;
 
-    // A rect path used to blur the shadow path.
-    // Judging by the size, this path will be drawn to the final texture.
-    DrawPath path_y;
+    // Pop viewport x (which contains the raw shadow).
+    scene.pop_render_target();
+
+    // Now current viewport is id_y. Draw x-blurred shadow to it.
+    scene.push_draw_path(path_x);
+
+    // Pass 2: Vertical blur from id_y back to id_x.
+    auto pattern_y = Pattern::from_render_target(info.id_y, scaled_size);
+    auto filter_y = PatternFilter(BlurPatternFilter{
+        BlurDirection::Y,
+        info.sigma,
+        info.strength,
+    });
+    pattern_y.set_filter(filter_y);
+
+    auto paint_y = Paint::from_pattern(pattern_y);
+    paint_y.set_base_color(info.color);
+    paint_y.get_overlay()->composite_op = PaintCompositeOp::DestIn;
+    auto paint_id_y = scene.push_paint(paint_y);
+
+    DrawPath path_y_small;
+    {
+        Path2d path2d;
+        path2d.add_rect({{0, 0}, scaled_size.to_f32()});
+        path_y_small.outline = path2d.into_outline();
+    }
+    path_y_small.paint = paint_id_y;
+
+    // Push id_x back to the stack.
+    scene.push_render_target(info.id_x);
+    scene.push_draw_path(path_y_small);
+    scene.pop_render_target();
+
+    // Pass 3: Upsample from id_x to the canvas viewport.
+    Transform2 transform = Transform2::from_translation(info.bounds.origin().to_f32()) *
+                           Transform2::from_scale(Vec2F(1.0 / SHADOW_DOWNSAMPLING_SCALE));
+
+    auto pattern_final = Pattern::from_render_target(info.id_x, scaled_size);
+    pattern_final.apply_transform(transform);
+
+    auto paint_final = Paint::from_pattern(pattern_final);
+    paint_final.set_base_color(info.color);
+    paint_final.get_overlay()->composite_op = PaintCompositeOp::DestIn;
+    // Apply the actual strength here for the final compositing.
+    auto paint_id_final = scene.push_paint(paint_final);
+
+    DrawPath path_final;
     {
         Path2d path2d;
         path2d.add_rect(info.bounds.to_f32());
-        path_y.outline = path2d.into_outline();
+        path_final.outline = path2d.into_outline();
     }
-    path_y.paint = paint_id_y;
-    path_y.clip_path = info.clip_path;
-
-    // Pop viewport x.
-    scene.pop_render_target();
-
-    // This path goes to the blur viewport y, with the viewport x as the color texture.
-    scene.push_draw_path(path_x);
+    path_final.paint = paint_id_final;
+    path_final.clip_path = info.clip_path;
 
     // Pop viewport y.
     scene.pop_render_target();
 
-    // This path goes to the canvas viewport, with the viewport y as the color texture.
-    scene.push_draw_path(path_y);
+    // This path goes to the canvas viewport.
+    scene.push_draw_path(path_final);
 }
 
 Canvas::Canvas(Vec2I size,
