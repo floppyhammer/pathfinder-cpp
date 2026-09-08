@@ -2,6 +2,8 @@ file(GLOB SRC src/*.cpp ../pathfinder/gpu/shader.cpp ../pathfinder/gpu/shader_tr
 
 add_executable(pathfinder_shader_generator ${SRC})
 
+target_compile_features(pathfinder_shader_generator PRIVATE cxx_std_17)
+
 target_compile_definitions(pathfinder_shader_generator PRIVATE PATHFINDER_USE_GLSLANG)
 
 target_include_directories(pathfinder_shader_generator PRIVATE "../third_party/CLI11/include")
