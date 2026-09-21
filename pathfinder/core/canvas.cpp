@@ -52,6 +52,8 @@ ShadowBlurRenderTargetInfo push_shadow_blur_render_targets(Scene &scene,
     auto bounds = outline_bounds.dilate(sigma_original * 3.f).round_out().to_i32();
 
     Vec2I scaled_size = (bounds.size().to_f32() * SHADOW_DOWNSAMPLING_SCALE).to_i32();
+    scaled_size.x = std::max(scaled_size.x, 1);
+    scaled_size.y = std::max(scaled_size.y, 1);
 
     shadow_blur_info.id_y = scene.push_render_target(RenderTargetDesc{scaled_size, "shadow blur x"});
     shadow_blur_info.id_x = scene.push_render_target(RenderTargetDesc{scaled_size, "shadow blur y"});
