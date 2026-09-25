@@ -1,7 +1,9 @@
 # Pathfinder C++
 
 [![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE)
-[![C++ Standard](https://img.shields.io/badge/C%2B%2B-14-green.svg)](https://en.wikipedia.org/wiki/C%2B%2B14)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS%20%7C%20Android%20%7C%20iOS-lightgrey)
+![Backend](https://img.shields.io/badge/backend-Vulkan%20%7C%20Metal%20%7C%20OpenGL-red)
+[![C++ Standard](https://img.shields.io/badge/C%2B%2B-17-green.svg)](https://en.wikipedia.org/wiki/C%2B%2B14)
 
 A high-performance, GPU-accelerated 2D vector graphics library, ported from the original Rust implementation
 of [Pathfinder 3](https://github.com/servo/pathfinder). This version brings the power of massivly parallel vector
