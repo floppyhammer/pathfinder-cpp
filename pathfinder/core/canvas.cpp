@@ -171,18 +171,20 @@ Canvas::Canvas(Vec2I size,
     : device(_device), render_mode(_render_mode) {
     // Create the renderer and scene builder.
     if (render_mode == RenderMode::Hybrid) {
-        Logger::info("Created new canvas using Raster render mode");
+        Logger::info("Created new canvas using Hybrid render mode");
         renderer = std::make_shared<RendererD3D9>(device, _queue);
         scene_builder = std::make_shared<SceneBuilderD3D9>();
     } else {
 #ifdef PATHFINDER_ENABLE_COMPUTE
-        Logger::info("Created new canvas using Compute render mode");
+        Logger::info("Created new canvas using GpuDriven render mode");
         renderer = std::make_shared<RendererD3D11>(device, _queue);
         scene_builder = std::make_shared<SceneBuilderD3D11>();
 #else
-        throw std::runtime_error(std::string("Pathfinder Compute mode is selected but not enabled!"));
+        throw std::runtime_error(std::string("Pathfinder GpuDriven render mode is selected but not enabled!"));
 #endif
     }
+
+    Logger::info("Canvas size: " + std::to_string(size.x) + "x" + std::to_string(size.y));
 
     // Set up pipelines.
     renderer->set_up_pipelines();
