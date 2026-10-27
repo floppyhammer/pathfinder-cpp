@@ -131,7 +131,7 @@ bool clip_line_segment_to_rect(LineSegmentF &line_segment, const RectF &rect) {
 void process_line_segment(LineSegmentF line_segment, SceneBuilderD3D9 &scene_builder, ObjectBuilder &object_builder) {
     // Validate the tile coordinates. This an attempt that tries to avoid an endless WHILE loop below.
     if (!line_segment.is_valid()) {
-        Logger::error("Invalid line segment!");
+        Logger::error("Processing invalid line segment!");
         return;
     }
 
@@ -281,7 +281,15 @@ void process_line_segment(LineSegmentF line_segment, SceneBuilderD3D9 &scene_bui
 /// Recursive segment flattening and tile processing.
 /// Uses the native call stack (zero heap allocation) — recursion depth is bounded by
 /// the flattening tolerance (typically < 16 levels for FLATTENING_TOLERANCE = 1.0).
-void process_segment(Segment &segment, SceneBuilderD3D9 &scene_builder, ObjectBuilder &object_builder) {
+void process_segment(Segment &segment,
+                     SceneBuilderD3D9 &scene_builder,
+                     ObjectBuilder &object_builder,
+                     uint32_t recursion_depth = 0) {
+    if (!segment.is_valid()) {
+        Logger::error("Processing invalid segment!");
+        return;
+    }
+
     // 1. Line: process directly.
     if (segment.is_line()) {
         process_line_segment(segment.baseline, scene_builder, object_builder);
@@ -290,28 +298,28 @@ void process_segment(Segment &segment, SceneBuilderD3D9 &scene_builder, ObjectBu
 
     // 2. Quadratic: handle directly without degree-elevating to cubic.
     if (segment.is_quadratic()) {
-        if (segment.is_flat_quadratic(FLATTENING_TOLERANCE)) {
+        if (recursion_depth >= 32 || segment.is_flat_quadratic(FLATTENING_TOLERANCE)) {
             process_line_segment(segment.baseline, scene_builder, object_builder);
             return;
         }
 
         Segment prev, next;
         segment.split_quadratic(0.5f, prev, next);
-        process_segment(prev, scene_builder, object_builder);
-        process_segment(next, scene_builder, object_builder);
+        process_segment(prev, scene_builder, object_builder, recursion_depth + 1);
+        process_segment(next, scene_builder, object_builder, recursion_depth + 1);
         return;
     }
 
     // 3. Cubic: flatten check, then split if needed.
-    if (segment.is_flat_cubic(FLATTENING_TOLERANCE)) {
+    if (recursion_depth >= 32 || segment.is_flat_cubic(FLATTENING_TOLERANCE)) {
         process_line_segment(segment.baseline, scene_builder, object_builder);
         return;
     }
 
     Segment prev, next;
     segment.split(0.5f, prev, next);
-    process_segment(prev, scene_builder, object_builder);
-    process_segment(next, scene_builder, object_builder);
+    process_segment(prev, scene_builder, object_builder, recursion_depth + 1);
+    process_segment(next, scene_builder, object_builder, recursion_depth + 1);
 }
 
 Tiler::Tiler(SceneBuilderD3D9 &_scene_builder,

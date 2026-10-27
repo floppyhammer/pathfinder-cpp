@@ -95,12 +95,8 @@ LineSegmentF LineSegmentF::offset(float distance) const {
 }
 
 bool LineSegmentF::is_valid() const {
-    if (!std::isfinite(value.get<0>()) || !std::isfinite(value.get<1>()) || !std::isfinite(value.get<2>()) ||
-        !std::isfinite(value.get<3>())) {
-        Logger::error("Non-finite value encountered!");
-        return false;
-    }
-    return true;
+    return std::isfinite(value.get<0>()) && std::isfinite(value.get<1>()) && std::isfinite(value.get<2>()) &&
+           std::isfinite(value.get<3>());
 }
 
 LineSegmentF LineSegmentF::apply_transform(const Transform2 &transform) const {
