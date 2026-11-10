@@ -5,7 +5,8 @@
 
 namespace Pathfinder {
 
-TextureVk::TextureVk(VkDevice vk_device, const TextureDescriptor& desc) : Texture(desc), vk_device_(vk_device) {}
+TextureVk::TextureVk(VmaAllocator vma_allocator, VkDevice vk_device, const TextureDescriptor& desc)
+    : Texture(desc), vma_allocator_(vma_allocator), vk_device_(vk_device) {}
 
 TextureVk::~TextureVk() {
     if (!resource_ownership_) {
@@ -13,13 +14,17 @@ TextureVk::~TextureVk() {
     }
 
     // Should be right before destroying the image itself.
-    vkDestroyImageView(vk_device_, vk_image_view_, nullptr);
+    if (vk_device_ && vk_image_view_) {
+        vkDestroyImageView(vk_device_, vk_image_view_, nullptr);
+        vk_image_view_ = VK_NULL_HANDLE;
+    }
 
-    // Destroy image handle.
-    vkDestroyImage(vk_device_, vk_image_, nullptr);
-
-    // Release device memory.
-    vkFreeMemory(vk_device_, vk_image_memory_, nullptr);
+    // Destroy image and free memory using VMA
+    if (vma_allocator_ && vk_image_ && vma_allocation_) {
+        vmaDestroyImage(vma_allocator_, vk_image_, vma_allocation_);
+        vk_image_ = VK_NULL_HANDLE;
+        vma_allocation_ = VK_NULL_HANDLE;
+    }
 }
 
 std::shared_ptr<TextureVk> TextureVk::from_wrapping(const TextureDescriptor& desc,
@@ -27,7 +32,7 @@ std::shared_ptr<TextureVk> TextureVk::from_wrapping(const TextureDescriptor& des
                                                     VkDeviceMemory image_memory,
                                                     VkImageView image_view,
                                                     TextureLayout layout) {
-    auto texture_vk = std::shared_ptr<TextureVk>(new TextureVk(nullptr, desc));
+    auto texture_vk = std::shared_ptr<TextureVk>(new TextureVk(VK_NULL_HANDLE, VK_NULL_HANDLE, desc));
 
     // We're not responsible for management of wrapped textures.
     texture_vk->resource_ownership_ = false;
@@ -54,6 +59,22 @@ TextureLayout TextureVk::get_layout() const {
 
 void TextureVk::set_layout(TextureLayout new_layout) {
     layout_ = new_layout;
+}
+
+VkDeviceMemory TextureVk::get_vk_device_memory() const {
+    if (vk_image_memory_) {
+        return vk_image_memory_;
+    }
+    if (!vma_allocator_ || !vma_allocation_) {
+        return VK_NULL_HANDLE;
+    }
+    VmaAllocationInfo info{};
+    vmaGetAllocationInfo(vma_allocator_, vma_allocation_, &info);
+    return info.deviceMemory;
+}
+
+VmaAllocation TextureVk::get_vma_allocation() const {
+    return vma_allocation_;
 }
 
 } // namespace Pathfinder

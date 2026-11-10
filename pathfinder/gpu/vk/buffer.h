@@ -2,6 +2,7 @@
 
 #include "../buffer.h"
 #include "base.h"
+#include "vma_header.h"
 
 namespace Pathfinder {
 
@@ -22,18 +23,20 @@ public:
 
     VkDeviceMemory get_vk_device_memory();
 
+    VmaAllocation get_vma_allocation() const;
+
     /// Map the whole buffer once, offset is zero.
     void* map();
 
     void unmap();
 
 private:
-    BufferVk(VkDevice vk_device, const BufferDescriptor& desc);
+    BufferVk(VmaAllocator vma_allocator, VkDevice vk_device, const BufferDescriptor& desc);
 
-    VkBuffer vk_buffer_{};
-    VkDeviceMemory vk_device_memory_{};
-
-    VkDevice vk_device_{};
+    VkBuffer vk_buffer_{VK_NULL_HANDLE};
+    VmaAllocation vma_allocation_{VK_NULL_HANDLE};
+    VmaAllocator vma_allocator_{VK_NULL_HANDLE};
+    VkDevice vk_device_{VK_NULL_HANDLE};
 
     void* mapped_ptr_ = nullptr;
 };

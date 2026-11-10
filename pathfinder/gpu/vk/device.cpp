@@ -35,6 +35,54 @@ DeviceVk::DeviceVk(VkInstance vk_instance,
     VkPhysicalDeviceProperties props;
     vkGetPhysicalDeviceProperties(vk_physical_device, &props);
     min_uniform_alignment_ = props.limits.minUniformBufferOffsetAlignment;
+
+    // Initialize VMA
+    VmaVulkanFunctions vulkanFunctions = {};
+    vulkanFunctions.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
+    vulkanFunctions.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
+    vulkanFunctions.vkGetPhysicalDeviceProperties = vkGetPhysicalDeviceProperties;
+    vulkanFunctions.vkGetPhysicalDeviceMemoryProperties = vkGetPhysicalDeviceMemoryProperties;
+    vulkanFunctions.vkAllocateMemory = vkAllocateMemory;
+    vulkanFunctions.vkFreeMemory = vkFreeMemory;
+    vulkanFunctions.vkMapMemory = vkMapMemory;
+    vulkanFunctions.vkUnmapMemory = vkUnmapMemory;
+    vulkanFunctions.vkFlushMappedMemoryRanges = vkFlushMappedMemoryRanges;
+    vulkanFunctions.vkInvalidateMappedMemoryRanges = vkInvalidateMappedMemoryRanges;
+    vulkanFunctions.vkBindBufferMemory = vkBindBufferMemory;
+    vulkanFunctions.vkBindImageMemory = vkBindImageMemory;
+    vulkanFunctions.vkGetBufferMemoryRequirements = vkGetBufferMemoryRequirements;
+    vulkanFunctions.vkGetImageMemoryRequirements = vkGetImageMemoryRequirements;
+    vulkanFunctions.vkCreateBuffer = vkCreateBuffer;
+    vulkanFunctions.vkDestroyBuffer = vkDestroyBuffer;
+    vulkanFunctions.vkCreateImage = vkCreateImage;
+    vulkanFunctions.vkDestroyImage = vkDestroyImage;
+    vulkanFunctions.vkCmdCopyBuffer = vkCmdCopyBuffer;
+
+    VmaAllocatorCreateInfo allocatorCreateInfo = {};
+    allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_0;
+    allocatorCreateInfo.physicalDevice = vk_physical_device_;
+    allocatorCreateInfo.device = vk_device_;
+    allocatorCreateInfo.instance = vk_instance_;
+    allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
+
+    if (vmaCreateAllocator(&allocatorCreateInfo, &vma_allocator_) != VK_SUCCESS) {
+        Logger::error("Failed to create VMA Allocator!");
+    }
+}
+
+DeviceVk::~DeviceVk() {
+    // Release all staging buffers cached in base class Device before destroying VMA allocator
+    // to prevent VMA_ASSERT_LEAK assertions on un-freed memory blocks.
+    staging_buckets_.clear();
+
+    if (vma_allocator_) {
+        vmaDestroyAllocator(vma_allocator_);
+        vma_allocator_ = VK_NULL_HANDLE;
+    }
+}
+
+VmaAllocator DeviceVk::get_vma_allocator() const {
+    return vma_allocator_;
 }
 
 VkDevice DeviceVk::get_device() const {
@@ -390,39 +438,37 @@ std::shared_ptr<Framebuffer> DeviceVk::create_framebuffer(const std::shared_ptr<
 }
 
 std::shared_ptr<Buffer> DeviceVk::create_buffer(const BufferDescriptor &desc, const std::string &label) {
-    auto buffer_vk = std::shared_ptr<BufferVk>(new BufferVk(vk_device_, desc));
-
-    auto vk_memory_property = to_vk_memory_property(desc.property);
+    auto buffer_vk = std::shared_ptr<BufferVk>(new BufferVk(vma_allocator_, vk_device_, desc));
 
     switch (desc.type) {
         case BufferType::Uniform: {
             create_vk_buffer(desc.size,
                              VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                             vk_memory_property,
+                             desc.property,
                              buffer_vk->vk_buffer_,
-                             buffer_vk->vk_device_memory_);
+                             buffer_vk->vma_allocation_);
         } break;
         case BufferType::Vertex: {
             create_vk_buffer(desc.size,
                              VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                             vk_memory_property,
+                             desc.property,
                              buffer_vk->vk_buffer_,
-                             buffer_vk->vk_device_memory_);
+                             buffer_vk->vma_allocation_);
         } break;
         case BufferType::Index: {
             create_vk_buffer(desc.size,
                              VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-                             vk_memory_property,
+                             desc.property,
                              buffer_vk->vk_buffer_,
-                             buffer_vk->vk_device_memory_);
+                             buffer_vk->vma_allocation_);
         } break;
         case BufferType::Storage: {
             create_vk_buffer(desc.size,
                              VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
                                  VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT,
-                             vk_memory_property,
+                             desc.property,
                              buffer_vk->vk_buffer_,
-                             buffer_vk->vk_device_memory_);
+                             buffer_vk->vma_allocation_);
         } break;
         default:
             abort();
@@ -434,7 +480,7 @@ std::shared_ptr<Buffer> DeviceVk::create_buffer(const BufferDescriptor &desc, co
 }
 
 std::shared_ptr<Texture> DeviceVk::create_texture(const TextureDescriptor &desc, const std::string &label) {
-    auto texture_vk = std::shared_ptr<TextureVk>(new TextureVk(vk_device_, desc));
+    auto texture_vk = std::shared_ptr<TextureVk>(new TextureVk(vma_allocator_, vk_device_, desc));
 
     create_vk_image(desc.size.x,
                     desc.size.y,
@@ -444,7 +490,7 @@ std::shared_ptr<Texture> DeviceVk::create_texture(const TextureDescriptor &desc,
                         VK_IMAGE_USAGE_STORAGE_BIT,
                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                     texture_vk->vk_image_,
-                    texture_vk->vk_image_memory_,
+                    texture_vk->vma_allocation_,
                     texture_vk->memory_size_);
 
     // Create image view.
@@ -571,10 +617,8 @@ void DeviceVk::create_vk_image(uint32_t width,
                                VkImageUsageFlags usage,
                                VkMemoryPropertyFlags properties,
                                VkImage &image,
-                               VkDeviceMemory &image_memory,
+                               VmaAllocation &allocation,
                                size_t &memory_size) const {
-    // Create image.
-    // -------------------------------------
     VkImageCreateInfo image_info{};
     image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     image_info.imageType = VK_IMAGE_TYPE_2D;
@@ -590,27 +634,16 @@ void DeviceVk::create_vk_image(uint32_t width,
     image_info.samples = VK_SAMPLE_COUNT_1_BIT;
     image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    VK_CHECK_RESULT(vkCreateImage(vk_device_, &image_info, nullptr, &image))
-    // -------------------------------------
+    VmaAllocationCreateInfo alloc_info{};
+    alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
+    if (properties & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) {
+        alloc_info.priority = 0.5f;
+    }
 
-    // Create image memory.
-    // -------------------------------------
-    // Get the memory requirements for the image.
-    VkMemoryRequirements mem_requirements;
-    vkGetImageMemoryRequirements(vk_device_, image, &mem_requirements);
+    VmaAllocationInfo allocation_info{};
+    VK_CHECK_RESULT(vmaCreateImage(vma_allocator_, &image_info, &alloc_info, &image, &allocation, &allocation_info))
 
-    memory_size = mem_requirements.size;
-
-    VkMemoryAllocateInfo alloc_info{};
-    alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    alloc_info.allocationSize = mem_requirements.size;
-    alloc_info.memoryTypeIndex = find_memory_type(mem_requirements.memoryTypeBits, properties);
-
-    VK_CHECK_RESULT(vkAllocateMemory(vk_device_, &alloc_info, nullptr, &image_memory))
-    // -------------------------------------
-
-    // Bind the image and memory.
-    vkBindImageMemory(vk_device_, image, image_memory, 0);
+    memory_size = allocation_info.size;
 }
 
 VkImageView DeviceVk::create_vk_image_view(VkImage image, VkFormat format, VkImageAspectFlags aspect_flags) const {
@@ -668,36 +701,23 @@ VkSampler DeviceVk::create_vk_sampler() const {
 
 void DeviceVk::create_vk_buffer(VkDeviceSize size,
                                 VkBufferUsageFlags usage,
-                                VkMemoryPropertyFlags properties,
+                                MemoryProperty property,
                                 VkBuffer &buffer,
-                                VkDeviceMemory &buffer_memory) {
-    // Structure specifying the parameters of a newly created buffer object.
+                                VmaAllocation &allocation) {
     VkBufferCreateInfo buffer_info{};
     buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    buffer_info.size = size;                             // Size in bytes of the buffer to be created.
-    buffer_info.usage = usage;                           // Specifying allowed usages of the buffer.
-    buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // Specifying the sharing mode of the buffer when it will be
-                                                         // accessed by multiple queue families.
+    buffer_info.size = size;
+    buffer_info.usage = usage;
+    buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    // Create buffer.
-    VK_CHECK_RESULT(vkCreateBuffer(vk_device_, &buffer_info, nullptr, &buffer))
+    VmaAllocationCreateInfo alloc_info{};
+    alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
 
-    // Allocate buffer memory.
-    // -------------------------------------
-    VkMemoryRequirements mem_requirements;
-    vkGetBufferMemoryRequirements(vk_device_, buffer, &mem_requirements);
+    if (property == MemoryProperty::HostVisibleAndCoherent) {
+        alloc_info.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+    }
 
-    VkMemoryAllocateInfo alloc_info{};
-    alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    alloc_info.allocationSize = mem_requirements.size;
-    alloc_info.memoryTypeIndex = find_memory_type(mem_requirements.memoryTypeBits,
-                                                  properties); // Index identifying a memory type.
-
-    VK_CHECK_RESULT(vkAllocateMemory(vk_device_, &alloc_info, nullptr, &buffer_memory))
-    // -------------------------------------
-
-    // Bind the buffer and memory.
-    vkBindBufferMemory(vk_device_, buffer, buffer_memory, 0);
+    VK_CHECK_RESULT(vmaCreateBuffer(vma_allocator_, &buffer_info, &alloc_info, &buffer, &allocation, nullptr))
 }
 
 uint32_t DeviceVk::find_memory_type(uint32_t type_filter, VkMemoryPropertyFlags properties) const {

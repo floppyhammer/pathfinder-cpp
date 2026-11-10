@@ -8,14 +8,18 @@
 
 namespace Pathfinder {
 
-BufferVk::BufferVk(VkDevice vk_device, const BufferDescriptor& desc) : Buffer(desc), vk_device_(vk_device) {}
+BufferVk::BufferVk(VmaAllocator vma_allocator, VkDevice vk_device, const BufferDescriptor& desc)
+    : Buffer(desc), vma_allocator_(vma_allocator), vk_device_(vk_device) {}
 
 BufferVk::~BufferVk() {
     if (mapped_ptr_) {
         unmap();
     }
-    vkDestroyBuffer(vk_device_, vk_buffer_, nullptr);
-    vkFreeMemory(vk_device_, vk_device_memory_, nullptr);
+    if (vma_allocator_ && vk_buffer_ && vma_allocation_) {
+        vmaDestroyBuffer(vma_allocator_, vk_buffer_, vma_allocation_);
+        vk_buffer_ = VK_NULL_HANDLE;
+        vma_allocation_ = VK_NULL_HANDLE;
+    }
 }
 
 VkBuffer BufferVk::get_vk_buffer() {
@@ -23,7 +27,16 @@ VkBuffer BufferVk::get_vk_buffer() {
 }
 
 VkDeviceMemory BufferVk::get_vk_device_memory() {
-    return vk_device_memory_;
+    if (!vma_allocator_ || !vma_allocation_) {
+        return VK_NULL_HANDLE;
+    }
+    VmaAllocationInfo info{};
+    vmaGetAllocationInfo(vma_allocator_, vma_allocation_, &info);
+    return info.deviceMemory;
+}
+
+VmaAllocation BufferVk::get_vma_allocation() const {
+    return vma_allocation_;
 }
 
 void BufferVk::upload_via_mapping(size_t data_size, size_t offset, const void* data) {
@@ -45,9 +58,8 @@ void* BufferVk::map() {
         return mapped_ptr_;
     }
 
-    // This is a base pointer, note that offset is zero.
-    if (vkMapMemory(vk_device_, vk_device_memory_, 0, get_size(), 0, &mapped_ptr_) != VK_SUCCESS) {
-        Logger::error("Failed to map buffer memory!");
+    if (vmaMapMemory(vma_allocator_, vma_allocation_, &mapped_ptr_) != VK_SUCCESS) {
+        Logger::error("Failed to map buffer memory using VMA!");
         return nullptr;
     }
 
@@ -56,7 +68,7 @@ void* BufferVk::map() {
 
 void BufferVk::unmap() {
     if (mapped_ptr_) {
-        vkUnmapMemory(vk_device_, vk_device_memory_);
+        vmaUnmapMemory(vma_allocator_, vma_allocation_);
         mapped_ptr_ = nullptr;
     }
 }

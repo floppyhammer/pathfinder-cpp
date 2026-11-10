@@ -4,6 +4,7 @@
 #include "../device.h"
 #include "debug_marker.h"
 #include "render_pass.h"
+#include "vma_header.h"
 
 namespace Pathfinder {
 class Fence;
@@ -21,6 +22,8 @@ public:
              VkQueue vk_present_queue,
              VkCommandPool vk_command_pool,
              int frames_in_flight);
+
+    ~DeviceVk() override;
 
     std::shared_ptr<RenderPass> create_render_pass(TextureFormat format,
                                                    AttachmentLoadOp load_op,
@@ -84,13 +87,15 @@ public:
 
     VkCommandPool get_command_pool() const;
 
+    VmaAllocator get_vma_allocator() const;
+
     uint32_t find_memory_type(uint32_t type_filter, VkMemoryPropertyFlags properties) const;
 
     void create_vk_buffer(VkDeviceSize size,
                           VkBufferUsageFlags usage,
-                          VkMemoryPropertyFlags properties,
+                          MemoryProperty property,
                           VkBuffer &buffer,
-                          VkDeviceMemory &buffer_memory);
+                          VmaAllocation &allocation);
 
     void copy_data_to_mappable_memory(const void *src, VkDeviceMemory buffer_memory, size_t data_size) const;
 
@@ -127,6 +132,8 @@ private:
 
     VkCommandPool vk_command_pool_{};
 
+    VmaAllocator vma_allocator_{VK_NULL_HANDLE};
+
     VkDeviceSize min_uniform_alignment_{};
 
     DebugMarkerVk debug_marker_;
@@ -140,7 +147,7 @@ private:
                          VkImageUsageFlags usage,
                          VkMemoryPropertyFlags properties,
                          VkImage &image,
-                         VkDeviceMemory &image_memory,
+                         VmaAllocation &allocation,
                          size_t &memory_size) const;
 
     VkImageView create_vk_image_view(VkImage image, VkFormat format, VkImageAspectFlags aspect_flags) const;

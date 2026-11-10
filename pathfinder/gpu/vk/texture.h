@@ -2,6 +2,7 @@
 
 #include "../texture.h"
 #include "base.h"
+#include "vma_header.h"
 
 namespace Pathfinder {
 
@@ -30,26 +31,33 @@ public:
 
     void set_layout(TextureLayout new_layout);
 
+    VkDeviceMemory get_vk_device_memory() const;
+
+    VmaAllocation get_vma_allocation() const;
+
 private:
-    // This constructor is only a wrapper, actual GPU resource allocation is done by DeviceVk.
-    TextureVk(VkDevice vk_device, const TextureDescriptor& desc);
+    TextureVk(VmaAllocator vma_allocator, VkDevice vk_device, const TextureDescriptor& desc);
 
     /// Handle.
-    VkImage vk_image_{};
+    VkImage vk_image_{VK_NULL_HANDLE};
 
-    /// Device memory.
-    VkDeviceMemory vk_image_memory_{};
+    /// VMA allocation & allocator.
+    VmaAllocation vma_allocation_{VK_NULL_HANDLE};
+    VmaAllocator vma_allocator_{VK_NULL_HANDLE};
+
+    /// Device memory (for external wrapped images).
+    VkDeviceMemory vk_image_memory_{VK_NULL_HANDLE};
 
     /// Memory size is not necessarily equal to WIDTH * HEIGHT * PIXEL_SIZE due to
     /// alignment and mipmaps.
     size_t memory_size_{};
 
     /// Thin wrapper over image.
-    VkImageView vk_image_view_{};
+    VkImageView vk_image_view_{VK_NULL_HANDLE};
 
     /// For releasing resources in destructor.
     /// This is null for wrapped external textures.
-    VkDevice vk_device_{};
+    VkDevice vk_device_{VK_NULL_HANDLE};
 
     /// The initial layout must be undefined.
     TextureLayout layout_ = TextureLayout::Undefined;
