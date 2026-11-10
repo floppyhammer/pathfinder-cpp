@@ -479,13 +479,10 @@ void WindowBuilderVk::create_logical_device(VkSurfaceKHR surface) {
     create_info.enabledExtensionCount = static_cast<uint32_t>(DEVICE_EXTENSIONS.size());
     create_info.ppEnabledExtensionNames = DEVICE_EXTENSIONS.data();
 
-    // enabledLayerCount and ppEnabledLayerNames are deprecated and ignored.
-    if (enable_validation_layers_) {
-        create_info.enabledLayerCount = static_cast<uint32_t>(VALIDATION_LAYERS.size());
-        create_info.ppEnabledLayerNames = VALIDATION_LAYERS.data();
-    } else {
-        create_info.enabledLayerCount = 0;
-    }
+    // Device layers are deprecated in Vulkan and must be 0.
+    // Validation layers are enabled at the Instance level instead.
+    create_info.enabledLayerCount = 0;
+    create_info.ppEnabledLayerNames = nullptr;
 
     // A logical device is created as a connection to a physical device.
     VK_CHECK_RESULT(vkCreateDevice(physical_device_, &create_info, nullptr, &device_))
